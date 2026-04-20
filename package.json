@@ -21,6 +21,7 @@
     "db:seed-pedralbes": "turbo run db:seed-pedralbes --filter=!//",
     "db:studio": "turbo run db:studio --filter=!//",
     "dev": "turbo dev --filter=!//",
+    "env:sync": "npx tsx scripts/sync-env.ts",
     "dev:home": "pnpm --filter @app/mobile dev:home",
     "dev:lan": "pnpm --filter @app/mobile dev:lan",
     "dev:zrok": "./apps/mobile/zrok-tunnel.sh",

@@ -1,5 +1,5 @@
 services:
-  lattice_gateway:
+  gateway:
     container_name: lattice_gateway
     build:
       context: .
@@ -8,19 +8,22 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - BASE_PATH=/lattice
-      - AUTH_SERVICE_URL=http://lattice_auth:3001
-      - GEO_SERVICE_URL=http://lattice_geo:3002
-      - SOCIAL_SERVICE_URL=http://lattice_social:3003
+      - GATEWAY_PORT=3000
+      - BASE_PATH=${BASE_PATH:-/lattice}
+      - AUTH_HOST=auth
+      - AUTH_PORT=3001
+      - GEO_HOST=geo
+      - GEO_PORT=3002
+      - SOCIAL_HOST=social
+      - SOCIAL_PORT=3003
     depends_on:
-      - lattice_auth
-      - lattice_geo
-      - lattice_social
+      - auth
+      - geo
+      - social
     networks:
       - red_proxy
 
-  lattice_auth:
+  auth:
     container_name: lattice_auth
     build:
       context: .
@@ -29,13 +32,13 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - AUTH_PORT=3001
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
     networks:
       - red_proxy
 
-  lattice_geo:
+  geo:
     container_name: lattice_geo
     build:
       context: .
@@ -44,12 +47,12 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - PORT=3002
+      - GEO_PORT=3002
       - DATABASE_URL=${DATABASE_URL}
     networks:
       - red_proxy
 
-  lattice_social:
+  social:
     container_name: lattice_social
     build:
       context: .
@@ -58,12 +61,12 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - PORT=3003
+      - SOCIAL_PORT=3003
       - DATABASE_URL=${DATABASE_URL}
     networks:
       - red_proxy
 
-  lattice_redis:
+  redis:
     container_name: lattice_redis
     image: redis:7-alpine
     volumes:

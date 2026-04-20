@@ -1,22 +1,30 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { logger } from '@app/core';
 
-// Load environment variables
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
-dotenv.config({ path: envFile });
+// Load environment variables from root if not already set (e.g. in CI/CD)
+dotenv.config({ path: path.join(process.cwd(), '../../../.env') });
 
 export const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.GATEWAY_PORT || process.env.PORT || 3000;
 const basePath = process.env.BASE_PATH || '/';
 const router = express.Router();
 
-// Service URLs (Defaults for local dev)
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3001';
-const GEO_SERVICE_URL = process.env.GEO_SERVICE_URL || 'http://localhost:3002';
-const SOCIAL_SERVICE_URL = process.env.SOCIAL_SERVICE_URL || 'http://localhost:3003';
+// Networking Configuration (Dynamic Hosts)
+const AUTH_HOST = process.env.AUTH_HOST || 'localhost';
+const AUTH_PORT = process.env.AUTH_PORT || '3001';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || `http://${AUTH_HOST}:${AUTH_PORT}`;
+
+const GEO_HOST = process.env.GEO_HOST || 'localhost';
+const GEO_PORT = process.env.GEO_PORT || '3002';
+const GEO_SERVICE_URL = process.env.GEO_SERVICE_URL || `http://${GEO_HOST}:${GEO_PORT}`;
+
+const SOCIAL_HOST = process.env.SOCIAL_HOST || 'localhost';
+const SOCIAL_PORT = process.env.SOCIAL_PORT || '3003';
+const SOCIAL_SERVICE_URL = process.env.SOCIAL_SERVICE_URL || `http://${SOCIAL_HOST}:${SOCIAL_PORT}`;
 
 app.use(cors());
 app.use(logger);

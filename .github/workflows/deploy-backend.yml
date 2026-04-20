@@ -63,17 +63,11 @@ jobs:
           docker system prune -af || true
           docker builder prune -af || true
 
-      - name: Create .env file
-        run: |
-          echo "DATABASE_URL=$(echo '${{ secrets.DATABASE_URL }}' | xargs)" > .env
-          echo "JWT_SECRET=$(echo '${{ secrets.JWT_SECRET }}' | xargs)" >> .env
-          echo "REDIS_URL=redis://lattice_redis:6379" >> .env
-          cp .env packages/db/.env
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Build and Deploy Containers
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_ENV: production
         run: |
           pnpm install --no-frozen-lockfile
           pnpm db:migrate
