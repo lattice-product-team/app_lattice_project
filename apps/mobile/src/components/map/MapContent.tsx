@@ -1,13 +1,13 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
-// State & Store
+// Hooks & State
 import { useMapStore } from '../../store/useMapStore';
-import { useRoute } from '../../hooks/queries/useRoute';
+import { useRoutingLogic } from '../../hooks/useRoutingLogic';
 import { usePathNetwork } from '../../hooks/queries/usePathNetwork';
 
 // Constants & Utilities
@@ -18,53 +18,6 @@ import { colors } from '../../styles/colors';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const NavigationController = ({
-  userCoords,
-  isNavigating,
-}: {
-  userCoords: number[] | null;
-  isNavigating: boolean;
-}) => {
-  const selectedPoiId = useMapStore((s) => s.selectedPoiId);
-  const selectedPoi = useMapStore((s) => s.selectedPoi);
-  const setRoute = useMapStore((s) => s.setRoute);
-
-  const routeRequest = useMemo(() => {
-    // We calculate route IF we have user coords AND a selected POI (numeric or saved)
-    if (selectedPoiId && userCoords) {
-      const isSaved = selectedPoiId.toString().startsWith('saved_');
-      const poiId = isSaved ? null : Number(selectedPoiId);
-
-      const destination =
-        isSaved && selectedPoi?.geometry?.coordinates
-          ? { lng: selectedPoi.geometry.coordinates[0], lat: selectedPoi.geometry.coordinates[1] }
-          : { poiId: poiId! };
-
-      if (isSaved && !selectedPoi?.geometry?.coordinates) return null;
-      if (!isSaved && isNaN(poiId!)) return null;
-
-      const lat = Math.round(userCoords[1] * 10000) / 10000;
-      const lng = Math.round(userCoords[0] * 10000) / 10000;
-
-      return { origin: { lat, lng }, destination };
-    }
-    return null;
-  }, [selectedPoiId, selectedPoi, userCoords]);
-
-  const { data: routeData } = useRoute(routeRequest);
-
-  useEffect(() => {
-    if (routeData) {
-      setRoute(routeData, {
-        distance: routeData.properties.distance,
-        duration: routeData.properties.durationEstimate,
-        destinationName: selectedPoi?.name || 'tu destino',
-      });
-    }
-  }, [routeData, selectedPoi, setRoute]);
-
-  return null;
-};
 
 interface MapContentProps {
   userCoords: number[] | null;
@@ -84,13 +37,18 @@ export const MapContent = React.memo(function MapContent({
   const camera = useRef<MapLibreGL.CameraRef>(null);
   const insets = useSafeAreaInsets();
 
-  const selectedPoiId = useMapStore((s) => s.selectedPoiId);
-  const selectedCoords = useMapStore((s) => s.selectedCoords);
-  const recenterCount = useMapStore((s) => s.recenterCount);
-  const currentRoute = useMapStore((s) => s.currentRoute);
-  const isNavigating = useMapStore((s) => s.isNavigating);
-  const selectPoi = useMapStore((s) => s.selectPoi);
-  const storeDeselect = useMapStore((s) => s.deselect);
+  const {
+    selectedPoiId,
+    selectedCoords,
+    recenterCount,
+    currentRoute,
+    isNavigating,
+    selectPoi,
+    deselect: storeDeselect,
+  } = useMapStore();
+
+  // --- Logic Extraction ---
+  useRoutingLogic(userCoords);
 
   const selectionGeoJSON = useMemo(() => {
     if (!selectedCoords) return EMPTY_GEOJSON;
@@ -177,9 +135,7 @@ export const MapContent = React.memo(function MapContent({
   }, [poisGeoJSON, savedLocations]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <NavigationController userCoords={userCoords} isNavigating={isNavigating} />
-
+    <View className="flex-1">
       <MapLibreGL.MapView
         style={styles.map}
         mapStyle="https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
@@ -250,10 +206,10 @@ export const MapContent = React.memo(function MapContent({
             id="selectedPoiHighlight"
             style={{
               circleRadius: 22,
-              circleColor: 'white',
+              circleColor: colors.white,
               circleOpacity: 0.2,
               circleStrokeWidth: 2,
-              circleStrokeColor: 'white',
+              circleStrokeColor: colors.white,
             }}
           />
           <MapLibreGL.CircleLayer
@@ -262,38 +218,24 @@ export const MapContent = React.memo(function MapContent({
               circleRadius: 18,
               circleColor: colors.primary,
               circleStrokeWidth: 2,
-              circleStrokeColor: 'white',
+              circleStrokeColor: colors.white,
             }}
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 4. HIGH-PERFORMANCE INTERACTION LAYER (MUST BE LAST TO BE ON TOP) */}
-        {Platform.OS === 'android' ? (
-          <MapLibreGL.ShapeSource
-            id="interactionSource"
-            shape={poisAndSaved}
-            onPress={handlePoiPress}
-            hitbox={{ width: 44, height: 44 }}
-          >
-            <MapLibreGL.CircleLayer
-              id="interactionLayer"
-              style={{ circleRadius: 24, circleOpacity: 0 }}
-            />
-          </MapLibreGL.ShapeSource>
-        ) : (
-          poisAndSaved.features.map((f: any) => (
-            <MapLibreGL.MarkerView
-              key={`ios-mv-${f.properties.id}`}
-              coordinate={f.geometry.coordinates}
-            >
-              <View
-                onStartShouldSetResponder={() => true}
-                onResponderRelease={() => handlePoiPress(f)}
-                style={styles.hitbox}
-              />
-            </MapLibreGL.MarkerView>
-          ))
-        )}
+        {/* 4. UNIFIED INTERACTION LAYER (GPU-Accelerated) */}
+        <MapLibreGL.ShapeSource
+          id="interactionSource"
+          shape={poisAndSaved}
+          onPress={handlePoiPress}
+          hitbox={{ width: 44, height: 44 }}
+        >
+          {/* Transparent circles for catching touches - highly performant on both iOS/Android */}
+          <MapLibreGL.CircleLayer
+            id="interactionLayer"
+            style={{ circleRadius: 24, circleOpacity: 0 }}
+          />
+        </MapLibreGL.ShapeSource>
       </MapLibreGL.MapView>
     </View>
   );

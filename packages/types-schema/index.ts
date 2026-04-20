@@ -8,7 +8,7 @@ export interface TicketInfo {
   zoneName: string;
   seatRow: string;
   seatNumber: string;
-  seatLocation: [number, number]; // [lat, lng]
+  seatLocation: [number, number]; // [longitude, latitude] - Following GeoJSON standard
 }
 
 export interface UserTicketSyncResponse {

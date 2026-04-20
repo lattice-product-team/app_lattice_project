@@ -1,65 +1,65 @@
-# Contracte de l'API v1.0 - Lattice API
+# API Contract v1.0 - Lattice API
 
-## 1. Estàndards Generals
+## 1. General Standards
 
 - **Base URL:** `https://api.circuit-copilot.com/`
-- **Autenticació:** Bearer Token (JWT) a les capçaleres. `Authorization: Bearer <token>`
-- **Format de Dades:** JSON per a REST, MessagePack (binari) per a WebSockets (actualitzacions d'ubicació).
-- **Format Geogràfic:** Totes les coordenades han de seguir l'estàndard **GeoJSON**: `[longitud, latitud]`.
+- **Authentication:** Bearer Token (JWT) in headers. `Authorization: Bearer <token>`
+- **Data Format:** JSON for REST, MessagePack (binary) for WebSockets (location updates).
+- **Geographic Format:** All coordinates MUST follow the **GeoJSON** standard: `[longitude, latitude]`.
 
-## 2. Endpoints REST (HTTP)
+## 2. REST Endpoints (HTTP)
 
-### Autenticació i Onboarding (US1, US2)
+### Authentication and Onboarding (US1, US2)
 
 #### `POST /auth/ticket-sync`
 
-Enllaça una entrada física/digital amb l'usuari i n'extreu les metadades d'accés.
+Links a physical/digital ticket with the user and extracts access metadata.
 
-- **Cos (Body):**
+- **Body:**
 
 ```json
 {
-  "qr_code_data": "CADENA_CRÍPTICA_DEL_ESCÀNER",
+  "qr_code_data": "CRYPTIC_SCANNER_STRING",
   "device_id": "uuid-v4"
 }
 ```
 
-- **Resposta (200 OK):**
+- **Response (200 OK):**
 
 ```json
 {
   "user_id": "u-123",
-  "token": "jwt_token_aquí",
+  "token": "jwt_token_here",
   "ticket_info": {
-    "gate": "Porta 3",
-    "zone": "Tribuna G",
-    "seat": "Fila 12, Seient 4",
-    "seat_coordinates": [2.2645, 41.5701] // Objectiu per a la navegació
+    "gate": "Gate 3",
+    "zone": "Grandstand G",
+    "seat": "Row 12, Seat 4",
+    "seat_coordinates": [2.2645, 41.5701] // Navigation target
   }
 }
 ```
 
 #### `PATCH /users/me/parking` (US34)
 
-Guarda la ubicació del cotxe per a la sortida.
+Saves the car location for the exit journey.
 
-- **Cos (Body):**
+- **Body:**
 
 ```json
 {
   "location": [2.261, 41.569],
-  "notes": "Pàrquing B, Fila 4"
+  "notes": "Parking B, Row 4"
 }
 ```
 
-### Navegació i Dades del Mapa (US6, US9)
+### Navigation and Map Data (US6, US9)
 
 #### `GET /pois`
 
-Obté els Punts d'Interès (POI) estàtics. Es poden emmagatzemar a la memòria cau del dispositiu (SQLite local).
+Retrieves static Points of Interest (POI). Can be cached on the device (local SQLite).
 
-- **Paràmetres de consulta (Query Params):** `?category=restaurant,wc,grandstand`
-- **Resposta (200 OK):**
+- **Query Params:** `?category=restaurant,wc,grandstand`
+- **Response (200 OK):**
 
 ```json
 {
@@ -82,9 +82,9 @@ Obté els Punts d'Interès (POI) estàtics. Es poden emmagatzemar a la memòria 
 
 #### `GET /pois/categories`
 
-Obté la llista de categories disponibles per als POIs (per als chips de filtres).
+Retrieves the list of available categories for POIs (for filter chips).
 
-- **Resposta (200 OK):**
+- **Response (200 OK):**
 
 ```json
 [
@@ -93,106 +93,106 @@ Obté la llista de categories disponibles per als POIs (per als chips de filtres
 ]
 ```
 
-### Encaminament Intel·ligent (utilitza US4, US7)
+### Intelligent Routing (supports US4, US7)
 
 #### `POST /navigation/route`
 
-Sol·licita una ruta per a vianants tenint en compte la congestió actual.
+Requests a pedestrian route considering current congestion.
 
-- **Cos (Body):**
+- **Body:**
 
 ```json
 {
   "origin": [2.261, 41.568],
   "destination": [2.265, 41.572],
-  "mode": "walking" // Futur: 'vip_shuttle'
+  "mode": "walking" // Future: 'vip_shuttle'
 }
 ```
 
-- **Resposta (200 OK):**
+- **Response (200 OK):**
 
 ```json
 {
-  "route_geometry": "cadena_polilínia_codificada", // Lleuger per a Mapbox
+  "route_geometry": "encoded_polyline_string", // Lightweight for Mapbox/MapLibre
   "distance_meters": 450,
   "estimated_time_seconds": 380,
-  "congestion_level": "alt", // La UI activa el color d'advertència
+  "congestion_level": "high", // UI triggers warning color
   "ar_checkpoints": [
-    // Nodes on han d'aparèixer fletxes d'AR
-    { "coords": [2.262, 41.569], "instruction": "Gira a l'esquerra a l'estand de Red Bull" }
+    // Nodes where AR arrows should appear
+    { "coords": [2.262, 41.569], "instruction": "Turn left at the Red Bull stand" }
   ]
 }
 ```
 
-## 3. Esdeveniments WebSocket (Temps Real)
+## 3. WebSocket Events (Real-Time)
 
 **Protocol:** Socket.io
-**Espai de noms (Namespace):** `/live-track`
+**Namespace:** `/live-track`
 
-### Emissions del Client (El que envia el mòbil)
+### Client Emissions (Sent by mobile)
 
-#### `user:update_location` (Limitat)
+#### `user:update_location` (Throttled)
 
-Enviat com a màxim 1 vegada cada 30 segons o si s'ha mogut >20 m.
+Sent at most once every 30 seconds or if moved >20m.
 
-- **Càrrega útil (Payload):**
+- **Payload:**
 
 ```json
 {
   "lat": 41.5701,
   "lng": 2.2645,
-  "accuracy": 12.5, // Metres. Ignora si és > 50m
-  "heading": 180, // Per a l'orientació de l'AR
+  "accuracy": 12.5, // Meters. Ignore if > 50m
+  "heading": 180, // For AR orientation
   "speed": 1.2 // m/s
 }
 ```
 
 #### `group:join`
 
-Per unir-se a un grup d'amics.
+To join a group of friends.
 
-- **Càrrega útil (Payload):** `{ "group_code": "FAST-CARS-24" }`
+- **Payload:** `{ "group_code": "FAST-CARS-24" }`
 
-### 📥 Emissions del Servidor (El que rep el mòbil)
+### 📥 Server Emissions (Received by mobile)
 
 #### `group:locations`
 
-Posicions dels amics al mapa.
+Friend positions on the map.
 
-- **Càrrega útil (Payload):**
+- **Payload:**
 
 ```json
 [
-  { "user_id": "u-456", "name": "Marc", "coords": [2.26, 41.57], "last_seen": "fa 10s" },
-  { "user_id": "u-789", "name": "Laia", "coords": [2.27, 41.58], "last_seen": "fa 2min" } // La UI mostra una icona de 'fora de línia'
+  { "user_id": "u-456", "name": "Marc", "coords": [2.26, 41.57], "last_seen": "10s ago" },
+  { "user_id": "u-789", "name": "Laia", "coords": [2.27, 41.58], "last_seen": "2min ago" } // UI shows 'offline' icon
 ]
 ```
 
 #### `race:status` (US11)
 
-Dades de la cursa en viu (Baixa Latència).
+Live race data (Low Latency).
 
-- **Càrrega útil (Payload):**
+- **Payload:**
 
 ```json
 {
   "lap": 45,
   "total_laps": 66,
-  "flag": "yellow", // Activa una alerta a la UI
+  "flag": "yellow", // Triggers UI alert
   "leaderboard_top3": ["VER", "HAM", "NOR"]
 }
 ```
 
-## 4. Estàndards de Gestió d'Errors
+## 4. Error Management Standards
 
-Totes les respostes d'error han de seguir aquest format perquè el Frontend pugui mostrar missatges consistents:
+All error responses MUST follow this format so the Frontend can display consistent messages:
 
 ```json
 {
   "error": {
     "code": "TICKET_INVALID",
     "message": "The QR code implies a generic entry, please select zone manually.",
-    "user_friendly_message": "No hem pogut detectar la teva zona. Selecciona-la manualment.",
+    "user_friendly_message": "We couldn't detect your zone. Please select it manually.",
     "status": 400
   }
 }
