@@ -3,8 +3,8 @@ services:
     container_name: lattice_gateway
     build:
       context: .
-      dockerfile: apps/server/gateway/Dockerfile
-      target: production
+      dockerfile: Dockerfile
+      target: gateway-prod
     restart: always
     environment:
       - NODE_ENV=production
@@ -24,8 +24,8 @@ services:
     container_name: lattice_auth
     build:
       context: .
-      dockerfile: apps/server/auth/Dockerfile
-      target: production
+      dockerfile: Dockerfile
+      target: auth-prod
     restart: always
     environment:
       - NODE_ENV=production
@@ -39,8 +39,8 @@ services:
     container_name: lattice_geo
     build:
       context: .
-      dockerfile: apps/server/geo/Dockerfile
-      target: production
+      dockerfile: Dockerfile
+      target: geo-prod
     restart: always
     environment:
       - NODE_ENV=production
@@ -53,8 +53,8 @@ services:
     container_name: lattice_social
     build:
       context: .
-      dockerfile: apps/server/social/Dockerfile
-      target: production
+      dockerfile: Dockerfile
+      target: social-prod
     restart: always
     environment:
       - NODE_ENV=production

@@ -29,10 +29,21 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Health Check
-router.get('/status', (req: Request, res: Response) => {
-  res.json({ status: 'gateway_ok', timestamp: new Date(), env: process.env.NODE_ENV, basePath });
-});
+// Health Checks
+const healthHandler = (req: Request, res: Response) => {
+  res.json({ 
+    status: 'gateway_ok', 
+    timestamp: new Date(), 
+    env: process.env.NODE_ENV, 
+    basePath,
+    service: 'lattice_gateway'
+  });
+};
+
+router.get('/status', healthHandler);
+router.get('/health', healthHandler);
+router.get('/api/v1/status', healthHandler);
+router.get('/api/v1/health', healthHandler);
 
 // --- API ROUTING ---
 const API_PREFIX = '/api/v1';

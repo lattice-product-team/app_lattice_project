@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { sql } from 'drizzle-orm';
 import pg from 'pg';
 import path from 'path';
 import { users } from '../src/schema.js';
@@ -30,8 +31,8 @@ describe('Database Integration Tests', () => {
       return;
     }
 
-    // 1. Start Postgres Container
-    container = await new PostgreSqlContainer('postgres:16-alpine').start();
+    // 1. Start PostGIS Container
+    container = await new PostgreSqlContainer('postgis/postgis:16-3.4-alpine').start();
 
     // 2. Setup DB connection
     pool = new pg.Pool({
@@ -39,7 +40,10 @@ describe('Database Integration Tests', () => {
     });
     db = drizzle(pool);
 
-    // 3. Run Migrations
+    // 3. Enable PostGIS Extension
+    await db.execute(sql`CREATE EXTENSION IF NOT EXISTS postgis;`);
+
+    // 4. Run Migrations
     await migrate(db, { migrationsFolder: path.resolve(__dirname, '../drizzle') });
   }, 120000); // 2 min timeout for container start + migrations
 

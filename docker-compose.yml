@@ -18,8 +18,8 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: apps/server/gateway/Dockerfile
-      target: development
+      dockerfile: Dockerfile
+      target: gateway-dev
     ports:
       - "3000:3000"
     volumes:
@@ -39,8 +39,8 @@ services:
   auth:
     build:
       context: .
-      dockerfile: apps/server/auth/Dockerfile
-      target: development
+      dockerfile: Dockerfile
+      target: auth-dev
     ports:
       - "3001:3001"
     volumes:
@@ -57,8 +57,8 @@ services:
   geo:
     build:
       context: .
-      dockerfile: apps/server/geo/Dockerfile
-      target: development
+      dockerfile: Dockerfile
+      target: geo-dev
     ports:
       - "3002:3002"
     volumes:
@@ -75,8 +75,8 @@ services:
   social:
     build:
       context: .
-      dockerfile: apps/server/social/Dockerfile
-      target: development
+      dockerfile: Dockerfile
+      target: social-dev
     ports:
       - "3003:3003"
     volumes:
