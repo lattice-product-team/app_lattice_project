@@ -16,12 +16,12 @@ import { mapLayerStyles } from '../../styles/mapLayerStyles';
 import { theme } from '../../styles/theme';
 import { colors } from '../../styles/colors';
 
+import { useLocationStore } from '../../store/useLocationStore';
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 
 interface MapContentProps {
-  userCoords: number[] | null;
-  locationStatus: string;
   poisGeoJSON: any;
   savedLocations?: any;
   onDeselect?: () => void;
@@ -29,7 +29,6 @@ interface MapContentProps {
 }
 
 export const MapContent = React.memo(function MapContent({
-  userCoords,
   poisGeoJSON,
   savedLocations,
   onDeselect,
@@ -37,18 +36,18 @@ export const MapContent = React.memo(function MapContent({
   const camera = useRef<MapLibreGL.CameraRef>(null);
   const insets = useSafeAreaInsets();
 
-  const {
-    selectedPoiId,
-    selectedCoords,
-    recenterCount,
-    currentRoute,
-    isNavigating,
-    selectPoi,
-    deselect: storeDeselect,
-  } = useMapStore();
+  const selectedPoiId = useMapStore((s) => s.selectedPoiId);
+  const selectedCoords = useMapStore((s) => s.selectedCoords);
+  const recenterCount = useMapStore((s) => s.recenterCount);
+  const currentRoute = useMapStore((s) => s.currentRoute);
+  const isNavigating = useMapStore((s) => s.isNavigating);
+  const selectPoi = useMapStore((s) => s.selectPoi);
+  const storeDeselect = useMapStore((s) => s.deselect);
+
+  const userCoords = useLocationStore((s) => s.logicalCoords);
 
   // --- Logic Extraction ---
-  useRoutingLogic(userCoords);
+  useRoutingLogic();
 
   const selectionGeoJSON = useMemo(() => {
     if (!selectedCoords) return EMPTY_GEOJSON;

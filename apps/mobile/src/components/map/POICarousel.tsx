@@ -8,6 +8,7 @@ import { typography } from '../../styles/typography';
 import { UIPOI } from '../../types/models/poi';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../styles/colors';
+import { useLocationStore } from '../../store/useLocationStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
@@ -33,10 +34,10 @@ interface POICarouselCardProps {
   poi: UIPOI;
   onPress: () => void;
   index: number;
-  userCoords: number[] | null;
 }
 
-const POICarouselCard = ({ poi, onPress, index, userCoords }: POICarouselCardProps) => {
+const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
+  const userCoords = useLocationStore((s) => s.logicalCoords);
   const metadata = getCategoryMetadata(poi.category);
   const imageUrl = (poi.images && poi.images.length > 0) 
     ? poi.images[0] 
@@ -113,11 +114,12 @@ const POICarouselCard = ({ poi, onPress, index, userCoords }: POICarouselCardPro
 interface POICarouselProps {
   pois: UIPOI[];
   onSelectPoi: (poi: UIPOI) => void;
-  userCoords: number[] | null;
   title?: string;
 }
 
-export const POICarousel = ({ pois, onSelectPoi, userCoords, title }: POICarouselProps) => {
+export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
+  const userCoords = useLocationStore((s) => s.logicalCoords);
+  
   const sortedPois = useMemo(() => {
     if (!userCoords || !pois) return pois;
     return [...pois].sort((a, b) => {
@@ -149,7 +151,6 @@ export const POICarousel = ({ pois, onSelectPoi, userCoords, title }: POICarouse
             key={poi.id} 
             poi={poi} 
             index={index}
-            userCoords={userCoords}
             onPress={() => onSelectPoi(poi)} 
           />
         ))}

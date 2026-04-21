@@ -1,11 +1,13 @@
 import { useMemo, useEffect } from 'react';
 import { useMapStore } from '../store/useMapStore';
+import { useLocationStore } from '../store/useLocationStore';
 import { useRoute } from './queries/useRoute';
 
-export const useRoutingLogic = (userCoords: number[] | null) => {
+export const useRoutingLogic = () => {
   const selectedPoiId = useMapStore((s) => s.selectedPoiId);
   const selectedPoi = useMapStore((s) => s.selectedPoi);
   const setRoute = useMapStore((s) => s.setRoute);
+  const userCoords = useLocationStore((s) => s.logicalCoords);
 
   const routeRequest = useMemo(() => {
     // We calculate route IF we have user coords AND a selected POI

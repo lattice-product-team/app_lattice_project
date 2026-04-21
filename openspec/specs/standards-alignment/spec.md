@@ -22,3 +22,10 @@ The mobile application components SHALL use NativeWind (Tailwind) classes for st
 #### Scenario: Style Migration
 - **WHEN** the `MapContent` component is styled
 - **THEN** it MUST use `className` with Tailwind classes instead of `StyleSheet.create`
+
+### Requirement: React Native Render Optimization
+The mobile application SHALL utilize memoization (`React.memo`, `useMemo`, `useCallback`) and granular store selectors to minimize re-renders of heavy UI components, specifically those involving maps or AR.
+
+#### Scenario: Optimized Map Renders
+- **WHEN** a minor UI state change occurs (e.g., a filter chip is toggled)
+- **THEN** the `MapContent` component MUST NOT re-render unless the map data itself has changed.

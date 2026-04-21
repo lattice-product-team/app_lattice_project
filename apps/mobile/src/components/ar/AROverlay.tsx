@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Canvas } from '@react-three/fiber/native';
+import { useLocationStore } from '../../store/useLocationStore';
+import { useOrientationStore } from '../../store/useOrientationStore';
 import { MainARScene } from './MainARScene';
 import { CameraPermissionView } from '../ui/CameraPermissionView';
 import { ARHUD } from './ARHUD';
@@ -33,25 +35,25 @@ const getBearing = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const l2 = lon2 * Math.PI / 180;
   const y = Math.sin(l2 - l1) * Math.cos(p2);
   const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(l2 - l1);
-  const theta = Math.atan2(y, x);
   return (theta * 180 / Math.PI + 360) % 360;
 };
 
 interface AROverlayProps {
   isVisible: boolean;
   onExitAR?: () => void;
-  userCoords?: number[] | null;
-  heading?: number;
   pois?: any[];
-  isLandscape?: boolean;
 }
 
-export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, userCoords, heading = 0, pois = [], isLandscape }) => {
+export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois = [] }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [mountScene, setMountScene] = useState(false);
   const hudOpacity = useSharedValue(0);
   const { width, height } = useWindowDimensions();
+
+  const userCoords = useLocationStore((s) => s.coords);
+  const heading = useOrientationStore((s) => s.heading);
+  const isLandscape = useOrientationStore((s) => s.isLandscape);
 
   useEffect(() => {
     if (isVisible && isCameraReady) {

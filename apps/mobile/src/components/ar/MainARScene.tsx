@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { useLocationStore } from '../../store/useLocationStore';
+import { useOrientationStore } from '../../store/useOrientationStore';
 import { getCategoryMetadata } from '../../utils/poiUtils';
 
 // Haversine distance formula in meters
@@ -59,13 +61,14 @@ const ARPin: React.FC<ARPinProps> = ({ color, name, distance }) => {
 };
 
 interface MainARSceneProps {
-  userCoords?: number[] | null;
-  heading?: number;
   pois?: any[];
-  isLandscape?: boolean;
 }
 
-export const MainARScene: React.FC<MainARSceneProps> = ({ userCoords, heading = 0, pois = [], isLandscape = false }) => {
+export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
+  const userCoords = useLocationStore((s) => s.coords);
+  const heading = useOrientationStore((s) => s.heading);
+  const isLandscape = useOrientationStore((s) => s.isLandscape);
+
   const poiNodes = useMemo(() => {
     if (!userCoords || pois.length === 0) return [];
 

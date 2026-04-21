@@ -22,6 +22,8 @@ import { AROverlay } from '../../src/components/ar/AROverlay';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useMapStore } from '../../src/store/useMapStore';
+import { useLocationStore } from '../../src/store/useLocationStore';
+import { useOrientationStore } from '../../src/store/useOrientationStore';
 import { useAuthStore } from '../../src/hooks/useAuthStore';
 import { MapContent } from '../../src/components/map/MapContent';
 import { MapSheetManager } from '../../src/components/map/MapSheetManager';
@@ -47,7 +49,8 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 function MapIndex() {
   const router = useRouter();
-  const { coords: userCoords, status: locationStatus, requestPermission } = useLocationService();
+  const { status: locationStatus, requestPermission } = useLocationService();
+  const userCoords = useLocationStore((s) => s.logicalCoords);
 
   const selectedPoiId = useMapStore((s) => s.selectedPoiId);
   const selectedPoi = useMapStore((s) => s.selectedPoi);
@@ -58,7 +61,9 @@ function MapIndex() {
   const { data: categories } = useCategories();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  const { isVisible: isCameraARVisible, heading, isLandscape } = useCameraTilt();
+  const { isVisible: isCameraARVisible } = useCameraTilt();
+  const heading = useOrientationStore((s) => s.heading);
+  const isLandscape = useOrientationStore((s) => s.isLandscape);
   const [manualAR, setManualAR] = useState(false);
   const isARVisible = isCameraARVisible || manualAR;
 
@@ -312,7 +317,6 @@ function MapIndex() {
             <POICarousel 
               pois={carouselPois} 
               onSelectPoi={(poi) => selectPoi(poi)} 
-              userCoords={userCoords}
             />
           }
           discoveryContent={
@@ -321,7 +325,6 @@ function MapIndex() {
                 title="Cerca de ti"
                 pois={rawPoisData?.features?.map((f: any) => ({ ...f.properties, geometry: f.geometry })) || []}
                 onSelectPoi={(poi) => selectPoi(poi)}
-                userCoords={userCoords}
               />
               <GuidesSection
                 onSeeAll={() => setShowSavedManager(true)}

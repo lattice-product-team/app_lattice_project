@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import * as Location from 'expo-location';
 import { Accelerometer } from 'expo-sensors';
+import { useOrientationStore } from '../store/useOrientationStore';
 
 export const useCameraTilt = () => {
-  const [heading, setHeading] = useState(0);
-  const [isLandscape, setIsLandscape] = useState(false);
+  const setHeading = useOrientationStore((s) => s.setHeading);
+  const setIsLandscape = useOrientationStore((s) => s.setIsLandscape);
+  const heading = useOrientationStore((s) => s.heading);
+  const isLandscape = useOrientationStore((s) => s.isLandscape);
   
   // AR is active when in landscape
   const isVisible = isLandscape;
@@ -31,30 +34,22 @@ export const useCameraTilt = () => {
         locationSub.remove();
       }
     };
-  }, [isVisible]);
+  }, [isVisible, setHeading]);
 
   useEffect(() => {
     // 2. Accelerometer Observer for physical device orientation (bypasses OS orientation locks)
     Accelerometer.setUpdateInterval(500); // 500ms is enough for orientation check
     const accelSub = Accelerometer.addListener(({ x, y, z }) => {
-      // x approaches 1 or -1 when device is in landscape.
-      // y approaches 1 or -1 when device is in portrait.
-      // z approaches 1 or -1 when device is laying flat.
-      
       const isLayingFlat = Math.abs(z) > 0.8;
       const isHorizontal = Math.abs(x) > 0.65;
       
-      if (!isLayingFlat && isHorizontal) {
-        setIsLandscape(true);
-      } else {
-        setIsLandscape(false);
-      }
+      setIsLandscape(!isLayingFlat && isHorizontal);
     });
 
     return () => {
       accelSub.remove();
     };
-  }, []);
+  }, [setIsLandscape]);
 
   return { isVisible, isLandscape, heading };
 };
