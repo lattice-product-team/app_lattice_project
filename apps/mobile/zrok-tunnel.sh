@@ -6,7 +6,7 @@ API_PORT=3000
 METRO_PORT=8081
 ENV_FILE="$SCRIPT_DIR/.env"
 
-echo "🚀 Starting zrok tunnels for Circuit Copilot Mobile from $SCRIPT_DIR..."
+echo "🚀 Starting zrok tunnels for Lattice Mobile from $SCRIPT_DIR..."
 
 # Check if zrok is installed
 if ! command -v zrok &> /dev/null; then

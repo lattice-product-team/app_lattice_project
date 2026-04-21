@@ -75,7 +75,7 @@ export default function LoginScreen() {
           className="text-white/40 leading-6"
           style={authStyles.subtitle}
         >
-          Access your pilot profile to sync race data and preferences.
+          Access your Lattice profile to sync performance data and preferences.
         </Text>
       </Animated.View>
 
@@ -142,7 +142,7 @@ export default function LoginScreen() {
             className="text-white/40 text-sm font-medium tracking-wide"
             style={{ fontFamily: 'PlusJakartaSans-Bold' }}
           >
-            NOT A PILOT YET? <Text className="text-white font-black" style={{ color: colors.primary }}>JOIN THE CREW</Text>
+            NEW TO LATTICE? <Text className="text-white font-black" style={{ color: colors.primary }}>JOIN THE CREW</Text>
           </Text>
         </Pressable>
       </Animated.View>

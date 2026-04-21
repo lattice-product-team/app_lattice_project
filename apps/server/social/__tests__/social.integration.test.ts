@@ -17,7 +17,7 @@ describe('Social Service Integration Tests', () => {
 
   describe('POST /groups', () => {
     it('should return 200 for now (endpoint not implemented)', async () => {
-      const response = await request(app).post('/groups').send({ name: 'Race Fans' });
+      const response = await request(app).post('/groups').send({ name: 'Lattice Fans' });
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Groups endpoint not implemented yet');
     });

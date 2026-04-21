@@ -117,7 +117,7 @@ export default function RegisterScreen() {
             className="text-white/40 leading-6"
             style={authStyles.subtitle}
           >
-            Join the elite crew and access real-time race analytics.
+            Join the Lattice community and access real-time performance analytics.
           </Text>
         )}
       </Animated.View>

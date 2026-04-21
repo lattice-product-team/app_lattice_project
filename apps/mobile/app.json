@@ -13,8 +13,8 @@
       "bundleIdentifier": "com.cdc.lattice",
       "infoPlist": {
         "NSCameraUsageDescription": "Lattice uses the camera to display augmented reality navigation and points of interest.",
-        "NSLocationWhenInUseUsageDescription": "Allow Lattice to use your location to guide you through the circuit.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow Lattice to use your location to guide you through the circuit."
+        "NSLocationWhenInUseUsageDescription": "Allow Lattice to use your location to guide you through the venue.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow Lattice to use your location to guide you through the venue."
       }
     },
     "android": {
@@ -61,8 +61,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Lattice to use your location to guide you through the circuit.",
-          "locationWhenInUsePermission": "Allow Lattice to use your location to guide you through the circuit.",
+          "locationAlwaysAndWhenInUsePermission": "Allow Lattice to use your location to guide you through the venue.",
+          "locationWhenInUsePermission": "Allow Lattice to use your location to guide you through the venue.",
           "isAndroidBackgroundLocationEnabled": false
         }
       ],

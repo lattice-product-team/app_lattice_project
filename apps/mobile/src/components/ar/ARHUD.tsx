@@ -77,7 +77,7 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
         >
           <Animated.View style={[styles.statusBadge, scanAnimatedStyle]}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusText}>{isScanning ? 'SCANNING CIRCUIT…' : 'AR ACTIVE'}</Text>
+            <Text style={styles.statusText}>{isScanning ? 'SCANNING LATTICE…' : 'AR ACTIVE'}</Text>
           </Animated.View>
 
           <Pressable

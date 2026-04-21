@@ -116,8 +116,8 @@ export default function WelcomeScreen() {
         return (
           <WelcomeStep
             key="step-1"
-            title={"Llattice\nOn Track"}
-            subtitle="Benvingut al Circuit de Barcelona-Catalunya. Prepara't per a la millor experiència de carrera."
+            title={"Lattice\nOn Track"}
+            subtitle="Benvingut al Circuit de Barcelona-Catalunya. Prepara't per a la millor experiència Lattice."
             primaryAction={{
               label: 'COMENÇAR',
               onPress: () => setStep(2)

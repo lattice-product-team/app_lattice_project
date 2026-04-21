@@ -1,5 +1,5 @@
 /**
- * Basic TypeScript interfaces for Circuit Copilot (Sprint 0)
+ * Core TypeScript interfaces for Lattice
  */
 
 export interface TicketInfo {
