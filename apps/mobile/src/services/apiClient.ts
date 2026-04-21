@@ -9,13 +9,31 @@ export interface ApiError {
   };
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
+export async function handleResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const errorData = data as ApiError;
-    const message = errorData.error?.user_friendly_message || 'Unexpected server error';
-    console.error(`[API Error] ${response.status}: ${message}`, data);
+    const errorData = data as any;
+    
+    // Robust error message extraction
+    let message = 'Unexpected server error';
+    
+    if (errorData.error) {
+      if (typeof errorData.error === 'string') {
+        message = errorData.error;
+      } else if (typeof errorData.error === 'object') {
+        message = errorData.error.message || errorData.error.user_friendly_message || message;
+      }
+    } else if (errorData.message) {
+      message = errorData.message;
+    }
+
+    console.error(`[API Error] ${response.status}: ${message}`, {
+      status: response.status,
+      url: response.url,
+      data
+    });
+    
     throw new Error(message);
   }
 

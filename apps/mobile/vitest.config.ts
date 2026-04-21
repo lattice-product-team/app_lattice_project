@@ -12,6 +12,7 @@ export default defineConfig({
     include: [
       'src/utils/__tests__/**/*.{test,spec}.{ts,tsx}',
       'src/hooks/__tests__/**/*.{test,spec}.{ts,tsx}',
+      'src/services/__tests__/**/*.{test,spec}.{ts,tsx}',
     ],
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
   },

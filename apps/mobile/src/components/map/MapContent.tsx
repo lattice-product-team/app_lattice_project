@@ -49,20 +49,6 @@ export const MapContent = React.memo(function MapContent({
   // --- Logic Extraction ---
   useRoutingLogic();
 
-  const selectionGeoJSON = useMemo(() => {
-    if (!selectedCoords) return EMPTY_GEOJSON;
-    return {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: selectedCoords },
-          properties: { id: selectedPoiId },
-        },
-      ],
-    };
-  }, [selectedCoords, selectedPoiId]);
-
   const { data: pathNetwork } = usePathNetwork();
 
   useEffect(() => {
@@ -111,6 +97,19 @@ export const MapContent = React.memo(function MapContent({
       const feature = data.features ? data.features[0] : data;
 
       if (!feature?.properties) return;
+
+      // Handle Cluster Press
+      if (feature.properties.cluster && feature.properties.cluster_id) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        // MapLibre native method to get expansion zoom would be ideal, 
+        // but simple camera zoom-in is highly effective and performant
+        camera.current?.setCamera({
+          centerCoordinate: feature.geometry.coordinates,
+          zoomLevel: (camera.current as any).getZoom() + 2,
+          animationDuration: 400,
+        });
+        return;
+      }
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       selectPoi({
@@ -162,30 +161,69 @@ export const MapContent = React.memo(function MapContent({
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 2. VISUAL POIS (Drawing circles and labels) */}
-        <MapLibreGL.ShapeSource id="poisSource" shape={poisGeoJSON || EMPTY_GEOJSON}>
+        {/* 2. VISUAL POIS (Drawing circles and labels with Clustering) */}
+        <MapLibreGL.ShapeSource 
+          id="poisSource" 
+          shape={poisGeoJSON || EMPTY_GEOJSON}
+          cluster={true}
+          clusterRadius={50}
+          clusterMaxZoom={14}
+        >
           <MapLibreGL.CircleLayer
             id="poiCircles"
             style={mapLayerStyles.poiCircles}
             minZoomLevel={12.8}
+            filter={['!', ['has', 'point_count']]}
           />
           <MapLibreGL.SymbolLayer
             id="poiLabels"
             style={mapLayerStyles.poiLabels}
             minZoomLevel={15.8}
+            filter={['!', ['has', 'point_count']]}
+          />
+          
+          <MapLibreGL.CircleLayer
+            id="clusterCircles"
+            style={mapLayerStyles.clusterCircles}
+            filter={['has', 'point_count']}
+          />
+          <MapLibreGL.SymbolLayer
+            id="clusterLabels"
+            style={mapLayerStyles.clusterLabels}
+            filter={['has', 'point_count']}
+          />
+
+          {/* Selected POI Highlight (Native Filter) */}
+          <MapLibreGL.CircleLayer
+            id="selectedPoiHighlight"
+            filter={['==', ['get', 'id'], selectedPoiId || '']}
+            style={{
+              circleRadius: 22,
+              circleColor: colors.white,
+              circleOpacity: 0.3,
+              circleStrokeWidth: 2,
+              circleStrokeColor: colors.white,
+            }}
           />
         </MapLibreGL.ShapeSource>
 
-        <MapLibreGL.ShapeSource id="savedSource" shape={savedLocations || EMPTY_GEOJSON}>
+        <MapLibreGL.ShapeSource 
+          id="savedSource" 
+          shape={savedLocations || EMPTY_GEOJSON}
+          cluster={true}
+          clusterRadius={40}
+        >
           <MapLibreGL.CircleLayer
             id="savedCircles"
             style={mapLayerStyles.savedPoiCircles}
             minZoomLevel={12.8}
+            filter={['!', ['has', 'point_count']]}
           />
           <MapLibreGL.SymbolLayer
             id="savedLabels"
             style={mapLayerStyles.poiLabels}
             minZoomLevel={15.8}
+            filter={['!', ['has', 'point_count']]}
           />
         </MapLibreGL.ShapeSource>
 
@@ -199,28 +237,6 @@ export const MapContent = React.memo(function MapContent({
             />
           </MapLibreGL.ShapeSource>
         )}
-
-        <MapLibreGL.ShapeSource id="selectionSource" shape={selectionGeoJSON}>
-          <MapLibreGL.CircleLayer
-            id="selectedPoiHighlight"
-            style={{
-              circleRadius: 22,
-              circleColor: colors.white,
-              circleOpacity: 0.2,
-              circleStrokeWidth: 2,
-              circleStrokeColor: colors.white,
-            }}
-          />
-          <MapLibreGL.CircleLayer
-            id="selectedPoiInner"
-            style={{
-              circleRadius: 18,
-              circleColor: colors.primary,
-              circleStrokeWidth: 2,
-              circleStrokeColor: colors.white,
-            }}
-          />
-        </MapLibreGL.ShapeSource>
 
         {/* 4. UNIFIED INTERACTION LAYER (GPU-Accelerated) */}
         <MapLibreGL.ShapeSource

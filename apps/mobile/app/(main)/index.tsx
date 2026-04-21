@@ -3,14 +3,12 @@ import {
   View,
   Pressable,
   Text,
-  ActivityIndicator,
   StyleSheet,
   Dimensions,
   Keyboard,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { SearchBar } from '../../src/components/SearchBar';
 import { colors } from '../../src/styles/colors';
 import { usePOIs } from '../../src/hooks/queries/usePOIs';
 import { useSinglePOI } from '../../src/hooks/queries/useSinglePOI';
@@ -26,24 +24,13 @@ import { useLocationStore } from '../../src/store/useLocationStore';
 import { useOrientationStore } from '../../src/store/useOrientationStore';
 import { useAuthStore } from '../../src/hooks/useAuthStore';
 import { MapContent } from '../../src/components/map/MapContent';
-import { MapSheetManager } from '../../src/components/map/MapSheetManager';
-import { GuidesSection } from '../../src/components/map/GuidesSection';
-import { POICarousel } from '../../src/components/map/POICarousel';
+import { MapHUD } from '../../src/components/map/MapHUD';
 import { useSavedLocations } from '../../src/hooks/queries/useSavedLocations';
 import { getCategoryMetadata } from '../../src/utils/poiUtils';
 import { SavedLocationsManager } from '../../src/components/map/SavedLocationsManager';
 
 // Configure MapLibre
 MapLibreGL.setAccessToken(null);
-MapLibreGL.Logger.setLogCallback((log) => {
-  const msg = typeof log.message === 'string' ? log.message : '';
-  if (
-    msg.includes('Failed to obtain last location update') ||
-    msg.includes('Last location unavailable')
-  )
-    return true;
-  return false;
-});
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -103,7 +90,6 @@ function MapIndex() {
     return { ...rawPoisData, features: filteredFeatures };
   }, [rawPoisData, activeTicket]);
 
-  // Filtered POIs for Carousel
   const carouselPois = useMemo(() => {
     if (!poisData?.features || !activeCategoryId) return [];
     return poisData.features
@@ -222,16 +208,7 @@ function MapIndex() {
       ) : (
         <View className="py-12 items-center">
           <MaterialCommunityIcons name="magnify" size={48} color="rgba(255,255,255,0.1)" />
-          <Text
-            style={{
-              color: 'rgba(255,255,255,0.3)',
-              fontSize: 14,
-              textAlign: 'center',
-              marginTop: 12,
-            }}
-          >
-            No se encontraron resultados
-          </Text>
+          <Text style={styles.emptyResultsText}>No se encontraron resultados</Text>
         </View>
       )}
     </View>
@@ -241,8 +218,6 @@ function MapIndex() {
     <View className="flex-1 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
       <View style={StyleSheet.absoluteFill}>
         <MapContent
-          userCoords={userCoords}
-          locationStatus={locationStatus}
           poisGeoJSON={poisData}
           savedLocations={savedData}
           onDeselect={handleMapPress}
@@ -256,11 +231,6 @@ function MapIndex() {
           pois={poisData?.features || []}
           isLandscape={isLandscape}
         />
-        {isLoading && (
-          <View className="absolute inset-0 items-center justify-center bg-black/20">
-            <ActivityIndicator color={colors.primary} size="large" />
-          </View>
-        )}
       </View>
 
       <Animated.View
@@ -297,58 +267,32 @@ function MapIndex() {
       </Animated.View>
 
       {!isARVisible && (
-        <MapSheetManager
+        <MapHUD
           activeCategoryId={activeCategoryId}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
           isSearching={isSearching}
-          searchBar={
-            <SearchBar
-              placeholder="Busca sitios..."
-              value={searchQuery}
-              onSearch={setSearchQuery}
-              onArPress={() => router.push('/(main)/profile')}
-              onFocus={() => {
-                setIsSearching(true);
-              }}
-            />
-          }
-          onFocusSearch={() => setIsSearching(true)}
-          searchResults={renderSearchResults()}
-          poiCarousel={
-            <POICarousel 
-              pois={carouselPois} 
-              onSelectPoi={(poi) => selectPoi(poi)} 
-            />
-          }
-          discoveryContent={
-            <View>
-              <POICarousel 
-                title="Cerca de ti"
-                pois={rawPoisData?.features?.map((f: any) => ({ ...f.properties, geometry: f.geometry })) || []}
-                onSelectPoi={(poi) => selectPoi(poi)}
-              />
-              <GuidesSection
-                onSeeAll={() => setShowSavedManager(true)}
-                onSelectMarker={(coords, id) => {
-                  selectPoi({ id: `saved_${id}`, geometry: { coordinates: coords } } as any);
-                }}
-              />
-            </View>
-          }
-          onSelectCategory={(category: string) => {
+          setIsSearching={setIsSearching}
+          onSelectCategory={(category) => {
             if (activeCategoryId === category) {
               setActiveCategoryId(null);
               return;
             }
             setActiveCategoryId(category);
-            if (poisData?.features) {
-              const foundPoi = poisData.features.find((f: any) => f.properties.category === category);
-              if (foundPoi)
-                selectPoi({ ...foundPoi.properties, geometry: foundPoi.geometry } as any);
+            const foundCategory = categories?.find((c) => c.id === category)?.category;
+            if (foundCategory && poisData?.features) {
+              const foundPoi = poisData.features.find((f: any) => f.properties.category === foundCategory);
+              if (foundPoi) selectPoi({ ...foundPoi.properties, geometry: foundPoi.geometry } as any);
             }
           }}
+          searchResults={renderSearchResults()}
+          carouselPois={carouselPois}
+          onSelectPoi={selectPoi}
+          isLoading={isLoading}
+          rawPoisData={rawPoisData}
+          setShowSavedManager={setShowSavedManager}
         />
       )}
-
 
       <SavedLocationsManager
         isVisible={showSavedManager}
@@ -385,6 +329,12 @@ const styles = StyleSheet.create({
   },
   searchResultName: { color: 'white', fontSize: 16, fontFamily: 'Inter-Bold', letterSpacing: -0.2 },
   searchResultCat: { color: 'rgba(255, 255, 255, 0.4)', fontSize: 13, marginTop: 2 },
+  emptyResultsText: {
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
+  },
 });
 
 export default MapIndex;

@@ -96,4 +96,28 @@ export const mapLayerStyles = {
     textAllowOverlap: false,
     textOptional: true,
   } as SymbolLayerStyle,
+
+  // Clustering Styles
+  clusterCircles: {
+    circleColor: '#E10600',
+    circleRadius: [
+      'step',
+      ['get', 'point_count'],
+      20, // Default size for small clusters
+      10, 25, // If 10+ points, radius 25
+      50, 30, // If 50+ points, radius 30
+    ],
+    circleStrokeWidth: 3,
+    circleStrokeColor: 'rgba(255, 255, 255, 0.4)',
+    circleOpacity: 0.9,
+  } as CircleLayerStyle,
+
+  clusterLabels: {
+    textField: ['get', 'point_count_abbreviated'],
+    textSize: 12,
+    textColor: 'white',
+    textIgnorePlacement: true,
+    textAllowOverlap: true,
+    fontFamily: 'Inter-Bold',
+  } as SymbolLayerStyle,
 };
