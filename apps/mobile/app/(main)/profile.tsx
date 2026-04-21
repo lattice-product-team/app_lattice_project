@@ -2,7 +2,7 @@ import * as React from 'react';
 import { View, Text, Pressable, Alert, Modal, ActivityIndicator, InteractionManager } from 'react-native';
 import * as SafeAreaContext from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAuthStore } from '../../src/hooks/useAuthStore';
+import { useAuthStore } from '../../src/store/useAuthStore';
 import { authService } from '../../src/services/authService';
 import { colors } from '../../src/styles/colors';
 import { useRouter } from 'expo-router';

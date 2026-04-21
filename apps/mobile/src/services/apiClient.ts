@@ -1,4 +1,5 @@
 import { DEFAULT_API_URL } from '../constants/api';
+import { getToken } from './storage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
 
@@ -34,14 +35,28 @@ export async function handleResponse<T>(response: Response): Promise<T> {
       data
     });
     
+    // 1.3 Update handleResponse to include basic 401 handling
+    if (response.status === 401) {
+      // Logic for 401 can be handled here or via a callback/event
+      console.warn('[API] 401 Unauthorized detected');
+    }
+    
     throw new Error(message);
   }
 
   return data as T;
 }
 
+const getHeaders = () => {
+  const token = getToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+  };
+};
+
 export const apiClient = {
-  get: async <T>(endpoint: string, params?: Record<string, string>, token?: string): Promise<T> => {
+  get: async <T>(endpoint: string, params?: Record<string, string>): Promise<T> => {
     let urlString = `${API_BASE_URL}${endpoint}`;
     if (params) {
       const searchParams = new URLSearchParams(params);
@@ -50,48 +65,36 @@ export const apiClient = {
 
     const response = await fetch(urlString, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
+      headers: getHeaders(),
     });
 
     return handleResponse<T>(response);
   },
 
-  post: async <T>(endpoint: string, body: any, token?: string): Promise<T> => {
+  post: async <T>(endpoint: string, body: any): Promise<T> => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
+      headers: getHeaders(),
       body: JSON.stringify(body),
     });
 
     return handleResponse<T>(response);
   },
 
-  patch: async <T>(endpoint: string, body: any, token?: string): Promise<T> => {
+  patch: async <T>(endpoint: string, body: any): Promise<T> => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
+      headers: getHeaders(),
       body: JSON.stringify(body),
     });
 
     return handleResponse<T>(response);
   },
 
-  delete: async <T>(endpoint: string, token?: string): Promise<T> => {
+  delete: async <T>(endpoint: string): Promise<T> => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
+      headers: getHeaders(),
     });
 
     return handleResponse<T>(response);

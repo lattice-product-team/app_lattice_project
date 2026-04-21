@@ -22,16 +22,15 @@ export const geoService = {
     return apiClient.get<any>(API_ENDPOINTS.GEO.NETWORK);
   },
 
-  getSavedLocations: async (token?: string): Promise<any> => {
-    return apiClient.get<any>('/saved', undefined, token);
+  getSavedLocations: async (): Promise<any> => {
+    return apiClient.get<any>('/saved');
   },
 
-  saveLocation: async (data: { label: string, latitude: number, longitude: number }, token?: string): Promise<any> => {
-    return apiClient.post<any>('/saved', data, token);
+  saveLocation: async (data: { label: string, latitude: number, longitude: number }): Promise<any> => {
+    return apiClient.post<any>('/saved', data);
   },
 
-  deleteSavedLocation: async (id: number, token?: string): Promise<any> => {
-    // We'll use a DELETE method which I'll add to apiClient
-    return apiClient.delete<any>(`/saved/${id}`, token);
+  deleteSavedLocation: async (id: number): Promise<any> => {
+    return apiClient.delete<any>(`/saved/${id}`);
   },
 };

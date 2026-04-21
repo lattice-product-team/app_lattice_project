@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from './useAuthStore';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const useTicketScanner = () => {
   const [scanned, setScanned] = useState(false);

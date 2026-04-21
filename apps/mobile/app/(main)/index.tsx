@@ -22,7 +22,7 @@ import * as Haptics from 'expo-haptics';
 import { useMapStore } from '../../src/store/useMapStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useOrientationStore } from '../../src/store/useOrientationStore';
-import { useAuthStore } from '../../src/hooks/useAuthStore';
+import { useAuthStore } from '../../src/store/useAuthStore';
 import { MapContent } from '../../src/components/map/MapContent';
 import { MapHUD } from '../../src/components/map/MapHUD';
 import { useSavedLocations } from '../../src/hooks/queries/useSavedLocations';

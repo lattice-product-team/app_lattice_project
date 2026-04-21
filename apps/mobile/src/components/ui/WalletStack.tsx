@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ticket } from '../../types/models/auth';
 import { TicketCard } from './TicketCard';
-import { useAuthStore } from '../../hooks/useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const { height } = Dimensions.get('window');
 const STACK_OFFSET = 60;

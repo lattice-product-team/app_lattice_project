@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { geoService } from '../../services/geoService';
-import { useAuthStore } from '../useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const useSavedLocations = () => {
   const { token } = useAuthStore();
