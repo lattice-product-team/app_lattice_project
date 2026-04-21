@@ -20,7 +20,7 @@ import * as Haptics from 'expo-haptics';
  * Handles user preferences, wallet, and account settings.
  */
 function ProfileScreen() {
-  const { user, token, tickets, logout, setAuth } = useAuthStore();
+  const { user, tickets, logout, updateUser } = useAuthStore();
   const router = useRouter();
   
   // Local state for toggles and wizard
@@ -53,12 +53,12 @@ function ProfileScreen() {
   };
 
   const savePreferences = async (prefs: { avoidStairs?: boolean, avoidGrandstands?: boolean, avoidSlopes?: boolean }) => {
-    if (!token || !user) return;
+    if (!user) return;
     
     setIsSaving(true);
     try {
-      const updatedUser = await authService.updateMe(prefs, token);
-      setAuth(token, updatedUser);
+      const updatedUser = await authService.updateMe(prefs);
+      updateUser(updatedUser);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       Alert.alert('Error', 'No se han podido guardar las preferencias.');

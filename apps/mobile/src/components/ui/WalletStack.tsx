@@ -14,6 +14,7 @@ import Animated, {
 import { Ticket } from '../../types/models/auth';
 import { TicketCard } from './TicketCard';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useUnclaimTicket } from '../../hooks/queries/useAuthActions';
 
 const { height } = Dimensions.get('window');
 const STACK_OFFSET = 60;
@@ -95,7 +96,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(null);
   const expandProgress = useSharedValue(0);
-  const unclaimTicket = useAuthStore(state => state.unclaimTicket);
+  const { mutateAsync: unclaimTicket } = useUnclaimTicket();
   const isAnySelected = selectedTicketId !== null;
 
   const toggleExpand = () => {
