@@ -92,6 +92,7 @@ export const mapLayerStyles = {
     textOffset: [0, 2.5],
     textHaloColor: 'rgba(0,0,0,0.8)',
     textHaloWidth: 2,
+    textFont: ['Inter Bold'], // Cambiado a formato estándar de servidor de glifos
     textIgnorePlacement: false,
     textAllowOverlap: false,
     textOptional: true,
@@ -118,6 +119,6 @@ export const mapLayerStyles = {
     textColor: 'white',
     textIgnorePlacement: true,
     textAllowOverlap: true,
-    fontFamily: 'Inter-Bold',
+    textFont: ['Inter Bold'], // Cambiado a formato estándar de servidor de glifos
   } as SymbolLayerStyle,
 };

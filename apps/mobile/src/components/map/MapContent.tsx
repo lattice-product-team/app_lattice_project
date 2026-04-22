@@ -136,7 +136,7 @@ export const MapContent = React.memo(function MapContent({
     <View className="flex-1">
       <MapLibreGL.MapView
         style={styles.map}
-        mapStyle="https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+        mapStyle="https://tiles.openfreemap.org/styles/dark"
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
