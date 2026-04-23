@@ -20,7 +20,7 @@ interface MapBottomSheetProps {
 }
 
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => (
-  <SafeBlurView intensity={90} tint="light" style={[style, styles.blurBackground]}>
+  <SafeBlurView intensity={85} tint="dark" style={[style, styles.blurBackground]}>
     <View style={styles.premiumBorder} />
   </SafeBlurView>
 );
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
   },
   blurBackground: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderWidth: 1,
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   handleIndicator: {
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     width: 36,
     height: 5,
     borderRadius: 2.5,

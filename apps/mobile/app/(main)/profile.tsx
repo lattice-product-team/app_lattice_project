@@ -81,15 +81,12 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ThemeGradient 
-        variant="premium" 
-        showBlob={true}
-      />
+      <ThemeGradient variant="midnight" />
       
       <AuthLayout 
         showBack 
         onBack={() => router.replace('/(main)')}
-        transparent
+        midnight
       >
         <Animated.View 
           entering={FadeInDown.duration(600)}
@@ -100,9 +97,9 @@ export default function ProfileScreen() {
           <View className="items-start mb-16 pt-4">
             <Animated.View 
               entering={FadeInDown.delay(100).duration(600)}
-              className="w-20 h-20 rounded-[28px] bg-white items-center justify-center mb-10 shadow-2xl"
+              className="w-20 h-20 rounded-[28px] bg-white/10 border border-white/10 items-center justify-center mb-10"
             >
-              <Feather name="user" size={40} color="#000" />
+              <Feather name="user" size={40} color="white" />
             </Animated.View>
             
             <Animated.Text 
@@ -115,7 +112,7 @@ export default function ProfileScreen() {
             
             <Animated.Text 
               entering={FadeInDown.delay(300).duration(600)}
-              className="text-white/50 pr-8"
+              className="text-white/70 pr-8"
               style={authStyles.subtitle}
             >
               {user ? user.email || `@${user.fullName.replace(/\s+/g, '').toLowerCase()}` : 'Compte de convidat'}
@@ -129,7 +126,7 @@ export default function ProfileScreen() {
             <PremiumButton 
               onPress={() => Alert.alert('Info', 'Próximamente disponible!')}
               label="EDITAR PERFIL"
-              variant="white"
+              variant="primary"
             />
             
             <PremiumButton 
@@ -153,7 +150,7 @@ export default function ProfileScreen() {
           >
             <View className="bg-white/5 border border-white/10 rounded-[32px] overflow-hidden">
               <View className="px-6 py-5 bg-white/5 border-b border-white/5">
-                <Text className="text-white/30 text-xs font-bold uppercase tracking-[2px]">Configuración</Text>
+                <Text className="text-white/60 text-xs font-bold uppercase tracking-[2px]">Configuración</Text>
               </View>
 
               <SettingItem 

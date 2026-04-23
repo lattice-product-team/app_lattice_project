@@ -80,7 +80,7 @@ export const PremiumButton = ({
       case 'outline':
         return { color: colors.black, fontFamily: typography.secondary.medium } as const;
       case 'glass':
-        return { color: colors.black, fontFamily: typography.secondary.medium } as const;
+        return { color: 'white', fontFamily: typography.secondary.medium } as const;
       case 'white':
         return { color: colors.black, fontFamily: typography.primary.bold } as const;
       default:

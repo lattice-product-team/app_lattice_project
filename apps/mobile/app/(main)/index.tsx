@@ -292,6 +292,7 @@ export default function MapIndexPage() {
           isLoading={isLoading}
           rawPoisData={rawPoisData}
           setShowSavedManager={setShowSavedManager}
+          onProfilePress={() => router.push('/(main)/profile')}
         />
       )}
 

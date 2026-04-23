@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { typography } from '../styles/typography';
+import { colors } from '../styles/colors';
 import * as Haptics from 'expo-haptics';
 
 interface SearchBarProps {
@@ -10,6 +11,7 @@ interface SearchBarProps {
   onSearch?: (text: string) => void;
   onArPress?: () => void;
   onFocus?: () => void;
+  variant?: 'light' | 'dark';
 }
 
 export const SearchBar = React.memo(function SearchBar({
@@ -18,19 +20,25 @@ export const SearchBar = React.memo(function SearchBar({
   onSearch,
   onArPress,
   onFocus,
+  variant = 'light',
 }: SearchBarProps) {
+  const isDark = variant === 'dark';
+
   return (
     <View className="flex-row items-center px-4">
       {/* Search Input Container */}
       <View
         className="flex-1 flex-row items-center px-4 h-12 rounded-2xl"
-        style={styles.searchContainer}
+        style={[
+          styles.searchContainer,
+          isDark ? styles.searchContainerDark : styles.searchContainerLight
+        ]}
       >
-        <Feather name="search" size={20} color="rgba(255, 255, 255, 0.5)" />
+        <Feather name="search" size={18} color={colors.primary} />
         <TextInput
           className="flex-1 ml-3 text-white pt-0 pb-0"
           placeholder={placeholder}
-          placeholderTextColor="rgba(255, 255, 255, 0.3)"
+          placeholderTextColor={variant === 'dark' ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
           value={value}
           onChangeText={onSearch}
           onFocus={onFocus}
@@ -54,7 +62,7 @@ export const SearchBar = React.memo(function SearchBar({
           </Pressable>
         ) : (
           <View className="pl-2">
-            <Feather name="mic" size={18} color="rgba(255, 255, 255, 0.3)" />
+            <Feather name="mic" size={18} color={variant === 'dark' ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"} />
           </View>
         )}
       </View>
@@ -93,8 +101,14 @@ SearchBar.displayName = 'SearchBar';
 
 const styles = StyleSheet.create({
   searchContainer: { 
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1,
   },
+  searchContainerLight: {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  searchContainerDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  }
 });

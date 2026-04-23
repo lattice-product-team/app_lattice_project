@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../styles/colors';
 
 interface ThemeGradientProps {
-  variant?: 'auth' | 'premium' | 'surface';
+  variant?: 'auth' | 'premium' | 'surface' | 'midnight';
   showBlob?: boolean;
   blobColor?: string;
   style?: StyleProp<ViewStyle>;

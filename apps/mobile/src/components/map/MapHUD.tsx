@@ -19,6 +19,7 @@ interface MapHUDProps {
   isLoading?: boolean;
   rawPoisData?: any;
   setShowSavedManager: (show: boolean) => void;
+  onProfilePress?: () => void;
 }
 
 export const MapHUD = React.memo(function MapHUD({
@@ -34,6 +35,7 @@ export const MapHUD = React.memo(function MapHUD({
   isLoading,
   rawPoisData,
   setShowSavedManager,
+  onProfilePress,
 }: MapHUDProps) {
   return (
     <>
@@ -45,8 +47,9 @@ export const MapHUD = React.memo(function MapHUD({
             placeholder="Busca sitios..."
             value={searchQuery}
             onSearch={setSearchQuery}
-            onArPress={() => {/* Profile logic will be injected or handled via router */}}
+            onArPress={onProfilePress}
             onFocus={() => setIsSearching(true)}
+            variant="dark"
           />
         }
         onFocusSearch={() => setIsSearching(true)}

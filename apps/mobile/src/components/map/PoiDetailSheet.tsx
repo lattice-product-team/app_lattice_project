@@ -28,7 +28,7 @@ interface PoiDetailSheetProps {
 
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
   return (
-    <SafeBlurView intensity={90} tint="light" style={[style, styles.blurBackground]}>
+    <SafeBlurView intensity={85} tint="dark" style={[style, styles.blurBackground]}>
       <View style={styles.premiumBorder} />
     </SafeBlurView>
   );
@@ -84,7 +84,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
               style={styles.headerIconCircle}
             >
-              <Feather name="share" size={20} color={colors.black} />
+              <Feather name="share" size={20} color="white" />
             </Pressable>
 
             <View style={styles.titleContainer}>
@@ -101,7 +101,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               }}
               style={styles.headerIconCircle}
             >
-              <Feather name="x" size={20} color={colors.black} />
+              <Feather name="x" size={20} color="white" />
             </Pressable>
           </View>
 
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
   },
   blurBackground: {
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderWidth: 1,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   handleIndicator: {
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     width: 40,
     height: 5,
     borderRadius: 2.5,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   poiTitle: {
-    color: colors.black,
+    color: 'white',
     fontSize: 20,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.5,
@@ -255,9 +255,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 95,
     borderRadius: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   actionCardLabel: {
-    color: colors.muted,
+    color: 'rgba(255, 255, 255, 0.5)',
     fontSize: 10,
     fontFamily: typography.secondary.bold,
   },
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.secondary.bold,
   },
   actionCardValue: {
-    color: colors.black,
+    color: 'white',
     fontSize: 15,
     fontFamily: typography.primary.bold,
     marginTop: 1,
