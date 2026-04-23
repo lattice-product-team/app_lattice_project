@@ -137,7 +137,7 @@ export default function ProfileScreen() {
                 if (tickets && tickets.length > 0) {
                   setShowWallet(true);
                 } else {
-                  router.push('/scan' as any);
+                  router.push('/(main)/scan' as any);
                 }
               }}
               label={tickets && tickets.length > 0 ? "MIS ENTRADAS" : "VINCULAR ENTRADA"}
@@ -199,7 +199,7 @@ export default function ProfileScreen() {
               <Pressable 
                 onPress={() => {
                   setShowWallet(false);
-                  router.push('/scan' as any);
+                  router.push('/(main)/scan' as any);
                 }}
                 className="w-10 h-10 bg-primary rounded-full items-center justify-center"
               >

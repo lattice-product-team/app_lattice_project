@@ -59,7 +59,7 @@ const WelcomeStep = ({ title, subtitle, primaryAction, secondaryAction }: StepPr
       <PremiumButton
         onPress={primaryAction.onPress}
         label={primaryAction.label}
-        variant="white"
+        variant="primary"
       />
 
       {secondaryAction ? (
@@ -191,10 +191,6 @@ export default function WelcomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ThemeGradient 
-        variant="premium" 
-        showBlob={true}
-      />
       
       <AuthLayout 
         step={step} 
@@ -204,7 +200,7 @@ export default function WelcomeScreen() {
           if (step === 3) useAuthStore.getState().clearRegistrationData();
           setStep((prev) => (prev - 1) as 1 | 2 | 3);
         }}
-        transparent
+        midnight
       >
         <Animated.View layout={Layout.springify()} className="flex-1">
           {currentStepContent}

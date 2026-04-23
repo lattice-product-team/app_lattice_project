@@ -20,6 +20,7 @@ interface AuthLayoutProps {
   showBack?: boolean;
   isScrollable?: boolean;
   transparent?: boolean;
+  midnight?: boolean;
 }
 
 /**
@@ -33,7 +34,8 @@ export const AuthLayout = ({
   onBack, 
   showBack = false,
   isScrollable = true,
-  transparent = false
+  transparent = false,
+  midnight = false
 }: AuthLayoutProps) => {
   const navigationRow = (
     <View className="z-50 mb-2">
@@ -71,7 +73,7 @@ export const AuthLayout = ({
     <View className="flex-1">
       <StatusBar style="light" />
       
-      {!transparent && <ThemeGradient variant="auth" />}
+      {!transparent && <ThemeGradient variant={midnight ? "midnight" : "auth"} />}
       
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView 

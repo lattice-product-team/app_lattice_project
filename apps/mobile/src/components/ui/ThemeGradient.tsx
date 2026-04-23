@@ -31,8 +31,14 @@ export const ThemeGradient = ({
     switch (variant) {
       case 'premium':
         return {
-          colors: ['#FFFFFF', '#FDF1C2'] as const, // White to Pale Gold
+          colors: ['#FFFFFF', '#FDF1C2'] as const,
           locations: [0, 0.9] as [number, number],
+          defaultBlob: colors.primary,
+        };
+      case 'midnight':
+        return {
+          colors: ['#0F172A', '#000000'] as const, // Slate 900 to Pure Black
+          locations: [0, 1] as [number, number],
           defaultBlob: colors.primary,
         };
       case 'surface':

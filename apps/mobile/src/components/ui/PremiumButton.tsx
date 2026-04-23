@@ -74,7 +74,7 @@ export const PremiumButton = ({
   const getTextStyle = () => {
     switch (variant) {
       case 'primary':
-        return { color: colors.solar[900], fontFamily: typography.primary.bold } as const;
+        return { color: colors.black, fontFamily: typography.primary.bold } as const;
       case 'secondary':
         return { color: colors.black, fontFamily: typography.secondary.medium } as const;
       case 'outline':
