@@ -45,7 +45,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
           <View style={styles.glassHeader}>
             <View>
               <Text style={styles.brandTitle}>LATTICE</Text>
-              <Text style={styles.brandSub}>CIRCUIT ELITE</Text>
+              <Text style={styles.brandSub}>LATTICE ELITE</Text>
             </View>
             <View style={styles.chipContainer}>
               <MaterialCommunityIcons name="integrated-circuit-chip" size={24} color="rgba(255,255,255,0.7)" />

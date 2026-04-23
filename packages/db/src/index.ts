@@ -42,7 +42,7 @@ export const pool = new Pool(
     : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
-        database: process.env.DB_NAME || 'circuit_db',
+        database: process.env.DB_NAME || 'lattice_db',
         password: process.env.DB_PASSWORD || 'password',
         port: Number(process.env.DB_PORT) || 5432,
         max: 10,
