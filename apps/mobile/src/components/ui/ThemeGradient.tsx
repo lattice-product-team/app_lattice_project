@@ -31,21 +31,21 @@ export const ThemeGradient = ({
     switch (variant) {
       case 'premium':
         return {
-          colors: ['#4A2C3A', colors.background] as const, // Deep Wine to Black
-          locations: [0, 0.6] as [number, number],
+          colors: ['#FFFFFF', '#FDF1C2'] as const, // White to Pale Gold
+          locations: [0, 0.9] as [number, number],
           defaultBlob: colors.primary,
         };
       case 'surface':
         return {
-          colors: ['#2D2B2C', '#1C1B1C'] as const,
+          colors: ['#FFFFFF', '#F9F9FB'] as const,
           locations: [0, 1] as [number, number],
-          defaultBlob: '#FFFFFF',
+          defaultBlob: '#E5E5E7',
         };
       case 'auth':
       default:
         return {
-          colors: ['#2D2B2C', '#121212'] as const,
-          locations: [0, 0.7] as [number, number],
+          colors: ['#FFFFFF', '#F0F0F5'] as const,
+          locations: [0, 0.8] as [number, number],
           defaultBlob: colors.primary,
         };
     }
@@ -70,8 +70,8 @@ export const ThemeGradient = ({
             {
               shadowColor: finalBlobColor,
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.5,
-              shadowRadius: 180, // Giant radius for maximum softness
+              shadowOpacity: 0.4,
+              shadowRadius: 220,
               backgroundColor: finalBlobColor,
             }
           ]} 

@@ -5,10 +5,10 @@ export const theme = {
     ...colors,
   },
   glass: {
-    low: 'rgba(255, 255, 255, 0.05)',
-    medium: 'rgba(255, 255, 255, 0.1)',
-    high: 'rgba(255, 255, 255, 0.2)',
-    dark: 'rgba(0, 0, 0, 0.5)',
+    light: 'rgba(255, 255, 255, 0.7)',
+    medium: 'rgba(255, 255, 255, 0.85)',
+    high: 'rgba(255, 255, 255, 0.95)',
+    dark: 'rgba(0, 0, 0, 0.4)',
   },
   spacing: {
     xs: 4,
@@ -16,13 +16,31 @@ export const theme = {
     md: 16,
     lg: 24,
     xl: 32,
+    xxl: 48,
   },
   borderRadius: {
-    sm: 4,
-    md: 8,
-    lg: 12,
-    xl: 20,
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 20,
+    xl: 24, // Apple-style card radius
     full: 9999,
+  },
+  shadows: {
+    soft: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 5,
+    },
+    medium: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+      elevation: 8,
+    }
   }
 };
 

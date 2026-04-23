@@ -136,7 +136,7 @@ export const MapContent = React.memo(function MapContent({
     <View className="flex-1">
       <MapLibreGL.MapView
         style={styles.map}
-        mapStyle="https://tiles.openfreemap.org/styles/dark"
+        mapStyle="https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
@@ -173,6 +173,12 @@ export const MapContent = React.memo(function MapContent({
             id="poiCircles"
             style={mapLayerStyles.poiCircles}
             minZoomLevel={12.8}
+            filter={['!', ['has', 'point_count']]}
+          />
+          <MapLibreGL.SymbolLayer
+            id="poiIcons"
+            style={mapLayerStyles.poiIcons}
+            minZoomLevel={14}
             filter={['!', ['has', 'point_count']]}
           />
           <MapLibreGL.SymbolLayer

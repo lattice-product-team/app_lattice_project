@@ -10,6 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { colors } from '../../src/styles/colors';
+import { typography } from '../../src/styles/typography';
 import { usePOIs } from '../../src/hooks/queries/usePOIs';
 import { useSinglePOI } from '../../src/hooks/queries/useSinglePOI';
 import { useCategories } from '../../src/hooks/queries/useCategories';
@@ -215,7 +216,7 @@ function MapIndex() {
   );
 
   return (
-    <View className="flex-1 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
+    <View className="flex-1 overflow-hidden" style={{ backgroundColor: colors.background }}>
       <View style={StyleSheet.absoluteFill}>
         <MapContent
           poisGeoJSON={poisData}
@@ -327,8 +328,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 16,
   },
-  searchResultName: { color: 'white', fontSize: 16, fontFamily: 'Inter-Bold', letterSpacing: -0.2 },
-  searchResultCat: { color: 'rgba(255, 255, 255, 0.4)', fontSize: 13, marginTop: 2 },
+  searchResultName: { color: colors.black, fontSize: 16, fontFamily: typography.primary.bold, letterSpacing: -0.2 },
+  searchResultNameSelected: { color: colors.white },
+  searchResultCat: { color: colors.muted, fontSize: 13, marginTop: 2 },
   emptyResultsText: {
     color: 'rgba(255,255,255,0.3)',
     fontSize: 14,
@@ -337,4 +339,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MapIndex;
+export default function MapIndexPage() {
+  return <MapIndex />;
+}

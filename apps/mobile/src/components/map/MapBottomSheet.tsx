@@ -1,5 +1,5 @@
 import React, { useMemo, forwardRef } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Platform } from 'react-native';
 import BottomSheet, { BottomSheetScrollView, BottomSheetBackgroundProps } from '@gorhom/bottom-sheet';
 import { SafeBlurView } from '../ui/SafeBlurView';
 import { SharedValue } from 'react-native-reanimated';
@@ -20,7 +20,7 @@ interface MapBottomSheetProps {
 }
 
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => (
-  <SafeBlurView intensity={100} tint="dark" style={[style, styles.blurBackground]}>
+  <SafeBlurView intensity={90} tint="light" style={[style, styles.blurBackground]}>
     <View style={styles.premiumBorder} />
   </SafeBlurView>
 );
@@ -38,20 +38,21 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
   const insets = useSafeAreaInsets();
 
   const snapPoints = useMemo(() => [
-    insets.bottom + 100,  // Collapsed: Search bar only
+    insets.bottom + 110,  // Collapsed: Search bar only
     SCREEN_HEIGHT * 0.48  // Medium: Main exploration view
   ], [insets.bottom]);
 
   return (
     <BottomSheet
       ref={ref}
-      index={1} // Start at medium height
+      index={1}
       snapPoints={snapPoints}
       backgroundComponent={CustomBackground}
       handleIndicatorStyle={styles.handleIndicator}
       animatedPosition={translateY}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
+      style={styles.sheetContainer} // Added for floating effect
     >
       <BottomSheetScrollView 
         contentContainerStyle={styles.scrollContent}
@@ -77,9 +78,9 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
           {isSearching ? (
             searchResults
           ) : activeCategoryId ? (
-            poiCarousel // Carousel for specific category
+            poiCarousel 
           ) : (
-            discoveryContent // Default: Near Me carousel
+            discoveryContent 
           )}
         </View>
 
@@ -92,19 +93,24 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
 MapBottomSheet.displayName = 'MapBottomSheet';
 
 const styles = StyleSheet.create({
+  sheetContainer: {
+    // Adding horizontal padding to create a floating effect on larger screens
+    // and ensuring the shadow is visible.
+    marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
+  },
   blurBackground: {
-    backgroundColor: 'rgba(10, 10, 12, 0.98)',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
   },
   handleIndicator: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
     width: 36,
-    height: 4,
-    borderRadius: 2,
+    height: 5,
+    borderRadius: 2.5,
     marginTop: 8,
   },
   scrollContent: {
@@ -122,8 +128,8 @@ const styles = StyleSheet.create({
   },
   premiumBorder: {
     ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     pointerEvents: 'none',
   },
 });

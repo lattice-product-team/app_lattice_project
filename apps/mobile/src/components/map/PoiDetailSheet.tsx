@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, Dimensions, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Pressable, ScrollView, Platform } from 'react-native';
 import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetBackgroundProps,
@@ -28,7 +28,7 @@ interface PoiDetailSheetProps {
 
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
   return (
-    <SafeBlurView intensity={100} tint="dark" style={[style, styles.blurBackground]}>
+    <SafeBlurView intensity={90} tint="light" style={[style, styles.blurBackground]}>
       <View style={styles.premiumBorder} />
     </SafeBlurView>
   );
@@ -55,9 +55,9 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
 
     const snapPoints = React.useMemo(
       () => [
-        insets.bottom + 320, // Collapsed
-        SCREEN_HEIGHT * 0.6, // Medium
-        SCREEN_HEIGHT - insets.top - 20, // Full
+        insets.bottom + 320, 
+        SCREEN_HEIGHT * 0.6, 
+        SCREEN_HEIGHT - insets.top - 20,
       ],
       [insets.bottom, insets.top]
     );
@@ -75,6 +75,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
         enablePanDownToClose
         onClose={onClose}
         overDragResistanceFactor={0}
+        style={styles.sheetContainer}
       >
         <View style={styles.container}>
           {/* Header */}
@@ -83,7 +84,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
               style={styles.headerIconCircle}
             >
-              <Feather name="share" size={20} color="white" />
+              <Feather name="share" size={20} color={colors.black} />
             </Pressable>
 
             <View style={styles.titleContainer}>
@@ -100,7 +101,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               }}
               style={styles.headerIconCircle}
             >
-              <Feather name="x" size={20} color="white" />
+              <Feather name="x" size={20} color={colors.black} />
             </Pressable>
           </View>
 
@@ -110,7 +111,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
           >
             {/* Action Buttons Row */}
             <View style={styles.actionRow}>
-              {/* Main Action: Ir Ahora */}
+              {/* Main Action: IR AHORA */}
               <Pressable
                 onPress={() => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -123,8 +124,8 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                   !routeMetadata && { opacity: 0.6 },
                 ]}
               >
-                <MaterialCommunityIcons name="walk" size={28} color="white" />
-                <Text style={styles.actionCardValue}>
+                <MaterialCommunityIcons name="walk" size={28} color={colors.solar[900]} />
+                <Text style={styles.actionCardValuePrimary}>
                   {routeMetadata ? formatDuration(routeMetadata.duration) : '...'}
                 </Text>
                 <Text style={styles.actionCardLabelPrimary}>IR AHORA</Text>
@@ -133,21 +134,21 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               {/* Info Action: Distancia */}
               <View style={styles.actionCard}>
                 <View style={styles.iconContainer}>
-                  <Feather name="map-pin" size={18} color="rgba(255,255,255,0.4)" />
+                  <Feather name="map-pin" size={18} color={colors.muted} />
                 </View>
                 <Text style={styles.actionCardLabel}>Distancia</Text>
                 <Text style={styles.actionCardValue}>
-                  {routeMetadata ? formatDistance(routeMetadata.distance) : 'Calculando...'}
+                  {routeMetadata ? formatDistance(routeMetadata.distance) : '...'}
                 </Text>
               </View>
 
               {/* Info Action: Horario */}
               <View style={styles.actionCard}>
                 <View style={styles.iconContainer}>
-                  <Feather name="clock" size={18} color="rgba(255,255,255,0.4)" />
+                  <Feather name="clock" size={18} color={colors.muted} />
                 </View>
                 <Text style={styles.actionCardLabel}>Horario</Text>
-                <Text style={[styles.actionCardValue, { color: '#32D74B' }]}>Abierto</Text>
+                <Text style={[styles.actionCardValue, { color: '#27AE60' }]}>Abierto</Text>
               </View>
             </View>
 
@@ -185,16 +186,19 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
 PoiDetailSheet.displayName = 'PoiDetailSheet';
 
 const styles = StyleSheet.create({
+  sheetContainer: {
+    marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
+  },
   blurBackground: {
-    backgroundColor: 'rgba(10, 10, 12, 0.98)',
-    borderTopLeftRadius: 32, // Matching MapBottomSheet
-    borderTopRightRadius: 32,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
   },
   handleIndicator: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
     width: 40,
     height: 5,
     borderRadius: 2.5,
@@ -214,7 +218,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -224,14 +228,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   poiTitle: {
-    color: 'white',
+    color: colors.black,
     fontSize: 20,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.5,
     textAlign: 'center',
   },
   poiSubtitle: {
-    color: 'rgba(255, 255, 255, 0.4)',
+    color: colors.muted,
     fontSize: 13,
     fontFamily: typography.secondary.medium,
     marginTop: 1,
@@ -251,24 +255,38 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 95,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,
   },
   actionCardPrimary: {
     backgroundColor: colors.primary,
+    borderColor: 'transparent',
   },
   iconContainer: {
     marginBottom: 4,
   },
   actionCardLabel: {
-    color: 'rgba(255, 255, 255, 0.4)',
+    color: colors.muted,
+    fontSize: 10,
+    fontFamily: typography.secondary.bold,
+  },
+  actionCardLabelPrimary: {
+    color: colors.solar[900],
     fontSize: 10,
     fontFamily: typography.secondary.bold,
   },
   actionCardValue: {
-    color: 'white',
+    color: colors.black,
+    fontSize: 15,
+    fontFamily: typography.primary.bold,
+    marginTop: 1,
+  },
+  actionCardValuePrimary: {
+    color: colors.solar[900],
     fontSize: 15,
     fontFamily: typography.primary.bold,
     marginTop: 1,
@@ -281,10 +299,10 @@ const styles = StyleSheet.create({
     width: 260,
     height: 160,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(0, 0, 0, 0.03)',
   },
   description: {
-    color: 'rgba(255, 255, 255, 0.4)',
+    color: colors.muted,
     fontSize: 14,
     lineHeight: 22,
     marginTop: 24,
@@ -292,8 +310,8 @@ const styles = StyleSheet.create({
   },
   premiumBorder: {
     ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     pointerEvents: 'none',
   },
 });

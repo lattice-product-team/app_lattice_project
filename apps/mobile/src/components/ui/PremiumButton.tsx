@@ -52,43 +52,44 @@ export const PremiumButton = ({
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return [colors.primary, '#7A646F'] as const;
+        return [colors.primary, colors.solar[600]] as const;
       case 'secondary':
-        return [colors.secondary, '#5C5A59'] as const;
+        return [colors.secondary, '#E5E5E7'] as const;
       case 'glass':
-        return ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)'] as const;
+        return ['rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.2)'] as const;
       case 'white':
-        return ['#FFFFFF', '#F6F6F6'] as const;
+        return ['#FFFFFF', '#F9F9FB'] as const;
       default:
         return null;
     }
   };
 
   const getSecondaryStyles = () => {
-    if (variant === 'outline') return 'border border-white/20 bg-transparent';
-    if (variant === 'glass') return 'border border-white/10';
-    if (variant === 'white') return 'shadow-lg';
+    if (variant === 'outline') return 'border border-black/10 bg-transparent';
+    if (variant === 'glass') return 'border border-black/5 shadow-sm';
+    if (variant === 'white') return 'shadow-md';
     return '';
   };
 
   const getTextStyle = () => {
     switch (variant) {
       case 'primary':
-        return { color: '#FFFFFF', fontFamily: typography.primary.bold } as const;
+        return { color: colors.solar[900], fontFamily: typography.primary.bold } as const;
       case 'secondary':
-        return { color: 'rgba(255, 255, 255, 0.9)', fontFamily: typography.secondary.medium } as const;
+        return { color: colors.black, fontFamily: typography.secondary.medium } as const;
       case 'outline':
-        return { color: '#FFFFFF', fontFamily: typography.secondary.medium } as const;
+        return { color: colors.black, fontFamily: typography.secondary.medium } as const;
       case 'glass':
-        return { color: 'rgba(255, 255, 255, 0.8)', fontFamily: typography.secondary.medium } as const;
+        return { color: colors.black, fontFamily: typography.secondary.medium } as const;
       case 'white':
-        return { color: '#000000', fontFamily: typography.primary.bold } as const;
+        return { color: colors.black, fontFamily: typography.primary.bold } as const;
       default:
-        return { color: '#FFFFFF', fontFamily: typography.primary.regular } as const;
+        return { color: colors.black, fontFamily: typography.primary.regular } as const;
     }
   };
 
   const gradientColors = getGradientColors();
+  const textColor = getTextStyle().color;
 
   return (
     <Pressable
@@ -110,14 +111,14 @@ export const PremiumButton = ({
         className={`flex-1 flex-row items-center justify-center px-6 ${getSecondaryStyles()}`}
       >
         {isLoading ? (
-          <ActivityIndicator color={variant === 'white' ? 'black' : 'white'} />
+          <ActivityIndicator color={textColor} />
         ) : (
           <>
             {icon && (
               <MaterialCommunityIcons 
                 name={icon as any} 
                 size={20} 
-                color={variant === 'white' ? 'black' : 'white'} 
+                color={textColor} 
                 style={{ marginRight: 8 }}
               />
             )}
