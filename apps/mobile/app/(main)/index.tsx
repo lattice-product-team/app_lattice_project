@@ -35,7 +35,7 @@ MapLibreGL.setAccessToken(null);
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function MapIndex() {
+export default function MapIndexPage() {
   const router = useRouter();
   const { status: locationStatus, requestPermission } = useLocationService();
   const userCoords = useLocationStore((s) => s.logicalCoords);
@@ -311,26 +311,53 @@ function MapIndex() {
 }
 
 const styles = StyleSheet.create({
-  overlay: { position: 'absolute', left: 0, right: 0, zIndex: 90 },
-  cardContainer: { marginTop: 8 },
+  overlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  cardContainer: {
+    backgroundColor: 'rgba(30, 30, 30, 0.95)',
+    borderRadius: 24,
+    marginHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
   searchResultItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 4,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  searchResultInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  searchResultInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   searchResultIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
   },
-  searchResultName: { color: colors.black, fontSize: 16, fontFamily: typography.primary.bold, letterSpacing: -0.2 },
-  searchResultNameSelected: { color: colors.white },
-  searchResultCat: { color: colors.muted, fontSize: 13, marginTop: 2 },
+  searchResultName: {
+    color: colors.black,
+    fontSize: 16,
+    fontFamily: typography.primary.bold,
+    letterSpacing: -0.2,
+  },
+  searchResultCat: {
+    color: colors.muted,
+    fontSize: 13,
+    marginTop: 2,
+  },
   emptyResultsText: {
     color: 'rgba(255,255,255,0.3)',
     fontSize: 14,
@@ -338,7 +365,3 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 });
-
-export default function MapIndexPage() {
-  return <MapIndex />;
-}

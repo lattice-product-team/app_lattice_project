@@ -27,7 +27,7 @@ export const SafeBlurView = ({
    * development build is missing the native ExpoBlurView module.
    * To enable real blur, run a new native build (e.g., npx expo run:ios).
    */
-  const useNativeBlur = false; // Forced to false for stability
+  const useNativeBlur = true; // Forced true for Development Client
 
   if (useNativeBlur && (Platform.OS === 'ios' || Platform.OS === 'android')) {
     try {

@@ -19,7 +19,7 @@ import * as Haptics from 'expo-haptics';
  * Main Profile Screen.
  * Handles user preferences, wallet, and account settings.
  */
-function ProfileScreen() {
+export default function ProfileScreen() {
   const { user, tickets, logout, updateUser } = useAuthStore();
   const router = useRouter();
   
@@ -338,5 +338,3 @@ function ProfileScreen() {
     </View>
   );
 }
-
-export default ProfileScreen;

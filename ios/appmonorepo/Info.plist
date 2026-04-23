@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.kore29.lattice-project</string>
+          <string>com.kore29.-appmonorepo</string>
         </array>
       </dict>
       <dict>
