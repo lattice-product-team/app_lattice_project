@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeBlurView } from '../ui/SafeBlurView';
 import * as Haptics from 'expo-haptics';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface ActionButtonProps {
   icon: string;
@@ -17,6 +18,7 @@ interface ActionButtonProps {
 }
 
 const ActionButton = ({ icon, label, onPress, color }: ActionButtonProps) => {
+  const theme = useLatticeTheme();
   const scale = useSharedValue(1);
   
   const animatedStyle = useAnimatedStyle(() => ({
@@ -36,7 +38,7 @@ const ActionButton = ({ icon, label, onPress, color }: ActionButtonProps) => {
       <Animated.View style={[styles.buttonWrapper, animatedStyle]}>
         <SafeBlurView 
           intensity={20} 
-          style={[styles.iconCircle, { borderColor: `${color}30` }]}
+          style={[styles.iconCircle, { borderColor: theme.colors.overlay.thin }]}
         >
           <View style={[styles.colorFill, { backgroundColor: color, opacity: 0.1 }]} />
           <Feather name={icon as any} size={24} color={color} />
@@ -52,25 +54,27 @@ interface SheetFooterActionsProps {
 }
 
 export const SheetFooterActions = ({ onFixPin }: SheetFooterActionsProps) => {
+  const theme = useLatticeTheme();
+  
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
+      <View style={[styles.row, { backgroundColor: theme.colors.overlay.thin, borderColor: theme.colors.overlay.thin }]}>
         <ActionButton 
           icon="share-2" 
           label="Enviar" 
-          color="#0A84FF"
+          color={theme.colors.status.info}
           onPress={() => console.log('Share location')} 
         />
         <ActionButton 
           icon="map-pin" 
           label="Fijar pin" 
-          color="#FF453A"
+          color={theme.colors.status.error}
           onPress={onFixPin} 
         />
         <ActionButton 
           icon="navigation" 
           label="Planear" 
-          color="#32D74B"
+          color={theme.colors.status.success}
           onPress={() => console.log('Plan route')} 
         />
       </View>
@@ -89,12 +93,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 32,
     paddingVertical: 20,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   actionItem: {
     flex: 1,
@@ -113,7 +115,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1.5,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
   colorFill: {
     ...StyleSheet.absoluteFillObject,

@@ -2,8 +2,8 @@ import React from 'react';
 import { View, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { typography } from '../styles/typography';
-import { colors } from '../styles/colors';
 import * as Haptics from 'expo-haptics';
+import { useLatticeTheme } from '../hooks/useLatticeTheme';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -11,7 +11,6 @@ interface SearchBarProps {
   onSearch?: (text: string) => void;
   onArPress?: () => void;
   onFocus?: () => void;
-  variant?: 'light' | 'dark';
 }
 
 export const SearchBar = React.memo(function SearchBar({
@@ -20,9 +19,8 @@ export const SearchBar = React.memo(function SearchBar({
   onSearch,
   onArPress,
   onFocus,
-  variant = 'light',
 }: SearchBarProps) {
-  const isDark = variant === 'dark';
+  const theme = useLatticeTheme();
 
   return (
     <View className="flex-row items-center px-4">
@@ -31,14 +29,17 @@ export const SearchBar = React.memo(function SearchBar({
         className="flex-1 flex-row items-center px-4 h-12 rounded-2xl"
         style={[
           styles.searchContainer,
-          isDark ? styles.searchContainerDark : styles.searchContainerLight
+          { 
+            backgroundColor: theme.colors.glass.subtle,
+            borderColor: theme.colors.glass.subtleBorder
+          }
         ]}
       >
-        <Feather name="search" size={18} color={colors.primary} />
+        <Feather name="search" size={18} color={theme.colors.brand.primary} />
         <TextInput
-          className="flex-1 ml-3 text-white pt-0 pb-0"
+          className="flex-1 ml-3 pt-0 pb-0"
           placeholder={placeholder}
-          placeholderTextColor={variant === 'dark' ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"}
+          placeholderTextColor={theme.colors.text.muted}
           value={value}
           onChangeText={onSearch}
           onFocus={onFocus}
@@ -47,7 +48,8 @@ export const SearchBar = React.memo(function SearchBar({
             height: 48, 
             fontSize: 16,
             fontFamily: typography.primary.medium,
-            letterSpacing: -0.2
+            letterSpacing: -0.2,
+            color: theme.colors.text.primary
           }}
         />
         {(value && value.length > 0) ? (
@@ -58,11 +60,11 @@ export const SearchBar = React.memo(function SearchBar({
             }}
             className="pl-2"
           >
-            <Feather name="x-circle" size={20} color="rgba(255, 255, 255, 0.4)" />
+            <Feather name="x-circle" size={20} color={theme.colors.text.muted} />
           </Pressable>
         ) : (
           <View className="pl-2">
-            <Feather name="mic" size={18} color={variant === 'dark' ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.3)"} />
+            <Feather name="mic" size={18} color={theme.colors.text.muted} />
           </View>
         )}
       </View>
@@ -82,14 +84,16 @@ export const SearchBar = React.memo(function SearchBar({
               width: 48,
               height: 48,
               marginLeft: 10,
-              borderRadius: 20, // Increased from 16 for more rounded look
+              borderRadius: 24, // Circular
               alignItems: 'center',
               justifyContent: 'center',
+              backgroundColor: theme.colors.glass.subtle,
+              borderColor: theme.colors.glass.subtleBorder,
               opacity: pressed ? 0.8 : 1,
               transform: [{ scale: pressed ? 0.95 : 1 }],
             }
           ]}>
-            <Feather name="user" size={22} color="rgba(255, 255, 255, 0.6)" />
+            <Feather name="user" size={18} color={theme.colors.text.secondary} />
           </View>
         )}
       </Pressable>
@@ -102,13 +106,5 @@ SearchBar.displayName = 'SearchBar';
 const styles = StyleSheet.create({
   searchContainer: { 
     borderWidth: 1,
-  },
-  searchContainerLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    borderColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  searchContainerDark: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   }
 });

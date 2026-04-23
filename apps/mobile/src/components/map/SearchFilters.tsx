@@ -77,5 +77,6 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     paddingBottom: 4,
+    gap: 12,
   },
 });

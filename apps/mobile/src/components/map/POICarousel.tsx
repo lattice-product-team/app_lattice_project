@@ -7,8 +7,8 @@ import { getCategoryMetadata } from '../../utils/poiUtils';
 import { typography } from '../../styles/typography';
 import { UIPOI } from '../../types/models/poi';
 import * as Haptics from 'expo-haptics';
-import { colors } from '../../styles/colors';
 import { useLocationStore } from '../../store/useLocationStore';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
@@ -37,6 +37,7 @@ interface POICarouselCardProps {
 }
 
 const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
+  const theme = useLatticeTheme();
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const metadata = getCategoryMetadata(poi.category);
   const imageUrl = (poi.images && poi.images.length > 0) 
@@ -65,6 +66,10 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
         }}
         style={({ pressed }) => [
           styles.card,
+          { 
+            backgroundColor: theme.colors.bg.elevation,
+            borderColor: theme.colors.glass.border 
+          },
           pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }
         ]}
       >
@@ -87,7 +92,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
             </View>
             
             {distanceText && (
-              <View style={styles.distanceBadge}>
+              <View style={[styles.distanceBadge, { backgroundColor: theme.colors.overlay.modal, borderColor: theme.colors.glass.border }]}>
                 <Feather name="navigation" size={10} color="white" />
                 <Text style={styles.distanceText}>{distanceText}</Text>
               </View>
@@ -95,14 +100,14 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
           </View>
 
           <View style={styles.bottomInfo}>
-            <Text style={styles.poiName} numberOfLines={1}>{poi.name}</Text>
+            <Text style={[styles.poiName, { color: 'white' }]} numberOfLines={1}>{poi.name}</Text>
             <View style={styles.detailsRow}>
               <View className="flex-row items-center">
-                <View style={[styles.statusDot, { backgroundColor: '#32D74B' }]} />
-                <Text style={styles.statusText}>Poca gente</Text>
+                <View style={[styles.statusDot, { backgroundColor: theme.colors.status.success }]} />
+                <Text style={[styles.statusText, { color: 'rgba(255,255,255,0.7)' }]}>Poca gente</Text>
               </View>
-              <View style={styles.dot} />
-              <Text style={styles.statusText}>Abierto</Text>
+              <View style={[styles.dot, { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
+              <Text style={[styles.statusText, { color: 'rgba(255,255,255,0.7)' }]}>Abierto</Text>
             </View>
           </View>
         </View>
@@ -118,6 +123,7 @@ interface POICarouselProps {
 }
 
 export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
+  const theme = useLatticeTheme();
   const userCoords = useLocationStore((s) => s.logicalCoords);
   
   const sortedPois = useMemo(() => {
@@ -135,8 +141,8 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
     <View style={styles.container}>
       {title && (
         <View style={styles.titleRow}>
-          <Text style={styles.title}>{title}</Text>
-          <Feather name="chevron-right" size={16} color="rgba(255,255,255,0.3)" />
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>{title}</Text>
+          <Feather name="chevron-right" size={16} color={theme.colors.text.muted} />
         </View>
       )}
       <ScrollView 
@@ -162,6 +168,7 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 12,
+    minHeight: 220, // Prevents bottom sheet from squashing the carousel
   },
   titleRow: {
     flexDirection: 'row',
@@ -171,7 +178,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    color: 'white',
     fontSize: 17,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.3,
@@ -190,17 +196,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 24,
-    backgroundColor: '#1C1C1E',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
   },
   cardImage: {
     ...StyleSheet.absoluteFillObject,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   cardContent: {
     flex: 1,
@@ -229,13 +233,11 @@ const styles = StyleSheet.create({
   distanceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 10,
     gap: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   distanceText: {
     color: 'white',
@@ -246,7 +248,6 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   poiName: {
-    color: 'white',
     fontSize: 18,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.4,
@@ -263,7 +264,6 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   statusText: {
-    color: 'rgba(255,255,255,0.5)',
     fontSize: 11,
     fontFamily: typography.secondary.medium,
   },
@@ -271,6 +271,5 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: 'rgba(255,255,255,0.2)',
   },
 });

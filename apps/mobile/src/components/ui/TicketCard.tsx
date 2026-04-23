@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-nati
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ticket } from '../../types/models/auth';
-import { primitives } from '../../styles/colors';
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useLatticeTheme } from '../../hooks/useLatticeTheme';
@@ -24,8 +23,8 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
   
   // Premium gradient combinations
   const gradientColors = isTribuna 
-    ? [theme.colors.brand.primary, '#5C4A54'] // Magic Gem variant
-    : [theme.colors.brand.secondary, '#4D4B4C']; // Boat Anchor variant
+    ? [theme.colors.brand.primary, theme.colors.brand.secondaryVariant] 
+    : [theme.colors.brand.secondary, theme.colors.brand.primaryVariant]; 
 
   return (
     <Animated.View 
@@ -46,54 +45,54 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
           {/* Top Glass Header */}
           <View style={[styles.glassHeader, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
             <View>
-              <Text style={[styles.brandTitle, { color: primitives.white }]}>LATTICE</Text>
-              <Text style={[styles.brandSub, { color: 'rgba(255,255,255,0.5)' }]}>LATTICE ELITE</Text>
+              <Text style={[styles.brandTitle, { color: theme.colors.text.inverse }]}>LATTICE</Text>
+              <Text style={[styles.brandSub, { color: theme.colors.interactive.disabled }]}>LATTICE ELITE</Text>
             </View>
-            <View style={[styles.chipContainer, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
-              <MaterialCommunityIcons name="integrated-circuit-chip" size={24} color="rgba(255,255,255,0.7)" />
+            <View style={[styles.chipContainer, { backgroundColor: theme.colors.overlay.thin }]}>
+              <MaterialCommunityIcons name="integrated-circuit-chip" size={24} color={theme.colors.text.inverse} style={{ opacity: 0.7 }} />
             </View>
           </View>
 
           {/* Main Info Section */}
           <View style={styles.content}>
             <View style={styles.mainField}>
-              <Text style={styles.label}>ZONE</Text>
-              <Text style={[styles.value, { color: primitives.white }]}>{ticket.zoneName || 'General Admission'}</Text>
+              <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>ZONE</Text>
+              <Text style={[styles.value, { color: theme.colors.text.inverse }]}>{ticket.zoneName || 'General Admission'}</Text>
             </View>
 
             <View style={styles.grid}>
               <View style={styles.field}>
-                <Text style={styles.label}>GATE</Text>
-                <Text style={[styles.subValue, { color: primitives.white }]}>{ticket.gate || '03'}</Text>
+                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>GATE</Text>
+                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>{ticket.gate || '03'}</Text>
               </View>
               <View style={styles.field}>
-                <Text style={styles.label}>ROW</Text>
-                <Text style={[styles.subValue, { color: primitives.white }]}>{ticket.seatRow || '—'}</Text>
+                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>ROW</Text>
+                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>{ticket.seatRow || '—'}</Text>
               </View>
               <View style={styles.field}>
-                <Text style={styles.label}>SEAT</Text>
-                <Text style={[styles.subValue, { color: primitives.white }]}>{ticket.seatNumber || '—'}</Text>
+                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>SEAT</Text>
+                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>{ticket.seatNumber || '—'}</Text>
               </View>
             </View>
           </View>
 
           {/* Bottom QR Section (Clean) */}
-          <View style={[styles.footer, { backgroundColor: primitives.white }]}>
-            <View style={[styles.qrWrapper, { backgroundColor: primitives.white }]}>
+          <View style={[styles.footer, { backgroundColor: theme.colors.bg.surface }]}>
+            <View style={[styles.qrWrapper, { backgroundColor: theme.colors.bg.surface }]}>
               <Image 
                 source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${ticket.code}&color=1d1c1d` }}
                 style={styles.qrCode}
                 contentFit="contain"
               />
             </View>
-            <View style={styles.codeContainer}>
-              <Text style={[styles.ticketCode, { color: primitives.pristine[900] }]}>{ticket.code}</Text>
+            <View style={[styles.codeContainer, { backgroundColor: theme.colors.overlay.thin }]}>
+              <Text style={[styles.ticketCode, { color: theme.colors.text.primary }]}>{ticket.code}</Text>
             </View>
           </View>
 
           {/* Abstract Decorations */}
-          <View style={styles.decorCircle} />
-          <View style={styles.decorLines} />
+          <View style={[styles.decorCircle, { backgroundColor: theme.colors.overlay.thin }]} />
+          <View style={[styles.decorLines, { backgroundColor: theme.colors.overlay.thin }]} />
         </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
@@ -157,7 +156,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    color: 'rgba(255,255,255,0.4)',
     fontSize: 10,
     fontFamily: 'PlusJakartaSans-Bold',
     letterSpacing: 1.5,
@@ -191,7 +189,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 16,
     paddingVertical: 6,
-    backgroundColor: 'rgba(0,0,0,0.03)',
     borderRadius: 12,
   },
   ticketCode: {
@@ -207,7 +204,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   decorLines: {
     position: 'absolute',
@@ -215,7 +211,6 @@ const styles = StyleSheet.create({
     left: -20,
     width: 100,
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.1)',
     transform: [{ rotate: '45deg' }],
   }
 });

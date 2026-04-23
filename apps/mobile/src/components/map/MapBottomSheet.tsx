@@ -55,7 +55,7 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
       backgroundComponent={CustomBackground}
       handleIndicatorStyle={[
         styles.handleIndicator,
-        { backgroundColor: theme.dark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)' }
+        { backgroundColor: theme.colors.overlay.modal }
       ]}
       animatedPosition={translateY}
       keyboardBehavior="interactive"
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     marginTop: 4,
+    minHeight: 250,
   },
   premiumBorder: {
     ...StyleSheet.absoluteFillObject,

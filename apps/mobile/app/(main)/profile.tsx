@@ -4,7 +4,6 @@ import * as SafeAreaContext from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { authService } from '../../src/services/authService';
-import { colors } from '../../src/styles/colors';
 import { useRouter } from 'expo-router';
 import { SettingItem } from '../../src/components/ui/SettingItem';
 import { WalletStack } from '../../src/components/ui/WalletStack';
@@ -14,6 +13,7 @@ import { ThemeGradient } from '../../src/components/ui/ThemeGradient';
 import { authStyles } from '../../src/styles/typography';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useLatticeTheme } from '../../src/hooks/useLatticeTheme';
 
 /**
  * Main Profile Screen.
@@ -22,6 +22,7 @@ import * as Haptics from 'expo-haptics';
 export default function ProfileScreen() {
   const { user, tickets, logout, updateUser } = useAuthStore();
   const router = useRouter();
+  const theme = useLatticeTheme();
   
   // Local state for toggles and wizard
   const [avoidStairs, setAvoidStairs] = React.useState(user?.avoidStairs ?? false);
@@ -42,11 +43,7 @@ export default function ProfileScreen() {
   }, [user]);
 
   const handleLogout = () => {
-    // 1. Navigate first to the welcome screen
     router.replace('/(auth)/welcome');
-    
-    // 2. Clear state ONLY after navigation is complete
-    // This prevents Fabric from trying to recycle views that are still animating
     InteractionManager.runAfterInteractions(() => {
       logout();
     });
@@ -86,34 +83,43 @@ export default function ProfileScreen() {
       <AuthLayout 
         showBack 
         onBack={() => router.replace('/(main)')}
-        midnight
       >
         <Animated.View 
           entering={FadeInDown.duration(600)}
           layout={Layout.springify()}
           className="flex-1"
         >
-          {/* Profile Header - Replicated Welcome Style */}
+          {/* Profile Header */}
           <View className="items-start mb-16 pt-4">
             <Animated.View 
               entering={FadeInDown.delay(100).duration(600)}
-              className="w-20 h-20 rounded-[28px] bg-white/10 border border-white/10 items-center justify-center mb-10"
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: theme.colors.glass.subtle,
+                borderWidth: 1,
+                borderColor: theme.colors.glass.subtleBorder,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 40,
+              }}
             >
-              <Feather name="user" size={40} color="white" />
+              <Feather name="user" size={40} color={theme.colors.text.primary} />
             </Animated.View>
             
             <Animated.Text 
               entering={FadeInDown.delay(200).duration(600)}
-              className="text-white mb-4"
-              style={authStyles.title}
+              className="mb-4"
+              style={[authStyles.title, { color: theme.colors.text.primary }]}
             >
               {user ? user.fullName : 'El meu Perfil'}
             </Animated.Text>
             
             <Animated.Text 
               entering={FadeInDown.delay(300).duration(600)}
-              className="text-white/70 pr-8"
-              style={authStyles.subtitle}
+              className="pr-8"
+              style={[authStyles.subtitle, { color: theme.colors.text.secondary }]}
             >
               {user ? user.email || `@${user.fullName.replace(/\s+/g, '').toLowerCase()}` : 'Compte de convidat'}
             </Animated.Text>
@@ -148,9 +154,35 @@ export default function ProfileScreen() {
             entering={FadeInDown.delay(500).duration(600)}
             className="mb-12"
           >
-            <View className="bg-white/5 border border-white/10 rounded-[32px] overflow-hidden">
-              <View className="px-6 py-5 bg-white/5 border-b border-white/5">
-                <Text className="text-white/60 text-xs font-bold uppercase tracking-[2px]">Configuración</Text>
+            <View 
+              style={{
+                backgroundColor: theme.colors.glass.subtle,
+                borderWidth: 1,
+                borderColor: theme.colors.glass.subtleBorder,
+                borderRadius: 32,
+                overflow: 'hidden',
+              }}
+            >
+              <View 
+                style={{
+                  paddingHorizontal: 24,
+                  paddingVertical: 20,
+                  backgroundColor: theme.colors.bg.elevation,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.colors.border.subtle,
+                }}
+              >
+                <Text 
+                  style={{
+                    color: theme.colors.text.muted,
+                    fontSize: 12,
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: 2,
+                  }}
+                >
+                  Configuración
+                </Text>
               </View>
 
               <SettingItem 
@@ -161,13 +193,13 @@ export default function ProfileScreen() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   setShowWizard(true);
                 }}
-                iconBgColor="rgba(255, 59, 48, 0.1)"
+                iconBgColor={theme.colors.status.errorSurface}
               />
 
               <SettingItem 
                 label="Apariencia"
                 icon="package"
-                iconBgColor="rgba(255, 255, 255, 0.1)"
+                iconBgColor={theme.colors.overlay.thin}
                 onPress={() => Alert.alert('Info', 'Próximamente disponible!')}
               />
 
@@ -189,24 +221,40 @@ export default function ProfileScreen() {
         transparent={false}
         onRequestClose={() => setShowWallet(false)}
       >
-        <SafeAreaContext.SafeAreaView className="flex-1 bg-background">
+        <SafeAreaContext.SafeAreaView 
+          style={{ flex: 1, backgroundColor: theme.colors.bg.main }}
+        >
           <View className="flex-row items-center justify-between px-6 py-4">
-            <Text className="text-white text-3xl font-black">Mis Entradas</Text>
+            <Text style={{ color: theme.colors.text.primary, fontSize: 30, fontWeight: '900' }}>Mis Entradas</Text>
             <View className="flex-row gap-x-3">
               <Pressable 
                 onPress={() => {
                   setShowWallet(false);
                   router.push('/(main)/scan' as any);
                 }}
-                className="w-10 h-10 bg-primary rounded-full items-center justify-center"
+                style={{
+                  width: 40,
+                  height: 40,
+                  backgroundColor: theme.colors.brand.primary,
+                  borderRadius: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <Feather name="plus" size={24} color="white" />
+                <Feather name="plus" size={24} color={theme.colors.text.inverse} />
               </Pressable>
               <Pressable 
                 onPress={() => setShowWallet(false)}
-                className="w-10 h-10 bg-white/10 rounded-full items-center justify-center"
+                style={{
+                  width: 40,
+                  height: 40,
+                  backgroundColor: theme.colors.glass.background,
+                  borderRadius: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <Feather name="x" size={24} color="white" />
+                <Feather name="x" size={24} color={theme.colors.text.primary} />
               </Pressable>
             </View>
           </View>
@@ -224,15 +272,33 @@ export default function ProfileScreen() {
         transparent={true}
         onRequestClose={() => setShowWizard(false)}
       >
-        <View className="flex-1 bg-black/90 justify-end">
-          <View className="bg-[#1C1C1E] rounded-t-[40px] p-8 pb-12 border-t border-white/10">
+        <View style={{ flex: 1, backgroundColor: theme.colors.overlay.modal, justifyContent: 'end' }}>
+          <View 
+            style={{ 
+              backgroundColor: theme.colors.bg.surface, 
+              borderTopLeftRadius: 40, 
+              borderTopRightRadius: 40, 
+              padding: 32, 
+              paddingBottom: 48,
+              borderTopWidth: 1,
+              borderTopColor: theme.colors.border.subtle,
+            }}
+          >
             <View className="items-center mb-8">
-              <View className="w-12 h-1.5 bg-white/20 rounded-full mb-8" />
+              <View 
+                style={{ 
+                  width: 48, 
+                  height: 6, 
+                  backgroundColor: theme.colors.border.subtle, 
+                  borderRadius: 3, 
+                  marginBottom: 32 
+                }} 
+              />
               
               <View className="flex-row gap-x-2 mb-8">
-                <View className={`h-1.5 rounded-full flex-1 ${wizardStep >= 1 ? 'bg-primary' : 'bg-white/10'}`} />
-                <View className={`h-1.5 rounded-full flex-1 ${wizardStep >= 2 ? 'bg-primary' : 'bg-white/10'}`} />
-                <View className={`h-1.5 rounded-full flex-1 ${wizardStep >= 3 ? 'bg-primary' : 'bg-white/10'}`} />
+                <View style={{ height: 6, borderRadius: 3, flex: 1, backgroundColor: wizardStep >= 1 ? theme.colors.brand.primary : theme.colors.bg.elevation }} />
+                <View style={{ height: 6, borderRadius: 3, flex: 1, backgroundColor: wizardStep >= 2 ? theme.colors.brand.primary : theme.colors.bg.elevation }} />
+                <View style={{ height: 6, borderRadius: 3, flex: 1, backgroundColor: wizardStep >= 3 ? theme.colors.brand.primary : theme.colors.bg.elevation }} />
               </View>
             </View>
 
@@ -243,24 +309,52 @@ export default function ProfileScreen() {
             >
               {wizardStep === 1 && (
                 <View className="items-center w-full">
-                  <View className="w-20 h-20 rounded-3xl bg-primary/10 items-center justify-center mb-6">
-                    <MaterialCommunityIcons name="stairs" size={40} color={colors.primary} />
+                  <View 
+                    style={{ 
+                      width: 80, 
+                      height: 80, 
+                      borderRadius: 24, 
+                      backgroundColor: theme.colors.brand.primarySurface, 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      marginBottom: 24 
+                    }}
+                  >
+                    <MaterialCommunityIcons name="stairs" size={40} color={theme.colors.brand.primary} />
                   </View>
-                  <Text className="text-white text-2xl font-bold text-center mb-4">¿Evitar escaleras?</Text>
-                  <Text className="text-muted text-center mb-10 text-base">Priorizaremos rutas con rampas y ascensores para tu comodidad.</Text>
+                  <Text style={{ color: theme.colors.text.primary, fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}>¿Evitar escaleras?</Text>
+                  <Text style={{ color: theme.colors.text.secondary, textAlign: 'center', marginBottom: 40, fontSize: 16 }}>Priorizaremos rutas con rampas y ascensores para tu comodidad.</Text>
                   
                   <View className="flex-row gap-x-4 w-full">
                     <Pressable 
                       onPress={() => { setAvoidStairs(false); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!avoidStairs ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      style={{
+                        flex: 1,
+                        height: 56,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        backgroundColor: !avoidStairs ? theme.colors.brand.primary : theme.colors.bg.elevation,
+                        borderColor: !avoidStairs ? theme.colors.brand.primary : theme.colors.border.subtle,
+                      }}
                     >
-                      <Text className={`font-bold text-lg ${!avoidStairs ? 'text-white' : 'text-white/60'}`}>No</Text>
+                      <Text style={{ fontWeight: 'bold', fontSize: 18, color: !avoidStairs ? theme.colors.text.inverse : theme.colors.text.secondary }}>No</Text>
                     </Pressable>
                     <Pressable 
                       onPress={() => { setAvoidStairs(true); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${avoidStairs ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      style={{
+                        flex: 1,
+                        height: 56,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        backgroundColor: avoidStairs ? theme.colors.brand.primary : theme.colors.bg.elevation,
+                        borderColor: avoidStairs ? theme.colors.brand.primary : theme.colors.border.subtle,
+                      }}
                     >
-                      <Text className={`font-bold text-lg ${avoidStairs ? 'text-white' : 'text-white/60'}`}>Sí</Text>
+                      <Text style={{ fontWeight: 'bold', fontSize: 18, color: avoidStairs ? theme.colors.text.inverse : theme.colors.text.secondary }}>Sí</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -268,24 +362,52 @@ export default function ProfileScreen() {
 
               {wizardStep === 2 && (
                 <View className="items-center w-full">
-                  <View className="w-20 h-20 rounded-3xl bg-primary/10 items-center justify-center mb-6">
-                    <MaterialCommunityIcons name="layers-outline" size={40} color={colors.primary} />
+                  <View 
+                    style={{ 
+                      width: 80, 
+                      height: 80, 
+                      borderRadius: 24, 
+                      backgroundColor: theme.colors.brand.primarySurface, 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      marginBottom: 24 
+                    }}
+                  >
+                    <MaterialCommunityIcons name="layers-outline" size={40} color={theme.colors.brand.primary} />
                   </View>
-                  <Text className="text-white text-2xl font-bold text-center mb-4">¿Evitar graderías?</Text>
-                  <Text className="text-muted text-center mb-10 text-base">Evitaremos pasar por zonas de gradas siempre que sea posible.</Text>
+                  <Text style={{ color: theme.colors.text.primary, fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}>¿Evitar graderías?</Text>
+                  <Text style={{ color: theme.colors.text.secondary, textAlign: 'center', marginBottom: 40, fontSize: 16 }}>Evitaremos pasar por zonas de gradas siempre que sea posible.</Text>
                   
                   <View className="flex-row gap-x-4 w-full">
                     <Pressable 
                       onPress={() => { setAvoidGrandstands(false); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!avoidGrandstands ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      style={{
+                        flex: 1,
+                        height: 56,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        backgroundColor: !avoidGrandstands ? theme.colors.brand.primary : theme.colors.bg.elevation,
+                        borderColor: !avoidGrandstands ? theme.colors.brand.primary : theme.colors.border.subtle,
+                      }}
                     >
-                      <Text className={`font-bold text-lg ${!avoidGrandstands ? 'text-white' : 'text-white/60'}`}>No</Text>
+                      <Text style={{ fontWeight: 'bold', fontSize: 18, color: !avoidGrandstands ? theme.colors.text.inverse : theme.colors.text.secondary }}>No</Text>
                     </Pressable>
                     <Pressable 
                       onPress={() => { setAvoidGrandstands(true); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${avoidGrandstands ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      style={{
+                        flex: 1,
+                        height: 56,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        backgroundColor: avoidGrandstands ? theme.colors.brand.primary : theme.colors.bg.elevation,
+                        borderColor: avoidGrandstands ? theme.colors.brand.primary : theme.colors.border.subtle,
+                      }}
                     >
-                      <Text className={`font-bold text-lg ${avoidGrandstands ? 'text-white' : 'text-white/60'}`}>Sí</Text>
+                      <Text style={{ fontWeight: 'bold', fontSize: 18, color: avoidGrandstands ? theme.colors.text.inverse : theme.colors.text.secondary }}>Sí</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -293,24 +415,52 @@ export default function ProfileScreen() {
 
               {wizardStep === 3 && (
                 <View className="items-center w-full">
-                  <View className="w-20 h-20 rounded-3xl bg-primary/10 items-center justify-center mb-6">
-                    <MaterialCommunityIcons name="slope-uphill" size={40} color={colors.primary} />
+                  <View 
+                    style={{ 
+                      width: 80, 
+                      height: 80, 
+                      borderRadius: 24, 
+                      backgroundColor: theme.colors.brand.primarySurface, 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      marginBottom: 24 
+                    }}
+                  >
+                    <MaterialCommunityIcons name="slope-uphill" size={40} color={theme.colors.brand.primary} />
                   </View>
-                  <Text className="text-white text-2xl font-bold text-center mb-4">¿Evitar pendientes?</Text>
-                  <Text className="text-muted text-center mb-10 text-base">Buscaremos los caminos más llanos dentro del recinto.</Text>
+                  <Text style={{ color: theme.colors.text.primary, fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 16 }}>¿Evitar pendientes?</Text>
+                  <Text style={{ color: theme.colors.text.secondary, textAlign: 'center', marginBottom: 40, fontSize: 16 }}>Buscaremos los caminos más llanos dentro del recinto.</Text>
                   
                   <View className="flex-row gap-x-4 w-full">
                     <Pressable 
                       onPress={() => { setAvoidSlopes(false); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!avoidSlopes ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      style={{
+                        flex: 1,
+                        height: 56,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        backgroundColor: !avoidSlopes ? theme.colors.brand.primary : theme.colors.bg.elevation,
+                        borderColor: !avoidSlopes ? theme.colors.brand.primary : theme.colors.border.subtle,
+                      }}
                     >
-                      <Text className={`font-bold text-lg ${!avoidSlopes ? 'text-white' : 'text-white/60'}`}>No</Text>
+                      <Text style={{ fontWeight: 'bold', fontSize: 18, color: !avoidSlopes ? theme.colors.text.inverse : theme.colors.text.secondary }}>No</Text>
                     </Pressable>
                     <Pressable 
                       onPress={() => { setAvoidSlopes(true); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${avoidSlopes ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      style={{
+                        flex: 1,
+                        height: 56,
+                        borderRadius: 16,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        backgroundColor: avoidSlopes ? theme.colors.brand.primary : theme.colors.bg.elevation,
+                        borderColor: avoidSlopes ? theme.colors.brand.primary : theme.colors.border.subtle,
+                      }}
                     >
-                      <Text className={`font-bold text-lg ${avoidSlopes ? 'text-white' : 'text-white/60'}`}>Sí</Text>
+                      <Text style={{ fontWeight: 'bold', fontSize: 18, color: avoidSlopes ? theme.colors.text.inverse : theme.colors.text.secondary }}>Sí</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -321,17 +471,18 @@ export default function ProfileScreen() {
               onPress={() => setShowWizard(false)}
               className="mt-8 items-center"
             >
-              <Text className="text-white/40 font-medium">Cancelar</Text>
+              <Text style={{ color: theme.colors.text.muted, fontWeight: '500' }}>Cancelar</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
 
       {isSaving && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors.overlay.modal, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <ActivityIndicator size="large" color={theme.colors.brand.primary} />
         </View>
       )}
     </View>
   );
 }
+

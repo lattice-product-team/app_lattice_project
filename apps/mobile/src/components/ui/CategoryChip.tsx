@@ -25,16 +25,15 @@ export const CategoryChip = ({
       style={({ pressed }) => [
         styles.container,
         { 
-          backgroundColor: theme.colors.glass.background,
-          borderColor: theme.colors.glass.border 
+          backgroundColor: isSelected ? activeColor : theme.colors.glass.subtle,
+          borderColor: isSelected ? activeColor : theme.colors.glass.subtleBorder 
         },
-        isSelected && { backgroundColor: activeColor, borderColor: activeColor },
         pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
       ]}
     >
       {!isSelected && (
         <SafeBlurView 
-          intensity={60} 
+          intensity={40} 
           tint={theme.colors.glass.tint} 
           style={StyleSheet.absoluteFill} 
         />
@@ -58,7 +57,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    marginRight: 8,
     overflow: 'hidden',
     ...Platform.select({
       ios: {

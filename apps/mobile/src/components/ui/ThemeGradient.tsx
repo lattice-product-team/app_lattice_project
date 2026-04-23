@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { primitives } from '../../styles/colors';
 import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface ThemeGradientProps {
@@ -28,15 +27,15 @@ export const ThemeGradient = ({
     switch (variant) {
       case 'premium':
         return {
-          colors: [primitives.white, primitives.solar[100]] as const,
+          colors: theme.colors.gradient.premium,
           locations: [0, 0.9] as [number, number],
-          defaultBlob: primitives.solar[500],
+          defaultBlob: theme.colors.brand.primary,
         };
       case 'midnight':
         return {
-          colors: [primitives.slate[900], primitives.black] as const,
+          colors: theme.colors.gradient.midnight,
           locations: [0, 1] as [number, number],
-          defaultBlob: primitives.solar[500],
+          defaultBlob: theme.colors.brand.primary,
         };
       case 'surface':
         return {
@@ -47,11 +46,9 @@ export const ThemeGradient = ({
       case 'auth':
       default:
         return {
-          colors: theme.dark 
-            ? [primitives.midnight.base, primitives.black] as const
-            : ['#FFFFFF', '#FFF9E5'] as const, // Subtle warm cream/gold tint
+          colors: theme.colors.gradient.auth,
           locations: [0, 1] as [number, number],
-          defaultBlob: theme.dark ? theme.colors.brand.primary : '#FFEBB7', // Warmer blob for light mode
+          defaultBlob: theme.dark ? theme.colors.brand.primary : theme.colors.brand.secondaryVariant,
         };
     }
   };
@@ -75,8 +72,8 @@ export const ThemeGradient = ({
             {
               shadowColor: finalBlobColor,
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.4,
-              shadowRadius: 220,
+              shadowOpacity: theme.dark ? 0.4 : 0.2,
+              shadowRadius: theme.dark ? 220 : 300,
               backgroundColor: finalBlobColor,
             }
           ]} 

@@ -15,6 +15,7 @@ import { Ticket } from '../../types/models/auth';
 import { TicketCard } from './TicketCard';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnclaimTicket } from '../../hooks/queries/useAuthActions';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 const { height } = Dimensions.get('window');
 const STACK_OFFSET = 60;
@@ -93,6 +94,7 @@ const WalletItem: React.FC<WalletItemProps> = ({
 };
 
 export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
+  const theme = useLatticeTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(null);
   const expandProgress = useSharedValue(0);
@@ -183,15 +185,15 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
                 <Text style={styles.detailValue}>#{selectedTicket.id}</Text>
               </View>
               <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>ESTAT</Text>
+                <Text style={[styles.detailLabel, { color: theme.colors.text.muted }]}>ESTAT</Text>
                 <View style={styles.statusBadge}>
-                  <View style={[styles.statusDot, { backgroundColor: selectedTicket.isActive ? '#4CD964' : '#E10600' }]} />
-                  <Text style={styles.statusText}>{selectedTicket.isActive ? 'ACTIVA' : 'INACTIVA'}</Text>
+                  <View style={[styles.statusDot, { backgroundColor: selectedTicket.isActive ? theme.colors.status.success : theme.colors.status.error }]} />
+                  <Text style={[styles.statusText, { color: theme.colors.text.primary }]}>{selectedTicket.isActive ? 'ACTIVA' : 'INACTIVA'}</Text>
                 </View>
               </View>
             </View>
 
-            <View style={styles.separator} />
+            <View style={[styles.separator, { backgroundColor: theme.colors.border.subtle }]} />
 
             <View style={styles.detailRow}>
               <View style={styles.detailItem}>
@@ -204,19 +206,19 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
 
             <View style={styles.separator} />
 
-            <View style={styles.infoBox}>
-              <Feather name="shield" size={16} color="#4CD964" />
-              <Text style={styles.infoBoxText}>
+            <View style={[styles.infoBox, { backgroundColor: theme.colors.status.successSurface }]}>
+              <Feather name="shield" size={16} color={theme.colors.status.success} />
+              <Text style={[styles.infoBoxText, { color: theme.colors.text.secondary }]}>
                 Entrada vinculada correctament al teu compte. Només tu pots utilitzar aquest QR per a l&apos;accés.
               </Text>
             </View>
 
             <TouchableOpacity 
-              style={styles.deleteOptionButton} 
+              style={[styles.deleteOptionButton, { backgroundColor: theme.colors.status.errorSurface }]} 
               onPress={() => handleDelete(selectedTicket)}
             >
-              <Feather name="trash-2" size={18} color="#E10600" />
-              <Text style={styles.deleteOptionText}>Eliminar Entrada</Text>
+              <Feather name="trash-2" size={18} color={theme.colors.status.error} />
+              <Text style={[styles.deleteOptionText, { color: theme.colors.status.error }]}>Eliminar Entrada</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -274,7 +276,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   detailValue: {
-    color: '#FFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -295,7 +296,6 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
     width: '100%',
     marginVertical: 16,
   },
@@ -325,7 +325,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   deleteOptionText: {
-    color: '#E10600',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,

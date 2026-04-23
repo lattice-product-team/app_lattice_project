@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { primitives } from '../../styles/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { typography } from '../../styles/typography';
 import { useLatticeTheme } from '../../hooks/useLatticeTheme';
@@ -54,11 +53,11 @@ export const PremiumButton = ({
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return [theme.colors.brand.primary, primitives.solar[600]] as const;
+        return [theme.colors.brand.primary, theme.colors.brand.primaryVariant] as const;
       case 'secondary':
-        return [theme.colors.brand.secondary, theme.colors.bg.elevation] as const;
+        return [theme.colors.brand.secondary, theme.colors.brand.secondaryVariant] as const;
       case 'glass':
-        return [theme.colors.glass.background, 'rgba(255, 255, 255, 0.05)'] as const;
+        return [theme.colors.glass.background, theme.colors.interactive.pressed] as const;
       case 'surface':
         return [theme.colors.bg.surface, theme.colors.bg.elevation] as const;
       default:
@@ -76,7 +75,7 @@ export const PremiumButton = ({
   const getTextStyle = () => {
     switch (variant) {
       case 'primary':
-        return { color: primitives.pristine[900], fontFamily: typography.primary.bold };
+        return { color: theme.colors.text.inverse, fontFamily: typography.primary.bold };
       case 'glass':
         return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
       case 'surface':

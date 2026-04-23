@@ -92,7 +92,12 @@ export const AuthLayout = ({
     <View className="flex-1">
       <StatusBar style={theme.dark ? "light" : "dark"} />
       
-      {!transparent && <ThemeGradient variant={midnight || theme.dark ? "midnight" : "auth"} />}
+      {!transparent && (
+        <ThemeGradient 
+          variant={midnight || theme.dark ? "midnight" : "auth"} 
+          showBlob={true} 
+        />
+      )}
       
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView 
