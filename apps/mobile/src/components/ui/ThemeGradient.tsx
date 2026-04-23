@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../../styles/colors';
+import { primitives } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface ThemeGradientProps {
   variant?: 'auth' | 'premium' | 'surface' | 'midnight';
@@ -13,12 +14,6 @@ interface ThemeGradientProps {
 
 /**
  * Standardized Theme Gradient component.
- * Uses pure expo-linear-gradient with StyleSheet.absoluteFill for maximum 
- * cross-platform compatibility and performance.
- * 
- * Includes a native-optimized "Blob/Glow" effect using shadowRadius (iOS).
- * REFINED: Uses a tiny center with minimal opacity to create a giant 
- * soft glow without visible hard edges.
  */
 export const ThemeGradient = ({ 
   variant = 'auth', 
@@ -27,32 +22,36 @@ export const ThemeGradient = ({
   style, 
   children 
 }: ThemeGradientProps) => {
+  const theme = useLatticeTheme();
+
   const getGradientConfig = () => {
     switch (variant) {
       case 'premium':
         return {
-          colors: ['#FFFFFF', '#FDF1C2'] as const,
+          colors: [primitives.white, primitives.solar[100]] as const,
           locations: [0, 0.9] as [number, number],
-          defaultBlob: colors.primary,
+          defaultBlob: primitives.solar[500],
         };
       case 'midnight':
         return {
-          colors: ['#0F172A', '#000000'] as const, // Slate 900 to Pure Black
+          colors: [primitives.slate[900], primitives.black] as const,
           locations: [0, 1] as [number, number],
-          defaultBlob: colors.primary,
+          defaultBlob: primitives.solar[500],
         };
       case 'surface':
         return {
-          colors: ['#FFFFFF', '#F9F9FB'] as const,
+          colors: [theme.colors.bg.surface, theme.colors.bg.main] as const,
           locations: [0, 1] as [number, number],
-          defaultBlob: '#E5E5E7',
+          defaultBlob: theme.colors.border.subtle,
         };
       case 'auth':
       default:
         return {
-          colors: ['#FFFFFF', '#F0F0F5'] as const,
-          locations: [0, 0.8] as [number, number],
-          defaultBlob: colors.primary,
+          colors: theme.dark 
+            ? [primitives.midnight.base, primitives.black] as const
+            : ['#FFFFFF', '#FFF9E5'] as const, // Subtle warm cream/gold tint
+          locations: [0, 1] as [number, number],
+          defaultBlob: theme.dark ? theme.colors.brand.primary : '#FFEBB7', // Warmer blob for light mode
         };
     }
   };
@@ -94,10 +93,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -100,
     right: -100,
-    width: 60, // Much smaller to hide the solid center
+    width: 60,
     height: 60,
     borderRadius: 30,
-    opacity: 0.1, // Very low opacity so the center is nearly invisible
+    opacity: 0.1,
     ...Platform.select({
       android: {
         elevation: 20,
@@ -105,3 +104,4 @@ const styles = StyleSheet.create({
     })
   }
 });
+

@@ -10,24 +10,24 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { colors } from '../../styles/colors';
+import { primitives } from '../../styles/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { typography } from '../../styles/typography';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface PremiumButtonProps {
   onPress: () => void;
   label: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'white';
+  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'surface';
   icon?: string;
   isLoading?: boolean;
   disabled?: boolean;
-  className?: string; // Kept for tailwind class logic outside
+  className?: string;
   style?: StyleProp<ViewStyle>;
 }
 
 /**
- * High-end interactive button with standardized gradients.
- * Explicitly uses LinearGradient without interop for maximum robustness.
+ * High-end interactive button with standardized gradients and theme awareness.
  */
 export const PremiumButton = ({
   onPress,
@@ -39,6 +39,8 @@ export const PremiumButton = ({
   className = '',
   style
 }: PremiumButtonProps) => {
+  const theme = useLatticeTheme();
+
   const handlePress = () => {
     if (disabled || isLoading) return;
     Haptics.impactAsync(
@@ -52,39 +54,35 @@ export const PremiumButton = ({
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return [colors.primary, colors.solar[600]] as const;
+        return [theme.colors.brand.primary, primitives.solar[600]] as const;
       case 'secondary':
-        return [colors.secondary, '#E5E5E7'] as const;
+        return [theme.colors.brand.secondary, theme.colors.bg.elevation] as const;
       case 'glass':
-        return ['rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.2)'] as const;
-      case 'white':
-        return ['#FFFFFF', '#F9F9FB'] as const;
+        return [theme.colors.glass.background, 'rgba(255, 255, 255, 0.05)'] as const;
+      case 'surface':
+        return [theme.colors.bg.surface, theme.colors.bg.elevation] as const;
       default:
         return null;
     }
   };
 
   const getSecondaryStyles = () => {
-    if (variant === 'outline') return 'border border-black/10 bg-transparent';
-    if (variant === 'glass') return 'border border-black/5 shadow-sm';
-    if (variant === 'white') return 'shadow-md';
-    return '';
+    if (variant === 'outline') return { borderWidth: 1, borderColor: theme.colors.border.subtle };
+    if (variant === 'glass') return { borderWidth: 1, borderColor: theme.colors.glass.border };
+    if (variant === 'surface') return theme.shadows.soft;
+    return {};
   };
 
   const getTextStyle = () => {
     switch (variant) {
       case 'primary':
-        return { color: colors.black, fontFamily: typography.primary.bold } as const;
-      case 'secondary':
-        return { color: colors.black, fontFamily: typography.secondary.medium } as const;
-      case 'outline':
-        return { color: colors.black, fontFamily: typography.secondary.medium } as const;
+        return { color: primitives.pristine[900], fontFamily: typography.primary.bold };
       case 'glass':
-        return { color: 'white', fontFamily: typography.secondary.medium } as const;
-      case 'white':
-        return { color: colors.black, fontFamily: typography.primary.bold } as const;
+        return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
+      case 'surface':
+        return { color: theme.colors.text.primary, fontFamily: typography.primary.bold };
       default:
-        return { color: colors.black, fontFamily: typography.primary.regular } as const;
+        return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
     }
   };
 
@@ -108,7 +106,8 @@ export const PremiumButton = ({
       )}
       
       <View 
-        className={`flex-1 flex-row items-center justify-center px-6 ${getSecondaryStyles()}`}
+        className="flex-1 flex-row items-center justify-center px-6"
+        style={getSecondaryStyles()}
       >
         {isLoading ? (
           <ActivityIndicator color={textColor} />
@@ -134,3 +133,4 @@ export const PremiumButton = ({
     </Pressable>
   );
 };
+

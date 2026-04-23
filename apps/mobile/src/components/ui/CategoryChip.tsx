@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable, Platform } from 'react-native';
-import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
 import { SafeBlurView } from './SafeBlurView';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface CategoryChipProps {
   label: string;
@@ -17,22 +17,33 @@ export const CategoryChip = ({
   onPress,
   activeColor
 }: CategoryChipProps) => {
+  const theme = useLatticeTheme();
+
   return (
     <Pressable 
       onPress={onPress}
       style={({ pressed }) => [
         styles.container,
+        { 
+          backgroundColor: theme.colors.glass.background,
+          borderColor: theme.colors.glass.border 
+        },
         isSelected && { backgroundColor: activeColor, borderColor: activeColor },
-        pressed && { opacity: 0.8, scale: 0.96 }
+        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
       ]}
     >
       {!isSelected && (
-        <SafeBlurView intensity={60} tint="light" style={StyleSheet.absoluteFill} />
+        <SafeBlurView 
+          intensity={60} 
+          tint={theme.colors.glass.tint} 
+          style={StyleSheet.absoluteFill} 
+        />
       )}
       <Text 
         style={[
           styles.text,
-          isSelected && styles.textSelected
+          { color: theme.colors.text.primary },
+          isSelected && { color: theme.colors.text.inverse }
         ]}
       >
         {label}
@@ -46,9 +57,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
     marginRight: 8,
     overflow: 'hidden',
     ...Platform.select({
@@ -66,9 +75,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontFamily: typography.secondary.bold,
-    color: colors.black,
   },
-  textSelected: {
-    color: '#FFFFFF',
-  }
 });
+

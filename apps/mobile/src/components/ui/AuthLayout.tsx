@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ThemeGradient } from './ThemeGradient';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -37,6 +38,8 @@ export const AuthLayout = ({
   transparent = false,
   midnight = false
 }: AuthLayoutProps) => {
+  const theme = useLatticeTheme();
+
   const navigationRow = (
     <View className="z-50 mb-2">
       {/* Progress Bar at the top */}
@@ -45,7 +48,13 @@ export const AuthLayout = ({
           {Array.from({ length: totalSteps }).map((_, i) => (
             <View 
               key={i} 
-              className={`h-1.5 rounded-full flex-1 ${step >= i + 1 ? 'bg-white' : 'bg-white/10'}`} 
+              style={{
+                height: 6,
+                borderRadius: 3,
+                flex: 1,
+                backgroundColor: step >= i + 1 ? theme.colors.text.primary : theme.colors.border.subtle,
+                opacity: step >= i + 1 ? 1 : 0.3,
+              }}
             />
           ))}
         </View>
@@ -60,9 +69,19 @@ export const AuthLayout = ({
               if (onBack) onBack();
             }}
             hitSlop={20}
-            className="w-12 h-12 items-center justify-center rounded-full bg-white/5 border border-white/10 active:opacity-70 active:scale-90"
+            style={{
+              width: 48,
+              height: 48,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 24,
+              backgroundColor: theme.colors.glass.background,
+              borderWidth: 1,
+              borderColor: theme.colors.glass.border,
+            }}
+            className="active:opacity-70 active:scale-90"
           >
-            <Feather name="chevron-left" size={28} color="white" />
+            <Feather name="chevron-left" size={28} color={theme.colors.text.primary} />
           </Pressable>
         ) : null}
       </View>
@@ -71,9 +90,9 @@ export const AuthLayout = ({
 
   return (
     <View className="flex-1">
-      <StatusBar style="light" />
+      <StatusBar style={theme.dark ? "light" : "dark"} />
       
-      {!transparent && <ThemeGradient variant={midnight ? "midnight" : "auth"} />}
+      {!transparent && <ThemeGradient variant={midnight || theme.dark ? "midnight" : "auth"} />}
       
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView 
@@ -102,3 +121,4 @@ export const AuthLayout = ({
     </View>
   );
 };
+
