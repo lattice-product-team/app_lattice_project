@@ -55,10 +55,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
   }, [userCoords, poi.geometry]);
 
   return (
-    <Animated.View 
-      entering={FadeInRight.delay(index * 100).duration(600)}
-      style={styles.cardWrapper}
-    >
+    <View style={styles.cardWrapper}>
       <Pressable 
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -84,9 +81,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
 
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
-            <View 
-              style={[styles.categoryBadge, { backgroundColor: `${metadata.color}EE` }]}
-            >
+            <View style={[styles.categoryBadge, { backgroundColor: `${metadata.color}EE` }]}>
               <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
               <Text style={styles.categoryText}>{metadata.label.toUpperCase()}</Text>
             </View>
@@ -102,7 +97,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
           <View style={styles.bottomInfo}>
             <Text style={[styles.poiName, { color: 'white' }]} numberOfLines={1}>{poi.name}</Text>
             <View style={styles.detailsRow}>
-              <View className="flex-row items-center">
+              <View style={styles.statusWrapper}>
                 <View style={[styles.statusDot, { backgroundColor: theme.colors.status.success }]} />
                 <Text style={[styles.statusText, { color: 'rgba(255,255,255,0.7)' }]}>Poca gente</Text>
               </View>
@@ -112,7 +107,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
           </View>
         </View>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -147,6 +142,7 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
       )}
       <ScrollView 
         horizontal 
+        style={{ height: 180 }}
         showsHorizontalScrollIndicator={false}
         snapToInterval={CARD_WIDTH + 16}
         decelerationRate="fast"
@@ -189,7 +185,7 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     width: CARD_WIDTH,
-    height: CARD_HEIGHT,
+    aspectRatio: 1.5,
     marginRight: 16,
   },
   card: {
@@ -256,6 +252,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  statusWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statusDot: {
     width: 6,

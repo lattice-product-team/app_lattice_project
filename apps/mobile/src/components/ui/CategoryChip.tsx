@@ -31,13 +31,7 @@ export const CategoryChip = ({
         pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
       ]}
     >
-      {!isSelected && (
-        <SafeBlurView 
-          intensity={40} 
-          tint={theme.colors.glass.tint} 
-          style={StyleSheet.absoluteFill} 
-        />
-      )}
+
       <Text 
         style={[
           styles.text,

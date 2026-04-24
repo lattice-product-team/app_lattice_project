@@ -123,8 +123,8 @@ export const lightTheme: LatticeTheme = {
     glass: {
       background: 'rgba(255, 255, 255, 0.7)',
       border: 'rgba(0, 0, 0, 0.05)',
-      subtle: 'rgba(0, 0, 0, 0.06)',
-      subtleBorder: 'rgba(0, 0, 0, 0.12)',
+      subtle: 'rgba(0, 0, 0, 0.1)',
+      subtleBorder: 'rgba(0, 0, 0, 0.15)',
       tint: 'light',
     },
     status: {
@@ -180,8 +180,8 @@ export const darkTheme: LatticeTheme = {
     glass: {
       background: 'rgba(22, 22, 24, 0.7)',
       border: 'rgba(255, 255, 255, 0.12)',
-      subtle: 'rgba(255, 255, 255, 0.08)',
-      subtleBorder: 'rgba(255, 255, 255, 0.12)',
+      subtle: 'rgba(255, 255, 255, 0.15)',
+      subtleBorder: 'rgba(255, 255, 255, 0.2)',
       tint: 'dark',
     },
     status: {
