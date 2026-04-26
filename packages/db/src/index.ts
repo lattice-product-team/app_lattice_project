@@ -6,6 +6,7 @@ import * as schema from './schema';
 export {
   users,
   tickets,
+  events,
   pointsOfInterest,
   nodes,
   pathSegments,
@@ -15,6 +16,7 @@ export {
   offlinePackages,
   mobilityModeEnum,
   poiTypeEnum,
+  eventTypeEnum,
   crowdLevelEnum,
   surfaceTypeEnum,
 } from './schema';

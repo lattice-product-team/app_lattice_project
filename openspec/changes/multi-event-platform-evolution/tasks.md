@@ -1,9 +1,9 @@
 ## 1. Database & API Foundation
 
-- [ ] 1.1 Create migration for `events` table with category enum and geo boundaries
-- [ ] 1.2 Update `points_of_interest` and `nodes` tables to include `event_id`
-- [ ] 1.3 Update Geo service API endpoints to support `eventId` filtering
-- [ ] 1.4 Implement `GET /events` endpoint to fetch active festivals
+- [x] 1.1 Create migration for `events` table with category enum and geo boundaries
+- [x] 1.2 Update `points_of_interest` and `nodes` tables to include `event_id`
+- [x] 1.3 Update Geo service API endpoints to support `eventId` filtering
+- [x] 1.4 Implement `GET /events` endpoint to fetch active festivals
 
 ## 2. Global State & Dynamic Theming
 
