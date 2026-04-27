@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useRootNavigationState } from 'expo-router';
-import { useAuthStore } from '../src/hooks/useAuthStore';
+import { useAuthStore } from '../src/store/useAuthStore';
 import { View, ActivityIndicator } from 'react-native';
 import { colors } from '../src/styles/colors';
 

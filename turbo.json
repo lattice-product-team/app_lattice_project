@@ -12,7 +12,27 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "NODE_ENV",
+        "PORT",
+        "GATEWAY_PORT",
+        "AUTH_PORT",
+        "GEO_PORT",
+        "SOCIAL_PORT",
+        "AUTH_HOST",
+        "GEO_HOST",
+        "SOCIAL_HOST",
+        "DB_HOST",
+        "DB_PORT",
+        "DB_USER",
+        "DB_PASSWORD",
+        "DB_NAME",
+        "DATABASE_URL",
+        "REDIS_HOST",
+        "REDIS_PORT",
+        "REDIS_URL",
+      ]
     },
     "db:generate": {
       "cache": false

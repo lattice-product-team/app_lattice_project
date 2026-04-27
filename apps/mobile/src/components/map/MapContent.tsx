@@ -9,17 +9,21 @@ import * as Haptics from 'expo-haptics';
 import { useMapStore } from '../../store/useMapStore';
 import { useRoutingLogic } from '../../hooks/useRoutingLogic';
 import { usePathNetwork } from '../../hooks/queries/usePathNetwork';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 // Constants & Utilities
 import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM } from '../../constants/mapConstants';
 import { mapLayerStyles } from '../../styles/mapLayerStyles';
-import { theme } from '../../styles/theme';
-import { colors } from '../../styles/colors';
+import { primitives } from '../../styles/colors';
 
 import { useLocationStore } from '../../store/useLocationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+const MAP_STYLES = {
+  light: "https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  dark: "https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+} as const;
 
 interface MapContentProps {
   poisGeoJSON: any;
@@ -35,6 +39,7 @@ export const MapContent = React.memo(function MapContent({
 }: MapContentProps) {
   const camera = useRef<MapLibreGL.CameraRef>(null);
   const insets = useSafeAreaInsets();
+  const theme = useLatticeTheme();
 
   const selectedPoiId = useMapStore((s) => s.selectedPoiId);
   const selectedCoords = useMapStore((s) => s.selectedCoords);
@@ -127,10 +132,18 @@ export const MapContent = React.memo(function MapContent({
 
   const handlePoiPress = useCallback(
     (data: any) => {
-      // Normalization: Android passes an event with .features, iOS passes the feature object directly
       const feature = data.features ? data.features[0] : data;
-
       if (!feature?.properties) return;
+
+      if (feature.properties.cluster && feature.properties.cluster_id) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        camera.current?.setCamera({
+          centerCoordinate: feature.geometry.coordinates,
+          zoomLevel: (camera.current as any).getZoom() + 2,
+          animationDuration: 400,
+        });
+        return;
+      }
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       selectPoi({
@@ -156,8 +169,8 @@ export const MapContent = React.memo(function MapContent({
   return (
     <View className="flex-1">
       <MapLibreGL.MapView
-        style={styles.map}
-        mapStyle="https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+        style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
+        mapStyle={theme.dark ? MAP_STYLES.dark : MAP_STYLES.light}
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
@@ -178,34 +191,93 @@ export const MapContent = React.memo(function MapContent({
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
             id="networkLines"
-            style={{ ...mapLayerStyles.networkLines, lineOpacity: 0.15 }}
+            style={{ 
+              ...mapLayerStyles.networkLines, 
+              lineOpacity: 0.15,
+              lineColor: theme.dark ? primitives.solar[400] : primitives.midnight.base 
+            }}
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 2. VISUAL POIS (Drawing circles and labels) */}
-        <MapLibreGL.ShapeSource id="poisSource" shape={poisGeoJSON || EMPTY_GEOJSON}>
+        {/* 2. VISUAL POIS */}
+        <MapLibreGL.ShapeSource 
+          id="poisSource" 
+          shape={poisGeoJSON || EMPTY_GEOJSON}
+          cluster={true}
+          clusterRadius={50}
+          clusterMaxZoom={14}
+        >
           <MapLibreGL.CircleLayer
             id="poiCircles"
             style={mapLayerStyles.poiCircles}
             minZoomLevel={12.8}
+            filter={['!', ['has', 'point_count']]}
+          />
+          <MapLibreGL.SymbolLayer
+            id="poiIcons"
+            style={mapLayerStyles.poiIcons}
+            minZoomLevel={14}
+            filter={['!', ['has', 'point_count']]}
           />
           <MapLibreGL.SymbolLayer
             id="poiLabels"
-            style={mapLayerStyles.poiLabels}
+            style={{
+              ...mapLayerStyles.poiLabels,
+              textField: ['get', 'name'],
+              textColor: theme.colors.text.primary,
+              textHaloColor: theme.colors.bg.main,
+              textHaloWidth: 1.5,
+            }}
             minZoomLevel={15.8}
+            filter={['!', ['has', 'point_count']]}
+          />
+          
+          <MapLibreGL.CircleLayer
+            id="clusterCircles"
+            style={mapLayerStyles.clusterCircles}
+            filter={['has', 'point_count']}
+          />
+          <MapLibreGL.SymbolLayer
+            id="clusterLabels"
+            style={mapLayerStyles.clusterLabels}
+            filter={['has', 'point_count']}
+          />
+
+          {/* Selected POI Highlight */}
+          <MapLibreGL.CircleLayer
+            id="selectedPoiHighlight"
+            filter={['==', ['get', 'id'], selectedPoiId || '']}
+            style={{
+              circleRadius: 22,
+              circleColor: theme.colors.text.primary,
+              circleOpacity: 0.2,
+              circleStrokeWidth: 2,
+              circleStrokeColor: theme.colors.text.primary,
+            }}
           />
         </MapLibreGL.ShapeSource>
 
-        <MapLibreGL.ShapeSource id="savedSource" shape={savedLocations || EMPTY_GEOJSON}>
+        <MapLibreGL.ShapeSource 
+          id="savedSource" 
+          shape={savedLocations || EMPTY_GEOJSON}
+          cluster={true}
+          clusterRadius={40}
+        >
           <MapLibreGL.CircleLayer
             id="savedCircles"
             style={mapLayerStyles.savedPoiCircles}
             minZoomLevel={12.8}
+            filter={['!', ['has', 'point_count']]}
           />
           <MapLibreGL.SymbolLayer
             id="savedLabels"
-            style={mapLayerStyles.poiLabels}
+            style={{
+              ...mapLayerStyles.poiLabels,
+              textColor: theme.colors.text.primary,
+              textHaloColor: theme.colors.bg.main,
+            }}
             minZoomLevel={15.8}
+            filter={['!', ['has', 'point_count']]}
           />
         </MapLibreGL.ShapeSource>
 
@@ -220,36 +292,13 @@ export const MapContent = React.memo(function MapContent({
           </MapLibreGL.ShapeSource>
         )}
 
-        <MapLibreGL.ShapeSource id="selectionSource" shape={selectionGeoJSON}>
-          <MapLibreGL.CircleLayer
-            id="selectedPoiHighlight"
-            style={{
-              circleRadius: 22,
-              circleColor: colors.white,
-              circleOpacity: 0.2,
-              circleStrokeWidth: 2,
-              circleStrokeColor: colors.white,
-            }}
-          />
-          <MapLibreGL.CircleLayer
-            id="selectedPoiInner"
-            style={{
-              circleRadius: 18,
-              circleColor: colors.primary,
-              circleStrokeWidth: 2,
-              circleStrokeColor: colors.white,
-            }}
-          />
-        </MapLibreGL.ShapeSource>
-
-        {/* 4. UNIFIED INTERACTION LAYER (GPU-Accelerated) */}
+        {/* 4. UNIFIED INTERACTION LAYER */}
         <MapLibreGL.ShapeSource
           id="interactionSource"
           shape={poisAndSaved}
           onPress={handlePoiPress}
           hitbox={{ width: 44, height: 44 }}
         >
-          {/* Transparent circles for catching touches - highly performant on both iOS/Android */}
           <MapLibreGL.CircleLayer
             id="interactionLayer"
             style={{ circleRadius: 24, circleOpacity: 0 }}
@@ -263,6 +312,6 @@ export const MapContent = React.memo(function MapContent({
 MapContent.displayName = 'MapContent';
 
 const styles = StyleSheet.create({
-  map: { flex: 1, backgroundColor: theme.colors.background },
-  hitbox: { width: 44, height: 44, backgroundColor: 'transparent' },
+  map: { flex: 1 },
 });
+

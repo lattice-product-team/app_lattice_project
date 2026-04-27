@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-nati
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ticket } from '../../types/models/auth';
-import { colors } from '../../styles/colors';
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
@@ -18,17 +18,18 @@ interface TicketCardProps {
 }
 
 export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCardPress }) => {
+  const theme = useLatticeTheme();
   const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna');
   
   // Premium gradient combinations
   const gradientColors = isTribuna 
-    ? [colors.primary, '#5C4A54'] // Magic Gem variant
-    : [colors.secondary, '#4D4B4C']; // Boat Anchor variant
+    ? [theme.colors.brand.primary, theme.colors.brand.secondaryVariant] 
+    : [theme.colors.brand.secondary, theme.colors.brand.primaryVariant]; 
 
   return (
     <Animated.View 
       entering={FadeIn.delay(index * 100)}
-      style={styles.cardContainer}
+      style={[styles.cardContainer, { backgroundColor: theme.colors.bg.main }]}
     >
       <TouchableOpacity 
         activeOpacity={0.9} 
@@ -42,56 +43,56 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
           style={styles.gradient}
         >
           {/* Top Glass Header */}
-          <View style={styles.glassHeader}>
+          <View style={[styles.glassHeader, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
             <View>
-              <Text style={styles.brandTitle}>LATTICE</Text>
-              <Text style={styles.brandSub}>LATTICE ELITE</Text>
+              <Text style={[styles.brandTitle, { color: theme.colors.text.inverse }]}>LATTICE</Text>
+              <Text style={[styles.brandSub, { color: theme.colors.interactive.disabled }]}>LATTICE ELITE</Text>
             </View>
-            <View style={styles.chipContainer}>
-              <MaterialCommunityIcons name="integrated-circuit-chip" size={24} color="rgba(255,255,255,0.7)" />
+            <View style={[styles.chipContainer, { backgroundColor: theme.colors.overlay.thin }]}>
+              <MaterialCommunityIcons name="integrated-circuit-chip" size={24} color={theme.colors.text.inverse} style={{ opacity: 0.7 }} />
             </View>
           </View>
 
           {/* Main Info Section */}
           <View style={styles.content}>
             <View style={styles.mainField}>
-              <Text style={styles.label}>ZONE</Text>
-              <Text style={styles.value}>{ticket.zoneName || 'General Admission'}</Text>
+              <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>ZONE</Text>
+              <Text style={[styles.value, { color: theme.colors.text.inverse }]}>{ticket.zoneName || 'General Admission'}</Text>
             </View>
 
             <View style={styles.grid}>
               <View style={styles.field}>
-                <Text style={styles.label}>GATE</Text>
-                <Text style={styles.subValue}>{ticket.gate || '03'}</Text>
+                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>GATE</Text>
+                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>{ticket.gate || '03'}</Text>
               </View>
               <View style={styles.field}>
-                <Text style={styles.label}>ROW</Text>
-                <Text style={styles.subValue}>{ticket.seatRow || '—'}</Text>
+                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>ROW</Text>
+                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>{ticket.seatRow || '—'}</Text>
               </View>
               <View style={styles.field}>
-                <Text style={styles.label}>SEAT</Text>
-                <Text style={styles.subValue}>{ticket.seatNumber || '—'}</Text>
+                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>SEAT</Text>
+                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>{ticket.seatNumber || '—'}</Text>
               </View>
             </View>
           </View>
 
           {/* Bottom QR Section (Clean) */}
-          <View style={styles.footer}>
-            <View style={styles.qrWrapper}>
+          <View style={[styles.footer, { backgroundColor: theme.colors.bg.surface }]}>
+            <View style={[styles.qrWrapper, { backgroundColor: theme.colors.bg.surface }]}>
               <Image 
                 source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${ticket.code}&color=1d1c1d` }}
                 style={styles.qrCode}
                 contentFit="contain"
               />
             </View>
-            <View style={styles.codeContainer}>
-              <Text style={styles.ticketCode}>{ticket.code}</Text>
+            <View style={[styles.codeContainer, { backgroundColor: theme.colors.overlay.thin }]}>
+              <Text style={[styles.ticketCode, { color: theme.colors.text.primary }]}>{ticket.code}</Text>
             </View>
           </View>
 
           {/* Abstract Decorations */}
-          <View style={styles.decorCircle} />
-          <View style={styles.decorLines} />
+          <View style={[styles.decorCircle, { backgroundColor: theme.colors.overlay.thin }]} />
+          <View style={[styles.decorLines, { backgroundColor: theme.colors.overlay.thin }]} />
         </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
@@ -104,7 +105,6 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     borderRadius: 32,
     overflow: 'hidden',
-    backgroundColor: colors.background,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 0.4,
@@ -120,28 +120,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   chipContainer: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   brandTitle: {
-    color: '#FFF',
     fontSize: 18,
     fontFamily: 'Outfit-Bold',
     letterSpacing: 1,
   },
   brandSub: {
-    color: 'rgba(255,255,255,0.5)',
     fontSize: 10,
     fontFamily: 'PlusJakartaSans-ExtraBold',
     letterSpacing: 2,
@@ -161,25 +156,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    color: 'rgba(255,255,255,0.4)',
     fontSize: 10,
     fontFamily: 'PlusJakartaSans-Bold',
     letterSpacing: 1.5,
     marginBottom: 8,
   },
   value: {
-    color: '#FFF',
     fontSize: 28,
     fontFamily: 'Outfit-Bold',
     letterSpacing: -0.5,
   },
   subValue: {
-    color: '#FFF',
     fontSize: 20,
     fontFamily: 'Outfit-Medium',
   },
   footer: {
-    backgroundColor: '#FFF',
     borderRadius: 28,
     padding: 24,
     alignItems: 'center',
@@ -187,7 +178,6 @@ const styles = StyleSheet.create({
   qrWrapper: {
     width: 160,
     height: 160,
-    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -199,11 +189,9 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 16,
     paddingVertical: 6,
-    backgroundColor: 'rgba(0,0,0,0.03)',
     borderRadius: 12,
   },
   ticketCode: {
-    color: colors.background,
     fontSize: 12,
     fontFamily: 'PlusJakartaSans-Bold',
     letterSpacing: 3,
@@ -216,7 +204,6 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   decorLines: {
     position: 'absolute',
@@ -224,7 +211,7 @@ const styles = StyleSheet.create({
     left: -20,
     width: 100,
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.1)',
     transform: [{ rotate: '45deg' }],
   }
 });
+

@@ -3,10 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import { logger } from '@app/core';
+import { logger, errorHandler } from '@app/core';
 
 // Load environment variables from root if not already set (e.g. in CI/CD)
-dotenv.config({ path: path.join(process.cwd(), '../../../.env') });
+if (!process.env.AUTH_HOST) {
+  dotenv.config({ path: path.join(process.cwd(), '../../../.env') });
+}
 
 export const app = express();
 const PORT = process.env.GATEWAY_PORT || process.env.PORT || 3000;
@@ -58,12 +60,15 @@ const API_PREFIX = '/api/v1';
 
 // Helper to create proxy with robust path rewrite and logging
 const createServiceProxy = (target: string, label: string, paths: string[]) => {
+  const filter = (path: string) => {
+    const isMatched = paths.some((p) => path.startsWith(p) || path.startsWith(`${API_PREFIX}${p}`));
+    return isMatched;
+  };
+
   return createProxyMiddleware({
     target,
     changeOrigin: true,
-    pathFilter: (path: string) => {
-      return paths.some((p) => path.startsWith(p) || path.startsWith(`${API_PREFIX}${p}`));
-    },
+    pathFilter: filter,
     pathRewrite: (path: string) => {
       let newPath = path;
       if (path.startsWith(API_PREFIX)) {
@@ -73,15 +78,34 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
     },
     on: {
       error: (err: any, req: any, res: any) => {
+        const errorMsg = err.message || 'Unknown proxy error';
         if (process.env.NODE_ENV !== 'test') {
-          console.error(`[Gateway -> ${label}] Error:`, err.message);
+          console.error(`[Gateway -> ${label}] Proxy Error:`, {
+            message: errorMsg,
+            code: err.code,
+            url: req.originalUrl,
+            target
+          });
         }
         if (res && res.writeHead) {
           res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: `${label} service unreachable`, details: err.message }));
+          res.end(
+            JSON.stringify({
+              error: {
+                message: `${label} service unreachable`,
+                code: 'SERVICE_UNREACHABLE',
+                details: errorMsg,
+              },
+            })
+          );
         }
       },
-      proxyRes: (proxyRes: any, req: any, res: any) => {
+      proxyReq: (proxyReq: any, req: any) => {
+        if (process.env.NODE_ENV !== 'test') {
+          console.log(`[Gateway -> ${label}] Proxying: ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`);
+        }
+      },
+      proxyRes: (proxyRes: any, req: any) => {
         if (process.env.NODE_ENV !== 'test') {
           if (proxyRes.statusCode && proxyRes.statusCode >= 400) {
             console.warn(
@@ -132,6 +156,8 @@ if (basePath && basePath !== '/') {
 } else {
   app.use('/', router);
 }
+
+app.use(errorHandler);
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(Number(PORT), '0.0.0.0', () => {

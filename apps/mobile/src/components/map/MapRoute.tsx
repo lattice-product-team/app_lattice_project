@@ -1,12 +1,14 @@
 import React from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { RouteGeoJSON } from '../../types';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface MapRouteProps {
   route: RouteGeoJSON | null;
 }
 
 export const MapRoute = React.memo(function MapRoute({ route }: MapRouteProps) {
+  const theme = useLatticeTheme();
   if (!route) return null;
 
   return (
@@ -14,7 +16,7 @@ export const MapRoute = React.memo(function MapRoute({ route }: MapRouteProps) {
       <MapLibreGL.LineLayer
         id="routeFill"
         style={{
-          lineColor: '#00FF9D', // Neon green
+          lineColor: theme.colors.brand.primary,
           lineWidth: 5,
           lineJoin: 'round',
           lineCap: 'round',
@@ -24,7 +26,7 @@ export const MapRoute = React.memo(function MapRoute({ route }: MapRouteProps) {
       <MapLibreGL.LineLayer
         id="routeGlow"
         style={{
-          lineColor: '#00FF9D',
+          lineColor: theme.colors.brand.primary,
           lineWidth: 10,
           lineJoin: 'round',
           lineCap: 'round',

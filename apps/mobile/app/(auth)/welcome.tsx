@@ -10,8 +10,8 @@ import { useRouter } from 'expo-router';
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, Layout, SlideOutLeft } from 'react-native-reanimated';
-import { useAuthStore } from '../../src/hooks/useAuthStore';
-import { useSyncTicket } from '../../src/services/auth';
+import { useAuthStore } from '../../src/store/useAuthStore';
+import { useSyncTicket } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { ThemeGradient } from '../../src/components/ui/ThemeGradient';
@@ -59,7 +59,7 @@ const WelcomeStep = ({ title, subtitle, primaryAction, secondaryAction }: StepPr
       <PremiumButton
         onPress={primaryAction.onPress}
         label={primaryAction.label}
-        variant="white"
+        variant="primary"
       />
 
       {secondaryAction ? (
@@ -117,7 +117,7 @@ export default function WelcomeScreen() {
           <WelcomeStep
             key="step-1"
             title={"Lattice\nOn Track"}
-            subtitle="Benvingut al Circuit de Barcelona-Catalunya. Prepara't per a la millor experiència Lattice."
+            subtitle="Benvingut a l'experiència Lattice. Prepara't per gaudir de l'esdeveniment al Circuit de Barcelona-Catalunya."
             primaryAction={{
               label: 'COMENÇAR',
               onPress: () => setStep(2)
@@ -191,10 +191,6 @@ export default function WelcomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ThemeGradient 
-        variant="premium" 
-        showBlob={true}
-      />
       
       <AuthLayout 
         step={step} 
@@ -204,7 +200,7 @@ export default function WelcomeScreen() {
           if (step === 3) useAuthStore.getState().clearRegistrationData();
           setStep((prev) => (prev - 1) as 1 | 2 | 3);
         }}
-        transparent
+        midnight
       >
         <Animated.View layout={Layout.springify()} className="flex-1">
           {currentStepContent}

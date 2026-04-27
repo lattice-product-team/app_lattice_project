@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSavedLocations } from '../../hooks/queries/useSavedLocations';
-import { colors } from '../../styles/colors';
 import { typography } from '../../styles/typography';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface GuidesSectionProps {
   onSelectMarker: (coords: [number, number], id: number) => void;
@@ -12,11 +12,12 @@ interface GuidesSectionProps {
 
 export const GuidesSection = ({ onSelectMarker, onSeeAll }: GuidesSectionProps) => {
   const { data: savedData, isLoading } = useSavedLocations();
+  const theme = useLatticeTheme();
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={theme.colors.brand.primary} />
       </View>
     );
   }
@@ -28,9 +29,9 @@ export const GuidesSection = ({ onSelectMarker, onSeeAll }: GuidesSectionProps) 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Tus Marcadores</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Tus Marcadores</Text>
         <Pressable onPress={onSeeAll} style={styles.seeAllBtn}>
-          <Text style={styles.seeAllText}>Ver todos</Text>
+          <Text style={[styles.seeAllText, { color: theme.colors.brand.primary }]}>Ver todos</Text>
         </Pressable>
       </View>
 
@@ -38,13 +39,13 @@ export const GuidesSection = ({ onSelectMarker, onSeeAll }: GuidesSectionProps) 
         {savedData.features.slice(0, 3).map((f: any) => (
           <Pressable
             key={f.properties.id}
-            style={styles.savedItem}
+            style={[styles.savedItem, { backgroundColor: theme.colors.glass.subtle, borderColor: theme.colors.glass.subtleBorder, borderWidth: 1 }]}
             onPress={() => onSelectMarker(f.geometry.coordinates, f.properties.id)}
           >
             <View style={styles.savedIconCircle}>
               <MaterialCommunityIcons name="star" size={16} color="#FFD60A" />
             </View>
-            <Text style={styles.savedLabel} numberOfLines={1}>
+            <Text style={[styles.savedLabel, { color: theme.colors.text.primary }]} numberOfLines={1}>
               {f.properties.label}
             </Text>
           </Pressable>
@@ -57,16 +58,15 @@ export const GuidesSection = ({ onSelectMarker, onSeeAll }: GuidesSectionProps) 
 const styles = StyleSheet.create({
   container: {
     marginTop: 10,
+    paddingHorizontal: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
-    paddingHorizontal: 4,
   },
   sectionTitle: {
-    color: 'white',
     fontSize: 16,
     fontFamily: typography.primary.bold,
   },
@@ -74,7 +74,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   seeAllText: {
-    color: colors.primary,
     fontSize: 13,
     fontFamily: typography.secondary.bold,
   },
@@ -89,7 +88,6 @@ const styles = StyleSheet.create({
   savedItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     padding: 12,
     borderRadius: 16,
     gap: 12,
@@ -103,7 +101,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   savedLabel: {
-    color: 'white',
     fontSize: 14,
     fontFamily: typography.secondary.medium,
     flex: 1,

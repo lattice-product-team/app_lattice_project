@@ -1,5 +1,5 @@
 import React, { useMemo, forwardRef } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Platform } from 'react-native';
 import BottomSheet, { BottomSheetScrollView, BottomSheetBackgroundProps } from '@gorhom/bottom-sheet';
 import { SafeBlurView } from '../ui/SafeBlurView';
 import { SharedValue } from 'react-native-reanimated';
@@ -7,25 +7,29 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SearchFilters } from './SearchFilters';
 import { RemoteModeWarning } from './RemoteModeWarning';
 import { useMapStore } from '../../store/useMapStore';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-interface MapBottomSheetProps {
-  searchBar?: React.ReactNode;
-  isSearching?: boolean;
-  searchResults?: React.ReactNode;
-  discoveryContent?: React.ReactNode; // Now used for Near Me carousels
-  poiCarousel?: React.ReactNode;      // Used for filtered results
-  translateY: SharedValue<number>;
-  activeCategoryId: string | null;
-  onSelectCategory: (category: string) => void;
-}
-
-const CustomBackground = ({ style }: BottomSheetBackgroundProps) => (
-  <SafeBlurView intensity={100} tint="dark" style={[style, styles.blurBackground]}>
-    <View style={styles.premiumBorder} />
-  </SafeBlurView>
-);
+const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
+  const theme = useLatticeTheme();
+  return (
+    <SafeBlurView 
+      intensity={90} 
+      tint={theme.colors.glass.tint} 
+      style={[
+        style, 
+        styles.blurBackground,
+        { 
+          backgroundColor: theme.colors.glass.background,
+          borderColor: theme.colors.glass.border 
+        }
+      ]}
+    >
+      <View style={styles.premiumBorder} />
+    </SafeBlurView>
+  );
+};
 
 export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({ 
   searchBar,
@@ -39,22 +43,27 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
 }: MapBottomSheetProps, ref) => {
   const insets = useSafeAreaInsets();
   const isRemote = useMapStore((s) => s.isRemote);
+  const theme = useLatticeTheme();
 
   const snapPoints = useMemo(() => [
-    insets.bottom + 100,  // Collapsed: Search bar only
+    insets.bottom + 110,  // Collapsed: Search bar only
     SCREEN_HEIGHT * 0.48  // Medium: Main exploration view
   ], [insets.bottom]);
 
   return (
     <BottomSheet
       ref={ref}
-      index={1} // Start at medium height
+      index={1}
       snapPoints={snapPoints}
       backgroundComponent={CustomBackground}
-      handleIndicatorStyle={styles.handleIndicator}
+      handleIndicatorStyle={[
+        styles.handleIndicator,
+        { backgroundColor: theme.colors.overlay.modal }
+      ]}
       animatedPosition={translateY}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
+      style={styles.sheetContainer}
     >
       <BottomSheetScrollView 
         contentContainerStyle={styles.scrollContent}
@@ -77,14 +86,13 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
 
         {isRemote && !isSearching && <RemoteModeWarning />}
 
-        {/* Content Area */}
         <View style={styles.contentWrapper}>
           {isSearching ? (
             searchResults
           ) : activeCategoryId ? (
-            poiCarousel // Carousel for specific category
+            poiCarousel 
           ) : (
-            discoveryContent // Default: Near Me carousel
+            discoveryContent 
           )}
         </View>
 
@@ -94,22 +102,33 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
   );
 });
 
+interface MapBottomSheetProps {
+  searchBar?: React.ReactNode;
+  isSearching?: boolean;
+  searchResults?: React.ReactNode;
+  discoveryContent?: React.ReactNode;
+  poiCarousel?: React.ReactNode;
+  translateY: SharedValue<number>;
+  activeCategoryId: string | null;
+  onSelectCategory: (category: string) => void;
+}
+
 MapBottomSheet.displayName = 'MapBottomSheet';
 
 const styles = StyleSheet.create({
+  sheetContainer: {
+    marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
+  },
   blurBackground: {
-    backgroundColor: 'rgba(10, 10, 12, 0.98)',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
     overflow: 'hidden',
   },
   handleIndicator: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     width: 36,
-    height: 4,
-    borderRadius: 2,
+    height: 5,
+    borderRadius: 2.5,
     marginTop: 8,
   },
   scrollContent: {
@@ -124,11 +143,13 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     marginTop: 4,
+    minHeight: 250,
   },
   premiumBorder: {
     ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     pointerEvents: 'none',
   },
 });
+

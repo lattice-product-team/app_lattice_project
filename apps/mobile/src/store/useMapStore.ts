@@ -59,12 +59,17 @@ export const useMapStore = create<MapState>((set) => ({
     const coords = isObj ? poi.geometry?.coordinates || null : null;
     const fullPoi = isObj && (poi.name || poi.label) ? (poi as UIPOI) : null;
 
-    set({
-      uiState: MapUIState.POI_DETAIL,
-      selectedPoiId: id,
-      selectedPoi: fullPoi,
-      selectedCoords: coords,
-      isNavigating: false,
+    set((state) => {
+      // Avoid redundant state updates if same POI is selected
+      if (state.selectedPoiId === id) return state;
+      
+      return {
+        uiState: MapUIState.POI_DETAIL,
+        selectedPoiId: id,
+        selectedPoi: fullPoi,
+        selectedCoords: coords,
+        isNavigating: false,
+      };
     });
   },
 

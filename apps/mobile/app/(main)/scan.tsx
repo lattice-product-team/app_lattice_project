@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useTicketScanner } from '../src/hooks/useTicketScanner';
-import { CameraPermissionView } from '../src/components/ui/CameraPermissionView';
-import { ScanOverlay } from '../src/components/ui/ScanOverlay';
+import { useTicketScanner } from '../../src/hooks/useTicketScanner';
+import { CameraPermissionView } from '../../src/components/ui/CameraPermissionView';
+import { ScanOverlay } from '../../src/components/ui/ScanOverlay';
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();

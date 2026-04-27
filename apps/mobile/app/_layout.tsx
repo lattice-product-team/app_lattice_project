@@ -41,7 +41,6 @@ export default function RootLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="(main)" />
             <Stack.Screen name="(auth)" />
-            <Stack.Screen name="scan" />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="light" />

@@ -1,29 +1,31 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from './useAuthStore';
+import { useAuthStore } from '../store/useAuthStore';
+import { useClaimTicket } from './queries/useAuthActions';
 
 export const useTicketScanner = () => {
   const [scanned, setScanned] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
-  const { token, claimTicket, setPendingTicketCode } = useAuthStore();
+  const { token, setPendingTicketCode } = useAuthStore();
+  const { mutateAsync: claimTicket, isPending: isProcessing } = useClaimTicket();
 
   const handleBarCodeScanned = async (data: string) => {
     setScanned(true);
-    setIsProcessing(true);
 
     if (token) {
-      const success = await claimTicket(data);
-      setIsProcessing(false);
-      
-      if (success) {
-        Alert.alert(
-          "Entrada Afegida", 
-          "La teva entrada s'ha associat correctament al teu compte.",
-          [{ text: "Veure Perfil", onPress: () => router.push('/profile') }]
-        );
-      } else {
+      try {
+        const response = await claimTicket(data);
+        if (response.ticket_info) {
+          Alert.alert(
+            "Entrada Afegida", 
+            "La teva entrada s'ha associat correctament al teu compte.",
+            [{ text: "Veure Perfil", onPress: () => router.push('/profile') }]
+          );
+        } else {
+          throw new Error('No info');
+        }
+      } catch (err) {
         Alert.alert(
           "Error", 
           "No s'ha pogut associar l'entrada. És possible que el codi no sigui vàlid o ja estigui en ús.",
@@ -32,7 +34,6 @@ export const useTicketScanner = () => {
       }
     } else {
       setPendingTicketCode(data);
-      setIsProcessing(false);
       
       Alert.alert(
         "Inicia Sessió", 

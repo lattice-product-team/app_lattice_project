@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface SettingItemProps {
   label: string;
@@ -26,28 +26,59 @@ export const SettingItem = React.memo(function SettingItem({
   secondaryText,
   iconBgColor
 }: SettingItemProps) {
-  const iconColor = destructive ? "#FF3B30" : (iconBgColor ? 'white' : colors.primary);
-  const bgColor = iconBgColor || (destructive ? 'rgba(239, 68, 68, 0.1)' : 'rgba(225, 6, 0, 0.1)');
+  const theme = useLatticeTheme();
+  
+  const iconColor = destructive 
+    ? theme.colors.status.error 
+    : (iconBgColor ? (theme.dark ? theme.colors.text.inverse : theme.colors.brand.primary) : theme.colors.brand.primary);
+    
+  const bgColor = iconBgColor || (destructive ? theme.colors.status.errorSurface : theme.colors.bg.elevation);
 
   return (
     <Pressable 
       onPress={type === 'link' ? onPress : undefined}
-      className={`flex-row justify-between items-center py-4 px-5 border-b border-white/5 ${type === 'link' ? 'active:bg-white/5' : ''}`}
+      style={({ pressed }) => [
+        { 
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          itemsCenter: 'center',
+          paddingVertical: 16,
+          paddingHorizontal: 20,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.border.subtle,
+          backgroundColor: pressed && type === 'link' ? theme.colors.bg.elevation : 'transparent'
+        }
+      ]}
       accessibilityRole={type === 'link' ? 'button' : 'none'}
     >
-      <View className="flex-row items-center flex-1">
+      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
         <View 
-          className="w-10 h-10 rounded-xl items-center justify-center mr-4"
-          style={{ backgroundColor: bgColor }}
+          style={{ 
+            width: 40, 
+            height: 40, 
+            borderRadius: 12, 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            marginRight: 16,
+            backgroundColor: bgColor 
+          }}
         >
           <Feather name={icon} size={20} color={iconColor} />
         </View>
-        <View className="flex-1">
-          <Text className={`text-base font-medium ${destructive ? 'text-red-500 font-bold' : 'text-white'}`}>
+        <View style={{ flex: 1 }}>
+          <Text 
+            style={{ 
+              fontSize: 16, 
+              fontWeight: destructive ? 'bold' : '500',
+            color: destructive ? theme.colors.status.error : theme.colors.text.primary 
+            }}
+          >
             {label}
           </Text>
           {secondaryText ? (
-            <Text className="text-primary text-xs mt-0.5">{secondaryText}</Text>
+            <Text style={{ color: theme.colors.brand.primary, fontSize: 12, marginTop: 2 }}>
+              {secondaryText}
+            </Text>
           ) : null}
         </View>
       </View>
@@ -56,14 +87,19 @@ export const SettingItem = React.memo(function SettingItem({
         <Switch 
           value={value} 
           onValueChange={onValueChange} 
-          trackColor={{ false: '#374151', true: colors.primary }}
-          thumbColor={'#ffffff'}
+          trackColor={{ false: theme.colors.border.strong, true: theme.colors.brand.primary }}
+          thumbColor={theme.colors.text.inverse}
         />
       ) : (
-        <Feather name="chevron-right" size={24} color={destructive ? "#FF3B30" : "#9ca3af"} />
+        <Feather 
+          name="chevron-right" 
+          size={24} 
+          color={destructive ? theme.colors.status.error : theme.colors.text.muted} 
+        />
       )}
     </Pressable>
   );
 });
 
 SettingItem.displayName = 'SettingItem';
+
