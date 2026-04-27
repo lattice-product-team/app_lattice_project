@@ -82,13 +82,13 @@ export const getLocations = (req: Request, res: Response) => {
 
 export const getRoute = async (req: Request, res: Response) => {
   try {
-    const { origin, destination, avoidStairs } = req.body;
+    const { origin, destination, avoidStairs, wheelchairAccess, eventId } = req.body;
 
     if (!origin || !destination) {
       return res.status(400).json({ error: 'Origin and destination are required' });
     }
 
-    const route = await findRoute(origin, destination, { avoidStairs });
+    const route = await findRoute(origin, destination, { avoidStairs, wheelchairAccess, eventId });
     res.json(route);
   } catch (error) {
     console.error('Error calculating route:', error);

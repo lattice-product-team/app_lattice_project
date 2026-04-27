@@ -23,11 +23,13 @@ interface MapState {
   currentRoute: RouteGeoJSON | null;
   routeMetadata: RouteMetadata | null;
   isNavigating: boolean;
+  isRemote: boolean;
   currentEventId: number | null;
   selectedEvent: LatticeEvent | null;
 
   // Actions
   selectPoi: (poi: any) => void;
+  setRemote: (remote: boolean) => void;
   setCurrentEvent: (event: LatticeEvent | null) => void;
   setRoute: (route: RouteGeoJSON | null, metadata?: RouteMetadata | null) => void;
   setNavigating: (navigating: boolean) => void;
@@ -45,6 +47,7 @@ export const useMapStore = create<MapState>((set) => ({
   currentRoute: null,
   routeMetadata: null,
   isNavigating: false,
+  isRemote: false,
   currentEventId: null,
   selectedEvent: null,
 
@@ -113,6 +116,8 @@ export const useMapStore = create<MapState>((set) => ({
       routeMetadata: null,
       isNavigating: false,
     }),
+
+  setRemote: (isRemote) => set({ isRemote }),
 
   triggerRecenter: () => set((state) => ({ recenterCount: state.recenterCount + 1 })),
 

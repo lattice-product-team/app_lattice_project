@@ -6,6 +6,7 @@ export interface RouteRequest {
   origin: { lat?: number; lng?: number; poiId?: number };
   destination: { lat?: number; lng?: number; poiId?: number };
   avoidStairs?: boolean;
+  wheelchairAccess?: boolean;
 }
 
 export const navigationService = {

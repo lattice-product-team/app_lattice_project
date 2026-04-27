@@ -19,10 +19,10 @@
 
 ## 4. Accessibility & Routing Logic
 
-- [ ] 4.1 Update `useLocationStore` to include user accessibility preferences
-- [ ] 4.2 Refactor `useRoutingLogic` to check distance from event boundary
-- [ ] 4.3 Implement "Remote Mode" UI warning for out-of-range navigation
-- [ ] 4.4 Update routing engine to filter path segments based on accessibility toggles
+- [x] 4.1 Update `useLocationStore` to include user accessibility preferences
+- [x] 4.2 Refactor `useRoutingLogic` to check distance from event boundary
+- [x] 4.3 Implement "Remote Mode" UI warning for out-of-range navigation
+- [x] 4.4 Update routing engine to filter path segments based on accessibility toggles
 
 ## 5. Offline Experience
 

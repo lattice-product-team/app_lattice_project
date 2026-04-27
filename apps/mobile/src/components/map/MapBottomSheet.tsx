@@ -5,6 +5,8 @@ import { SafeBlurView } from '../ui/SafeBlurView';
 import { SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SearchFilters } from './SearchFilters';
+import { RemoteModeWarning } from './RemoteModeWarning';
+import { useMapStore } from '../../store/useMapStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -36,6 +38,7 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
   onSelectCategory,
 }: MapBottomSheetProps, ref) => {
   const insets = useSafeAreaInsets();
+  const isRemote = useMapStore((s) => s.isRemote);
 
   const snapPoints = useMemo(() => [
     insets.bottom + 100,  // Collapsed: Search bar only
@@ -71,6 +74,8 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
             />
           </View>
         )}
+
+        {isRemote && !isSearching && <RemoteModeWarning />}
 
         {/* Content Area */}
         <View style={styles.contentWrapper}>
