@@ -71,6 +71,13 @@
       "when": 1777225868711,
       "tag": "0009_first_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1777283010200,
+      "tag": "0010_fast_hellcat",
+      "breakpoints": true
     }
   ]
 }

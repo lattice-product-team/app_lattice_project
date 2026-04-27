@@ -35,6 +35,7 @@ const getBearing = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const l2 = lon2 * Math.PI / 180;
   const y = Math.sin(l2 - l1) * Math.cos(p2);
   const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(l2 - l1);
+  const theta = Math.atan2(y, x);
   return (theta * 180 / Math.PI + 360) % 360;
 };
 

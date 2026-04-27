@@ -3,7 +3,7 @@ import * as Location from 'expo-location';
 import { useLocationPermission } from './useLocationPermission';
 import { PermissionStatus } from '../types';
 import { useLocationStore } from '../store/useLocationStore';
-import { getDistance } from '../utils/geoUtils';
+import { calculateDistance } from '../utils/geoUtils';
 
 const SIGNIFICANT_MOVEMENT_THRESHOLD = 10; // meters
 
@@ -35,7 +35,7 @@ export const useLocationService = (): LocationState => {
       lastLogicalCoords.current = newCoords;
       setLogicalLocation(newCoords);
     } else {
-      const distance = getDistance(
+      const distance = calculateDistance(
         lastLogicalCoords.current[1],
         lastLogicalCoords.current[0],
         lat,

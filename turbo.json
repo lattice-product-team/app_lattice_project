@@ -21,10 +21,7 @@
       "cache": false,
       "dependsOn": ["build"]
     },
-    "db:seed-montmelo": {
-      "cache": false
-    },
-    "db:seed-pedralbes": {
+    "db:seed": {
       "cache": false
     },
     "db:clean": {

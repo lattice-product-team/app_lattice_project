@@ -13,8 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/migrate.ts",
     "db:qrs": "tsx src/generate-qrs.ts",
-    "db:seed-montmelo": "tsx src/seed-montmelo.ts",
-    "db:seed-pedralbes": "tsx src/seed-pedralbes.ts",
+    "db:seed": "tsx src/seed-master.ts",
     "db:studio": "drizzle-kit studio",
     "test": "vitest run"
   },

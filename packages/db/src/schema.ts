@@ -89,13 +89,15 @@ export const tickets = pgTable('tickets', {
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
   name: varchar('name').notNull(),
+  description: text('description'),
   type: eventTypeEnum('type').default('generic'),
   location: geometry('location').notNull(),
+  locationName: varchar('location_name'),
   boundary: polygon('boundary'),
   imageUrl: text('image_url'),
   startDate: timestamp('start_date'),
   endDate: timestamp('end_date'),
-  metadata: text('metadata'), // JSON string for category-specific info
+  metadata: text('metadata'), 
   createdAt: timestamp('created_at').defaultNow(),
 });
 
