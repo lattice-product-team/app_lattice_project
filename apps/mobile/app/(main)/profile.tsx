@@ -14,6 +14,9 @@ import { ThemeGradient } from '../../src/components/ui/ThemeGradient';
 import { authStyles } from '../../src/styles/typography';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useLocationStore } from '../../src/store/useLocationStore';
+import { EventHistorySection } from '../../src/components/ui/EventHistorySection';
+import { useEvents } from '../../src/hooks/queries/useEvents';
 
 /**
  * Main Profile Screen.
@@ -23,23 +26,18 @@ function ProfileScreen() {
   const { user, token, tickets, logout, setAuth } = useAuthStore();
   const router = useRouter();
   
-  // Local state for toggles and wizard
-  const [avoidStairs, setAvoidStairs] = React.useState(user?.avoidStairs ?? false);
-  const [avoidGrandstands, setAvoidGrandstands] = React.useState(user?.avoidGrandstands ?? false);
-  const [avoidSlopes, setAvoidSlopes] = React.useState(user?.avoidSlopes ?? false);
+  const { 
+    avoidStairs, 
+    wheelchairAccess, 
+    updatePreferences 
+  } = useLocationStore();
+
+  const { data: events } = useEvents();
   
   const [showWizard, setShowWizard] = React.useState(false);
   const [showWallet, setShowWallet] = React.useState(false);
   const [wizardStep, setWizardStep] = React.useState(1);
   const [isSaving, setIsSaving] = React.useState(false);
-
-  React.useEffect(() => {
-    if (user) {
-      setAvoidStairs(user.avoidStairs ?? false);
-      setAvoidGrandstands(user.avoidGrandstands ?? false);
-      setAvoidSlopes(user.avoidSlopes ?? false);
-    }
-  }, [user]);
 
   const handleLogout = () => {
     // 1. Navigate first to the welcome screen
@@ -52,28 +50,25 @@ function ProfileScreen() {
     });
   };
 
-  const savePreferences = async (prefs: { avoidStairs?: boolean, avoidGrandstands?: boolean, avoidSlopes?: boolean }) => {
-    if (!token || !user) return;
+  const savePreferences = async (prefs: { avoidStairs?: boolean, wheelchairAccess?: boolean }) => {
+    updatePreferences(prefs);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
-    setIsSaving(true);
-    try {
-      const updatedUser = await authService.updateMe(prefs, token);
-      setAuth(token, updatedUser);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (error) {
-      Alert.alert('Error', 'No se han podido guardar las preferencias.');
-      console.error(error);
-    } finally {
-      setIsSaving(false);
+    // In a real app, we would also sync this with the backend
+    if (token && user) {
+      try {
+        await authService.updateMe(prefs, token);
+      } catch (error) {
+        console.error('Failed to sync preferences to backend:', error);
+      }
     }
   };
 
   const handleWizardNext = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (wizardStep < 3) {
+    if (wizardStep < 2) {
       setWizardStep(wizardStep + 1);
     } else {
-      savePreferences({ avoidStairs, avoidGrandstands, avoidSlopes });
       setShowWizard(false);
       setWizardStep(1);
     }
@@ -144,6 +139,11 @@ function ProfileScreen() {
               variant="glass"
               icon="tag-outline"
             />
+          </Animated.View>
+
+          {/* Event History Section */}
+          <Animated.View entering={FadeInDown.delay(450).duration(600)}>
+            <EventHistorySection events={events?.slice(0, 3) || []} />
           </Animated.View>
 
           {/* Settings Section */}
@@ -235,7 +235,6 @@ function ProfileScreen() {
               <View className="flex-row gap-x-2 mb-8">
                 <View className={`h-1.5 rounded-full flex-1 ${wizardStep >= 1 ? 'bg-primary' : 'bg-white/10'}`} />
                 <View className={`h-1.5 rounded-full flex-1 ${wizardStep >= 2 ? 'bg-primary' : 'bg-white/10'}`} />
-                <View className={`h-1.5 rounded-full flex-1 ${wizardStep >= 3 ? 'bg-primary' : 'bg-white/10'}`} />
               </View>
             </View>
 
@@ -254,13 +253,13 @@ function ProfileScreen() {
                   
                   <View className="flex-row gap-x-4 w-full">
                     <Pressable 
-                      onPress={() => { setAvoidStairs(false); handleWizardNext(); }}
+                      onPress={() => { savePreferences({ avoidStairs: false }); handleWizardNext(); }}
                       className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!avoidStairs ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
                     >
                       <Text className={`font-bold text-lg ${!avoidStairs ? 'text-white' : 'text-white/60'}`}>No</Text>
                     </Pressable>
                     <Pressable 
-                      onPress={() => { setAvoidStairs(true); handleWizardNext(); }}
+                      onPress={() => { savePreferences({ avoidStairs: true }); handleWizardNext(); }}
                       className={`flex-1 h-14 rounded-2xl items-center justify-center border ${avoidStairs ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
                     >
                       <Text className={`font-bold text-lg ${avoidStairs ? 'text-white' : 'text-white/60'}`}>Sí</Text>
@@ -272,48 +271,23 @@ function ProfileScreen() {
               {wizardStep === 2 && (
                 <View className="items-center w-full">
                   <View className="w-20 h-20 rounded-3xl bg-primary/10 items-center justify-center mb-6">
-                    <MaterialCommunityIcons name="layers-outline" size={40} color={colors.primary} />
+                    <MaterialCommunityIcons name="wheelchair-accessibility" size={40} color={colors.primary} />
                   </View>
-                  <Text className="text-white text-2xl font-bold text-center mb-4">¿Evitar graderías?</Text>
-                  <Text className="text-muted text-center mb-10 text-base">Evitaremos pasar por zonas de gradas siempre que sea posible.</Text>
+                  <Text className="text-white text-2xl font-bold text-center mb-4">Ruta accesible</Text>
+                  <Text className="text-muted text-center mb-10 text-base">Optimizaremos todos los trayectos para movilidad reducida.</Text>
                   
                   <View className="flex-row gap-x-4 w-full">
                     <Pressable 
-                      onPress={() => { setAvoidGrandstands(false); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!avoidGrandstands ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      onPress={() => { savePreferences({ wheelchairAccess: false }); handleWizardNext(); }}
+                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!wheelchairAccess ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
                     >
-                      <Text className={`font-bold text-lg ${!avoidGrandstands ? 'text-white' : 'text-white/60'}`}>No</Text>
+                      <Text className={`font-bold text-lg ${!wheelchairAccess ? 'text-white' : 'text-white/60'}`}>No</Text>
                     </Pressable>
                     <Pressable 
-                      onPress={() => { setAvoidGrandstands(true); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${avoidGrandstands ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
+                      onPress={() => { savePreferences({ wheelchairAccess: true }); handleWizardNext(); }}
+                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${wheelchairAccess ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
                     >
-                      <Text className={`font-bold text-lg ${avoidGrandstands ? 'text-white' : 'text-white/60'}`}>Sí</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              )}
-
-              {wizardStep === 3 && (
-                <View className="items-center w-full">
-                  <View className="w-20 h-20 rounded-3xl bg-primary/10 items-center justify-center mb-6">
-                    <MaterialCommunityIcons name="slope-uphill" size={40} color={colors.primary} />
-                  </View>
-                  <Text className="text-white text-2xl font-bold text-center mb-4">¿Evitar pendientes?</Text>
-                  <Text className="text-muted text-center mb-10 text-base">Buscaremos los caminos más llanos dentro del recinto.</Text>
-                  
-                  <View className="flex-row gap-x-4 w-full">
-                    <Pressable 
-                      onPress={() => { setAvoidSlopes(false); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${!avoidSlopes ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
-                    >
-                      <Text className={`font-bold text-lg ${!avoidSlopes ? 'text-white' : 'text-white/60'}`}>No</Text>
-                    </Pressable>
-                    <Pressable 
-                      onPress={() => { setAvoidSlopes(true); handleWizardNext(); }}
-                      className={`flex-1 h-14 rounded-2xl items-center justify-center border ${avoidSlopes ? 'bg-primary border-primary' : 'bg-white/5 border-white/10'}`}
-                    >
-                      <Text className={`font-bold text-lg ${avoidSlopes ? 'text-white' : 'text-white/60'}`}>Sí</Text>
+                      <Text className={`font-bold text-lg ${wheelchairAccess ? 'text-white' : 'text-white/60'}`}>Sí</Text>
                     </Pressable>
                   </View>
                 </View>

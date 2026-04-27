@@ -32,6 +32,6 @@
 
 ## 6. User Profile & Settings
 
-- [ ] 6.1 Build the new `Profile` screen with event history
-- [ ] 6.2 Implement accessibility toggle switches in the Profile settings
-- [ ] 6.3 Link profile preferences to the global routing state
+- [x] 6.1 Build the new `Profile` screen with event history
+- [x] 6.2 Implement accessibility toggle switches in the Profile settings
+- [x] 6.3 Link profile preferences to the global routing state
