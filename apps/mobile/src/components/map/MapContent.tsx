@@ -41,6 +41,7 @@ export const MapContent = React.memo(function MapContent({
   const recenterCount = useMapStore((s) => s.recenterCount);
   const currentRoute = useMapStore((s) => s.currentRoute);
   const isNavigating = useMapStore((s) => s.isNavigating);
+  const currentEventId = useMapStore((s) => s.currentEventId);
   const selectPoi = useMapStore((s) => s.selectPoi);
   const storeDeselect = useMapStore((s) => s.deselect);
   const selectedEvent = useMapStore((s) => s.selectedEvent);
@@ -64,7 +65,7 @@ export const MapContent = React.memo(function MapContent({
     };
   }, [selectedCoords, selectedPoiId]);
 
-  const { data: pathNetwork } = usePathNetwork();
+  const { data: pathNetwork } = usePathNetwork(currentEventId);
 
   useEffect(() => {
     if (recenterCount > 0 && camera.current && userCoords) {

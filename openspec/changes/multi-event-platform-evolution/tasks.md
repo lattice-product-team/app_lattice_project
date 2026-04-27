@@ -26,9 +26,9 @@
 
 ## 5. Offline Experience
 
-- [ ] 5.1 Implement `OfflineManager` service for tile and data bundling
-- [ ] 5.2 Add "Download for Offline" button to the event context view
-- [ ] 5.3 Implement fallback to local GeoJSON data when network is unavailable
+- [x] 5.1 Implement `OfflineManager` service for tile and data bundling
+- [x] 5.2 Add "Download for Offline" button to the event context view
+- [x] 5.3 Implement fallback to local GeoJSON data when network is unavailable
 
 ## 6. User Profile & Settings
 

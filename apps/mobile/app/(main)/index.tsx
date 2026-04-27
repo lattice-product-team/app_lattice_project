@@ -35,6 +35,7 @@ import { LatticeEvent } from '../../src/types';
 import { useSavedLocations } from '../../src/hooks/queries/useSavedLocations';
 import { getCategoryMetadata } from '../../src/utils/poiUtils';
 import { SavedLocationsManager } from '../../src/components/map/SavedLocationsManager';
+import { EventSummaryCard } from '../../src/components/map/EventSummaryCard';
 
 // Configure MapLibre
 MapLibreGL.setAccessToken(null);
@@ -328,18 +329,24 @@ function MapIndex() {
           }
           discoveryContent={
             <View>
-              {!currentEventId && eventsData && (
+              {currentEventId && selectedEvent ? (
+                <EventSummaryCard 
+                  event={selectedEvent} 
+                  onClear={() => setCurrentEvent(null)} 
+                />
+              ) : eventsData && (
                 <EventCarousel 
                   title="Próximos eventos"
                   events={eventsData}
                   onSelectEvent={(event) => {
                     setCurrentEvent(event);
-                    setActiveCategoryId(null); // Clear categories when switching event
+                    setActiveCategoryId(null);
                   }}
                 />
               )}
+              
               <POICarousel 
-                title="Cerca de ti"
+                title={currentEventId ? "Puntos de interés" : "Cerca de ti"}
                 pois={rawPoisData?.features?.map((f: any) => ({ ...f.properties, geometry: f.geometry })) || []}
                 onSelectPoi={(poi) => selectPoi(poi)}
               />
