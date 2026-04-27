@@ -1,17 +1,28 @@
 import { create, StateCreator } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createMMKV } from 'react-native-mmkv';
+import { Platform } from 'react-native';
 import { User, Ticket } from '../types/models/auth';
 import { authService } from '../services/authService';
 import { apiClient } from '../services/apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 
-const storage = createMMKV();
+// Native-only storage
+const storage = Platform.OS !== 'web' ? new createMMKV() : null;
 
 const mmkvStorage = {
-  setItem: (name: string, value: string) => storage.set(name, value),
-  getItem: (name: string) => storage.getString(name) ?? null,
-  removeItem: (name: string) => storage.remove(name),
+  setItem: (name: string, value: string) => {
+    if (storage) storage.set(name, value);
+    else if (typeof window !== 'undefined') window.localStorage.setItem(name, value);
+  },
+  getItem: (name: string) => {
+    if (storage) return storage.getString(name) ?? null;
+    return typeof window !== 'undefined' ? window.localStorage.getItem(name) : null;
+  },
+  removeItem: (name: string) => {
+    if (storage) storage.remove(name);
+    else if (typeof window !== 'undefined') window.localStorage.removeItem(name);
+  },
 };
 
 interface AuthState {
@@ -23,8 +34,10 @@ interface AuthState {
   isGuest: boolean; // True if logged in via Ticket Sync only
   registrationRequired: boolean; // True if ticket sync found an account with no password
   prefilledEmail: string | null;
+  eventConfig: any | null; // Stores venue branding and event info
   setAuth: (token: string, user: User, tickets?: Ticket[], isGuest?: boolean) => void;
   setTicket: (ticket: Ticket) => void;
+  setEventConfig: (config: any) => void;
   addTicketToWallet: (ticket: Ticket) => void;
   syncTickets: () => Promise<void>;
   setPendingTicketCode: (code: string | null) => void;
@@ -44,6 +57,7 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
   isGuest: false,
   registrationRequired: false,
   prefilledEmail: null,
+  eventConfig: null,
   setAuth: (token, user, tickets, isGuest = false) => 
     set((state) => ({ 
       token, 
@@ -59,6 +73,7 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
       ? (state.tickets || [])
       : [...(state.tickets || []), ticket]
   })),
+  setEventConfig: (config) => set({ eventConfig: config }),
   addTicketToWallet: (ticket) => set((state) => ({
     tickets: (state.tickets || []).some(t => t.code === ticket.code) 
       ? (state.tickets || [])
@@ -134,7 +149,8 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
     pendingTicketCode: null, 
     isGuest: false,
     registrationRequired: false,
-    prefilledEmail: null
+    prefilledEmail: null,
+    eventConfig: null
   }),
 });
 

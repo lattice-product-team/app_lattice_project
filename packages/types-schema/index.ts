@@ -2,8 +2,26 @@
  * Core TypeScript interfaces for Lattice
  */
 
+export interface Venue {
+  id: number;
+  name: string;
+  boundary?: any; // GeoJSON Polygon
+  center?: [number, number]; // [lng, lat]
+  primaryColor: string;
+}
+
+export interface Event {
+  id: number;
+  venueId: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
 export interface TicketInfo {
   code: string;
+  venueId?: number;
+  eventId?: number;
   gate: string;
   zoneName: string;
   seatRow: string;
@@ -15,6 +33,10 @@ export interface UserTicketSyncResponse {
   user_id: string;
   token: string;
   ticket_info: TicketInfo;
+  event_config?: {
+    venue: Venue;
+    event: Event;
+  };
 }
 
 export type POIType =
@@ -29,6 +51,7 @@ export type POIType =
 
 export interface POI {
   id: number;
+  venueId: number;
   name: string;
   description: string;
   type: POIType;

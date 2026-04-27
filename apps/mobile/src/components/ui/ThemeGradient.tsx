@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../styles/colors';
+import { useAuthStore } from '../../hooks/useAuthStore';
 
 interface ThemeGradientProps {
   variant?: 'auth' | 'premium' | 'surface';
@@ -27,13 +28,24 @@ export const ThemeGradient = ({
   style, 
   children 
 }: ThemeGradientProps) => {
+  const [isClient, setIsClient] = React.useState(false);
+  const eventConfig = useAuthStore(state => state.eventConfig);
+  
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const primaryColor = isClient && eventConfig?.venue?.primaryColor 
+    ? eventConfig.venue.primaryColor 
+    : colors.primary;
+
   const getGradientConfig = () => {
     switch (variant) {
       case 'premium':
         return {
           colors: ['#4A2C3A', colors.background] as const, // Deep Wine to Black
           locations: [0, 0.6] as [number, number],
-          defaultBlob: colors.primary,
+          defaultBlob: primaryColor,
         };
       case 'surface':
         return {
@@ -46,7 +58,7 @@ export const ThemeGradient = ({
         return {
           colors: ['#2D2B2C', '#121212'] as const,
           locations: [0, 0.7] as [number, number],
-          defaultBlob: colors.primary,
+          defaultBlob: primaryColor,
         };
     }
   };

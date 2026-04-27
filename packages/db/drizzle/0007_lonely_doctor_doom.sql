@@ -1,1 +1,0 @@
-ALTER TABLE "tickets" ADD COLUMN "owner_email" varchar;

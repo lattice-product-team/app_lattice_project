@@ -9,6 +9,7 @@ router.get('/health', authController.healthCheck);
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/ticket-sync', authController.ticketSync);
+router.get('/event-config/:eventId', authController.getEventConfig);
 
 // Protected routes
 router.post('/ticket/claim', authenticate, authController.claimTicket);

@@ -1,68 +1,19 @@
 {
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1770970839227,
-      "tag": "0000_sturdy_proemial_gods",
+      "version": "7",
+      "when": 1776755877166,
+      "tag": "0000_striped_james_howlett",
       "breakpoints": true
     },
     {
       "idx": 1,
-      "version": "5",
-      "when": 1771317717589,
-      "tag": "0001_thick_baron_zemo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
       "version": "7",
-      "when": 1771922750874,
-      "tag": "0002_solid_grey_gargoyle",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1772008681316,
-      "tag": "0003_colossal_mephisto",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1772095142941,
-      "tag": "0004_ambiguous_la_nuit",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1772443930383,
-      "tag": "0005_purple_amphibian",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1772450742747,
-      "tag": "0006_eminent_shatterstar",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1772611652498,
-      "tag": "0007_lonely_doctor_doom",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1772704239305,
-      "tag": "0008_nappy_the_hood",
+      "when": 1776756614978,
+      "tag": "0001_silent_master_chief",
       "breakpoints": true
     }
   ]

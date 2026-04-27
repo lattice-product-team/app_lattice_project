@@ -1,7 +1,73 @@
 {
+  "id": "bd94f457-74a6-40f1-9f42-4746d6d87fae",
+  "prevId": "467116cd-81bb-4441-aebc-9e3d7490550a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.events": {
+      "name": "events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "venue_id": {
+          "name": "venue_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "events_venue_id_venues_id_fk": {
+          "name": "events_venue_id_venues_id_fk",
+          "tableFrom": "events",
+          "tableTo": "venues",
+          "columnsFrom": [
+            "venue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.group_members": {
       "name": "group_members",
       "schema": "",
@@ -42,32 +108,43 @@
         "group_members_user_id_users_id_fk": {
           "name": "group_members_user_id_users_id_fk",
           "tableFrom": "group_members",
-          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "group_members_group_id_groups_id_fk": {
           "name": "group_members_group_id_groups_id_fk",
           "tableFrom": "group_members",
-          "columnsFrom": ["group_id"],
           "tableTo": "groups",
-          "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "group_members_user_id_group_id_pk": {
           "name": "group_members_user_id_group_id_pk",
-          "columns": ["user_id", "group_id"]
+          "columns": [
+            "user_id",
+            "group_id"
+          ]
         }
       },
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.groups": {
       "name": "groups",
@@ -115,24 +192,81 @@
         "groups_created_by_users_id_fk": {
           "name": "groups_created_by_users_id_fk",
           "tableFrom": "groups",
-          "columnsFrom": ["created_by"],
           "tableTo": "users",
-          "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "groups_invite_code_unique": {
           "name": "groups_invite_code_unique",
-          "columns": ["invite_code"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": [
+            "invite_code"
+          ]
         }
       },
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.nodes": {
+      "name": "nodes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "venue_id": {
+          "name": "venue_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "geometry(Point, 4326)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "nodes_venue_id_venues_id_fk": {
+          "name": "nodes_venue_id_venues_id_fk",
+          "tableFrom": "nodes",
+          "tableTo": "venues",
+          "columnsFrom": [
+            "venue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.offline_packages": {
       "name": "offline_packages",
@@ -174,8 +308,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.path_segments": {
       "name": "path_segments",
@@ -183,55 +317,112 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "start_node": {
-          "name": "start_node",
-          "type": "geometry(Point, 4326)",
+        "venue_id": {
+          "name": "venue_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "end_node": {
-          "name": "end_node",
-          "type": "geometry(Point, 4326)",
+        "source_node_id": {
+          "name": "source_node_id",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "target_node_id": {
+          "name": "target_node_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "distance": {
+          "name": "distance",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
         },
         "surface": {
           "name": "surface",
           "type": "surface_type",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'asphalt'"
         },
         "slope_percentage": {
           "name": "slope_percentage",
           "type": "double precision",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": 0
         },
         "has_stairs": {
           "name": "has_stairs",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": false
         },
         "crowd_level": {
           "name": "crowd_level",
           "type": "crowd_level",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false,
           "default": "'low'"
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "path_segments_venue_id_venues_id_fk": {
+          "name": "path_segments_venue_id_venues_id_fk",
+          "tableFrom": "path_segments",
+          "tableTo": "venues",
+          "columnsFrom": [
+            "venue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "path_segments_source_node_id_nodes_id_fk": {
+          "name": "path_segments_source_node_id_nodes_id_fk",
+          "tableFrom": "path_segments",
+          "tableTo": "nodes",
+          "columnsFrom": [
+            "source_node_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "path_segments_target_node_id_nodes_id_fk": {
+          "name": "path_segments_target_node_id_nodes_id_fk",
+          "tableFrom": "path_segments",
+          "tableTo": "nodes",
+          "columnsFrom": [
+            "target_node_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.points_of_interest": {
       "name": "points_of_interest",
@@ -242,6 +433,12 @@
           "type": "serial",
           "primaryKey": true,
           "notNull": true
+        },
+        "venue_id": {
+          "name": "venue_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -258,6 +455,7 @@
         "type": {
           "name": "type",
           "type": "poi_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -270,6 +468,7 @@
         "crowd_level": {
           "name": "crowd_level",
           "type": "crowd_level",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false,
           "default": "'low'"
@@ -289,12 +488,34 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "points_of_interest_venue_id_venues_id_fk": {
+          "name": "points_of_interest_venue_id_venues_id_fk",
+          "tableFrom": "points_of_interest",
+          "tableTo": "venues",
+          "columnsFrom": [
+            "venue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "points_of_interest_name_unique": {
+          "name": "points_of_interest_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.saved_locations": {
       "name": "saved_locations",
@@ -336,18 +557,93 @@
         "saved_locations_user_id_users_id_fk": {
           "name": "saved_locations_user_id_users_id_fk",
           "tableFrom": "saved_locations",
-          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.telemetry_logs": {
+      "name": "telemetry_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "geometry(Point, 4326)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "telemetry_logs_user_id_users_id_fk": {
+          "name": "telemetry_logs_user_id_users_id_fk",
+          "tableFrom": "telemetry_logs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "telemetry_logs_event_id_events_id_fk": {
+          "name": "telemetry_logs_event_id_events_id_fk",
+          "tableFrom": "telemetry_logs",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.tickets": {
       "name": "tickets",
@@ -363,10 +659,28 @@
           "name": "user_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "venue_id": {
+          "name": "venue_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         },
         "code": {
           "name": "code",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "owner_email": {
+          "name": "owner_email",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -420,24 +734,56 @@
         "tickets_user_id_users_id_fk": {
           "name": "tickets_user_id_users_id_fk",
           "tableFrom": "tickets",
-          "columnsFrom": ["user_id"],
           "tableTo": "users",
-          "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tickets_venue_id_venues_id_fk": {
+          "name": "tickets_venue_id_venues_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "venues",
+          "columnsFrom": [
+            "venue_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tickets_event_id_events_id_fk": {
+          "name": "tickets_event_id_events_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "tickets_code_unique": {
           "name": "tickets_code_unique",
-          "columns": ["code"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
         }
       },
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.users": {
       "name": "users",
@@ -470,6 +816,7 @@
         "mobility_mode": {
           "name": "mobility_mode",
           "type": "mobility_mode",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false,
           "default": "'standard'"
@@ -495,6 +842,20 @@
           "notNull": false,
           "default": false
         },
+        "avoid_grandstands": {
+          "name": "avoid_grandstands",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "has_ticket": {
+          "name": "has_ticket",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -509,20 +870,78 @@
       "uniqueConstraints": {
         "users_email_unique": {
           "name": "users_email_unique",
-          "columns": ["email"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.venues": {
+      "name": "venues",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "boundary": {
+          "name": "boundary",
+          "type": "geometry(Point, 4326)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "center": {
+          "name": "center",
+          "type": "geometry(Point, 4326)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primary_color": {
+          "name": "primary_color",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'#ff382e'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
     "public.crowd_level": {
       "name": "crowd_level",
       "schema": "public",
-      "values": ["low", "moderate", "high", "blocked"]
+      "values": [
+        "low",
+        "moderate",
+        "high",
+        "blocked"
+      ]
     },
     "public.mobility_mode": {
       "name": "mobility_mode",
@@ -552,19 +971,23 @@
     "public.surface_type": {
       "name": "surface_type",
       "schema": "public",
-      "values": ["asphalt", "grass", "gravel", "stairs", "ramp"]
+      "values": [
+        "asphalt",
+        "grass",
+        "gravel",
+        "stairs",
+        "ramp"
+      ]
     }
   },
   "schemas": {},
-  "_meta": {
-    "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "id": "92c71c68-4852-43a7-b41b-6f4741b357cf",
-  "prevId": "a7a16747-b73e-4432-a834-c19b8c2673f7",
   "sequences": {},
+  "roles": {},
   "policies": {},
   "views": {},
-  "roles": {}
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
 }
