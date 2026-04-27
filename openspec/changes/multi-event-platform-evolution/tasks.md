@@ -7,15 +7,15 @@
 
 ## 2. Global State & Dynamic Theming
 
-- [ ] 2.1 Update `useMapStore` to manage `currentEventId` and `selectedEvent`
-- [ ] 2.2 Create `useEventTheme` hook for dynamic category-based styling
-- [ ] 2.3 Add `event_type` to model types and schema
+- [x] 2.1 Update `useMapStore` to manage `currentEventId` and `selectedEvent`
+- [x] 2.2 Create `useEventTheme` hook for dynamic category-based styling
+- [x] 2.3 Add `event_type` to model types and schema
 
 ## 3. Multi-Event Discovery UI
 
-- [ ] 3.1 Build `EventCarousel` component for the Discovery state
-- [ ] 3.2 Update `MapBottomSheet` to handle the `Discovery` state transition
-- [ ] 3.3 Implement "Fly-To" animation when selecting an event from the carousel
+- [x] 3.1 Build `EventCarousel` component for the Discovery state
+- [x] 3.2 Update `MapBottomSheet` to handle the `Discovery` state transition
+- [x] 3.3 Implement "Fly-To" animation when selecting an event from the carousel
 
 ## 4. Accessibility & Routing Logic
 

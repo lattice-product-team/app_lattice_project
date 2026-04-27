@@ -25,6 +25,14 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   info: { icon: 'information', color: '#D9D99B', label: 'Information' }, 
 };
 
+const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
+  music: { icon: 'music-note', color: '#AF52DE', label: 'Música' },
+  food: { icon: 'food-fork-drink', color: '#FF9500', label: 'Comida' },
+  tech: { icon: 'laptop', color: '#007AFF', label: 'Tecnología' },
+  sports: { icon: 'trophy', color: '#FF3B30', label: 'Deportes' },
+  generic: { icon: 'calendar-star', color: '#EFB33F', label: 'Evento' },
+};
+
 export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 
 const DEFAULT_METADATA: CategoryMetadata = {
@@ -36,6 +44,11 @@ const DEFAULT_METADATA: CategoryMetadata = {
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {
   if (!category) return DEFAULT_METADATA;
   return CATEGORY_MAP[category.toLowerCase()] || DEFAULT_METADATA;
+};
+
+export const getEventMetadata = (type?: string): CategoryMetadata => {
+  if (!type) return EVENT_CATEGORY_MAP.generic;
+  return EVENT_CATEGORY_MAP[type.toLowerCase()] || EVENT_CATEGORY_MAP.generic;
 };
 
 // Legacy support and direct accessors

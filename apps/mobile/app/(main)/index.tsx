@@ -29,6 +29,9 @@ import { MapContent } from '../../src/components/map/MapContent';
 import { MapSheetManager } from '../../src/components/map/MapSheetManager';
 import { GuidesSection } from '../../src/components/map/GuidesSection';
 import { POICarousel } from '../../src/components/map/POICarousel';
+import { EventCarousel } from '../../src/components/map/EventCarousel';
+import { useEvents } from '../../src/hooks/queries/useEvents';
+import { LatticeEvent } from '../../src/types';
 import { useSavedLocations } from '../../src/hooks/queries/useSavedLocations';
 import { getCategoryMetadata } from '../../src/utils/poiUtils';
 import { SavedLocationsManager } from '../../src/components/map/SavedLocationsManager';
@@ -57,6 +60,10 @@ function MapIndex() {
   const deselect = useMapStore((s) => s.deselect);
   const selectPoi = useMapStore((s) => s.selectPoi);
   const triggerRecenter = useMapStore((s) => s.triggerRecenter);
+  const currentEventId = useMapStore((s) => s.currentEventId);
+  const setCurrentEvent = useMapStore((s) => s.setCurrentEvent);
+
+  const { data: eventsData } = useEvents();
 
   const { data: categories } = useCategories();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
@@ -80,7 +87,7 @@ function MapIndex() {
     return categories?.find((c) => c.id === activeCategoryId)?.category;
   }, [activeCategoryId, categories]);
 
-  const { data: rawPoisData, isLoading } = usePOIs(activeCategory);
+  const { data: rawPoisData, isLoading } = usePOIs(activeCategory, currentEventId || undefined);
 
   const poisData = useMemo(() => {
     if (!rawPoisData?.features || !activeTicket) return rawPoisData;
@@ -321,6 +328,16 @@ function MapIndex() {
           }
           discoveryContent={
             <View>
+              {!currentEventId && eventsData && (
+                <EventCarousel 
+                  title="Próximos eventos"
+                  events={eventsData}
+                  onSelectEvent={(event) => {
+                    setCurrentEvent(event);
+                    setActiveCategoryId(null); // Clear categories when switching event
+                  }}
+                />
+              )}
               <POICarousel 
                 title="Cerca de ti"
                 pois={rawPoisData?.features?.map((f: any) => ({ ...f.properties, geometry: f.geometry })) || []}

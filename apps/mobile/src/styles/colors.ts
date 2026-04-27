@@ -24,6 +24,13 @@ export const colors = {
     800: '#1F2937',
     900: '#0F172A',
   },
+  categories: {
+    music: '#AF52DE',
+    food: '#FF9500',
+    tech: '#007AFF',
+    sports: '#FF3B30',
+    generic: '#EFB33F', // Solar Gold
+  }
 } as const;
 
 export default colors;

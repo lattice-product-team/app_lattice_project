@@ -3,11 +3,15 @@ import { API_ENDPOINTS } from '../constants/api';
 import { POICollection } from '../types';
 
 export const geoService = {
-  getPOIs: async (category?: string): Promise<POICollection> => {
-    return apiClient.get<POICollection>(
-      API_ENDPOINTS.GEO.POIS, 
-      category ? { category } : undefined
-    );
+  getPOIs: async (category?: string, eventId?: number): Promise<POICollection> => {
+    const params: any = {};
+    if (category) params.category = category;
+    if (eventId) params.eventId = eventId;
+    return apiClient.get<POICollection>(API_ENDPOINTS.GEO.POIS, params);
+  },
+
+  getEvents: async (): Promise<any[]> => {
+    return apiClient.get<any[]>('/events');
   },
 
   getPOI: async (id: number): Promise<any> => {

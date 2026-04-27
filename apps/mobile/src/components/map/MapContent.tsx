@@ -43,6 +43,7 @@ export const MapContent = React.memo(function MapContent({
   const isNavigating = useMapStore((s) => s.isNavigating);
   const selectPoi = useMapStore((s) => s.selectPoi);
   const storeDeselect = useMapStore((s) => s.deselect);
+  const selectedEvent = useMapStore((s) => s.selectedEvent);
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
 
@@ -95,6 +96,24 @@ export const MapContent = React.memo(function MapContent({
       });
     }
   }, [selectedCoords, isNavigating, insets.top]);
+
+  useEffect(() => {
+    if (selectedEvent?.center && camera.current && !isNavigating) {
+      camera.current.setCamera({
+        centerCoordinate: selectedEvent.center.coordinates,
+        zoomLevel: 16.5,
+        animationDuration: 1200,
+        animationMode: 'flyTo',
+        pitch: 0,
+        padding: {
+          paddingBottom: SCREEN_HEIGHT * 0.4,
+          paddingTop: insets.top + 60,
+          paddingLeft: 40,
+          paddingRight: 40,
+        },
+      });
+    }
+  }, [selectedEvent, isNavigating, insets.top]);
 
   useEffect(() => {
     if (!isNavigating && camera.current) {

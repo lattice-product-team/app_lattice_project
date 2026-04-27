@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RouteGeoJSON } from '../types';
+import { RouteGeoJSON, LatticeEvent } from '../types';
 import { UIPOI } from '../types/models/poi';
 
 export enum MapUIState {
@@ -22,10 +22,13 @@ interface MapState {
   recenterCount: number;
   currentRoute: RouteGeoJSON | null;
   routeMetadata: RouteMetadata | null;
-  isNavigating: boolean; // Keep for backward compatibility/simplicity where needed
+  isNavigating: boolean;
+  currentEventId: number | null;
+  selectedEvent: LatticeEvent | null;
 
   // Actions
   selectPoi: (poi: any) => void;
+  setCurrentEvent: (event: LatticeEvent | null) => void;
   setRoute: (route: RouteGeoJSON | null, metadata?: RouteMetadata | null) => void;
   setNavigating: (navigating: boolean) => void;
   deselect: () => void;
@@ -42,6 +45,8 @@ export const useMapStore = create<MapState>((set) => ({
   currentRoute: null,
   routeMetadata: null,
   isNavigating: false,
+  currentEventId: null,
+  selectedEvent: null,
 
   selectPoi: (poi: any) => {
     if (!poi) return;
@@ -56,6 +61,20 @@ export const useMapStore = create<MapState>((set) => ({
       selectedPoiId: id,
       selectedPoi: fullPoi,
       selectedCoords: coords,
+      isNavigating: false,
+    });
+  },
+
+  setCurrentEvent: (event: LatticeEvent | null) => {
+    set({
+      currentEventId: event?.id || null,
+      selectedEvent: event,
+      // When switching events, we should deselect any active POI or route
+      selectedPoiId: null,
+      selectedPoi: null,
+      selectedCoords: null,
+      currentRoute: null,
+      routeMetadata: null,
       isNavigating: false,
     });
   },
