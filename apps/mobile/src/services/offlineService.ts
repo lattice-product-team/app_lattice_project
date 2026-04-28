@@ -2,6 +2,7 @@ import { createMMKV } from 'react-native-mmkv';
 import { LatticeEvent, POICollection } from '../types';
 import { geoService } from './geoService';
 import MapLibreGL from '@maplibre/maplibre-react-native';
+import { MAPTILER_KEY } from '../constants/mapConstants';
 
 const storage = createMMKV({ id: 'lattice-offline-cache' });
 
@@ -28,7 +29,7 @@ export const offlineService = {
     
     const packOptions = {
       name: `event_${event.id}`,
-      styleURL: 'https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      styleURL: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`,
       bounds: [
         [Math.min(...coordinates.map(c => c[0])), Math.min(...coordinates.map(c => c[1]))], // SW
         [Math.max(...coordinates.map(c => c[0])), Math.max(...coordinates.map(c => c[1]))], // NE

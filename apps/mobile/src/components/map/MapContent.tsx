@@ -12,7 +12,7 @@ import { usePathNetwork } from '../../hooks/queries/usePathNetwork';
 import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 // Constants & Utilities
-import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM } from '../../constants/mapConstants';
+import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY } from '../../constants/mapConstants';
 import { mapLayerStyles } from '../../styles/mapLayerStyles';
 
 import { useLocationStore } from '../../store/useLocationStore';
@@ -20,8 +20,8 @@ import { useLocationStore } from '../../store/useLocationStore';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MAP_STYLES = {
-  light: "https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/style.json",
-  dark: "https://tiles.basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+  light: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
+  dark: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`
 } as const;
 
 interface MapContentProps {
@@ -179,7 +179,7 @@ export const MapContent = React.memo(function MapContent({
         <MapLibreGL.Camera
           ref={camera}
           minZoomLevel={11}
-          defaultSettings={{ centerCoordinate: MAP_CENTER, zoomLevel: DEFAULT_ZOOM }}
+          defaultSettings={{ centerCoordinate: MAP_CENTER, zoomLevel: DEFAULT_ZOOM, pitch: 45 }}
           followUserLocation={isNavigating}
           followUserMode={(isNavigating ? 'compass' : 'normal') as any}
           followZoomLevel={18}
@@ -254,6 +254,18 @@ export const MapContent = React.memo(function MapContent({
             }}
           />
         </MapLibreGL.ShapeSource>
+
+        {/* 3. CLEANUP - Hiding default MapTiler POIs to keep the map clean but colorful */}
+        <MapLibreGL.SymbolLayer id="Food" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Shopping" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Healthcare" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Culture" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Education" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Station" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Public" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Tourism" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Sport" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Transport" style={{ visibility: 'none' }} />
 
         <MapLibreGL.ShapeSource 
           id="savedSource" 
