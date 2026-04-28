@@ -173,6 +173,20 @@ export const MapContent = React.memo(function MapContent({
         attributionEnabled={false}
         compassEnabled={false}
         onPress={onDeselect || storeDeselect}
+        onDidFinishLoadingStyle={(map) => {
+          // Safe cleanup: hide only POI layers to keep the map clean but colorful
+          const layersToHide = [
+            'poi', 'poi_label', 'poi_z14', 'poi_z15', 'poi_z16', 
+            'food_and_drink', 'shopping', 'healthcare', 'culture', 'sport'
+          ];
+          layersToHide.forEach(id => {
+            try {
+              map.setLayoutProperty(id, 'visibility', 'none');
+            } catch (e) {
+              // Ignore if layer doesn't exist in this specific style
+            }
+          });
+        }}
       >
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         <MapLibreGL.Camera
@@ -253,7 +267,7 @@ export const MapContent = React.memo(function MapContent({
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 2. VISUAL POIS (Handled in previous blocks) */}
+        {/* 3. VISUAL POIS (Handled in previous blocks) */}
 
 
         <MapLibreGL.ShapeSource 

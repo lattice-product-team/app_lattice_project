@@ -59,8 +59,9 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
       backgroundComponent={CustomBackground}
       handleIndicatorStyle={[
         styles.handleIndicator,
-        { backgroundColor: theme.colors.overlay.modal }
+        { backgroundColor: theme.dark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }
       ]}
+      handleStyle={styles.handle}
       animatedPosition={translateY}
       onChange={(index) => {
         if (index >= 0) {
@@ -137,7 +138,10 @@ const styles = StyleSheet.create({
     width: 36,
     height: 5,
     borderRadius: 2.5,
-    marginTop: 8,
+  },
+  handle: {
+    paddingTop: 8,
+    paddingBottom: 0,
   },
   scrollContent: {
     paddingBottom: 20,
@@ -163,9 +167,17 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 0.8,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
     pointerEvents: 'none',
+  },
+  sheetContainer: {
+    marginHorizontal: Platform.OS === 'ios' ? 8 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 20,
   },
 });
 

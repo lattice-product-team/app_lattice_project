@@ -514,6 +514,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@app/core':
+        specifier: workspace:^
+        version: link:../core
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1

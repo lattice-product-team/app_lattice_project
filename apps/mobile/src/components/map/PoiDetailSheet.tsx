@@ -72,7 +72,11 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
         index={0}
         snapPoints={snapPoints}
         backgroundComponent={CustomBackground}
-        handleIndicatorStyle={styles.handleIndicator}
+        handleIndicatorStyle={[
+          styles.handleIndicator,
+          { backgroundColor: 'rgba(255,255,255,0.3)' }
+        ]}
+        handleStyle={styles.handle}
         animatedPosition={translateY}
         enablePanDownToClose
         onClose={onClose}
@@ -196,7 +200,12 @@ PoiDetailSheet.displayName = 'PoiDetailSheet';
 
 const styles = StyleSheet.create({
   sheetContainer: {
-    marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
+    marginHorizontal: Platform.OS === 'ios' ? 8 : 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 20,
   },
   blurBackground: {
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
@@ -213,11 +222,13 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   handleIndicator: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    width: 40,
+    width: 36,
     height: 5,
     borderRadius: 2.5,
-    marginTop: 10,
+  },
+  handle: {
+    paddingTop: 8,
+    paddingBottom: 0,
   },
   container: {
     flex: 1,
@@ -332,8 +343,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 0.8,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
     pointerEvents: 'none',
   },
 });

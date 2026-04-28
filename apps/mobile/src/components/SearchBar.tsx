@@ -23,34 +23,28 @@ export const SearchBar = React.memo(function SearchBar({
   const theme = useLatticeTheme();
 
   return (
-    <View className="flex-row items-center px-4">
+    <View style={styles.outerContainer}>
       {/* Search Input Container */}
       <View
-        className="flex-1 flex-row items-center px-4 h-12 rounded-2xl"
         style={[
-          styles.searchContainer,
+          styles.searchBarWrapper,
           { 
-            backgroundColor: theme.colors.glass.subtle,
-            borderColor: theme.colors.glass.subtleBorder
+            backgroundColor: theme.dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
           }
         ]}
       >
-        <Feather name="search" size={18} color={theme.colors.brand.primary} />
+        <Feather name="search" size={20} color={theme.colors.text.muted} />
         <TextInput
-          className="flex-1 ml-3 pt-0 pb-0"
+          style={[
+            styles.input,
+            { color: theme.colors.text.primary }
+          ]}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.text.muted}
           value={value}
           onChangeText={onSearch}
           onFocus={onFocus}
           accessibilityLabel="Main search input"
-          style={{ 
-            height: 48, 
-            fontSize: 16,
-            fontFamily: typography.primary.medium,
-            letterSpacing: -0.2,
-            color: theme.colors.text.primary
-          }}
         />
         {(value && value.length > 0) ? (
           <Pressable 
@@ -58,12 +52,12 @@ export const SearchBar = React.memo(function SearchBar({
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onSearch?.('');
             }}
-            className="pl-2"
+            style={styles.clearButton}
           >
-            <Feather name="x-circle" size={20} color={theme.colors.text.muted} />
+            <Feather name="x-circle" size={18} color={theme.colors.text.muted} />
           </Pressable>
         ) : (
-          <View className="pl-2">
+          <View style={styles.clearButton}>
             <Feather name="mic" size={18} color={theme.colors.text.muted} />
           </View>
         )}
@@ -79,21 +73,14 @@ export const SearchBar = React.memo(function SearchBar({
       >
         {({ pressed }) => (
           <View style={[
-            styles.searchContainer,
+            styles.profileButton,
             {
-              width: 48,
-              height: 48,
-              marginLeft: 10,
-              borderRadius: 24, // Circular
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.glass.subtle,
-              borderColor: theme.colors.glass.subtleBorder,
-              opacity: pressed ? 0.8 : 1,
+              backgroundColor: theme.dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+              opacity: pressed ? 0.7 : 1,
               transform: [{ scale: pressed ? 0.95 : 1 }],
             }
           ]}>
-            <Feather name="user" size={18} color={theme.colors.text.secondary} />
+            <Feather name="user" size={20} color={theme.colors.text.secondary} />
           </View>
         )}
       </Pressable>
@@ -104,7 +91,38 @@ export const SearchBar = React.memo(function SearchBar({
 SearchBar.displayName = 'SearchBar';
 
 const styles = StyleSheet.create({
-  searchContainer: { 
-    borderWidth: 1,
+  outerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    width: '100%',
+  },
+  searchBarWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: 46,
+    borderRadius: 12,
+  },
+  input: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 17,
+    fontFamily: typography.primary.medium,
+    letterSpacing: -0.4,
+    height: '100%',
+    paddingVertical: 0,
+  },
+  clearButton: {
+    paddingLeft: 8,
+  },
+  profileButton: {
+    width: 46,
+    height: 46,
+    marginLeft: 10,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 });

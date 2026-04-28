@@ -24,45 +24,49 @@ export const CategoryChip = ({
       onPress={onPress}
       style={({ pressed }) => [
         styles.container,
-        { 
-          backgroundColor: isSelected ? activeColor : theme.colors.glass.subtle,
-          borderColor: isSelected ? activeColor : theme.colors.glass.subtleBorder 
-        },
-        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
+        pressed && { opacity: 0.9, transform: [{ scale: 0.96 }] }
       ]}
     >
-
-      <Text 
+      <SafeBlurView 
+        intensity={isSelected ? 0 : 40} 
+        tint={theme.dark ? 'dark' : 'light'}
         style={[
-          styles.text,
-          { color: theme.colors.text.primary },
-          isSelected && { color: theme.colors.text.inverse }
+          styles.blurContainer,
+          { 
+            backgroundColor: isSelected ? activeColor : 'rgba(255,255,255,0.05)',
+            borderColor: isSelected ? activeColor : 'rgba(255,255,255,0.1)' 
+          }
         ]}
       >
-        {label}
-      </Text>
+        <Text 
+          style={[
+            styles.text,
+            { color: theme.colors.text.primary },
+            isSelected && { color: theme.colors.text.inverse }
+          ]}
+        >
+          {label}
+        </Text>
+      </SafeBlurView>
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginRight: 8,
+  },
+  blurContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      }
-    })
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     fontSize: 14,

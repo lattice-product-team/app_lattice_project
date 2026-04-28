@@ -2,7 +2,7 @@
  * @app/core - Shared Backend Utilities
  */
 
-export * from './src/config';
+export * from './src/config.js';
 
 import { Request, Response, NextFunction } from 'express';
 

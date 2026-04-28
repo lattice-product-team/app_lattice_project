@@ -1,4 +1,5 @@
 CREATE TYPE "public"."crowd_level" AS ENUM('low', 'moderate', 'high', 'blocked');--> statement-breakpoint
+CREATE TYPE "public"."event_type" AS ENUM('music', 'food', 'tech', 'sports', 'generic');--> statement-breakpoint
 CREATE TYPE "public"."mobility_mode" AS ENUM('standard', 'wheelchair', 'reduced_mobility', 'visual_impairment', 'family_stroller');--> statement-breakpoint
 CREATE TYPE "public"."poi_type" AS ENUM('restaurant', 'wc', 'grandstand', 'gate', 'medical', 'shop', 'parking', 'meetup_point');--> statement-breakpoint
 CREATE TYPE "public"."surface_type" AS ENUM('asphalt', 'grass', 'gravel', 'stairs', 'ramp');--> statement-breakpoint
@@ -6,8 +7,15 @@ CREATE TABLE "events" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"venue_id" integer,
 	"name" varchar NOT NULL,
+	"description" text,
+	"type" "event_type" DEFAULT 'generic',
+	"location" geometry(Point, 4326),
+	"location_name" varchar,
+	"boundary" geometry(Polygon, 4326),
+	"image_url" text,
 	"start_date" timestamp NOT NULL,
 	"end_date" timestamp NOT NULL,
+	"metadata" text,
 	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
@@ -32,7 +40,7 @@ CREATE TABLE "groups" (
 --> statement-breakpoint
 CREATE TABLE "nodes" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"venue_id" integer,
+	"event_id" integer,
 	"location" geometry(Point, 4326) NOT NULL,
 	"name" varchar
 );
@@ -60,6 +68,7 @@ CREATE TABLE "path_segments" (
 CREATE TABLE "points_of_interest" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"venue_id" integer,
+	"event_id" integer,
 	"name" varchar NOT NULL,
 	"description" text,
 	"type" "poi_type" NOT NULL,
@@ -76,6 +85,14 @@ CREATE TABLE "saved_locations" (
 	"label" varchar,
 	"location" geometry(Point, 4326),
 	"created_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE "telemetry_logs" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer,
+	"event_id" integer,
+	"location" geometry(Point, 4326) NOT NULL,
+	"timestamp" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE "tickets" (
@@ -123,12 +140,15 @@ ALTER TABLE "events" ADD CONSTRAINT "events_venue_id_venues_id_fk" FOREIGN KEY (
 ALTER TABLE "group_members" ADD CONSTRAINT "group_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "group_members" ADD CONSTRAINT "group_members_group_id_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."groups"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "groups" ADD CONSTRAINT "groups_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "nodes" ADD CONSTRAINT "nodes_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "nodes" ADD CONSTRAINT "nodes_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "path_segments" ADD CONSTRAINT "path_segments_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "path_segments" ADD CONSTRAINT "path_segments_source_node_id_nodes_id_fk" FOREIGN KEY ("source_node_id") REFERENCES "public"."nodes"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "path_segments" ADD CONSTRAINT "path_segments_target_node_id_nodes_id_fk" FOREIGN KEY ("target_node_id") REFERENCES "public"."nodes"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "points_of_interest" ADD CONSTRAINT "points_of_interest_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "points_of_interest" ADD CONSTRAINT "points_of_interest_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "saved_locations" ADD CONSTRAINT "saved_locations_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "telemetry_logs" ADD CONSTRAINT "telemetry_logs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "telemetry_logs" ADD CONSTRAINT "telemetry_logs_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tickets" ADD CONSTRAINT "tickets_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tickets" ADD CONSTRAINT "tickets_venue_id_venues_id_fk" FOREIGN KEY ("venue_id") REFERENCES "public"."venues"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tickets" ADD CONSTRAINT "tickets_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE no action ON UPDATE no action;
