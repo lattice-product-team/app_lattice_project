@@ -1,45 +1,85 @@
 # Design System
 
-Our design language is a fusion of **Cupertino (Apple)** and **Material (Google)** styles, aiming for a premium, high-tech look.
+Our design language is a fusion of **Cupertino (Apple)** and **Material (Google)** styles, aiming for a premium, high-tech, and professional look.
 
-## Color Palette
+## Color Palette (Solar Gold Theme)
 
-We use vibrant, functional colors inspired by the circuit environment and Formula 1 aesthetics.
+We use a sophisticated metallic palette centered around "Solar Gold" for a premium and formal aesthetic. The system supports both **Light** and **Dark** themes for all neutral and semantic tokens.
 
-| Use Case | Color Hex | Description |
+### Brand
+| Token | Hex | Description |
 | :--- | :--- | :--- |
-| **Primary** | `#E10600` | F1 Red - Action buttons, highlights. |
-| **Success** | `#34C759` | Circuit Green - Entry points, navigation. |
-| **Warning** | `#FF9500` | Caution Orange - Minor alerts. |
-| **Danger** | `#FF3B30` | Alert Red - Critical errors. |
-| **Background** | `#000000` | Deep Black - OLED optimized. |
-| **Surface** | `#1C1C1E` | Card Grey - Secondary containers. |
+| **Primary** | `#E2B042` | Solar Gold - Main actions, highlights. |
+| **Secondary**| `#C59837` | Muted Gold - Hover states, accents. |
+| **Accent** | `#F4C978` | High-light Gold - Active feedback. |
+| **Deep** | `#A67C27` | Bronze Gold - Pressed states, borders. |
+
+### Neutrals (Dual-Theme)
+| Token | Light (Warm) | Dark (Premium) | Description |
+| :--- | :--- | :--- | :--- |
+| **Base** | `#FCFCFA` | `#0A0A09` | Primary background. |
+| **Surface** | `#F4F4F2` | `#141412` | Sidebars and toolbars. |
+| **Elevated**| `#EBEBE8` | `#1C1C1A` | Cards and list items. |
+| **Overlay** | `#E1E1DE` | `#262624` | Modal backgrounds. |
+
+### Semantic (Dual-Theme)
+| Use Case | Light Hex | Dark Hex | Description |
+| :--- | :--- | :--- | :--- |
+| **Success** | `#16A34A` | `#27C468` | Valid states, entries. |
+| **Warning** | `#D97706` | `#F2A03D` | Cautionary alerts. |
+| **Error** | `#DC2626` | `#E5484D` | Critical errors, danger. |
+| **Info** | `#2563EB` | `#54A6FF` | System information. |
 
 ## Typography
 
-- **Primary Font (Headings):** Outfit (Medium/Bold).
-- **Secondary Font (Body/Labels):** Plus Jakarta Sans (Medium/Bold).
-- **System Default:** San Francisco (iOS) / Roboto (Android) as a safety fallback.
+- **Primary Font:** **Inter** (Regular/Medium/Bold).
+- **Fallback:** system-ui, -apple-system, sans-serif.
 
-| Style | Size | Weight | Use Case |
-| :--- | :--- | :--- | :--- |
-| **Hero Title** | 44px | Medium | Auth screens (`authStyles.title`). |
-| **Heading 1** | 32px | Bold | Page titles. |
-| **Heading 2** | 24px | Semibold | Section headers. |
-| **Subtitle** | 20px | Medium | Context details (`authStyles.subtitle`). |
-| **Body** | 16px | Regular | General text/inputs. |
-| **Caption** | 14px | Regular | Secondary info. |
+| Style | Size | Use Case |
+| :--- | :--- | :--- |
+| **4xl** | 36px | Hero titles. |
+| **3xl** | 30px | Page titles. |
+| **2xl** | 24px | Section headers. |
+| **xl** | 20px | Subtitles. |
+| **lg** | 18px | Large body text. |
+| **base** | 16px | Primary body text. |
+| **sm** | 14px | Captions, secondary info. |
+| **xs** | 12px | Tiny labels, metadata. |
 
 ## Glassmorphism
 
 Used for overlays and floating cards to maintain context of the background map.
 
-- **Background:** `rgba(28, 28, 30, 0.7)`
-- **Blur:** `15px`
-- **Border:** `1px solid rgba(255, 255, 255, 0.1)`
+- **Background (Dark):** `rgba(38, 38, 36, 0.7)`
+- **Background (Light):** `rgba(252, 252, 250, 0.7)`
+- **Blur:** `20px`
+- **Border:** `1px solid rgba(255, 255, 255, 0.12)` (Dark) / `1px solid rgba(0, 0, 0, 0.08)` (Light)
 
 ## Iconography
 
 - **Primary Library:** [Expo Symbols](https://docs.expo.dev/versions/latest/sdk/symbols/) (SF Symbols on iOS).
 - **Secondary Library:** [@expo/vector-icons](https://docs.expo.dev/guides/icons/) (MaterialDesign / Ionicons for cross-platform fallback).
 - **Style:** Minimalist, consistent weight, Apple-inspired aesthetics.
+
+## Migration Guide
+
+All new components SHOULD use the design tokens from the shared `@app/theme` package.
+
+### TypeScript Usage
+```typescript
+import { colors, typography } from '@app/theme';
+
+// Manual theme selection example
+const theme = 'dark'; // or 'light'
+const styles = {
+  backgroundColor: colors.neutral[theme].base,
+  color: colors.brand.primary,
+  fontFamily: typography.fontFamily.sans,
+};
+```
+
+### Tailwind CSS Integration (Future)
+The shared package will eventually be integrated into the Tailwind configurations for `apps/mobile` and `apps/admin-web` to allow usage via utility classes:
+- `text-brand-primary`
+- `bg-neutral-light-base` / `dark:bg-neutral-dark-base`
+- `font-sans`
