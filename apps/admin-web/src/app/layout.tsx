@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${lexend.variable} font-sans antialiased`}>
         <div className="flex h-screen overflow-hidden">
           {/* Sidebar */}
