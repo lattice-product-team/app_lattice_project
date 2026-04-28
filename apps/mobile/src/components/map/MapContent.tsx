@@ -255,7 +255,7 @@ export const MapContent = React.memo(function MapContent({
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 3. CLEANUP - Hiding default MapTiler POIs to keep the map clean but colorful */}
+        {/* 3. CLEANUP - Hiding default MapTiler POIs and Labels to keep the map clean but colorful */}
         <MapLibreGL.SymbolLayer id="Food" style={{ visibility: 'none' }} />
         <MapLibreGL.SymbolLayer id="Shopping" style={{ visibility: 'none' }} />
         <MapLibreGL.SymbolLayer id="Healthcare" style={{ visibility: 'none' }} />
@@ -266,6 +266,15 @@ export const MapContent = React.memo(function MapContent({
         <MapLibreGL.SymbolLayer id="Tourism" style={{ visibility: 'none' }} />
         <MapLibreGL.SymbolLayer id="Sport" style={{ visibility: 'none' }} />
         <MapLibreGL.SymbolLayer id="Transport" style={{ visibility: 'none' }} />
+        
+        {/* Road and Park Cleanup */}
+        <MapLibreGL.SymbolLayer id="Road labels" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Highway shield" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Highway shield (US)" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Highway junction" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Housenumber" style={{ visibility: 'none' }} />
+        <MapLibreGL.SymbolLayer id="Park" style={{ visibility: 'none' }} /> {/* In some styles Park is also a symbol layer for the name */}
+        <MapLibreGL.SymbolLayer id="Airport" style={{ visibility: 'none' }} />
 
         <MapLibreGL.ShapeSource 
           id="savedSource" 
