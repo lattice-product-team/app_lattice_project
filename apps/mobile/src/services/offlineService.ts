@@ -3,7 +3,15 @@ import { createMMKV } from 'react-native-mmkv';
 import { LatticeEvent, POICollection } from '../types';
 import { geoService } from './geoService';
 
-const storage = createMMKV({ id: 'lattice-offline-cache' });
+const storage = typeof createMMKV !== 'undefined' 
+  ? createMMKV({ id: 'lattice-offline-cache' })
+  : {
+      set: () => {},
+      getString: () => null,
+      getNumber: () => null,
+      getBoolean: () => null,
+      delete: () => {},
+    } as any;
 
 export const offlineService = {
   /**

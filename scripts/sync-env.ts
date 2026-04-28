@@ -58,6 +58,15 @@ function syncEnv() {
     }
   });
 
+  // Check for --ip argument to override GATEWAY_HOST (useful for LAN/Hotspot)
+  const args = process.argv.slice(2);
+  const ipArgIndex = args.indexOf('--ip');
+  if (ipArgIndex !== -1 && args[ipArgIndex + 1]) {
+    const customIp = args[ipArgIndex + 1];
+    console.log(`📡 Overriding GATEWAY_HOST with IP: ${customIp}`);
+    envVars['GATEWAY_HOST'] = customIp;
+  }
+
   // Perform variable interpolation if needed (simple ${VAR} support)
   const interpolate = (val: string): string => {
     return val.replace(/\${(\w+)}/g, (_, name) => {

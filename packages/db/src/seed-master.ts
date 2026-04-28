@@ -1,70 +1,113 @@
 import 'dotenv/config';
-import { db, pool, eq } from './index';
-import { users, events, pointsOfInterest, nodes, pathSegments } from './schema';
-import { sql } from 'drizzle-orm';
+import { db, pool, eq, sql } from './index';
+import { users, events, pointsOfInterest, nodes, pathSegments, tickets, savedLocations } from './schema';
+import { seedCommon } from './seed-common';
 
 async function seed() {
   console.log('🚀 Starting Master Seed...');
 
   // 1. Cleanup - Cascading truncate
   console.log('🧹 Cleaning existing event data...');
+  // We truncate events first; cascade will handle POIs, Nodes, Segments
   await db.execute(sql`TRUNCATE TABLE ${events} RESTART IDENTITY CASCADE`);
+  // Also clean tickets and saved locations to avoid duplicates
+  await db.execute(sql`TRUNCATE TABLE ${tickets} RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE ${savedLocations} RESTART IDENTITY CASCADE`);
 
-  // 2. Seed Test User
-  console.log('👤 Ensuring test user exists...');
-  await db.insert(users).values({
-    email: 'kore@example.com',
-    passwordHash: 'password123',
-    fullName: 'Kore User',
-    mobilityMode: 'standard',
-  }).onConflictDoNothing();
+  // 2. Seed Base Users & Profiles
+  console.log('👤 Seeding base users...');
+  await seedCommon(db);
+
+  // Get the main test user for linking
+  const [koreUser] = await db.select().from(users).where(eq(users.email, 'kore@example.com'));
 
   // 3. Seed Events
   console.log('📅 Creating 3 diverse events in Barcelona...');
   
   // 3.1 Nitro GP (Sports)
-  // We use numeric arrays for location and boundary to let Drizzle's customType handle the conversion
   await db.insert(events).values({
     name: 'Nitro GP Barcelona',
-    description: 'The ultimate high-speed racing experience.',
+    description: 'The ultimate high-speed racing experience at the Circuit de Barcelona-Catalunya.',
     type: 'sports',
     startDate: new Date('2026-05-15'),
     endDate: new Date('2026-05-17'),
     locationName: 'Circuit de Barcelona-Catalunya',
     location: [2.2611, 41.5701],
     boundary: [[[2.2530, 41.5750], [2.2650, 41.5750], [2.2650, 41.5650], [2.2530, 41.5650], [2.2530, 41.5750]]],
+    imageUrl: 'https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800',
   }).onConflictDoNothing();
   const [nitroGP] = await db.select().from(events).where(eq(events.name, 'Nitro GP Barcelona'));
 
   // 3.2 Neon Nights (Music)
   await db.insert(events).values({
     name: 'Neon Nights Festival',
-    description: 'An immersive electronic music journey by the sea.',
+    description: 'An immersive electronic music journey by the sea with world-class DJs.',
     type: 'music',
     startDate: new Date('2026-07-10'),
     endDate: new Date('2026-07-12'),
     locationName: 'Parc del Fòrum',
     location: [2.2215, 41.4125],
     boundary: [[[2.2150, 41.4180], [2.2300, 41.4180], [2.2300, 41.4050], [2.2150, 41.4050], [2.2150, 41.4180]]],
+    imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800',
   }).onConflictDoNothing();
   const [neonNights] = await db.select().from(events).where(eq(events.name, 'Neon Nights Festival'));
 
   // 3.3 Quantum Conf (Tech)
   await db.insert(events).values({
     name: 'Quantum Tech Summit',
-    description: 'Exploring the future of quantum computing and AI.',
+    description: 'Exploring the future of quantum computing, AI, and decentralized systems.',
     type: 'tech',
     startDate: new Date('2026-11-05'),
     endDate: new Date('2026-11-07'),
     locationName: 'Fira Barcelona Gran Via',
     location: [2.1315, 41.3545],
     boundary: [[[2.1250, 41.3600], [2.1400, 41.3600], [2.1400, 41.3500], [2.1250, 41.3500], [2.1250, 41.3600]]],
+    imageUrl: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=800',
   }).onConflictDoNothing();
   const [quantumConf] = await db.select().from(events).where(eq(events.name, 'Quantum Tech Summit'));
 
   console.log('✅ Events created.');
 
-  // 4. Seed POIs & Graphs per Event
+  // 4. Seed Tickets for Test User
+  if (koreUser) {
+    console.log('🎫 Seeding tickets for test user...');
+    await db.insert(tickets).values([
+      {
+        userId: koreUser.id,
+        code: 'NITRO-GP-2026-VIP',
+        ownerEmail: koreUser.email,
+        gate: 'Gate 1 (Main)',
+        zoneName: 'VIP Paddock',
+        seatRow: 'A',
+        seatNumber: '12',
+        isActive: true,
+      },
+      {
+        userId: koreUser.id,
+        code: 'NEON-2026-GA',
+        ownerEmail: koreUser.email,
+        gate: 'Sea Gate',
+        zoneName: 'Main Floor',
+        isActive: true,
+      }
+    ]).onConflictDoNothing();
+
+    console.log('📍 Seeding saved locations for test user...');
+    await db.insert(savedLocations).values([
+      {
+        userId: koreUser.id,
+        label: 'My Car (Nitro GP)',
+        location: [2.2580, 41.5710],
+      },
+      {
+        userId: koreUser.id,
+        label: 'Meeting Point (Neon)',
+        location: [2.2220, 41.4130],
+      }
+    ]);
+  }
+
+  // 5. Seed POIs & Graphs per Event
   const eventConfigs = [
     {
       event: nitroGP,
@@ -106,10 +149,11 @@ async function seed() {
         type: poi.type as any,
         location: poi.coords,
         eventId: config.event.id,
+        description: `Experience the best of ${poi.name} at ${config.event.name}.`,
       }).onConflictDoNothing();
     }
 
-    // Create a small triangle graph for each
+    // Create deterministic nodes
     const nodeIds = [config.nodeOffset + 1, config.nodeOffset + 2, config.nodeOffset + 3];
     const coords = config.pois.map(p => p.coords);
 
@@ -122,11 +166,11 @@ async function seed() {
       }).onConflictDoNothing();
     }
 
-    // Connect them
+    // Connect segments with accessibility variations
     const segments = [
-      { s: nodeIds[0], t: nodeIds[1], dist: 150, stairs: false },
-      { s: nodeIds[1], t: nodeIds[2], dist: 180, stairs: config.event.type === 'sports' },
-      { s: nodeIds[2], t: nodeIds[0], dist: 220, stairs: false },
+      { s: nodeIds[0], t: nodeIds[1], dist: 150, stairs: false, surface: 'asphalt' },
+      { s: nodeIds[1], t: nodeIds[2], dist: 180, stairs: config.event.type === 'sports', surface: 'gravel' },
+      { s: nodeIds[2], t: nodeIds[0], dist: 220, stairs: false, surface: 'asphalt' },
     ];
 
     for (const seg of segments) {
@@ -135,7 +179,7 @@ async function seed() {
         targetNodeId: seg.t,
         distance: seg.dist,
         hasStairs: seg.stairs,
-        surface: 'asphalt',
+        surface: seg.surface as any,
       }).onConflictDoNothing();
       // Bi-directional
       await db.insert(pathSegments).values({
@@ -143,7 +187,7 @@ async function seed() {
         targetNodeId: seg.s,
         distance: seg.dist,
         hasStairs: seg.stairs,
-        surface: 'asphalt',
+        surface: seg.surface as any,
       }).onConflictDoNothing();
     }
   }
@@ -156,3 +200,4 @@ seed().catch(err => {
   console.error('❌ Seeding failed:', err);
   process.exit(1);
 });
+
