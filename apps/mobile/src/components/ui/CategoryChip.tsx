@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { typography } from '../../styles/typography';
 import { SafeBlurView } from './SafeBlurView';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface CategoryChipProps {
   label: string;
@@ -17,7 +17,7 @@ export const CategoryChip = ({
   onPress,
   activeColor
 }: CategoryChipProps) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
 
   return (
     <Pressable 

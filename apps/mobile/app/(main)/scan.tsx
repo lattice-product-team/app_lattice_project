@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useTicketScanner } from '../../src/hooks/useTicketScanner';
+import { useTicketScanner } from '../../src/features/tickets/hooks/useTicketScanner';
 import { CameraPermissionView } from '../../src/components/ui/CameraPermissionView';
 import { ScanOverlay } from '../../src/components/ui/ScanOverlay';
 

@@ -1,7 +1,7 @@
 import { apiClient } from './apiClient';
 import { API_ENDPOINTS } from '../constants/api';
 import { useAuthStore } from '../store/useAuthStore';
-import { useMapStore } from '../store/useMapStore';
+import { useEventStore } from '../features/event/store/useEventStore';
 import * as Location from 'expo-location';
 
 /**
@@ -13,7 +13,7 @@ export const telemetryService = {
    */
   async ping() {
     const { user } = useAuthStore.getState();
-    const eventId = useMapStore.getState().currentEventId;
+    const eventId = useEventStore.getState().currentEventId;
     
     if (!eventId || !user) return;
 

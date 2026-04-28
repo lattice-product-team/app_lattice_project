@@ -6,7 +6,7 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { authService } from '../../src/services/authService';
 import { useRouter } from 'expo-router';
 import { SettingItem } from '../../src/components/ui/SettingItem';
-import { WalletStack } from '../../src/components/ui/WalletStack';
+import { WalletStack } from '../../src/features/tickets/components/WalletStack';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { ThemeGradient } from '../../src/components/ui/ThemeGradient';
@@ -15,8 +15,8 @@ import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { EventHistorySection } from '../../src/components/ui/EventHistorySection';
-import { useEvents } from '../../src/hooks/queries/useEvents';
-import { useLatticeTheme } from '../../src/hooks/useLatticeTheme';
+import { useEvents } from '../../src/features/event/hooks/useEvents';
+import { useAppTheme as useLatticeTheme } from '../../src/hooks/useAppTheme';
 
 /**
  * Main Profile Screen.

@@ -3,7 +3,7 @@ import { View, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { typography } from '../styles/typography';
 import * as Haptics from 'expo-haptics';
-import { useLatticeTheme } from '../hooks/useLatticeTheme';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -20,7 +20,7 @@ export const SearchBar = React.memo(function SearchBar({
   onArPress,
   onFocus,
 }: SearchBarProps) {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
 
   return (
     <View style={styles.outerContainer}>

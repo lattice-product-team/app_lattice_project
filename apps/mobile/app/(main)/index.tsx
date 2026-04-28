@@ -11,26 +11,29 @@ import { useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useLatticeTheme } from '../../src/hooks/useLatticeTheme';
 import { typography } from '../../src/styles/typography';
-import { usePOIs } from '../../src/hooks/queries/usePOIs';
-import { useSinglePOI } from '../../src/hooks/queries/useSinglePOI';
-import { useCategories } from '../../src/hooks/queries/useCategories';
+import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
+import { useSinglePOI } from '../../src/features/poi/hooks/useSinglePOI';
+import { useCategories } from '../../src/features/poi/hooks/useCategories';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useLocationService } from '../../src/hooks/useLocationService';
 import { useCameraTilt } from '../../src/hooks/useCameraTilt';
-import { AROverlay } from '../../src/components/ar/AROverlay';
+import { AROverlay } from '../../src/features/map/components/ar/AROverlay';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useMapStore } from '../../src/store/useMapStore';
+import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
+import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
+import { useEventStore } from '../../src/features/event/store/useEventStore';
+import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useOrientationStore } from '../../src/store/useOrientationStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
-import { MapContent } from '../../src/components/map/MapContent';
-import { MapHUD } from '../../src/components/map/MapHUD';
-import { useSavedLocations } from '../../src/hooks/queries/useSavedLocations';
+import { MapContent } from '../../src/features/map/components/MapContent';
+import { MapHUD } from '../../src/features/map/components/MapHUD';
+import { useSavedLocations } from '../../src/features/map/hooks/useSavedLocations';
 import { getCategoryMetadata } from '../../src/utils/poiUtils';
-import { SavedLocationsManager } from '../../src/components/map/SavedLocationsManager';
-import { EventSummaryCard } from '../../src/components/map/EventSummaryCard';
-import { useEvents } from '../../src/hooks/queries/useEvents';
+import { SavedLocationsManager } from '../../src/features/map/components/SavedLocationsManager';
+import { EventSummaryCard } from '../../src/features/map/components/EventSummaryCard';
+import { useEvents } from '../../src/features/event/hooks/useEvents';
 
 // Configure MapLibre
 MapLibreGL.setAccessToken(null);
@@ -43,14 +46,9 @@ export default function MapIndexPage() {
   const { status: locationStatus, requestPermission } = useLocationService();
   const userCoords = useLocationStore((s) => s.logicalCoords);
 
-  const selectedPoiId = useMapStore((s) => s.selectedPoiId);
-  const selectedPoi = useMapStore((s) => s.selectedPoi);
-  const deselect = useMapStore((s) => s.deselect);
-  const selectPoi = useMapStore((s) => s.selectPoi);
-  const triggerRecenter = useMapStore((s) => s.triggerRecenter);
-  const currentEventId = useMapStore((s) => s.currentEventId);
-  const setCurrentEvent = useMapStore((s) => s.setCurrentEvent);
-  const selectedEvent = useMapStore((s) => s.selectedEvent);
+  const { selectedPoiId, selectedPoi, deselect, selectPoi } = usePOIStore();
+  const { triggerRecenter } = useMapUIStore();
+  const { currentEventId, selectedEvent, setCurrentEvent } = useEventStore();
 
   const { data: eventsData } = useEvents();
 
@@ -130,10 +128,10 @@ export default function MapIndexPage() {
 
   useEffect(() => {
     if (!selectedPoi && soloPoiData && Number(soloPoiData.properties.id) === numericPoiId) {
-      selectPoi({ ...soloPoiData.properties, geometry: soloPoiData.geometry } as any);
+      selectPoi(normalizePOI(soloPoiData));
     } else if (!selectedPoi && poisData && numericPoiId) {
       const f = poisData.features.find((f: any) => Number(f.properties.id) === numericPoiId);
-      if (f) selectPoi({ ...f.properties, geometry: f.geometry } as any);
+      if (f) selectPoi(normalizePOI(f));
     }
   }, [soloPoiData, poisData, numericPoiId, selectedPoi, selectPoi]);
 
@@ -186,7 +184,7 @@ export default function MapIndexPage() {
               key={f.properties.id}
               onPress={() => {
                 Keyboard.dismiss();
-                selectPoi({ ...f.properties, geometry: f.geometry } as any);
+                selectPoi(normalizePOI(f));
                 setSearchQuery('');
                 setIsSearching(false);
               }}
@@ -288,7 +286,7 @@ export default function MapIndexPage() {
             const foundCategory = categories?.find((c) => c.id === category)?.category;
             if (foundCategory && poisData?.features) {
               const foundPoi = poisData.features.find((f: any) => f.properties.category === foundCategory);
-              if (foundPoi) selectPoi({ ...foundPoi.properties, geometry: foundPoi.geometry } as any);
+              if (foundPoi) selectPoi(normalizePOI(foundPoi));
             }
           }}
           searchResults={renderSearchResults()}
@@ -311,11 +309,11 @@ export default function MapIndexPage() {
         isVisible={showSavedManager}
         onClose={() => setShowSavedManager(false)}
         onSelectMarker={(coords, id) => {
-          selectPoi({
-            id: `saved_${id}`,
-            name: 'Ubicación guardada',
-            geometry: { coordinates: coords },
-          } as any);
+          selectPoi(normalizePOI({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: coords },
+            properties: { id: `saved_${id}`, name: 'Ubicación guardada', category: 'parking' }
+          } as any));
         }}
       />
     </View>

@@ -7,6 +7,7 @@ export interface POIGeoJSON {
   properties: {
     id: number;
     name: string;
+    label?: string;
     category: string;
     description: string;
     crowdLevel: 'low' | 'moderate' | 'high' | 'blocked';

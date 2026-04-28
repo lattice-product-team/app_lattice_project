@@ -10,21 +10,29 @@ export const NEUTRAL_MARKER_COLOR = colors.neutral.dark.overlay;
 export const NEUTRAL_MARKER_BORDER = colors.neutral.dark.elevated;
 
 const CATEGORY_MAP: Record<string, CategoryMetadata> = {
-  restaurant: { icon: 'food-fork-drink', color: colors.semantic.dark.warning, label: 'Food & Drinks' }, 
-  food: { icon: 'food-fork-drink', color: colors.semantic.dark.warning, label: 'Food & Drinks' },
-  parking: { icon: 'parking', color: colors.semantic.dark.info, label: 'Parking Area' }, 
-  shop: { icon: 'shopping', color: colors.category.tech, label: 'Official Store' }, 
-  shopping: { icon: 'shopping', color: colors.category.tech, label: 'Official Store' },
-  wc: { icon: 'toilet', color: colors.semantic.dark.info, label: 'Restrooms' }, 
-  toilet: { icon: 'toilet', color: colors.semantic.dark.info, label: 'Restrooms' },
-  restroom: { icon: 'toilet', color: colors.semantic.dark.info, label: 'Restrooms' },
-  grandstand: { icon: 'stadium-variant', color: colors.semantic.dark.success, label: 'Grandstand' }, 
-  medical: { icon: 'medical-bag', color: colors.semantic.dark.error, label: 'Medical Point' }, 
-  hospital: { icon: 'hospital-building', color: colors.semantic.dark.error, label: 'Hospital' },
-  gate: { icon: 'door-open', color: colors.brand.primary, label: 'Entrance Gate' }, 
-  entrance: { icon: 'door-open', color: colors.brand.primary, label: 'Entrance Gate' },
-  meetup_point: { icon: 'account-group', color: colors.brand.accent, label: 'Meetup Point' }, 
-  info: { icon: 'information', color: colors.brand.secondary, label: 'Information' }, 
+  // Food & Drink
+  restaurant: { icon: 'coffee', color: colors.semantic.dark.warning, label: 'Comida y Bebida' }, 
+  food: { icon: 'coffee', color: colors.semantic.dark.warning, label: 'Comida y Bebida' },
+  coffee: { icon: 'coffee', color: colors.semantic.dark.warning, label: 'Cafetería' },
+  
+  // Infrastructure
+  parking: { icon: 'map-pin', color: colors.semantic.dark.info, label: 'Parking' }, 
+  wc: { icon: 'user', color: colors.semantic.dark.info, label: 'Aseos' }, 
+  toilet: { icon: 'user', color: colors.semantic.dark.info, label: 'Aseos' },
+  restroom: { icon: 'user', color: colors.semantic.dark.info, label: 'Aseos' },
+  
+  // Event Specific
+  grandstand: { icon: 'map', color: colors.semantic.dark.success, label: 'Tribuna' }, 
+  medical: { icon: 'plus-square', color: colors.semantic.dark.error, label: 'Servicio Médico' }, 
+  hospital: { icon: 'plus-square', color: colors.semantic.dark.error, label: 'Hospital' },
+  gate: { icon: 'log-in', color: colors.brand.primary, label: 'Acceso' }, 
+  entrance: { icon: 'log-in', color: colors.brand.primary, label: 'Acceso' },
+  
+  // Community & Info
+  meetup_point: { icon: 'users', color: colors.brand.accent, label: 'Punto de Encuentro' }, 
+  info: { icon: 'info', color: colors.brand.secondary, label: 'Información' }, 
+  shop: { icon: 'shopping-bag', color: colors.category.tech, label: 'Tienda Oficial' }, 
+  shopping: { icon: 'shopping-bag', color: colors.category.tech, label: 'Tienda Oficial' },
 };
 
 const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {

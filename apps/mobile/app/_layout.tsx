@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppFonts } from '../src/hooks/useAppFonts';
+import { ThemeProvider } from '../src/providers/ThemeProvider';
 import '../global.css';
 
 const queryClient = new QueryClient();
@@ -37,13 +38,15 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(main)" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="light" />
+          <ThemeProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(main)" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="light" />
+          </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
