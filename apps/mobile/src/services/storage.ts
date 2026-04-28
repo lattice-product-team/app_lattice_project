@@ -1,19 +1,6 @@
 import { createMMKV } from 'react-native-mmkv';
 
-// Safe initialization for Web/SSR environments
-const isNative = typeof pnpm === 'undefined'; // Simple check, or use Platform.OS
-export const storage = typeof createMMKV !== 'undefined' 
-  ? createMMKV() 
-  : {
-      set: () => {},
-      getString: () => null,
-      getNumber: () => null,
-      getBoolean: () => null,
-      delete: () => {},
-      getAllKeys: () => [],
-      clearAll: () => {},
-      recuprate: () => {}, // mock for any other methods used
-    } as any;
+export const storage = createMMKV();
 
 export const mmkvStorage = {
   setItem: (name: string, value: string) => storage.set(name, value),

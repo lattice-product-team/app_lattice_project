@@ -12,6 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.cdc.lattice",
       "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
         "NSCameraUsageDescription": "Lattice uses the camera to display augmented reality navigation and points of interest.",
         "NSLocationWhenInUseUsageDescription": "Allow Lattice to use your location to guide you through the venue.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow Lattice to use your location to guide you through the venue."
@@ -35,7 +38,6 @@
       ]
     },
     "web": {
-      "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [

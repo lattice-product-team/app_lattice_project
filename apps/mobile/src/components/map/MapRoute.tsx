@@ -1,5 +1,5 @@
 import React from 'react';
-import MapLibreGL from '../../utils/safeMapLibre';
+import MapLibreGL from '@maplibre/maplibre-react-native';
 import { RouteGeoJSON } from '../../types';
 import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 

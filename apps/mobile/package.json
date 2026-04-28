@@ -6,7 +6,7 @@
   "scripts": {
     "android": "expo run:android",
     "dev:home": "expo start",
-    "dev:lan": "export IP=$(ifconfig | grep 'inet ' | grep -v 127.0.0.1 | cut -d ' ' -f 2 | head -n 1) && echo \"📡 LAN IP DETECTED: $IP\" && pnpm --dir ../.. env:sync -- --ip $IP && export HOST=$IP && export REACT_NATIVE_PACKAGER_HOSTNAME=$IP && export EXPO_USE_DEV_CLIENT=true && npx expo start --dev-client --host lan --scheme lattice",
+    "dev:lan": "npx tsx scripts/dev-lan.ts",
     "dev:zrok": "./zrok-tunnel.sh",
     "dev:ngrok": "./ngrok-tunnel.sh",
     "ios": "expo run:ios",
