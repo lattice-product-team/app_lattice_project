@@ -13,9 +13,12 @@ import * as schema from './schema';
 // Explicit exports to avoid resolution issues
 export {
   users,
+  venues,
+  events,
   tickets,
   events,
   pointsOfInterest,
+  telemetryLogs,
   nodes,
   pathSegments,
   groups,

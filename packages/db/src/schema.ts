@@ -57,6 +57,25 @@ export const eventTypeEnum = pgEnum('event_type', [
 // TABLES
 // ---------------------------------------------------------
 
+export const venues = pgTable('venues', {
+  id: serial('id').primaryKey(),
+  name: varchar('name').notNull(),
+  boundary: geometry('boundary'), // Polygon for venue area
+  center: geometry('center'), // Default map center
+  primaryColor: varchar('primary_color', { length: 7 }).default('#ff382e'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+  venueId: integer('venue_id')
+    .references(() => venues.id),
+  name: varchar('name').notNull(),
+  startDate: timestamp('start_date').notNull(),
+  endDate: timestamp('end_date').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: varchar('email').unique().notNull(),
@@ -75,6 +94,10 @@ export const tickets = pgTable('tickets', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .references(() => users.id),
+  venueId: integer('venue_id')
+    .references(() => venues.id),
+  eventId: integer('event_id')
+    .references(() => events.id),
   code: varchar('code').unique(),
   ownerEmail: varchar('owner_email'),
   gate: varchar('gate'),
@@ -122,6 +145,8 @@ export const nodes = pgTable('nodes', {
 
 export const pathSegments = pgTable('path_segments', {
   id: serial('id').primaryKey(),
+  venueId: integer('venue_id')
+    .references(() => venues.id),
   sourceNodeId: integer('source_node_id')
     .notNull()
     .references(() => nodes.id),
@@ -173,3 +198,12 @@ export const offlinePackages = pgTable('offline_packages', {
   version: varchar('version'),
   sizeMb: doublePrecision('size_mb'),
 });
+
+export const telemetryLogs = pgTable('telemetry_logs', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id),
+  eventId: integer('event_id').references(() => events.id),
+  location: geometry('location').notNull(),
+  timestamp: timestamp('timestamp').defaultNow(),
+});
+

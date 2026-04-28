@@ -1,5 +1,34 @@
 import { Request, Response } from 'express';
-import { db, users, tickets, eq } from '@app/db';
+import { db, users, tickets, venues, events, eq, and, sql } from '@app/db';
+
+/**
+ * Get configuration for a specific event including venue branding
+ */
+export const getEventConfig = async (req: Request, res: Response) => {
+  const { eventId } = req.params;
+
+  try {
+    const eventResult = await db.select()
+      .from(events)
+      .where(eq(events.id, Number(eventId)))
+      .innerJoin(venues, eq(events.venueId, venues.id))
+      .limit(1);
+
+    if (!eventResult.length) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const { events: eventData, venues: venueData } = eventResult[0];
+
+    res.json({
+      ...eventData,
+      venue: venueData
+    });
+  } catch (err) {
+    console.error('Error fetching event config:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 export const healthCheck = (req: Request, res: Response) => {
   res.json({ status: 'auth_service_ok', timestamp: new Date() });

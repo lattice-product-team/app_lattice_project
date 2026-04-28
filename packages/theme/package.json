@@ -1,0 +1,12 @@
+{
+  "name": "@app/theme",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared Design Tokens and Theme for App Lattice",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

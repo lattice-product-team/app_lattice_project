@@ -95,6 +95,25 @@ services:
       db:
         condition: service_healthy
 
+  admin-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: admin-web-dev
+    ports:
+      - "${ADMIN_WEB_PORT:-3004}:3000"
+    volumes:
+      - .:/app:z
+      - /app/node_modules
+      - /app/apps/admin-web/.next
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3004
+      - HOSTNAME=0.0.0.0
+      - NEXT_PUBLIC_API_URL=http://localhost:${GATEWAY_PORT:-3000}/api/v1
+    depends_on:
+      - gateway
+
   redis:
     image: redis:7-alpine
     ports:

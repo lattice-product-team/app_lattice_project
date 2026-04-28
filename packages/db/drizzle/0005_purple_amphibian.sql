@@ -1,1 +1,0 @@
-ALTER TABLE "users" ADD COLUMN "avoid_grandstands" boolean DEFAULT false;

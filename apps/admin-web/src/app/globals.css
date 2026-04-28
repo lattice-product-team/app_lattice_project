@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0505;
+  --foreground: #ffffff;
+  --primary: #ff382e;
+  --glass: rgba(20, 10, 10, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+@theme {
+  --color-primary: var(--primary);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+}
+
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}

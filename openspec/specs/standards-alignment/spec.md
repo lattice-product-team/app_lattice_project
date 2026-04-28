@@ -17,7 +17,7 @@ The mobile application SHALL use native MapLibre layers (`SymbolLayer`, `CircleL
 - **THEN** PoIs are drawn using a single `SymbolLayer` instead of multiple `MarkerView` components
 
 ### Requirement: Design System Alignment (NativeWind)
-The mobile application components SHALL use NativeWind (Tailwind) classes for styling and Design System tokens for colors and spacing.
+The mobile application components SHALL use NativeWind (Tailwind) classes for styling and Design System tokens for colors and spacing. These tokens MUST be sourced from the centralized `@app/theme` package to ensure brand alignment.
 
 #### Scenario: Style Migration
 - **WHEN** the `MapContent` component is styled

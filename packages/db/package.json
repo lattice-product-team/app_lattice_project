@@ -8,8 +8,8 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "db:check": "tsx src/check-db.ts",
-    "db:clean": "tsx src/db-clean.ts",
+    "db:check": "npx tsx src/check-db.ts",
+    "db:clean": "npx tsx src/db-clean.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/migrate.ts",
     "db:qrs": "tsx src/generate-qrs.ts",

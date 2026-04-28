@@ -16,6 +16,7 @@ COPY apps/server/gateway/package.json ./apps/server/gateway/
 COPY apps/server/auth/package.json ./apps/server/auth/
 COPY apps/server/geo/package.json ./apps/server/geo/
 COPY apps/server/social/package.json ./apps/server/social/
+COPY apps/admin-web/package.json ./apps/admin-web/
 
 RUN pnpm install --frozen-lockfile
 
@@ -82,3 +83,17 @@ ENV NODE_ENV=production
 COPY --from=social-builder /app /app
 RUN corepack enable
 CMD ["npx", "tsx", "apps/server/social/index.ts"]
+
+# --- ADMIN-WEB Support ---
+FROM builder AS admin-web-dev
+ENV NODE_ENV=development
+CMD ["pnpm", "dev", "--filter=admin-web"]
+
+FROM builder AS admin-web-builder
+RUN pnpm build --filter=admin-web
+FROM node:20-alpine AS admin-web-prod
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=admin-web-builder /app /app
+RUN corepack enable
+CMD ["pnpm", "start", "--filter=admin-web"]
