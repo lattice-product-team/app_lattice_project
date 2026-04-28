@@ -1,7 +1,7 @@
-import MapLibreGL from '@maplibre/maplibre-react-native';
 import { createMMKV } from 'react-native-mmkv';
 import { LatticeEvent, POICollection } from '../types';
 import { geoService } from './geoService';
+import MapLibreGL from '../utils/safeMapLibre';
 
 const storage = typeof createMMKV !== 'undefined' 
   ? createMMKV({ id: 'lattice-offline-cache' })

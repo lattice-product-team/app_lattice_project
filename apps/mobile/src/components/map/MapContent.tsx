@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import MapLibreGL from '@maplibre/maplibre-react-native';
+import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import MapLibreGL from '../../utils/safeMapLibre';
 import { SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
