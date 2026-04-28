@@ -12,7 +12,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 import { useRegister } from '../../src/hooks/queries/useAuth';
 import { useAuthStore } from '../../src/store/useAuthStore';
-import { colors } from '../../src/styles/colors';
+import { colors as primitiveColors } from '@app/theme';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { authStyles } from '../../src/styles/typography';
@@ -95,7 +95,7 @@ export default function RegisterScreen() {
         
         {registrationRequired ? (
           <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={colors.primary} />
+             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
              <Text 
                className="text-white text-sm font-bold ml-2"
                style={{ fontFamily: 'PlusJakartaSans-Bold' }}
@@ -105,7 +105,7 @@ export default function RegisterScreen() {
           </View>
         ) : pendingTicketCode ? (
           <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={colors.primary} />
+             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
              <Text 
                className="text-white text-sm font-bold ml-2"
                style={{ fontFamily: 'PlusJakartaSans-Bold' }}
@@ -204,7 +204,7 @@ export default function RegisterScreen() {
             className="text-white/60 text-sm font-medium tracking-wide"
             style={{ fontFamily: 'PlusJakartaSans-Bold' }}
           >
-            ALREADY A MEMBER? <Text className="text-white font-black" style={{ color: colors.primary }}>LOG IN HERE</Text>
+            ALREADY A MEMBER? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>LOG IN HERE</Text>
           </Text>
         </Pressable>
       </Animated.View>

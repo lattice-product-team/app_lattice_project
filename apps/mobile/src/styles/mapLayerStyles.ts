@@ -1,5 +1,5 @@
 import { LineLayerStyle, CircleLayerStyle, SymbolLayerStyle } from '@maplibre/maplibre-react-native';
-import { colors } from './colors';
+import { colors as primitiveColors } from '@app/theme';
 import { semanticColors } from './semanticColors';
 
 export const mapLayerStyles = {
@@ -9,14 +9,14 @@ export const mapLayerStyles = {
   } as LineLayerStyle,
 
   routeFill: {
-    lineColor: colors.primary, // Solar Gold
+    lineColor: primitiveColors.brand.primary, // Solar Gold
     lineWidth: 6,
     lineJoin: 'round',
     lineCap: 'round',
   } as LineLayerStyle,
 
   routeGlow: {
-    lineColor: colors.primary,
+    lineColor: primitiveColors.brand.primary,
     lineWidth: 12,
     lineJoin: 'round',
     lineCap: 'round',
@@ -27,7 +27,7 @@ export const mapLayerStyles = {
   // Composite Pin Layers (Selection)
   selectedPoiPinBody: {
     circleRadius: 18,
-    circleColor: colors.primary, // Solar Gold
+    circleColor: primitiveColors.brand.primary, // Solar Gold
     circleStrokeWidth: 2,
     circleStrokeColor: 'white',
     circleTranslate: [0, -18],
@@ -36,7 +36,7 @@ export const mapLayerStyles = {
   selectedPoiPinTip: {
     textField: '▼',
     textSize: 24,
-    textColor: colors.primary,
+    textColor: primitiveColors.brand.primary,
     textHaloColor: 'white',
     textHaloWidth: 2,
     textOffset: [0, 0.4],
@@ -95,7 +95,7 @@ export const mapLayerStyles = {
   poiLabels: {
     textField: ['get', 'name'],
     textSize: 12,
-    textColor: colors.black, // Dark text for Light Map
+    textColor: '#000000', // Dark text for Light Map
     textOffset: [0, 2.5],
     textHaloColor: 'rgba(255, 255, 255, 0.9)', // White halo for clarity
     textHaloWidth: 2,
@@ -106,7 +106,7 @@ export const mapLayerStyles = {
 
   // Clustering Styles
   clusterCircles: {
-    circleColor: colors.primary, // Solar Gold for clusters
+    circleColor: primitiveColors.brand.primary, // Solar Gold for clusters
     circleRadius: [
       'step',
       ['get', 'point_count'],
@@ -122,7 +122,7 @@ export const mapLayerStyles = {
   clusterLabels: {
     textField: ['get', 'point_count_abbreviated'],
     textSize: 12,
-    textColor: colors.black, // Dark text on light clusters
+    textColor: '#000000', // Dark text on light clusters
     textIgnorePlacement: true,
     textAllowOverlap: true,
   } as SymbolLayerStyle,

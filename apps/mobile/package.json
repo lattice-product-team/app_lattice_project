@@ -22,6 +22,7 @@
     "@expo-google-fonts/outfit": "^0.4.3",
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
+    "@app/theme": "workspace:*",
     "@gorhom/bottom-sheet": "^5.2.8",
     "@maplibre/maplibre-react-native": "^10.4.2",
     "@react-three/drei": "^10.7.7",

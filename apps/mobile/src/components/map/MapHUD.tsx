@@ -6,7 +6,7 @@ import { POICarousel } from './POICarousel';
 import { GuidesSection } from './GuidesSection';
 import { EventCarousel } from './EventCarousel';
 import { EventSummaryCard } from './EventSummaryCard';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 import { LatticeEvent } from '../../types';
 
 interface MapHUDProps {
@@ -52,6 +52,7 @@ export const MapHUD = React.memo(function MapHUD({
   setCurrentEvent,
   onClearCategory,
 }: MapHUDProps) {
+  const theme = useLatticeTheme();
   return (
     <>
       <MapSheetManager
@@ -64,7 +65,6 @@ export const MapHUD = React.memo(function MapHUD({
             onSearch={setSearchQuery}
             onArPress={onProfilePress}
             onFocus={() => setIsSearching(true)}
-            variant="dark"
           />
         }
         onFocusSearch={() => setIsSearching(true)}
@@ -112,7 +112,7 @@ export const MapHUD = React.memo(function MapHUD({
 
       {isLoading && (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator color={colors.primary} size="large" />
+          <ActivityIndicator color={theme.colors.brand.primary} size="large" />
         </View>
       )}
     </>

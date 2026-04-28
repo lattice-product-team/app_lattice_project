@@ -15,7 +15,7 @@ import { useSyncTicket } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { ThemeGradient } from '../../src/components/ui/ThemeGradient';
-import { colors } from '../../src/styles/colors';
+import { colors as primitiveColors } from '@app/theme';
 import { authStyles } from '../../src/styles/typography';
 
 /**
@@ -208,7 +208,7 @@ export default function WelcomeScreen() {
 
         {syncTicket.isPending && (
           <View style={StyleSheet.absoluteFill} className="bg-black/80 items-center justify-center z-[100]">
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={primitiveColors.brand.primary} />
             <Text className="text-white mt-4 font-semibold">Verificando entrada...</Text>
           </View>
         )}

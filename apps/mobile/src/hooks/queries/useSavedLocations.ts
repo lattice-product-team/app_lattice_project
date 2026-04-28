@@ -6,7 +6,7 @@ export const useSavedLocations = () => {
   const { token } = useAuthStore();
   return useQuery({
     queryKey: ['saved-locations', token],
-    queryFn: () => geoService.getSavedLocations(token || undefined),
+    queryFn: () => geoService.getSavedLocations(),
     enabled: !!token,
   });
 };
@@ -17,7 +17,7 @@ export const useSaveLocation = () => {
 
   return useMutation({
     mutationFn: (data: { label: string, latitude: number, longitude: number }) => 
-      geoService.saveLocation(data, token || undefined),
+      geoService.saveLocation(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-locations'] });
     },
@@ -29,7 +29,7 @@ export const useDeleteSavedLocation = () => {
   const { token } = useAuthStore();
 
   return useMutation({
-    mutationFn: (id: number) => geoService.deleteSavedLocation(id, token || undefined),
+    mutationFn: (id: number) => geoService.deleteSavedLocation(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-locations'] });
     },

@@ -15,13 +15,14 @@ import { useMapStore } from '../../store/useMapStore';
 import { Image } from 'expo-image';
 import { getCategoryMetadata } from '../../utils/poiUtils';
 import { typography } from '../../styles/typography';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { colors as primitiveColors } from '@app/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface PoiDetailSheetProps {
   poi: UIPOI | null;
-  route: RouteGeoJSON | null;
+  route?: RouteGeoJSON | null;
   onClose: () => void;
   translateY: SharedValue<number>;
 }
@@ -36,6 +37,7 @@ const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
 
 export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>(
   ({ poi, onClose, translateY }: PoiDetailSheetProps, ref) => {
+    const theme = useLatticeTheme();
     const insets = useSafeAreaInsets();
     const setNavigating = useMapStore((s) => s.setNavigating);
     const routeMetadata = useMapStore((s) => s.routeMetadata);
@@ -91,7 +93,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               <Text style={styles.poiTitle} numberOfLines={1}>
                 {poi.name}
               </Text>
-              <Text style={styles.poiSubtitle}>{metadata.label}</Text>
+              <Text style={[styles.poiSubtitle, { color: theme.colors.text.muted }]}>{metadata.label}</Text>
             </View>
 
             <Pressable
@@ -120,21 +122,21 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 disabled={!routeMetadata}
                 style={[
                   styles.actionCard,
-                  styles.actionCardPrimary,
+                  { backgroundColor: theme.colors.brand.primary },
                   !routeMetadata && { opacity: 0.6 },
                 ]}
               >
-                <MaterialCommunityIcons name="walk" size={28} color={colors.solar[900]} />
-                <Text style={styles.actionCardValuePrimary}>
+                <MaterialCommunityIcons name="walk" size={28} color={theme.colors.text.inverse} />
+                <Text style={[styles.actionCardValuePrimary, { color: theme.colors.text.inverse }]}>
                   {routeMetadata ? formatDuration(routeMetadata.duration) : '...'}
                 </Text>
-                <Text style={styles.actionCardLabelPrimary}>IR AHORA</Text>
+                <Text style={[styles.actionCardLabelPrimary, { color: theme.colors.text.inverse }]}>IR AHORA</Text>
               </Pressable>
 
-              {/* Info Action: Distancia */}
+               {/* Info Action: Distancia */}
               <View style={styles.actionCard}>
                 <View style={styles.iconContainer}>
-                  <Feather name="map-pin" size={18} color={colors.muted} />
+                  <Feather name="map-pin" size={18} color={theme.colors.text.muted} />
                 </View>
                 <Text style={styles.actionCardLabel}>Distancia</Text>
                 <Text style={styles.actionCardValue}>
@@ -145,10 +147,10 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               {/* Info Action: Horario */}
               <View style={styles.actionCard}>
                 <View style={styles.iconContainer}>
-                  <Feather name="clock" size={18} color={colors.muted} />
+                  <Feather name="clock" size={18} color={theme.colors.text.muted} />
                 </View>
                 <Text style={styles.actionCardLabel}>Horario</Text>
-                <Text style={[styles.actionCardValue, { color: '#27AE60' }]}>Abierto</Text>
+                <Text style={[styles.actionCardValue, { color: theme.colors.status.success }]}>Abierto</Text>
               </View>
             </View>
 
@@ -175,7 +177,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               ))}
             </ScrollView>
 
-            {poi.description && <Text style={styles.description}>{poi.description}</Text>}
+            {poi.description && <Text style={[styles.description, { color: theme.colors.text.muted }]}>{poi.description}</Text>}
           </BottomSheetScrollView>
         </View>
       </BottomSheet>
@@ -235,7 +237,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   poiSubtitle: {
-    color: colors.muted,
+    // color handled dynamically
     fontSize: 13,
     fontFamily: typography.secondary.medium,
     marginTop: 1,
@@ -263,7 +265,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   actionCardPrimary: {
-    backgroundColor: colors.primary,
+    backgroundColor: primitiveColors.brand.primary,
     borderColor: 'transparent',
   },
   iconContainer: {
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.secondary.bold,
   },
   actionCardLabelPrimary: {
-    color: colors.solar[900],
+    color: '#000000',
     fontSize: 10,
     fontFamily: typography.secondary.bold,
   },
@@ -286,7 +288,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   actionCardValuePrimary: {
-    color: colors.solar[900],
+    color: '#000000',
     fontSize: 15,
     fontFamily: typography.primary.bold,
     marginTop: 1,
@@ -302,7 +304,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.03)',
   },
   description: {
-    color: colors.muted,
+    // color handled dynamically
     fontSize: 14,
     lineHeight: 22,
     marginTop: 24,

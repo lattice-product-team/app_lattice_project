@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../styles/colors';
+import { useLatticeTheme } from '../hooks/useLatticeTheme';
 import { getCategoryMetadata } from '../utils/poiUtils';
 import { UIPOI } from '../types/models/poi';
 import { POIBadges } from './poi/POIBadges';
 import { POIActions } from './poi/POIActions';
-import { theme } from '../styles/theme';
 import { POIImageGallery } from './poi/POIImageGallery';
 
 interface POICardProps {
@@ -18,6 +17,7 @@ interface POICardProps {
 }
 
 export const POICard = React.memo(function POICard({ poi, onClose, onNavigate, onSelect, noFloat }: POICardProps) {
+  const theme = useLatticeTheme();
   if (!poi) return null;
 
   const metadata = getCategoryMetadata(poi.category);
@@ -50,8 +50,8 @@ export const POICard = React.memo(function POICard({ poi, onClose, onNavigate, o
 
           {poi.time || poi.distance ? (
             <View className="flex-row items-center">
-              <Feather name="clock" size={14} color={colors.muted} />
-              <Text className="text-muted text-xs ml-1">
+              <Feather name="clock" size={14} color={theme.colors.text.muted} />
+              <Text className="text-xs ml-1" style={{ color: theme.colors.text.muted }}>
                 {poi.time ? `${poi.time} walk` : ''} {poi.distance ? `(${poi.distance})` : ''}
               </Text>
             </View>
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
     zIndex: 50,
   },
   closeButton: {
-    backgroundColor: theme.glass.low,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });

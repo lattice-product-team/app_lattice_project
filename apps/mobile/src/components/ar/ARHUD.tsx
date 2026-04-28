@@ -9,7 +9,7 @@ import Animated, {
   withSequence
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 import { typography } from '../../styles/typography';
 
 interface ARHUDProps {
@@ -20,6 +20,7 @@ interface ARHUDProps {
 
 export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLandscape = false }) => {
   const insets = useSafeAreaInsets();
+  const theme = useLatticeTheme();
   const { width, height } = useWindowDimensions();
   const scanOpacity = useSharedValue(0.5);
 
@@ -107,8 +108,8 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
             <View style={styles.compassCenter}>
               <Text style={styles.headingText}>VIEWING GRANDSTAND AREA</Text>
               <View className="flex-row items-center mt-1">
-                <Feather name="compass" size={12} color={colors.primary} />
-                <Text style={styles.subHeadingText}>HEADING NORTH-WEST</Text>
+                <Feather name="compass" size={12} color={theme.colors.brand.primary} />
+                <Text style={[styles.subHeadingText, { color: theme.colors.text.muted }]}>HEADING NORTH-WEST</Text>
               </View>
             </View>
             <View style={styles.compassLine} />
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.primary,
+    backgroundColor: '#E2B042', // primary gold
     marginRight: 8,
   },
   statusText: {
@@ -214,7 +215,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   subHeadingText: {
-    color: colors.muted,
     fontSize: 10,
     marginLeft: 4,
     fontFamily: typography.secondary.bold,

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { colors } from '../../src/styles/colors';
+import { useLatticeTheme } from '../../src/hooks/useLatticeTheme';
 import { typography } from '../../src/styles/typography';
 import { usePOIs } from '../../src/hooks/queries/usePOIs';
 import { useSinglePOI } from '../../src/hooks/queries/useSinglePOI';
@@ -38,6 +38,7 @@ MapLibreGL.setAccessToken(null);
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function MapIndexPage() {
+  const theme = useLatticeTheme();
   const router = useRouter();
   const { status: locationStatus, requestPermission } = useLocationService();
   const userCoords = useLocationStore((s) => s.logicalCoords);
@@ -223,7 +224,7 @@ export default function MapIndexPage() {
   );
 
   return (
-    <View className="flex-1 overflow-hidden" style={{ backgroundColor: colors.background }}>
+    <View className="flex-1 overflow-hidden" style={{ backgroundColor: theme.colors.bg.main }}>
       <View style={StyleSheet.absoluteFill}>
         <MapContent
           poisGeoJSON={poisData}
@@ -234,10 +235,7 @@ export default function MapIndexPage() {
         <AROverlay
           isVisible={isARVisible}
           onExitAR={() => setManualAR(false)}
-          userCoords={userCoords}
-          heading={heading}
           pois={poisData?.features || []}
-          isLandscape={isLandscape}
         />
       </View>
 
@@ -254,7 +252,7 @@ export default function MapIndexPage() {
             style={({ pressed }) => ({
               opacity: pressed ? 0.7 : 1,
               transform: [{ scale: pressed ? 0.92 : 1 }],
-              backgroundColor: manualAR ? colors.primary : 'rgba(0,0,0,0.6)',
+              backgroundColor: manualAR ? theme.colors.brand.primary : 'rgba(0,0,0,0.6)',
             })}
             className="w-12 h-12 items-center justify-center rounded-full border border-white/5 shadow-lg"
           >
@@ -362,13 +360,13 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   searchResultName: {
-    color: colors.black,
+    color: 'white',
     fontSize: 16,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.2,
   },
   searchResultCat: {
-    color: colors.muted,
+    color: 'rgba(255, 255, 255, 0.4)',
     fontSize: 13,
     marginTop: 2,
   },

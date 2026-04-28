@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-nati
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LatticeEvent } from '../../types';
 import { getEventMetadata } from '../../utils/poiUtils';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 import { typography } from '../../styles/typography';
 import { offlineService } from '../../services/offlineService';
 import * as Haptics from 'expo-haptics';
@@ -14,6 +14,7 @@ interface EventSummaryCardProps {
 }
 
 export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
+  const theme = useLatticeTheme();
   const metadata = getEventMetadata(event.type);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -61,6 +62,7 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
           disabled={isDownloading || isDownloaded}
           style={[
             styles.downloadButton,
+            { backgroundColor: theme.colors.brand.primary },
             isDownloaded && styles.downloadedButton,
             isDownloading && styles.downloadingButton
           ]}
@@ -135,7 +137,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 16,
     gap: 8,

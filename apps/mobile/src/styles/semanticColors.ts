@@ -1,4 +1,4 @@
-import { primitives } from './colors';
+import { colors as primitiveColors } from '@app/theme';
 import { LatticeTheme } from './theme';
 
 /**
@@ -7,21 +7,22 @@ import { LatticeTheme } from './theme';
  */
 export const getSemanticColors = (theme: LatticeTheme) => ({
   categories: {
-    music: '#AF52DE',       // Purple (Entertainment/Stages)
-    food: '#FF9500',        // Orange (Dining/Drinks)
-    services: '#007AFF',    // Blue (Info/Toilets/First Aid)
+    music: primitiveColors.category.music,
+    food: primitiveColors.category.food,
+    tech: primitiveColors.category.tech,
+    services: primitiveColors.semantic[theme.dark ? 'dark' : 'light'].info,
     shopping: '#5856D6',    // Indigo (Merchandise)
-    emergency: '#FF3B30',   // Red (Danger/Emergency)
+    emergency: primitiveColors.semantic[theme.dark ? 'dark' : 'light'].error,
     parking: '#8E8E93',     // Gray (Transport/Parking)
     transport: '#5AC8FA',   // Light Blue (Shuttles)
-    selected: theme.colors.brand.primary, // Solar Gold (Active Selection)
+    selected: theme.colors.brand.primary, // Active Selection
   },
   
   status: {
-    success: '#34C759',     // iOS Green
-    warning: '#FFCC00',     // iOS Yellow
-    error: '#FF3B30',       // iOS Red
-    info: '#007AFF',        // iOS Blue
+    success: primitiveColors.semantic[theme.dark ? 'dark' : 'light'].success,
+    warning: primitiveColors.semantic[theme.dark ? 'dark' : 'light'].warning,
+    error: primitiveColors.semantic[theme.dark ? 'dark' : 'light'].error,
+    info: primitiveColors.semantic[theme.dark ? 'dark' : 'light'].info,
   },
   
   elevation: {
@@ -33,24 +34,25 @@ export const getSemanticColors = (theme: LatticeTheme) => ({
 // Legacy export for backward compatibility
 export const semanticColors = {
   categories: {
-    music: '#AF52DE',
-    food: '#FF9500',
-    services: '#007AFF',
+    music: primitiveColors.category.music,
+    food: primitiveColors.category.food,
+    tech: primitiveColors.category.tech,
+    services: primitiveColors.semantic.dark.info,
     shopping: '#5856D6',
-    emergency: '#FF3B30',
+    emergency: primitiveColors.semantic.dark.error,
     parking: '#8E8E93',
     transport: '#5AC8FA',
-    selected: primitives.solar[500],
+    selected: primitiveColors.brand.primary,
   },
   status: {
-    success: '#34C759',
-    warning: '#FFCC00',
-    error: '#FF3B30',
-    info: '#007AFF',
+    success: primitiveColors.semantic.dark.success,
+    warning: primitiveColors.semantic.dark.warning,
+    error: primitiveColors.semantic.dark.error,
+    info: primitiveColors.semantic.dark.info,
   },
   elevation: {
-    card: 'rgba(255, 255, 255, 0.8)',
-    overlay: 'rgba(255, 255, 255, 0.4)',
+    card: 'rgba(20, 20, 18, 0.8)',
+    overlay: 'rgba(20, 20, 18, 0.4)',
   }
 } as const;
 

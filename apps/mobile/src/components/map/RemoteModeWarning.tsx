@@ -3,10 +3,11 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeBlurView } from '../ui/SafeBlurView';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 import { typography } from '../../styles/typography';
 
 export const RemoteModeWarning = () => {
+  const theme = useLatticeTheme();
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
@@ -16,7 +17,7 @@ export const RemoteModeWarning = () => {
       <SafeBlurView intensity={60} tint="dark" style={styles.card}>
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Feather name="eye" size={20} color={colors.categories.generic} />
+            <Feather name="eye" size={20} color={theme.colors.brand.primary} />
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.title}>Modo Exploración Remota</Text>

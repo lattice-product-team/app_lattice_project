@@ -1,9 +1,8 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../styles/colors';
+import { useLatticeTheme } from '../hooks/useLatticeTheme';
 import { mapIconName } from '../utils/poiUtils';
-import { theme } from '../styles/theme';
 
 interface FilterChipProps {
   label: string;
@@ -13,6 +12,7 @@ interface FilterChipProps {
 }
 
 export const FilterChip = React.memo(function FilterChip({ label, icon, active = false, onPress }: FilterChipProps) {
+  const theme = useLatticeTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -21,7 +21,16 @@ export const FilterChip = React.memo(function FilterChip({ label, icon, active =
         active ? 'bg-primary border-primary' : 'border-transparent'
       }`}
       style={[
-        active ? styles.activeShadow : styles.inactiveBackground
+        active ? {
+          shadowColor: theme.colors.brand.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.5,
+          shadowRadius: 10,
+          elevation: 5,
+        } : {
+          backgroundColor: theme.colors.glass.background,
+          borderColor: theme.colors.glass.border,
+        }
       ]}
     >
       <Feather
@@ -38,17 +47,6 @@ export const FilterChip = React.memo(function FilterChip({ label, icon, active =
 FilterChip.displayName = 'FilterChip';
 
 const styles = StyleSheet.create({
-  activeShadow: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  inactiveBackground: {
-    backgroundColor: theme.glass.dark,
-    borderColor: theme.glass.medium,
-  },
   icon: {
     marginRight: 6,
   },

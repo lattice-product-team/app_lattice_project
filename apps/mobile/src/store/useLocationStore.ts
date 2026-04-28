@@ -8,6 +8,7 @@ interface LocationState {
   wheelchairAccess: boolean;
   avoidGrandstands: boolean;
   avoidSlopes: boolean;
+  status: PermissionStatus;
   
   // Actions
   setLocation: (coords: number[] | null) => void;

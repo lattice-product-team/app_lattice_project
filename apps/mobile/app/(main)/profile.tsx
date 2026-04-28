@@ -284,7 +284,7 @@ export default function ProfileScreen() {
         transparent={true}
         onRequestClose={() => setShowWizard(false)}
       >
-        <View style={{ flex: 1, backgroundColor: theme.colors.overlay.modal, justifyContent: 'end' }}>
+        <View style={{ flex: 1, backgroundColor: (theme.colors.overlay as any).modal, justifyContent: 'flex-end' }}>
           <View 
             style={{ 
               backgroundColor: theme.colors.bg.surface, 
@@ -490,7 +490,7 @@ export default function ProfileScreen() {
       </Modal>
 
       {isSaving && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: theme.colors.overlay.modal, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: (theme.colors.overlay as any).modal, justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <ActivityIndicator size="large" color={theme.colors.brand.primary} />
         </View>
       )}

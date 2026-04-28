@@ -5,7 +5,7 @@ import { SafeBlurView } from '../ui/SafeBlurView';
 import { useMapStore } from '../../store/useMapStore';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 import { typography } from '../../styles/typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ export const NavigationInfo = () => {
   const routeMetadata = useMapStore((s) => s.routeMetadata);
   const deselect = useMapStore((s) => s.deselect);
   const insets = useSafeAreaInsets();
+  const theme = useLatticeTheme();
 
   if (!isNavigating || !routeMetadata) return null;
 
@@ -43,7 +44,7 @@ export const NavigationInfo = () => {
         <View style={styles.content}>
           <View style={styles.infoSection}>
             <View style={styles.mainInfo}>
-              <Text style={styles.durationText}>{formatDuration(routeMetadata.duration)}</Text>
+              <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>{formatDuration(routeMetadata.duration)}</Text>
               <View style={styles.dot} />
               <Text style={styles.distanceText}>{formatDistance(routeMetadata.distance)}</Text>
             </View>
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   durationText: {
-    color: colors.primary,
+    // color handled dynamically
     fontSize: 22,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.5,

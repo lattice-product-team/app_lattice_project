@@ -200,10 +200,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
               {/* eslint-disable-next-line react/no-unknown-property */}
               <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
               <MainARScene 
-                userCoords={userCoords}
-                heading={heading}
                 pois={activePois}
-                isLandscape={isLandscape}
               />
             </Canvas>
           </View>

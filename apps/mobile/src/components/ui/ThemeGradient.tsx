@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../../styles/colors';
-import { useAuthStore } from '../../hooks/useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface ThemeGradientProps {
   variant?: 'auth' | 'premium' | 'surface' | 'midnight';
@@ -17,27 +17,20 @@ interface ThemeGradientProps {
  */
 export const ThemeGradient = ({ 
   variant = 'auth', 
-  showBlob = false,
-  blobColor,
+  showBlob = false, 
+  blobColor, 
   style, 
   children 
 }: ThemeGradientProps) => {
-  const [isClient, setIsClient] = React.useState(false);
-  const eventConfig = useAuthStore(state => state.eventConfig);
+  const theme = useLatticeTheme();
   
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const primaryColor = isClient && eventConfig?.venue?.primaryColor 
-    ? eventConfig.venue.primaryColor 
-    : colors.primary;
+  const primaryColor = theme.colors.brand.primary;
 
   const getGradientConfig = () => {
     switch (variant) {
       case 'premium':
         return {
-          colors: ['#4A2C3A', colors.background] as const, // Deep Wine to Black
+          colors: ['#4A2C3A', theme.colors.bg.main] as const, // Deep Wine to Black
           locations: [0, 0.6] as [number, number],
           defaultBlob: primaryColor,
         };

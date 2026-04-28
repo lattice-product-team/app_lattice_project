@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 
 interface POIBadgesProps {
   category: string;
@@ -37,14 +37,16 @@ export const POIBadges = ({
   isWheelchairAccessible, 
   hasPriorityLane,
   icon 
-}: POIBadgesProps) => (
-  <View className="flex-row flex-wrap items-center gap-2 mb-2">
-    <View className="flex-row items-center px-2 py-0.5 rounded border border-white/10 bg-white/5">
-      <Feather name={icon as any} size={10} color={colors.muted} style={{ marginRight: 4 }} />
-      <Text className="text-[10px] font-black uppercase tracking-wider text-muted">
-        {category}
-      </Text>
-    </View>
+}: POIBadgesProps) => {
+  const theme = useLatticeTheme();
+  return (
+    <View className="flex-row flex-wrap items-center gap-2 mb-2">
+      <View className="flex-row items-center px-2 py-0.5 rounded border border-white/10 bg-white/5">
+        <Feather name={icon as any} size={10} color={theme.colors.text.muted} style={{ marginRight: 4 }} />
+        <Text className="text-[10px] font-black uppercase tracking-wider" style={{ color: theme.colors.text.muted }}>
+          {category}
+        </Text>
+      </View>
 
     <View className="flex-row items-center border border-white/10 px-2 py-0.5 rounded bg-white/5">
       <View
@@ -66,5 +68,6 @@ export const POIBadges = ({
         <Feather name="star" size={12} color="#FBBF24" />
       </View>
     )}
-  </View>
-);
+    </View>
+  );
+};

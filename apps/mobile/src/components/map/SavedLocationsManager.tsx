@@ -13,7 +13,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useSavedLocations, useDeleteSavedLocation } from '../../hooks/queries/useSavedLocations';
 import * as SafeAreaContext from 'react-native-safe-area-context';
-import { colors } from '../../styles/colors';
+import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 import { typography, pageStyles } from '../../styles/typography';
 import * as Haptics from 'expo-haptics';
 
@@ -30,6 +30,7 @@ export const SavedLocationsManager = ({
   onClose,
   onSelectMarker
 }: SavedLocationsManagerProps) => {
+  const theme = useLatticeTheme();
   const { data: savedData, isLoading } = useSavedLocations();
   const deleteMutation = useDeleteSavedLocation();
 
@@ -73,7 +74,7 @@ export const SavedLocationsManager = ({
 
           {isLoading ? (
             <View style={styles.centerContainer}>
-              <ActivityIndicator color={colors.primary} size="large" />
+              <ActivityIndicator color={theme.colors.brand.primary} size="large" />
             </View>
           ) : savedData?.features?.length > 0 ? (
             <ScrollView 
@@ -84,7 +85,7 @@ export const SavedLocationsManager = ({
                 <View key={feature.properties.id} style={styles.markerItem}>
                   <View style={styles.markerInfo}>
                     <View style={styles.iconWrapper}>
-                      <Feather name="map-pin" size={18} color={colors.primary} />
+                      <Feather name="map-pin" size={18} color={theme.colors.brand.primary} />
                     </View>
                     <View style={styles.nameContainer}>
                       <Text style={styles.markerName} numberOfLines={1}>
@@ -294,7 +295,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     height: 56,
-    backgroundColor: '#E10600',
+    backgroundColor: '#E10600', // Formula 1 Red - keeping for brand feel
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',

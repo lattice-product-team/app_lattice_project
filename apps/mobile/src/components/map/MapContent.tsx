@@ -14,7 +14,6 @@ import { useLatticeTheme } from '../../hooks/useLatticeTheme';
 // Constants & Utilities
 import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM } from '../../constants/mapConstants';
 import { mapLayerStyles } from '../../styles/mapLayerStyles';
-import { primitives } from '../../styles/colors';
 
 import { useLocationStore } from '../../store/useLocationStore';
 
@@ -163,7 +162,7 @@ export const MapContent = React.memo(function MapContent({
         ...f,
         properties: { ...f.properties, id: `saved_${f.properties.id}`, name: f.properties.label },
       })) || [];
-    return { type: 'FeatureCollection', features: [...pois, ...saved] };
+    return { type: 'FeatureCollection' as const, features: [...pois, ...saved] };
   }, [poisGeoJSON, savedLocations]);
 
   return (
@@ -182,7 +181,7 @@ export const MapContent = React.memo(function MapContent({
           minZoomLevel={11}
           defaultSettings={{ centerCoordinate: MAP_CENTER, zoomLevel: DEFAULT_ZOOM }}
           followUserLocation={isNavigating}
-          followUserMode={isNavigating ? 'compass' : 'normal'}
+          followUserMode={(isNavigating ? 'compass' : 'normal') as any}
           followZoomLevel={18}
           followPitch={45}
         />
@@ -194,7 +193,7 @@ export const MapContent = React.memo(function MapContent({
             style={{ 
               ...mapLayerStyles.networkLines, 
               lineOpacity: 0.15,
-              lineColor: theme.dark ? primitives.solar[400] : primitives.midnight.base 
+              lineColor: theme.colors.brand.primary
             }}
           />
         </MapLibreGL.ShapeSource>
@@ -205,7 +204,6 @@ export const MapContent = React.memo(function MapContent({
           shape={poisGeoJSON || EMPTY_GEOJSON}
           cluster={true}
           clusterRadius={50}
-          clusterMaxZoom={14}
         >
           <MapLibreGL.CircleLayer
             id="poiCircles"

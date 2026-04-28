@@ -1,4 +1,14 @@
-const colors = require("./src/styles/colors").colors;
+const themeColors = {
+  primary: '#E2B042',
+  secondary: '#C59837',
+  accent: '#F4C978',
+  background: '#0A0A09',
+  surface: '#141412',
+  muted: '#666664',
+  border: 'rgba(255, 255, 255, 0.12)',
+  navbar: '#141412',
+  glass: 'rgba(20, 20, 18, 0.8)',
+};
 
 module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
@@ -6,18 +16,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: colors.primary,
-        background: colors.background,
-        navbar: colors.navbar,
-        border: colors.border,
-        surface: colors.surface,
-        muted: colors.muted,
-        accent: colors.accent,
-        glass: colors.glass,
-        secondary: colors.secondary,
-        steel: colors.steel,
-        red: colors.red,
-        slate: colors.slate,
+        primary: themeColors.primary,
+        secondary: themeColors.secondary,
+        accent: themeColors.accent,
+        background: themeColors.background,
+        surface: themeColors.surface,
+        muted: themeColors.muted,
+        border: themeColors.border,
+        navbar: themeColors.navbar,
+        glass: themeColors.glass,
       },
       borderRadius: {
         xl: "1rem",

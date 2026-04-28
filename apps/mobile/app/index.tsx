@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useRootNavigationState } from 'expo-router';
 import { useAuthStore } from '../src/store/useAuthStore';
 import { View, ActivityIndicator } from 'react-native';
-import { colors } from '../src/styles/colors';
+import { colors as primitiveColors } from '@app/theme';
 
 export default function Index() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'black', alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color={colors.primary} size="large" />
+      <ActivityIndicator color={primitiveColors.brand.primary} size="large" />
     </View>
   );
 }

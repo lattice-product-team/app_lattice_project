@@ -1,6 +1,7 @@
 import { apiClient } from './apiClient';
 import { API_ENDPOINTS } from '../constants/api';
-import { useAuthStore } from '../hooks/useAuthStore';
+import { useAuthStore } from '../store/useAuthStore';
+import { useMapStore } from '../store/useMapStore';
 import * as Location from 'expo-location';
 
 /**
@@ -11,10 +12,9 @@ export const telemetryService = {
    * Send a single location ping to the server
    */
   async ping() {
-    const { user, activeTicket, eventConfig } = useAuthStore.getState();
+    const { user } = useAuthStore.getState();
+    const eventId = useMapStore.getState().currentEventId;
     
-    // Only ping if we have an active event/venue context
-    const eventId = eventConfig?.id || activeTicket?.eventId;
     if (!eventId || !user) return;
 
     try {

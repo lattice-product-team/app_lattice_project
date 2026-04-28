@@ -32,7 +32,7 @@ export const offlineService = {
       bounds: [
         [Math.min(...coordinates.map(c => c[0])), Math.min(...coordinates.map(c => c[1]))], // SW
         [Math.max(...coordinates.map(c => c[0])), Math.max(...coordinates.map(c => c[1]))], // NE
-      ] as [number, number][],
+      ] as any,
       minZoom: 12,
       maxZoom: 18,
     };
@@ -42,6 +42,8 @@ export const offlineService = {
       if (onProgress) {
         onProgress(status.percentage / 100);
       }
+    }, (pack, error) => {
+      console.error('Offline pack error:', error);
     });
 
     storage.set(`downloaded_${event.id}`, true);
@@ -63,8 +65,8 @@ export const offlineService = {
 
   deleteEventPackage: async (eventId: number) => {
     await MapLibreGL.offlineManager.deletePack(`event_${eventId}`);
-    storage.delete(`pois_${eventId}`);
-    storage.delete(`network_${eventId}`);
-    storage.delete(`downloaded_${eventId}`);
+    storage.remove(`pois_${eventId}`);
+    storage.remove(`network_${eventId}`);
+    storage.remove(`downloaded_${eventId}`);
   }
 };

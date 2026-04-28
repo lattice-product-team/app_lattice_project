@@ -14,7 +14,7 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLogin } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
-import { colors } from '../../src/styles/colors';
+import { colors as primitiveColors } from '@app/theme';
 import { authStyles } from '../../src/styles/typography';
 
 /**
@@ -142,7 +142,7 @@ export default function LoginScreen() {
             className="text-white/60 text-sm font-medium tracking-wide"
             style={{ fontFamily: 'PlusJakartaSans-Bold' }}
           >
-            NEW TO LATTICE? <Text className="text-white font-black" style={{ color: colors.primary }}>JOIN THE CREW</Text>
+            NEW TO LATTICE? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>JOIN THE CREW</Text>
           </Text>
         </Pressable>
       </Animated.View>
