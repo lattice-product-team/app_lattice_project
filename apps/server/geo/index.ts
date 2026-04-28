@@ -1,12 +1,10 @@
-import dotenv from 'dotenv';
-import path from 'path';
+import { loadConfig } from '@app/core';
 import app from './app';
 
-// Load environment variables from root if not already set (e.g. in CI/CD)
-dotenv.config({ path: path.join(process.cwd(), '../../../.env') });
+// Load validated config
+const env = loadConfig();
+const PORT = env.GEO_PORT;
 
-const PORT = process.env.GEO_PORT || process.env.PORT || 3002;
-
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Geo Service] running on port ${PORT}`);
 });

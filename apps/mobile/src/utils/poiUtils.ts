@@ -1,43 +1,45 @@
+import { colors } from '@app/theme';
+
 export interface CategoryMetadata {
   icon: string;
   color: string;
   label: string;
 }
 
-export const NEUTRAL_MARKER_COLOR = 'rgba(255, 255, 255, 0.15)'; // Neutral glass-like color
-export const NEUTRAL_MARKER_BORDER = 'rgba(255, 255, 255, 0.3)';
+export const NEUTRAL_MARKER_COLOR = colors.neutral.dark.overlay;
+export const NEUTRAL_MARKER_BORDER = colors.neutral.dark.elevated;
 
 const CATEGORY_MAP: Record<string, CategoryMetadata> = {
-  restaurant: { icon: 'food-fork-drink', color: '#D9B99B', label: 'Food & Drinks' }, 
-  food: { icon: 'food-fork-drink', color: '#D9B99B', label: 'Food & Drinks' },
-  parking: { icon: 'parking', color: '#9BA9D9', label: 'Parking Area' }, 
-  shop: { icon: 'shopping', color: '#C19BD9', label: 'Official Store' }, 
-  shopping: { icon: 'shopping', color: '#C19BD9', label: 'Official Store' },
-  wc: { icon: 'toilet', color: '#9BD9D9', label: 'Restrooms' }, 
-  toilet: { icon: 'toilet', color: '#9BD9D9', label: 'Restrooms' },
-  restroom: { icon: 'toilet', color: '#9BD9D9', label: 'Restrooms' },
-  grandstand: { icon: 'stadium-variant', color: '#B4D99B', label: 'Grandstand' }, 
-  medical: { icon: 'medical-bag', color: '#D99B9B', label: 'Medical Point' }, 
-  hospital: { icon: 'hospital-building', color: '#D99B9B', label: 'Hospital' },
-  gate: { icon: 'door-open', color: '#9592C4', label: 'Entrance Gate' }, 
-  entrance: { icon: 'door-open', color: '#9592C4', label: 'Entrance Gate' },
-  meetup_point: { icon: 'account-group', color: '#9BC5C3', label: 'Meetup Point' }, 
-  info: { icon: 'information', color: '#D9D99B', label: 'Information' }, 
+  restaurant: { icon: 'food-fork-drink', color: colors.semantic.dark.warning, label: 'Food & Drinks' }, 
+  food: { icon: 'food-fork-drink', color: colors.semantic.dark.warning, label: 'Food & Drinks' },
+  parking: { icon: 'parking', color: colors.semantic.dark.info, label: 'Parking Area' }, 
+  shop: { icon: 'shopping', color: colors.category.tech, label: 'Official Store' }, 
+  shopping: { icon: 'shopping', color: colors.category.tech, label: 'Official Store' },
+  wc: { icon: 'toilet', color: colors.semantic.dark.info, label: 'Restrooms' }, 
+  toilet: { icon: 'toilet', color: colors.semantic.dark.info, label: 'Restrooms' },
+  restroom: { icon: 'toilet', color: colors.semantic.dark.info, label: 'Restrooms' },
+  grandstand: { icon: 'stadium-variant', color: colors.semantic.dark.success, label: 'Grandstand' }, 
+  medical: { icon: 'medical-bag', color: colors.semantic.dark.error, label: 'Medical Point' }, 
+  hospital: { icon: 'hospital-building', color: colors.semantic.dark.error, label: 'Hospital' },
+  gate: { icon: 'door-open', color: colors.brand.primary, label: 'Entrance Gate' }, 
+  entrance: { icon: 'door-open', color: colors.brand.primary, label: 'Entrance Gate' },
+  meetup_point: { icon: 'account-group', color: colors.brand.accent, label: 'Meetup Point' }, 
+  info: { icon: 'information', color: colors.brand.secondary, label: 'Information' }, 
 };
 
 const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
-  music: { icon: 'music-note', color: '#AF52DE', label: 'Música' },
-  food: { icon: 'food-fork-drink', color: '#FF9500', label: 'Comida' },
-  tech: { icon: 'laptop', color: '#007AFF', label: 'Tecnología' },
-  sports: { icon: 'trophy', color: '#FF3B30', label: 'Deportes' },
-  generic: { icon: 'calendar-star', color: '#EFB33F', label: 'Evento' },
+  music: { icon: 'music-note', color: colors.category.music, label: 'Música' },
+  food: { icon: 'food-fork-drink', color: colors.category.food, label: 'Comida' },
+  tech: { icon: 'laptop', color: colors.category.tech, label: 'Tecnología' },
+  sports: { icon: 'trophy', color: colors.semantic.dark.error, label: 'Deportes' },
+  generic: { icon: 'calendar-star', color: colors.brand.primary, label: 'Evento' },
 };
 
 export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 
 const DEFAULT_METADATA: CategoryMetadata = {
   icon: 'map-pin',
-  color: '#8E8E93',
+  color: colors.neutral.dark.overlay,
   label: 'Point of Interest',
 };
 
