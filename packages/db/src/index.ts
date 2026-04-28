@@ -16,7 +16,6 @@ export {
   venues,
   events,
   tickets,
-  events,
   pointsOfInterest,
   telemetryLogs,
   nodes,

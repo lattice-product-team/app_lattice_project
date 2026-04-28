@@ -29,6 +29,13 @@
       "when": 1777283010200,
       "tag": "0010_fast_hellcat",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1777385921798,
+      "tag": "0011_massive_absorbing_man",
+      "breakpoints": true
     }
   ]
 }
