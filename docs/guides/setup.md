@@ -5,6 +5,7 @@ Welcome to the Lattice development team. This guide will help you get your local
 ## Prerequisites
 
 - **Node.js (LTS):** v18.0.0 or higher.
+- **pnpm:** v10.0.0 or higher.
 - **Docker Desktop:** Running and updated (Required for PostGIS).
 - **Mobile SDKs:** 
   - Xcode (macOS only) for iOS.
@@ -15,11 +16,12 @@ Welcome to the Lattice development team. This guide will help you get your local
 
 1. **Install Dependencies:**
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Environment Configuration:**
-   Copy `.env.example` to `.env` in `apps/mobile/` and each service folder under `apps/server/` (e.g., `auth`, `geo`, `social`, `gateway`).
+   Copy `.env.example` to `.env` in the **root** of the project.
+   The mobile app and all server services now read configuration directly from this central file.
 
 3. **Start Infrastructure:**
    ```bash
@@ -28,16 +30,16 @@ Welcome to the Lattice development team. This guide will help you get your local
 
 4. **Prepare Database:**
    ```bash
-   npm run db:migrate
-   npm run db:clean          # Optional: Start with a fresh DB
-   npm run db:seed-montmelo  # Feed Montmeló POIs (Standard)
+   pnpm db:migrate
+   pnpm db:clean          # Optional: Start with a fresh DB
+   pnpm db:seed-montmelo  # Feed Montmeló POIs (Standard)
    # OR
-   npm run db:seed-pedralbes # Feed Pedralbes POIs (Testing)
+   pnpm db:seed-pedralbes # Feed Pedralbes POIs (Testing)
    ```
 
 5. **Run Development Server:**
    ```bash
-   npm run dev
+   pnpm dev
    ```
    This command starts the API Gateway and the Mobile Metro bundler simultaneously.
 
@@ -47,42 +49,47 @@ Welcome to the Lattice development team. This guide will help you get your local
 > This project is **not compatible with Expo Go**. You must use Development Builds.
 
 ```bash
-# For Android
-npm run android -w lattice
-
 # For iOS
-npm run ios -w lattice
-```
+pnpm ios
 
-### Android Troubleshooting: SDK Location
-If you see a `SDK location not found` error, create a `local.properties` file in `apps/mobile/android/` with the following content:
-```properties
-sdk.dir=/Users/YOUR_USERNAME/Library/Android/sdk
+# For Android
+pnpm android
 ```
-*(Replace `YOUR_USERNAME` with your actual system username)*
 
 ## Local Tunneling (Remote & Physical Devices)
 
 To test on a physical device, you have two main options:
 
-### Option A: Using Zrok (Remote/Wireless)
+### Option A: Using Ngrok (Remote/Wireless - Recommended)
 
 This is best for testing without a cable or when someone else needs to see your work.
 
-1.  **Install Zrok:** [zrok.io](https://zrok.io).
-2.  **Authenticate:** `zrok enable <token>`.
+1.  **Install Ngrok:** [ngrok.com](https://ngrok.com).
+2.  **Authenticate:** `ngrok config add-authtoken <token>`.
 3.  **Run the Tunnel Command (Root):**
     ```bash
-    npm run dev:zrok
+    pnpm dev:tunnel
     ```
     This script will:
-    - Create public tunnels for both Metro (8081) and the API (3000).
-    - Automatically update your `EXPO_PUBLIC_API_URL` in `.env`.
-    - Set `EXPO_PACKAGER_PROXY_URL` so Expo uses the tunnel.
+    - Create a public tunnel for the API (3000).
+    - Automatically inject the tunnel URL into the Mobile App configuration.
+    - Start the Metro Bundler with Expo's built-in tunnel.
 
-### Option B: Using ADB Reverse (USB Cable - Recommended)
+### Option B: Using LAN (Wireless - High Performance)
 
-This is the fastest, most stable, and preferred method for local testing.
+If your device and computer are on the same Wi-Fi:
+
+1.  **Run LAN Command:**
+    ```bash
+    pnpm dev:lan
+    ```
+    This will:
+    - Detect your local IP address.
+    - Configure the Mobile App to connect directly to your computer's IP.
+
+### Option C: Using ADB Reverse (USB Cable - Android Only)
+
+This is the fastest, most stable method for local Android testing.
 
 1.  **Connect Device:** Ensure USB Debugging is enabled.
 2.  **Run Port Forwarding:**
@@ -90,36 +97,10 @@ This is the fastest, most stable, and preferred method for local testing.
     adb reverse tcp:8081 tcp:8081
     adb reverse tcp:3000 tcp:3000
     ```
-3.  **Update .env:** Ensure `EXPO_PUBLIC_API_URL` points to `http://localhost:3000/api/v1`.
-4.  **Start App:**
+3.  **Start App:**
     ```bash
-    npm run android -w mobile
+    pnpm android
     ```
-
-> [!NOTE]
-> When using `adb reverse`, the device acts as if the server is running on its own `localhost`.
-
-## Authentication & Onboarding Flow
-
-The application features a premium onboarding experience designed to bridge physical tickets with digital accounts.
-
-### The Welcome Flow
-When a user launches the app for the first time:
-1.  **Welcome Screen**: Asks "Do you have a ticket?".
-2.  **With Ticket**: Opens the QR scanner.
-    -   **Existing Account**: If the ticket email is linked to a full account, the user is logged in immediately.
-    -   **New Account**: If the email is new, the user is sent to the Register screen with their email pre-filled to set a password.
-3.  **Without Ticket**: Asks if the user is new or returning, leading to Register or Login respectively.
-
-### Testing the Flow
-To test ticket-based onboarding, you can generate test QR codes directly in your terminal:
-
-```bash
-# Generate test tickets (with Paddock Club and Grandstand G examples)
-npm run qrs -w @app/db
-```
-
-Scan the generated QR codes with your physical device's camera inside the app to verify the redirection logic.
 
 ---
 > For contribution guidelines, see [**Contribution Standards**](./standards.md).

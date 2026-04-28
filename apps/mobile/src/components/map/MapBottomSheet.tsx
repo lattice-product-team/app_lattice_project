@@ -1,6 +1,7 @@
 import React, { useMemo, forwardRef } from 'react';
 import { View, StyleSheet, Dimensions, Platform } from 'react-native';
 import BottomSheet, { BottomSheetScrollView, BottomSheetBackgroundProps } from '@gorhom/bottom-sheet';
+import * as Haptics from 'expo-haptics';
 import { SafeBlurView } from '../ui/SafeBlurView';
 import { SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,7 +27,7 @@ const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
         }
       ]}
     >
-      <View style={styles.premiumBorder} />
+      <View style={styles.innerGlowBorder} />
     </SafeBlurView>
   );
 };
@@ -44,10 +45,10 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
   const insets = useSafeAreaInsets();
   const isRemote = useMapStore((s) => s.isRemote);
   const theme = useLatticeTheme();
-
   const snapPoints = useMemo(() => [
     insets.bottom + 110,  // Collapsed: Search bar only
-    SCREEN_HEIGHT * 0.48  // Medium: Main exploration view
+    SCREEN_HEIGHT * 0.48, // Medium: Exploration
+    SCREEN_HEIGHT * 0.92  // Expanded: List full view
   ], [insets.bottom]);
 
   return (
@@ -61,15 +62,16 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
         { backgroundColor: theme.colors.overlay.modal }
       ]}
       animatedPosition={translateY}
+      onChange={(index) => {
+        if (index >= 0) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+      }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
       style={styles.sheetContainer}
     >
-      <BottomSheetScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+      <View style={styles.fixedHeader}>
         <View style={styles.searchContainer}>
           {searchBar}
         </View>
@@ -83,7 +85,13 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(({
             />
           </View>
         )}
+      </View>
 
+      <BottomSheetScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {isRemote && !isSearching && <RemoteModeWarning />}
 
         <View style={styles.contentWrapper}>
@@ -133,22 +141,30 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20,
+    paddingTop: 12, // Reduced because header is outside
+  },
+  fixedHeader: {
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
+    zIndex: 10,
   },
   searchContainer: {
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 4,
   },
   filtersWrapper: {
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   contentWrapper: {
     marginTop: 4,
     minHeight: 250,
   },
-  premiumBorder: {
+  innerGlowBorder: {
     ...StyleSheet.absoluteFillObject,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     pointerEvents: 'none',
   },
 });

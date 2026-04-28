@@ -164,9 +164,8 @@ export const MapContent = React.memo(function MapContent({
       })) || [];
     return { type: 'FeatureCollection' as const, features: [...pois, ...saved] };
   }, [poisGeoJSON, savedLocations]);
-
   return (
-    <View className="flex-1">
+    <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
         style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
         mapStyle={theme.dark ? MAP_STYLES.dark : MAP_STYLES.light}
@@ -185,7 +184,6 @@ export const MapContent = React.memo(function MapContent({
           followZoomLevel={18}
           followPitch={45}
         />
-
         {/* 1. PATH NETWORK */}
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
@@ -255,26 +253,8 @@ export const MapContent = React.memo(function MapContent({
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 3. CLEANUP - Hiding default MapTiler POIs and Labels to keep the map clean but colorful */}
-        <MapLibreGL.SymbolLayer id="Food" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Shopping" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Healthcare" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Culture" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Education" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Station" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Public" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Tourism" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Sport" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Transport" style={{ visibility: 'none' }} />
-        
-        {/* Road and Park Cleanup */}
-        <MapLibreGL.SymbolLayer id="Road labels" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Highway shield" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Highway shield (US)" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Highway junction" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Housenumber" style={{ visibility: 'none' }} />
-        <MapLibreGL.SymbolLayer id="Park" style={{ visibility: 'none' }} /> {/* In some styles Park is also a symbol layer for the name */}
-        <MapLibreGL.SymbolLayer id="Airport" style={{ visibility: 'none' }} />
+        {/* 2. VISUAL POIS (Handled in previous blocks) */}
+
 
         <MapLibreGL.ShapeSource 
           id="savedSource" 
@@ -301,7 +281,7 @@ export const MapContent = React.memo(function MapContent({
         </MapLibreGL.ShapeSource>
 
         {/* 3. ROUTE & SELECTION VISUALS */}
-        {isNavigating && currentRoute && (
+        {!!(isNavigating && currentRoute) && (
           <MapLibreGL.ShapeSource id="routeSource" shape={currentRoute}>
             <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
             <MapLibreGL.LineLayer

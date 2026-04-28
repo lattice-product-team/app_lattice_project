@@ -6,9 +6,8 @@ import os from 'os';
  * 
  * Orchestrates the LAN development environment startup.
  * 1. Detects IP
- * 2. Syncs Env
- * 3. Starts Expo
- * 4. Runs Diagnostics
+ * 2. Starts Expo
+ * 3. Runs Diagnostics
  */
 
 function getLocalIP() {
@@ -50,12 +49,11 @@ async function main() {
   const ip = getLocalIP();
   console.log(`\n📡 LATTICE DEV ENGINE: Starting on LAN IP ${ip}\n`);
 
-  // 1. Sync Environment
-  console.log('🔄 Syncing environment variables...');
-  await runCommand('pnpm', ['--dir', '../..', 'env:sync', '--', '--ip', ip]);
-
+  // 1. Environment is handled dynamically by app.config.ts
+  
   // 2. Prepare Expo Environment
   const expoEnv = {
+    LAN_IP: ip,
     HOST: ip,
     REACT_NATIVE_PACKAGER_HOSTNAME: ip,
     EXPO_USE_DEV_CLIENT: 'true',
@@ -71,7 +69,7 @@ async function main() {
     env: { ...process.env, ...expoEnv }
   });
 
-  // 4. Run Diagnostics after 5 seconds (enough time for Metro to bind)
+  // 4. Run Diagnostics after 8 seconds (enough time for Metro to bind)
   setTimeout(async () => {
     console.log('\n⏱️ Running connectivity diagnostics...');
     // We don't use 'inherit' here to keep the terminal clean while Expo is running

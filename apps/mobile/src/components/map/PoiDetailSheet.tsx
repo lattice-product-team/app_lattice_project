@@ -30,7 +30,7 @@ interface PoiDetailSheetProps {
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
   return (
     <SafeBlurView intensity={85} tint="dark" style={[style, styles.blurBackground]}>
-      <View style={styles.premiumBorder} />
+      <View style={styles.innerGlowBorder} />
     </SafeBlurView>
   );
 };
@@ -76,11 +76,16 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
         animatedPosition={translateY}
         enablePanDownToClose
         onClose={onClose}
+        onChange={(index) => {
+          if (index >= 0) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        }}
         overDragResistanceFactor={0}
         style={styles.sheetContainer}
       >
         <View style={styles.container}>
-          {/* Header */}
+          {/* Header (Fixed) */}
           <View style={styles.poiHeader}>
             <Pressable
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
@@ -107,11 +112,8 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
             </Pressable>
           </View>
 
-          <BottomSheetScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Action Buttons Row */}
+          {/* Action Buttons Row (Fixed) */}
+          <View style={styles.fixedActionArea}>
             <View style={styles.actionRow}>
               {/* Main Action: IR AHORA */}
               <Pressable
@@ -133,7 +135,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 <Text style={[styles.actionCardLabelPrimary, { color: theme.colors.text.inverse }]}>IR AHORA</Text>
               </Pressable>
 
-               {/* Info Action: Distancia */}
+              {/* Info Action: Distancia */}
               <View style={styles.actionCard}>
                 <View style={styles.iconContainer}>
                   <Feather name="map-pin" size={18} color={theme.colors.text.muted} />
@@ -153,7 +155,12 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 <Text style={[styles.actionCardValue, { color: theme.colors.status.success }]}>Abierto</Text>
               </View>
             </View>
+          </View>
 
+          <BottomSheetScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Photos */}
             <ScrollView
               horizontal
@@ -192,12 +199,18 @@ const styles = StyleSheet.create({
     marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
   },
   blurBackground: {
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
     overflow: 'hidden',
+  },
+  innerGlowBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    pointerEvents: 'none',
   },
   handleIndicator: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -245,13 +258,19 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 40,
+    paddingTop: 8,
+  },
+  fixedActionArea: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 10,
-    marginTop: 8,
-    marginBottom: 24,
+    marginTop: 4,
   },
   actionCard: {
     flex: 1,
@@ -304,16 +323,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.03)',
   },
   description: {
-    // color handled dynamically
     fontSize: 14,
     lineHeight: 22,
     marginTop: 24,
     fontFamily: typography.secondary.regular,
   },
-  premiumBorder: {
+  innerGlowBorder: {
     ...StyleSheet.absoluteFillObject,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     pointerEvents: 'none',
   },
 });

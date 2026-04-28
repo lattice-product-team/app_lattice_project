@@ -148,6 +148,12 @@ importers:
       babel-preset-expo:
         specifier: ^54.0.10
         version: 54.0.10(@babel/core@7.29.0)(@babel/runtime@7.29.2)(expo@54.0.33)(react-refresh@0.14.2)
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+      dotenv-expand:
+        specifier: ^13.0.0
+        version: 13.0.0
       expo:
         specifier: ~54.0.33
         version: 54.0.33(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
@@ -259,6 +265,9 @@ importers:
       three:
         specifier: ^0.183.1
         version: 0.183.2
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
       zustand:
         specifier: ^5.0.11
         version: 5.0.12(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
@@ -4304,12 +4313,20 @@ packages:
     resolution: {integrity: sha512-zIHwmZPRshsCdpMDyVsqGmgyP0yT8GAgXUnkdAoJisxvf33k7yO6OuoKmcTGuXPWSsm8Oh88nZicRLA9Y0rUeA==}
     engines: {node: '>=12'}
 
+  dotenv-expand@13.0.0:
+    resolution: {integrity: sha512-aBfBS8eYIeXmpHI9ThIlA7/WLq+SLt18iXUZhb52rW89QLKQFoIpPG1bPeewoPZsTyjSSO3T7234FBVUM1V2rA==}
+    engines: {node: '>=12'}
+
   dotenv@16.4.7:
     resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
     engines: {node: '>=12'}
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   draco3d@1.5.7:
@@ -12679,11 +12696,17 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
+
+  dotenv-expand@13.0.0:
+    dependencies:
+      dotenv: 17.4.2
 
   dotenv@16.4.7: {}
 
   dotenv@16.6.1: {}
+
+  dotenv@17.4.2: {}
 
   draco3d@1.5.7: {}
 
@@ -13077,7 +13100,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -13146,7 +13169,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.4(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.0(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1))
       hasown: 2.0.3
       is-core-module: 2.16.1
       is-glob: 4.0.3

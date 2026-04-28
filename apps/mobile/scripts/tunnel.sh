@@ -2,9 +2,16 @@
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GATEWAY_PORT=3000
+ROOT_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+ENV_PATH="$ROOT_DIR/.env"
 
-echo "🚀 Starting ngrok tunnel for Lattice API from $SCRIPT_DIR..."
+# Load GATEWAY_PORT from .env if available, default to 3000
+if [ -f "$ENV_PATH" ]; then
+    GATEWAY_PORT=$(grep -E "^GATEWAY_PORT=" "$ENV_PATH" | cut -d'=' -f2 | tr -d '[:space:]')
+fi
+GATEWAY_PORT=${GATEWAY_PORT:-3000}
+
+echo "🚀 Starting ngrok tunnel for Lattice API (Port: $GATEWAY_PORT)..."
 
 # Check if ngrok is installed
 if ! command -v ngrok &> /dev/null; then
@@ -39,9 +46,8 @@ fi
 
 if [ -n "$NGROK_URL" ]; then
     echo "✅ API Tunnel Ready: $NGROK_URL"
-    export EXPO_PUBLIC_API_URL="$NGROK_URL/api/v1"
-    export EXPO_PUBLIC_GATEWAY_HOST=$(echo $NGROK_URL | sed 's/https:\/\///')
-    export EXPO_PUBLIC_GATEWAY_PORT=443
+    # Inject variables for app.config.ts
+    export TUNNEL_URL="$NGROK_URL"
 else
     echo "⚠️  Could not extract ngrok URL automatically."
     echo "   Please make sure ngrok is running and copy the URL manually if needed."
@@ -49,5 +55,5 @@ fi
 
 # Start expo with its own tunnel for Metro
 echo "📦 Starting Metro Bundler with Expo Tunnel..."
-cd "$SCRIPT_DIR" || exit 1
+cd "$ROOT_DIR/apps/mobile" || exit 1
 npx expo start --tunnel
