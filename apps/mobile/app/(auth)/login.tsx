@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Env } from '../../src/config/env';
 import {
   View,
   TextInput,
@@ -10,16 +11,16 @@ import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
-import { useAuthStore } from '../../src/hooks/useAuthStore';
-import { useLogin } from '../../src/services/auth';
+import { useAuthStore } from '../../src/store/useAuthStore';
+import { useLogin } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
-import { colors } from '../../src/styles/colors';
+import { colors as primitiveColors } from '@app/theme';
 import { authStyles } from '../../src/styles/typography';
 
 /**
  * Standard Sign In Screen.
- * Simplified to email/password following the "Muzaic" cleanup.
+ * Simplified to email/password following the Lattice project cleanup.
  */
 export default function LoginScreen() {
   const router = useRouter();
@@ -38,6 +39,9 @@ export default function LoginScreen() {
   }, [token, router]);
 
   const handleLogin = () => {
+    // DIAGNOSTIC ALERT: Remove after fixing connectivity
+    Alert.alert('Network Diagnostic', `Connecting to: ${Env.apiUrl}`);
+
     if (!email || !password) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Alert.alert('Error', 'Email and password are required');
@@ -59,7 +63,7 @@ export default function LoginScreen() {
   const isLoading = login.isPending;
 
   return (
-    <AuthLayout showBack onBack={() => router.replace('/(auth)/welcome')}>
+    <AuthLayout showBack onBack={() => router.replace('/(auth)/welcome')} midnight>
       {/* Header */}
       <Animated.View 
         entering={FadeInDown.duration(800).delay(200).springify()}
@@ -72,7 +76,7 @@ export default function LoginScreen() {
           Sign In
         </Text>
         <Text 
-          className="text-white/40 leading-6"
+          className="text-white/60 leading-6"
           style={authStyles.subtitle}
         >
           Access your Lattice profile to sync performance data and preferences.
@@ -87,13 +91,13 @@ export default function LoginScreen() {
       >
         <View className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-8 p-1">
           <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="mail" size={20} color="rgba(255,255,255,0.3)" />
+            <Feather name="mail" size={20} color="rgba(255,255,255,0.4)" />
             <TextInput 
               className="flex-1 text-white text-lg font-medium ml-4 h-10"
               keyboardType="email-address" 
               autoCapitalize="none" 
               placeholder="Email address"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="rgba(255,255,255,0.3)"
               value={email}
               onChangeText={setEmail}
               editable={!isLoading}
@@ -101,19 +105,19 @@ export default function LoginScreen() {
             />
           </View>
           <View className="flex-row items-center px-6 py-5">
-            <Feather name="lock" size={20} color="rgba(255,255,255,0.3)" />
+            <Feather name="lock" size={20} color="rgba(255,255,255,0.4)" />
             <TextInput 
               className="flex-1 text-white text-lg font-medium ml-4 h-10"
               secureTextEntry={!showPassword} 
               placeholder="Password"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="rgba(255,255,255,0.3)"
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
               style={{ fontFamily: 'Outfit-Medium' }}
             />
             <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={20} className="active:opacity-70">
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.3)" />
+              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.4)" />
             </Pressable>
           </View>
         </View>
@@ -139,10 +143,10 @@ export default function LoginScreen() {
           className="active:opacity-70 p-4"
         >
           <Text 
-            className="text-white/40 text-sm font-medium tracking-wide"
+            className="text-white/60 text-sm font-medium tracking-wide"
             style={{ fontFamily: 'PlusJakartaSans-Bold' }}
           >
-            NEW TO LATTICE? <Text className="text-white font-black" style={{ color: colors.primary }}>JOIN THE CREW</Text>
+            NEW TO LATTICE? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>JOIN THE CREW</Text>
           </Text>
         </Pressable>
       </Animated.View>

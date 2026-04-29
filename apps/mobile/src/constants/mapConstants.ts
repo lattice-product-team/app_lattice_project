@@ -8,3 +8,5 @@ export const DEFAULT_ZOOM = 17;
 export const SELECTION_ZOOM = 17;
 export const FLY_ANIMATION_DURATION = 1000;
 export const SELECT_ANIMATION_DURATION = 350;
+
+export const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';

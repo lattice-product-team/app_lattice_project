@@ -1,22 +1,23 @@
 /**
  * Core TypeScript interfaces for Lattice
+ * 
+ * We use a combination of manual interfaces and inferred types 
+ * from the Drizzle schema to ensure a single source of truth.
  */
 
-export interface Venue {
-  id: number;
-  name: string;
-  boundary?: any; // GeoJSON Polygon
-  center?: [number, number]; // [lng, lat]
-  primaryColor: string;
-}
+import { InferSelectModel } from 'drizzle-orm';
+import * as schema from '@app/db';
 
-export interface Event {
-  id: number;
-  venueId: number;
-  name: string;
-  startDate: string;
-  endDate: string;
-}
+// --- INFERRED TYPES FROM DB SCHEMA ---
+export type User = InferSelectModel<typeof schema.users>;
+export type Venue = InferSelectModel<typeof schema.venues>;
+export type Event = InferSelectModel<typeof schema.events>;
+export type Ticket = InferSelectModel<typeof schema.tickets>;
+export type POI = InferSelectModel<typeof schema.pointsOfInterest>;
+export type Group = InferSelectModel<typeof schema.groups>;
+export type SavedLocation = InferSelectModel<typeof schema.savedLocations>;
+
+// --- MANUAL INTERFACES FOR API & UI ---
 
 export interface TicketInfo {
   code: string;
@@ -49,12 +50,9 @@ export type POIType =
   | 'parking'
   | 'meetup_point';
 
-export interface POI {
-  id: number;
-  venueId: number;
-  name: string;
-  description: string;
-  type: POIType;
-  location: [number, number];
-  crowdLevel: 'low' | 'moderate' | 'high' | 'blocked';
-}
+// Re-export enums and other useful bits from schema if needed
+export {
+  mobilityModeEnum,
+  poiTypeEnum,
+  crowdLevelEnum,
+} from '@app/db';

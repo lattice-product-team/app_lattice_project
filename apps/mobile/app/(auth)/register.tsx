@@ -10,16 +10,16 @@ import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
-import { useRegister } from '../../src/services/auth';
-import { useAuthStore } from '../../src/hooks/useAuthStore';
-import { colors } from '../../src/styles/colors';
+import { useRegister } from '../../src/hooks/queries/useAuth';
+import { useAuthStore } from '../../src/store/useAuthStore';
+import { colors as primitiveColors } from '@app/theme';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { authStyles } from '../../src/styles/typography';
 
 /**
  * Standard Registration Screen.
- * Simplified to match the clean "Muzaic" cleanup.
+ * Simplified to match the clean Lattice cleanup.
  */
 export default function RegisterScreen() {
   const router = useRouter();
@@ -79,6 +79,7 @@ export default function RegisterScreen() {
         useAuthStore.getState().clearRegistrationData();
         router.replace('/(auth)/welcome');
       }}
+      midnight
     >
       {/* Header section matching login */}
       <Animated.View 
@@ -93,8 +94,8 @@ export default function RegisterScreen() {
         </Text>
         
         {registrationRequired ? (
-          <View className="bg-primary/10 px-5 py-2.5 rounded-2xl border border-primary/20 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={colors.primary} />
+          <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
+             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
              <Text 
                className="text-white text-sm font-bold ml-2"
                style={{ fontFamily: 'PlusJakartaSans-Bold' }}
@@ -103,8 +104,8 @@ export default function RegisterScreen() {
              </Text>
           </View>
         ) : pendingTicketCode ? (
-          <View className="bg-primary/10 px-5 py-2.5 rounded-2xl border border-primary/20 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={colors.primary} />
+          <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
+             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
              <Text 
                className="text-white text-sm font-bold ml-2"
                style={{ fontFamily: 'PlusJakartaSans-Bold' }}
@@ -114,7 +115,7 @@ export default function RegisterScreen() {
           </View>
         ) : (
           <Text 
-            className="text-white/40 leading-6"
+            className="text-white/60 leading-6"
             style={authStyles.subtitle}
           >
             Join the Lattice community and access real-time performance analytics.
@@ -131,12 +132,12 @@ export default function RegisterScreen() {
         <View className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-8 p-1">
           {/* Full Name Input */}
           <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="user" size={20} color="rgba(255,255,255,0.3)" />
+            <Feather name="user" size={20} color="rgba(255,255,255,0.4)" />
             <TextInput 
               className="flex-1 text-white text-lg font-medium ml-4 h-10"
               autoCapitalize="words" 
               placeholder="Full Name"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="rgba(255,255,255,0.3)"
               value={fullName}
               onChangeText={setFullName}
               editable={!isLoading}
@@ -146,13 +147,13 @@ export default function RegisterScreen() {
 
           {/* Email Input */}
           <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="mail" size={20} color="rgba(255,255,255,0.3)" />
+            <Feather name="mail" size={20} color="rgba(255,255,255,0.4)" />
             <TextInput 
               className="flex-1 text-white text-lg font-medium ml-4 h-10"
               keyboardType="email-address" 
               autoCapitalize="none" 
               placeholder="Email address"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="rgba(255,255,255,0.3)"
               value={email}
               onChangeText={setEmail}
               editable={!isLoading && !registrationRequired}
@@ -162,19 +163,19 @@ export default function RegisterScreen() {
           
           {/* Password Input */}
           <View className="flex-row items-center px-6 py-5">
-            <Feather name="lock" size={20} color="rgba(255,255,255,0.3)" />
+            <Feather name="lock" size={20} color="rgba(255,255,255,0.4)" />
             <TextInput 
               className="flex-1 text-white text-lg font-medium ml-4 h-10"
               secureTextEntry={!showPassword} 
               placeholder="Create Password"
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor="rgba(255,255,255,0.3)"
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
               style={{ fontFamily: 'Outfit-Medium' }}
             />
             <Pressable onPress={() => setShowPassword(!showPassword)} className="active:opacity-70" hitSlop={20}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.3)" />
+              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.4)" />
             </Pressable>
           </View>
         </View>
@@ -200,10 +201,10 @@ export default function RegisterScreen() {
           className="active:opacity-70 p-4"
         >
           <Text 
-            className="text-white/40 text-sm font-medium tracking-wide"
+            className="text-white/60 text-sm font-medium tracking-wide"
             style={{ fontFamily: 'PlusJakartaSans-Bold' }}
           >
-            ALREADY A MEMBER? <Text className="text-white font-black" style={{ color: colors.primary }}>LOG IN HERE</Text>
+            ALREADY A MEMBER? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>LOG IN HERE</Text>
           </Text>
         </Pressable>
       </Animated.View>

@@ -1,7 +1,23 @@
 import { POIGeoJSON } from '../index';
 
-export type UIPOI = POIGeoJSON['properties'] & {
-  geometry: POIGeoJSON['geometry'];
+/**
+ * Standardized POI model for UI consumption.
+ * Guaranteed to have all necessary display properties.
+ */
+export interface StandardUIPOI {
+  id: string;
+  displayName: string;
+  category: string;
+  categoryLabel: string;
+  categoryIcon: string;
+  mainColor: string;
+  coordinates: [number, number];
+  description?: string;
+  images?: string[];
   distance?: string;
-  time?: string;
-};
+  duration?: string;
+  raw: any; // Original GeoJSON properties for backward compatibility
+}
+
+// Keep the legacy type for transition period
+export type UIPOI = StandardUIPOI;

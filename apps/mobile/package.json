@@ -4,22 +4,19 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "android": "expo run:android",
     "dev": "expo start",
-    "predev": "pnpm --dir ../.. env:sync",
-    "prestart": "pnpm --dir ../.. env:sync",
-    "dev:lan": "export IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I | awk '{print $1}') && export REACT_NATIVE_PACKAGER_HOSTNAME=$IP && export EXPO_PUBLIC_API_URL=http://$IP:3000/api/v1 && export EXPO_PUBLIC_GATEWAY_HOST=$IP && export EXPO_PUBLIC_GATEWAY_PORT=3000 && export EXPO_PACKAGER_PROXY_URL=http://$IP:8081 && expo start --lan --go",
-    "dev:home": "export IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I | awk '{print $1}') && export REACT_NATIVE_PACKAGER_HOSTNAME=$IP && export EXPO_PUBLIC_API_URL=http://$IP:3000/api/v1 && export EXPO_PUBLIC_GATEWAY_HOST=$IP && export EXPO_PUBLIC_GATEWAY_PORT=3000 && export EXPO_PACKAGER_PROXY_URL=http://$IP:8081 && expo start --lan --go",
-    "dev:zrok": "./zrok-tunnel.sh",
     "ios": "expo run:ios",
+    "ios:device": "expo run:ios --device",
+    "android": "expo run:android",
+    "android:device": "expo run:android --device",
+    "pods": "cd ios && pod install && cd ..",
     "lint": "expo lint",
-    "start": "expo start",
     "test": "npm run test:logic && npm run test:components",
     "test:components": "jest",
-    "test:logic": "vitest run",
-    "web": "expo start --web"
+    "test:logic": "vitest run"
   },
   "dependencies": {
+    "@app/theme": "workspace:*",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/outfit": "^0.4.3",
     "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
@@ -30,6 +27,8 @@
     "@react-three/fiber": "^9.5.0",
     "@tanstack/react-query": "^5.90.21",
     "babel-preset-expo": "^54.0.10",
+    "dotenv": "^17.4.2",
+    "dotenv-expand": "^13.0.0",
     "expo": "~54.0.33",
     "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",
@@ -67,6 +66,7 @@
     "react-refresh": "^0.14.2",
     "tailwindcss": "^3.4.19",
     "three": "^0.183.1",
+    "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

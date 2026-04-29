@@ -56,13 +56,15 @@ async function resolveCoords(input: { lat?: number; lng?: number; poiId?: number
 function buildAdjacencyList(
   nodes: any[],
   edges: any[],
-  options: { avoidStairs?: boolean }
+  options: { avoidStairs?: boolean, wheelchairAccess?: boolean }
 ): AdjacencyList {
   const graph: AdjacencyList = {};
   nodes.forEach((n) => (graph[n.id] = []));
 
   edges.forEach((e) => {
+    // Accessibility filters
     if (options.avoidStairs && e.hasStairs) return;
+    if (options.wheelchairAccess && e.hasStairs) return; // Wheelchairs definitely avoid stairs
 
     let weight = e.distance;
     if (e.crowdLevel === 'high') weight *= 1.5;
@@ -107,7 +109,7 @@ async function reconstructPath(pathNodes: number[]) {
 export async function findRoute(
   origin: { lat?: number; lng?: number; poiId?: number },
   destination: { lat?: number; lng?: number; poiId?: number },
-  options: { avoidStairs?: boolean } = {}
+  options: { avoidStairs?: boolean, wheelchairAccess?: boolean, eventId?: number } = {}
 ) {
   const startCoords = await resolveCoords(origin);
   const endCoords = await resolveCoords(destination);
@@ -130,8 +132,20 @@ export async function findRoute(
   }
 
   // 2. Build graph context
-  const allNodes = await db.select().from(nodes);
-  const allEdges = await db.select().from(pathSegments);
+  let nodeQuery = db.select().from(nodes).$dynamic();
+  let edgeQuery = db.select().from(pathSegments).$dynamic();
+
+  if (options.eventId) {
+    nodeQuery = nodeQuery.where(eq(nodes.eventId, options.eventId));
+    // For edges, we filter based on the source node's event_id
+    // This assumes segments don't cross between events (which they shouldn't in this model)
+    edgeQuery = edgeQuery.where(
+      sql`source_node_id IN (SELECT id FROM nodes WHERE event_id = ${options.eventId})`
+    );
+  }
+
+  const allNodes = await nodeQuery;
+  const allEdges = await edgeQuery;
   const graph = buildAdjacencyList(allNodes, allEdges, options);
 
   // 3. Dijkstra Core

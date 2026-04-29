@@ -7,6 +7,7 @@ export interface POIGeoJSON {
   properties: {
     id: number;
     name: string;
+    label?: string;
     category: string;
     description: string;
     crowdLevel: 'low' | 'moderate' | 'high' | 'blocked';
@@ -38,3 +39,22 @@ export interface RouteGeoJSON {
   };
 }
 
+export type EventType = 'music' | 'food' | 'tech' | 'sports' | 'generic';
+
+export interface LatticeEvent {
+  id: number;
+  name: string;
+  type: EventType;
+  imageUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  metadata?: any;
+  center?: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  boundary?: {
+    type: 'Polygon';
+    coordinates: [number, number][][];
+  };
+}

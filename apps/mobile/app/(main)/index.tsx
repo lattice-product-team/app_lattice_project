@@ -3,60 +3,54 @@ import {
   View,
   Pressable,
   Text,
-  ActivityIndicator,
   StyleSheet,
   Dimensions,
   Keyboard,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { SearchBar } from '../../src/components/SearchBar';
-import { colors } from '../../src/styles/colors';
-import { usePOIs } from '../../src/hooks/queries/usePOIs';
-import { useSinglePOI } from '../../src/hooks/queries/useSinglePOI';
-import { useCategories } from '../../src/hooks/queries/useCategories';
+import { useAppTheme as useLatticeTheme } from '../../src/hooks/useAppTheme';
+import { typography } from '../../src/styles/typography';
+import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
+import { useSinglePOI } from '../../src/features/poi/hooks/useSinglePOI';
+import { useCategories } from '../../src/features/poi/hooks/useCategories';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useLocationService } from '../../src/hooks/useLocationService';
 import { useCameraTilt } from '../../src/hooks/useCameraTilt';
-import { AROverlay } from '../../src/components/ar/AROverlay';
+import { AROverlay } from '../../src/features/map/components/ar/AROverlay';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useMapStore } from '../../src/store/useMapStore';
+import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
+import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
+import { useEventStore } from '../../src/features/event/store/useEventStore';
+import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useOrientationStore } from '../../src/store/useOrientationStore';
-import { useAuthStore } from '../../src/hooks/useAuthStore';
-import { MapContent } from '../../src/components/map/MapContent';
-import { MapSheetManager } from '../../src/components/map/MapSheetManager';
-import { GuidesSection } from '../../src/components/map/GuidesSection';
-import { POICarousel } from '../../src/components/map/POICarousel';
-import { useSavedLocations } from '../../src/hooks/queries/useSavedLocations';
+import { useAuthStore } from '../../src/store/useAuthStore';
+import { MapContent } from '../../src/features/map/components/MapContent';
+import { MapHUD } from '../../src/features/map/components/MapHUD';
+import { useSavedLocations } from '../../src/features/map/hooks/useSavedLocations';
 import { getCategoryMetadata } from '../../src/utils/poiUtils';
-import { SavedLocationsManager } from '../../src/components/map/SavedLocationsManager';
+import { SavedLocationsManager } from '../../src/features/map/components/SavedLocationsManager';
+import { EventSummaryCard } from '../../src/features/map/components/EventSummaryCard';
+import { useEvents } from '../../src/features/event/hooks/useEvents';
 
 // Configure MapLibre
 MapLibreGL.setAccessToken(null);
-MapLibreGL.Logger.setLogCallback((log) => {
-  const msg = typeof log.message === 'string' ? log.message : '';
-  if (
-    msg.includes('Failed to obtain last location update') ||
-    msg.includes('Last location unavailable')
-  )
-    return true;
-  return false;
-});
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-function MapIndex() {
+export default function MapIndexPage() {
+  const theme = useLatticeTheme();
   const router = useRouter();
   const { status: locationStatus, requestPermission } = useLocationService();
   const userCoords = useLocationStore((s) => s.logicalCoords);
 
-  const selectedPoiId = useMapStore((s) => s.selectedPoiId);
-  const selectedPoi = useMapStore((s) => s.selectedPoi);
-  const deselect = useMapStore((s) => s.deselect);
-  const selectPoi = useMapStore((s) => s.selectPoi);
-  const triggerRecenter = useMapStore((s) => s.triggerRecenter);
+  const { selectedPoiId, selectedPoi, deselect, selectPoi } = usePOIStore();
+  const { triggerRecenter } = useMapUIStore();
+  const { currentEventId, selectedEvent, setCurrentEvent } = useEventStore();
+
+  const { data: eventsData } = useEvents();
 
   const { data: categories } = useCategories();
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
@@ -80,7 +74,7 @@ function MapIndex() {
     return categories?.find((c) => c.id === activeCategoryId)?.category;
   }, [activeCategoryId, categories]);
 
-  const { data: rawPoisData, isLoading } = usePOIs(activeCategory);
+  const { data: rawPoisData, isLoading } = usePOIs(activeCategory, currentEventId || undefined);
 
   const poisData = useMemo(() => {
     if (!rawPoisData?.features || !activeTicket) return rawPoisData;
@@ -103,7 +97,6 @@ function MapIndex() {
     return { ...rawPoisData, features: filteredFeatures };
   }, [rawPoisData, activeTicket]);
 
-  // Filtered POIs for Carousel
   const carouselPois = useMemo(() => {
     if (!poisData?.features || !activeCategoryId) return [];
     return poisData.features
@@ -135,10 +128,10 @@ function MapIndex() {
 
   useEffect(() => {
     if (!selectedPoi && soloPoiData && Number(soloPoiData.properties.id) === numericPoiId) {
-      selectPoi({ ...soloPoiData.properties, geometry: soloPoiData.geometry } as any);
+      selectPoi(normalizePOI(soloPoiData));
     } else if (!selectedPoi && poisData && numericPoiId) {
       const f = poisData.features.find((f: any) => Number(f.properties.id) === numericPoiId);
-      if (f) selectPoi({ ...f.properties, geometry: f.geometry } as any);
+      if (f) selectPoi(normalizePOI(f));
     }
   }, [soloPoiData, poisData, numericPoiId, selectedPoi, selectPoi]);
 
@@ -191,7 +184,7 @@ function MapIndex() {
               key={f.properties.id}
               onPress={() => {
                 Keyboard.dismiss();
-                selectPoi({ ...f.properties, geometry: f.geometry } as any);
+                selectPoi(normalizePOI(f));
                 setSearchQuery('');
                 setIsSearching(false);
               }}
@@ -203,11 +196,19 @@ function MapIndex() {
             >
               <View style={styles.searchResultInfo}>
                 <View style={[styles.searchResultIcon, { backgroundColor: `${metadata.color}15` }]}>
-                  <MaterialCommunityIcons
-                    name={metadata.icon as any}
-                    size={20}
-                    color={metadata.color}
-                  />
+                  {metadata.iconFamily === 'material' ? (
+                    <MaterialCommunityIcons
+                      name={metadata.icon as any}
+                      size={20}
+                      color={metadata.color}
+                    />
+                  ) : (
+                    <Feather
+                      name={metadata.icon as any}
+                      size={20}
+                      color={metadata.color}
+                    />
+                  )}
                 </View>
                 <View className="flex-1">
                   <Text style={styles.searchResultName} numberOfLines={1}>
@@ -222,27 +223,16 @@ function MapIndex() {
       ) : (
         <View className="py-12 items-center">
           <MaterialCommunityIcons name="magnify" size={48} color="rgba(255,255,255,0.1)" />
-          <Text
-            style={{
-              color: 'rgba(255,255,255,0.3)',
-              fontSize: 14,
-              textAlign: 'center',
-              marginTop: 12,
-            }}
-          >
-            No se encontraron resultados
-          </Text>
+          <Text style={styles.emptyResultsText}>No se encontraron resultados</Text>
         </View>
       )}
     </View>
   );
 
   return (
-    <View className="flex-1 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
+    <View className="flex-1 overflow-hidden" style={{ backgroundColor: theme.colors.bg.main }}>
       <View style={StyleSheet.absoluteFill}>
         <MapContent
-          userCoords={userCoords}
-          locationStatus={locationStatus}
           poisGeoJSON={poisData}
           savedLocations={savedData}
           onDeselect={handleMapPress}
@@ -251,16 +241,8 @@ function MapIndex() {
         <AROverlay
           isVisible={isARVisible}
           onExitAR={() => setManualAR(false)}
-          userCoords={userCoords}
-          heading={heading}
           pois={poisData?.features || []}
-          isLandscape={isLandscape}
         />
-        {isLoading && (
-          <View className="absolute inset-0 items-center justify-center bg-black/20">
-            <ActivityIndicator color={colors.primary} size="large" />
-          </View>
-        )}
       </View>
 
       <Animated.View
@@ -276,7 +258,7 @@ function MapIndex() {
             style={({ pressed }) => ({
               opacity: pressed ? 0.7 : 1,
               transform: [{ scale: pressed ? 0.92 : 1 }],
-              backgroundColor: manualAR ? colors.primary : 'rgba(0,0,0,0.6)',
+              backgroundColor: manualAR ? theme.colors.brand.primary : 'rgba(0,0,0,0.6)',
             })}
             className="w-12 h-12 items-center justify-center rounded-full border border-white/5 shadow-lg"
           >
@@ -297,55 +279,36 @@ function MapIndex() {
       </Animated.View>
 
       {!isARVisible && (
-        <MapSheetManager
+        <MapHUD
           activeCategoryId={activeCategoryId}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
           isSearching={isSearching}
-          searchBar={
-            <SearchBar
-              placeholder="Busca sitios..."
-              value={searchQuery}
-              onSearch={setSearchQuery}
-              onArPress={() => router.push('/(main)/profile')}
-              onFocus={() => {
-                setIsSearching(true);
-              }}
-            />
-          }
-          onFocusSearch={() => setIsSearching(true)}
-          searchResults={renderSearchResults()}
-          poiCarousel={
-            <POICarousel 
-              pois={carouselPois} 
-              onSelectPoi={(poi) => selectPoi(poi)} 
-            />
-          }
-          discoveryContent={
-            <View>
-              <POICarousel 
-                title="Cerca de ti"
-                pois={rawPoisData?.features?.map((f: any) => ({ ...f.properties, geometry: f.geometry })) || []}
-                onSelectPoi={(poi) => selectPoi(poi)}
-              />
-              <GuidesSection
-                onSeeAll={() => setShowSavedManager(true)}
-                onSelectMarker={(coords, id) => {
-                  selectPoi({ id: `saved_${id}`, geometry: { coordinates: coords } } as any);
-                }}
-              />
-            </View>
-          }
-          onSelectCategory={(category: string) => {
+          setIsSearching={setIsSearching}
+          onSelectCategory={(category) => {
             if (activeCategoryId === category) {
               setActiveCategoryId(null);
               return;
             }
             setActiveCategoryId(category);
-            if (poisData?.features) {
-              const foundPoi = poisData.features.find((f: any) => f.properties.category === category);
-              if (foundPoi)
-                selectPoi({ ...foundPoi.properties, geometry: foundPoi.geometry } as any);
+            const foundCategory = categories?.find((c) => c.id === category)?.category;
+            if (foundCategory && poisData?.features) {
+              const foundPoi = poisData.features.find((f: any) => f.properties.category === foundCategory);
+              if (foundPoi) selectPoi(normalizePOI(foundPoi));
             }
           }}
+          searchResults={renderSearchResults()}
+          carouselPois={carouselPois}
+          onSelectPoi={selectPoi}
+          isLoading={isLoading}
+          rawPoisData={rawPoisData}
+          setShowSavedManager={setShowSavedManager}
+          onProfilePress={() => router.push('/(main)/profile')}
+          currentEventId={currentEventId}
+          selectedEvent={selectedEvent}
+          eventsData={eventsData}
+          setCurrentEvent={setCurrentEvent}
+          onClearCategory={() => setActiveCategoryId(null)}
         />
       )}
 
@@ -354,11 +317,11 @@ function MapIndex() {
         isVisible={showSavedManager}
         onClose={() => setShowSavedManager(false)}
         onSelectMarker={(coords, id) => {
-          selectPoi({
-            id: `saved_${id}`,
-            name: 'Ubicación guardada',
-            geometry: { coordinates: coords },
-          } as any);
+          selectPoi(normalizePOI({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: coords },
+            properties: { id: `saved_${id}`, name: 'Ubicación guardada', category: 'parking' }
+          } as any));
         }}
       />
     </View>
@@ -366,25 +329,57 @@ function MapIndex() {
 }
 
 const styles = StyleSheet.create({
-  overlay: { position: 'absolute', left: 0, right: 0, zIndex: 90 },
-  cardContainer: { marginTop: 8 },
+  overlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  cardContainer: {
+    backgroundColor: 'rgba(30, 30, 30, 0.95)',
+    borderRadius: 24,
+    marginHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
   searchResultItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 4,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  searchResultInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  searchResultInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   searchResultIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
   },
-  searchResultName: { color: 'white', fontSize: 16, fontFamily: 'Inter-Bold', letterSpacing: -0.2 },
-  searchResultCat: { color: 'rgba(255, 255, 255, 0.4)', fontSize: 13, marginTop: 2 },
+  searchResultName: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: typography.primary.bold,
+    letterSpacing: -0.2,
+  },
+  searchResultCat: {
+    color: 'rgba(255, 255, 255, 0.4)',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  emptyResultsText: {
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 12,
+  },
 });
-
-export default MapIndex;

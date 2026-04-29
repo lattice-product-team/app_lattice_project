@@ -27,11 +27,11 @@ To ensure a smooth development process and perfect integration with AI agents, w
 > [!IMPORTANT]
 > Make sure you have **Docker Desktop**/**Docker Compose** and **Node.js** (v18+) installed before starting.
 
-1.  **Install**: `npm install` at the root.
+1.  **Install**: `pnpm install` at the root.
 2.  **Infrastructure**: `docker compose up -d` to start PostgreSQL and PostGIS.
-3.  **Mobile Build**: `npm run android -w mobile` (Run this at least once to create the Development Build).
-4.  **Development**: `npm run dev` to start all services (API + Mobile) simultaneously.
-5.  **Remote Tunneling**: `npm run dev:zrok -w mobile` to expose the local API via a secure tunnel (zrok).
+3.  **Mobile Build**: `pnpm ios` or `pnpm android` (Run this at least once to create the Development Build).
+4.  **Development**: `pnpm dev` to start all services (API + Mobile) simultaneously.
+5.  **Remote Tunneling**: `pnpm dev:tunnel` to expose the local API via a secure tunnel.
 
 ## Available Commands (Root)
 
@@ -54,10 +54,10 @@ You can manage the entire project directly from the root of the monorepo:
 We have implemented a professional dual testing architecture in `apps/mobile`:
 
 - **Logic Engine (Vitest):** For fast testing of logic, utilities, and hooks.
-  - Command: `npm run test:logic -w mobile`
+  - Command: `pnpm --filter @app/mobile test:logic`
 - **UI Engine (Jest + RTL):** For Expo UI and component validation.
-  - Command: `npm run test:components -w mobile`
-- **Full Suite:** `npm run test -w mobile`
+  - Command: `pnpm --filter @app/mobile test:components`
+- **Full Suite:** `pnpm --filter @app/mobile test`
 
 More details in the **[Testing Guide](docs/guides/testing.md)**.
 

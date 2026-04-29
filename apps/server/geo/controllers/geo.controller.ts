@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db, pointsOfInterest, sql } from '@app/db';
+import { db, pointsOfInterest, sql, events, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 
@@ -9,7 +9,7 @@ export const healthCheck = (req: Request, res: Response) => {
 
 export const getPois = async (req: Request, res: Response) => {
   try {
-    const { category } = req.query;
+    const { category, eventId } = req.query;
 
     let query = db
       .select({
@@ -27,6 +27,13 @@ export const getPois = async (req: Request, res: Response) => {
 
     if (category && typeof category === 'string') {
       query = query.where(sql`${pointsOfInterest.type}::text = ${category}`);
+    }
+
+    if (eventId) {
+      const eid = parseInt(eventId as string, 10);
+      if (!isNaN(eid)) {
+        query = query.where(eq(pointsOfInterest.eventId, eid));
+      }
     }
 
     const results = await query;
@@ -75,13 +82,13 @@ export const getLocations = (req: Request, res: Response) => {
 
 export const getRoute = async (req: Request, res: Response) => {
   try {
-    const { origin, destination, avoidStairs } = req.body;
+    const { origin, destination, avoidStairs, wheelchairAccess, eventId } = req.body;
 
     if (!origin || !destination) {
       return res.status(400).json({ error: 'Origin and destination are required' });
     }
 
-    const route = await findRoute(origin, destination, { avoidStairs });
+    const route = await findRoute(origin, destination, { avoidStairs, wheelchairAccess, eventId });
     res.json(route);
   } catch (error) {
     console.error('Error calculating route:', error);
@@ -154,6 +161,7 @@ export const getPathNetwork = async (req: Request, res: Response) => {
       FROM path_segments ps
       JOIN nodes s ON ps.source_node_id = s.id
       JOIN nodes t ON ps.target_node_id = t.id
+      ${req.query.eventId ? sql`WHERE s.event_id = ${parseInt(req.query.eventId as string, 10)}` : sql``}
     `);
 
     const features = result.rows.map((row: any) => ({
@@ -174,6 +182,36 @@ export const getPathNetwork = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error fetching path network:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const getEvents = async (req: Request, res: Response) => {
+  try {
+    const results = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        type: events.type,
+        imageUrl: events.imageUrl,
+        startDate: events.startDate,
+        endDate: events.endDate,
+        metadata: events.metadata,
+        center: sql<string>`ST_AsGeoJSON(${events.location})`,
+        boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,
+      })
+      .from(events);
+
+    const formattedEvents = results.map(event => ({
+      ...event,
+      center: event.center ? JSON.parse(event.center) : null,
+      boundary: event.boundary ? JSON.parse(event.boundary) : null,
+      metadata: event.metadata ? JSON.parse(event.metadata) : null,
+    }));
+
+    res.json(formattedEvents);
+  } catch (error) {
+    console.error('Error fetching events:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };

@@ -1,11 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../../styles/colors';
-import { useAuthStore } from '../../hooks/useAuthStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface ThemeGradientProps {
-  variant?: 'auth' | 'premium' | 'surface';
+  variant?: 'auth' | 'premium' | 'surface' | 'midnight';
   showBlob?: boolean;
   blobColor?: string;
   style?: StyleProp<ViewStyle>;
@@ -14,44 +14,31 @@ interface ThemeGradientProps {
 
 /**
  * Standardized Theme Gradient component.
- * Uses pure expo-linear-gradient with StyleSheet.absoluteFill for maximum 
- * cross-platform compatibility and performance.
- * 
- * Includes a native-optimized "Blob/Glow" effect using shadowRadius (iOS).
- * REFINED: Uses a tiny center with minimal opacity to create a giant 
- * soft glow without visible hard edges.
  */
 export const ThemeGradient = ({ 
   variant = 'auth', 
-  showBlob = false,
-  blobColor,
+  showBlob = false, 
+  blobColor, 
   style, 
   children 
 }: ThemeGradientProps) => {
-  const [isClient, setIsClient] = React.useState(false);
-  const eventConfig = useAuthStore(state => state.eventConfig);
+  const theme = useAppTheme();
   
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const primaryColor = isClient && eventConfig?.venue?.primaryColor 
-    ? eventConfig.venue.primaryColor 
-    : colors.primary;
+  const primaryColor = theme.colors.brand.primary;
 
   const getGradientConfig = () => {
     switch (variant) {
       case 'premium':
         return {
-          colors: ['#4A2C3A', colors.background] as const, // Deep Wine to Black
+          colors: ['#4A2C3A', theme.colors.bg.main] as const, // Deep Wine to Black
           locations: [0, 0.6] as [number, number],
           defaultBlob: primaryColor,
         };
       case 'surface':
         return {
-          colors: ['#2D2B2C', '#1C1B1C'] as const,
+          colors: [theme.colors.bg.surface, theme.colors.bg.main] as const,
           locations: [0, 1] as [number, number],
-          defaultBlob: '#FFFFFF',
+          defaultBlob: theme.colors.border.subtle,
         };
       case 'auth':
       default:
@@ -82,8 +69,8 @@ export const ThemeGradient = ({
             {
               shadowColor: finalBlobColor,
               shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.5,
-              shadowRadius: 180, // Giant radius for maximum softness
+              shadowOpacity: theme.dark ? 0.4 : 0.2,
+              shadowRadius: theme.dark ? 220 : 300,
               backgroundColor: finalBlobColor,
             }
           ]} 
@@ -100,10 +87,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -100,
     right: -100,
-    width: 60, // Much smaller to hide the solid center
+    width: 60,
     height: 60,
     borderRadius: 30,
-    opacity: 0.1, // Very low opacity so the center is nearly invisible
+    opacity: 0.1,
     ...Platform.select({
       android: {
         elevation: 20,
@@ -111,3 +98,4 @@ const styles = StyleSheet.create({
     })
   }
 });
+

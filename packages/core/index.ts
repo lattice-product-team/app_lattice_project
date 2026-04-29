@@ -2,6 +2,8 @@
  * @app/core - Shared Backend Utilities
  */
 
+export * from './src/config.js';
+
 import { Request, Response, NextFunction } from 'express';
 
 export const logger = (req: Request, res: Response, next: NextFunction) => {
@@ -18,6 +20,7 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     },
   });
 };
+
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer mock_jwt_token_for_')) {

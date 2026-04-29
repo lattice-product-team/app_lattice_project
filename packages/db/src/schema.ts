@@ -10,7 +10,7 @@ import {
   doublePrecision,
   primaryKey,
 } from 'drizzle-orm/pg-core';
-import { geometry } from './custom-types';
+import { geometry, polygon } from './custom-types';
 
 // ---------------------------------------------------------
 // ENUMS
@@ -45,6 +45,14 @@ export const surfaceTypeEnum = pgEnum('surface_type', [
   'ramp',
 ]);
 
+export const eventTypeEnum = pgEnum('event_type', [
+  'music',
+  'food',
+  'tech',
+  'sports',
+  'generic',
+]);
+
 // ---------------------------------------------------------
 // TABLES
 // ---------------------------------------------------------
@@ -60,11 +68,17 @@ export const venues = pgTable('venues', {
 
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
-  venueId: integer('venue_id')
-    .references(() => venues.id),
+  venueId: integer('venue_id').references(() => venues.id),
   name: varchar('name').notNull(),
+  description: text('description'),
+  type: eventTypeEnum('type').default('generic'),
+  location: geometry('location'),
+  locationName: varchar('location_name'),
+  boundary: polygon('boundary'),
+  imageUrl: text('image_url'),
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date').notNull(),
+  metadata: text('metadata'),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -84,12 +98,9 @@ export const users = pgTable('users', {
 
 export const tickets = pgTable('tickets', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .references(() => users.id),
-  venueId: integer('venue_id')
-    .references(() => venues.id),
-  eventId: integer('event_id')
-    .references(() => events.id),
+  userId: integer('user_id').references(() => users.id),
+  venueId: integer('venue_id').references(() => venues.id),
+  eventId: integer('event_id').references(() => events.id),
   code: varchar('code').unique(),
   ownerEmail: varchar('owner_email'),
   gate: varchar('gate'),
@@ -103,8 +114,8 @@ export const tickets = pgTable('tickets', {
 
 export const pointsOfInterest = pgTable('points_of_interest', {
   id: serial('id').primaryKey(),
-  venueId: integer('venue_id')
-    .references(() => venues.id),
+  venueId: integer('venue_id').references(() => venues.id),
+  eventId: integer('event_id').references(() => events.id),
   name: varchar('name').unique().notNull(),
   description: text('description'),
   type: poiTypeEnum('type').notNull(),
@@ -116,8 +127,7 @@ export const pointsOfInterest = pgTable('points_of_interest', {
 
 export const nodes = pgTable('nodes', {
   id: serial('id').primaryKey(),
-  venueId: integer('venue_id')
-    .references(() => venues.id),
+  eventId: integer('event_id').references(() => events.id),
   location: geometry('location').notNull(),
   name: varchar('name'), // Optional name for key intersections
 });
@@ -185,4 +195,3 @@ export const telemetryLogs = pgTable('telemetry_logs', {
   location: geometry('location').notNull(),
   timestamp: timestamp('timestamp').defaultNow(),
 });
-

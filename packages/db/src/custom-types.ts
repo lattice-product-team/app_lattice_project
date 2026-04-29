@@ -20,3 +20,28 @@ export const geometry = customType<{ data: [number, number] }>({
     return [parseFloat(matches[1]), parseFloat(matches[2])] as [number, number];
   },
 });
+
+export const polygon = customType<{ data: [number, number][][] }>({
+  dataType() {
+    return 'geometry(Polygon, 4326)';
+  },
+  toDriver(value) {
+    const rings = value.map(ring => 
+      '(' + ring.map(p => `${p[0]} ${p[1]}`).join(',') + ')'
+    ).join(',');
+    return `SRID=4326;POLYGON(${rings})`;
+  },
+  fromDriver(value: unknown) {
+    if (typeof value !== 'string') return [];
+    // Basic parser for POLYGON((...))
+    const ringsMatch = value.match(/POLYGON\((.+)\)/);
+    if (!ringsMatch) return [];
+    const ringsStr = ringsMatch[1];
+    const rings = ringsStr.split(/\)\s*,\s*\(/).map(r => 
+      r.replace(/[()]/g, '').split(',').map(p => 
+        p.trim().split(' ').map(parseFloat) as [number, number]
+      )
+    );
+    return rings;
+  },
+});

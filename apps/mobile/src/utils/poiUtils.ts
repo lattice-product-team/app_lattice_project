@@ -1,41 +1,66 @@
+import { colors } from '@app/theme';
+
 export interface CategoryMetadata {
   icon: string;
+  iconFamily: 'feather' | 'material';
   color: string;
   label: string;
 }
 
-export const NEUTRAL_MARKER_COLOR = 'rgba(255, 255, 255, 0.15)'; // Neutral glass-like color
-export const NEUTRAL_MARKER_BORDER = 'rgba(255, 255, 255, 0.3)';
+export const NEUTRAL_MARKER_COLOR = colors.neutral.dark.overlay;
+export const NEUTRAL_MARKER_BORDER = colors.neutral.dark.elevated;
 
 const CATEGORY_MAP: Record<string, CategoryMetadata> = {
-  restaurant: { icon: 'food-fork-drink', color: '#D9B99B', label: 'Food & Drinks' }, 
-  food: { icon: 'food-fork-drink', color: '#D9B99B', label: 'Food & Drinks' },
-  parking: { icon: 'parking', color: '#9BA9D9', label: 'Parking Area' }, 
-  shop: { icon: 'shopping', color: '#C19BD9', label: 'Official Store' }, 
-  shopping: { icon: 'shopping', color: '#C19BD9', label: 'Official Store' },
-  wc: { icon: 'toilet', color: '#9BD9D9', label: 'Restrooms' }, 
-  toilet: { icon: 'toilet', color: '#9BD9D9', label: 'Restrooms' },
-  restroom: { icon: 'toilet', color: '#9BD9D9', label: 'Restrooms' },
-  grandstand: { icon: 'stadium-variant', color: '#B4D99B', label: 'Grandstand' }, 
-  medical: { icon: 'medical-bag', color: '#D99B9B', label: 'Medical Point' }, 
-  hospital: { icon: 'hospital-building', color: '#D99B9B', label: 'Hospital' },
-  gate: { icon: 'door-open', color: '#9592C4', label: 'Entrance Gate' }, 
-  entrance: { icon: 'door-open', color: '#9592C4', label: 'Entrance Gate' },
-  meetup_point: { icon: 'account-group', color: '#9BC5C3', label: 'Meetup Point' }, 
-  info: { icon: 'information', color: '#D9D99B', label: 'Information' }, 
+  // Food & Drink
+  restaurant: { icon: 'coffee', iconFamily: 'feather', color: colors.semantic.dark.warning, label: 'Comida y Bebida' }, 
+  food: { icon: 'coffee', iconFamily: 'feather', color: colors.semantic.dark.warning, label: 'Comida y Bebida' },
+  coffee: { icon: 'coffee', iconFamily: 'feather', color: colors.semantic.dark.warning, label: 'Cafetería' },
+  
+  // Infrastructure
+  parking: { icon: 'map-pin', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Parking' }, 
+  wc: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' }, 
+  toilet: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' },
+  restroom: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' },
+  
+  // Event Specific
+  grandstand: { icon: 'map', iconFamily: 'feather', color: colors.semantic.dark.success, label: 'Tribuna' }, 
+  medical: { icon: 'plus-square', iconFamily: 'feather', color: colors.semantic.dark.error, label: 'Servicio Médico' }, 
+  hospital: { icon: 'plus-square', iconFamily: 'feather', color: colors.semantic.dark.error, label: 'Hospital' },
+  gate: { icon: 'log-in', iconFamily: 'feather', color: colors.brand.primary, label: 'Acceso' }, 
+  entrance: { icon: 'log-in', iconFamily: 'feather', color: colors.brand.primary, label: 'Acceso' },
+  
+  // Community & Info
+  meetup_point: { icon: 'users', iconFamily: 'feather', color: colors.brand.accent, label: 'Punto de Encuentro' }, 
+  info: { icon: 'info', iconFamily: 'feather', color: colors.brand.secondary, label: 'Información' }, 
+  shop: { icon: 'shopping-bag', iconFamily: 'feather', color: colors.category.tech, label: 'Tienda Oficial' }, 
+  shopping: { icon: 'shopping-bag', iconFamily: 'feather', color: colors.category.tech, label: 'Tienda Oficial' },
+};
+
+const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
+  music: { icon: 'music-note', iconFamily: 'material', color: colors.category.music, label: 'Música' },
+  food: { icon: 'food-fork-drink', iconFamily: 'material', color: colors.category.food, label: 'Comida' },
+  tech: { icon: 'laptop', iconFamily: 'material', color: colors.category.tech, label: 'Tecnología' },
+  sports: { icon: 'trophy', iconFamily: 'material', color: colors.semantic.dark.error, label: 'Deportes' },
+  generic: { icon: 'calendar-star', iconFamily: 'material', color: colors.brand.primary, label: 'Evento' },
 };
 
 export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 
 const DEFAULT_METADATA: CategoryMetadata = {
   icon: 'map-pin',
-  color: '#8E8E93',
+  iconFamily: 'feather',
+  color: colors.neutral.dark.overlay,
   label: 'Point of Interest',
 };
 
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {
   if (!category) return DEFAULT_METADATA;
   return CATEGORY_MAP[category.toLowerCase()] || DEFAULT_METADATA;
+};
+
+export const getEventMetadata = (type?: string): CategoryMetadata => {
+  if (!type) return EVENT_CATEGORY_MAP.generic;
+  return EVENT_CATEGORY_MAP[type.toLowerCase()] || EVENT_CATEGORY_MAP.generic;
 };
 
 // Legacy support and direct accessors

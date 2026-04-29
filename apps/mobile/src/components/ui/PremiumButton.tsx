@@ -10,24 +10,23 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { colors } from '../../styles/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { typography } from '../../styles/typography';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface PremiumButtonProps {
   onPress: () => void;
   label: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'white';
+  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'surface';
   icon?: string;
   isLoading?: boolean;
   disabled?: boolean;
-  className?: string; // Kept for tailwind class logic outside
+  className?: string;
   style?: StyleProp<ViewStyle>;
 }
 
 /**
- * High-end interactive button with standardized gradients.
- * Explicitly uses LinearGradient without interop for maximum robustness.
+ * High-end interactive button with standardized gradients and theme awareness.
  */
 export const PremiumButton = ({
   onPress,
@@ -39,6 +38,8 @@ export const PremiumButton = ({
   className = '',
   style
 }: PremiumButtonProps) => {
+  const theme = useAppTheme();
+
   const handlePress = () => {
     if (disabled || isLoading) return;
     Haptics.impactAsync(
@@ -52,43 +53,40 @@ export const PremiumButton = ({
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return [colors.primary, '#7A646F'] as const;
+        return [theme.colors.brand.primary, theme.colors.brand.primaryVariant] as const;
       case 'secondary':
-        return [colors.secondary, '#5C5A59'] as const;
+        return [theme.colors.brand.secondary, theme.colors.brand.secondaryVariant] as const;
       case 'glass':
-        return ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)'] as const;
-      case 'white':
-        return ['#FFFFFF', '#F6F6F6'] as const;
+        return [theme.colors.glass.background, theme.colors.interactive.pressed] as const;
+      case 'surface':
+        return [theme.colors.bg.surface, theme.colors.bg.elevation] as const;
       default:
         return null;
     }
   };
 
   const getSecondaryStyles = () => {
-    if (variant === 'outline') return 'border border-white/20 bg-transparent';
-    if (variant === 'glass') return 'border border-white/10';
-    if (variant === 'white') return 'shadow-lg';
-    return '';
+    if (variant === 'outline') return { borderWidth: 1, borderColor: theme.colors.border.subtle };
+    if (variant === 'glass') return { borderWidth: 1, borderColor: theme.colors.glass.border };
+    if (variant === 'surface') return theme.shadows.soft;
+    return {};
   };
 
   const getTextStyle = () => {
     switch (variant) {
       case 'primary':
-        return { color: '#FFFFFF', fontFamily: typography.primary.bold } as const;
-      case 'secondary':
-        return { color: 'rgba(255, 255, 255, 0.9)', fontFamily: typography.secondary.medium } as const;
-      case 'outline':
-        return { color: '#FFFFFF', fontFamily: typography.secondary.medium } as const;
+        return { color: theme.colors.text.inverse, fontFamily: typography.primary.bold };
       case 'glass':
-        return { color: 'rgba(255, 255, 255, 0.8)', fontFamily: typography.secondary.medium } as const;
-      case 'white':
-        return { color: '#000000', fontFamily: typography.primary.bold } as const;
+        return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
+      case 'surface':
+        return { color: theme.colors.text.primary, fontFamily: typography.primary.bold };
       default:
-        return { color: '#FFFFFF', fontFamily: typography.primary.regular } as const;
+        return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
     }
   };
 
   const gradientColors = getGradientColors();
+  const textColor = getTextStyle().color;
 
   return (
     <Pressable
@@ -107,17 +105,18 @@ export const PremiumButton = ({
       )}
       
       <View 
-        className={`flex-1 flex-row items-center justify-center px-6 ${getSecondaryStyles()}`}
+        className="flex-1 flex-row items-center justify-center px-6"
+        style={getSecondaryStyles()}
       >
         {isLoading ? (
-          <ActivityIndicator color={variant === 'white' ? 'black' : 'white'} />
+          <ActivityIndicator color={textColor} />
         ) : (
           <>
             {icon && (
               <MaterialCommunityIcons 
                 name={icon as any} 
                 size={20} 
-                color={variant === 'white' ? 'black' : 'white'} 
+                color={textColor} 
                 style={{ marginRight: 8 }}
               />
             )}
@@ -133,3 +132,4 @@ export const PremiumButton = ({
     </Pressable>
   );
 };
+
