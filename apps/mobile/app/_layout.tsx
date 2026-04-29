@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppFonts } from '../src/hooks/useAppFonts';
-import { ThemeProvider } from '../src/providers/ThemeProvider';
+import { ThemeProvider, useAppTheme } from '../src/providers/ThemeProvider';
 import '../global.css';
 
 const queryClient = new QueryClient();
@@ -20,6 +20,11 @@ if (typeof ErrorUtils !== 'undefined') {
     }
     originalHandler(error, isFatal);
   });
+}
+
+function AppStatusBar() {
+  const theme = useAppTheme();
+  return <StatusBar style={theme.dark ? 'light' : 'dark'} />;
 }
 
 export default function RootLayout() {
@@ -45,7 +50,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="+not-found" />
             </Stack>
-            <StatusBar style="light" />
+            <AppStatusBar />
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

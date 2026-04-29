@@ -14,6 +14,7 @@ import { normalizePOI } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
+import { useMapStyle } from '../hooks/useMapStyle';
 
 // Constants & Utilities
 import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY } from '../../../constants/mapConstants';
@@ -45,6 +46,7 @@ export const MapContent = React.memo(function MapContent({
   const mapRef = useRef<any>(null);
   const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
+  const { style: patchedMapStyle } = useMapStyle(theme.dark ? MAP_STYLES.dark : MAP_STYLES.light);
 
   const { selectedPoiId, selectedCoords, selectPoi, deselect: storeDeselect } = usePOIStore();
   const { currentRoute, isNavigating } = useNavigationStore();
@@ -174,28 +176,11 @@ export const MapContent = React.memo(function MapContent({
       <MapLibreGL.MapView
         ref={mapRef}
         style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
-        mapStyle={theme.dark ? MAP_STYLES.dark : MAP_STYLES.light}
+        mapStyle={patchedMapStyle}
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
         onPress={onDeselect || storeDeselect}
-        onDidFinishLoadingStyle={() => {
-          // Safe cleanup: hide only POI layers to keep the map clean but colorful
-          const layersToHide = [
-            'poi', 'poi_label', 'poi_z14', 'poi_z15', 'poi_z16', 
-            'poi_transit', 'poi_education', 'poi_medical', 'poi_park', 
-            'poi_worship', 'poi_other', 'transportation_name',
-            'amenity_point', 'education_point', 'medical_point',
-            'food_and_drink', 'shopping', 'healthcare', 'culture', 'sport'
-          ];
-          layersToHide.forEach(id => {
-            try {
-              mapRef.current?.setLayoutProperty(id, 'visibility', 'none');
-            } catch (e) {
-              // Ignore if layer doesn't exist in this specific style
-            }
-          });
-        }}
       >
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         <MapLibreGL.Camera

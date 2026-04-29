@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Env } from '../../src/config/env';
 import {
   View,
   TextInput,
@@ -39,9 +38,6 @@ export default function LoginScreen() {
   }, [token, router]);
 
   const handleLogin = () => {
-    // DIAGNOSTIC ALERT: Remove after fixing connectivity
-    Alert.alert('Network Diagnostic', `Connecting to: ${Env.apiUrl}`);
-
     if (!email || !password) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Alert.alert('Error', 'Email and password are required');
