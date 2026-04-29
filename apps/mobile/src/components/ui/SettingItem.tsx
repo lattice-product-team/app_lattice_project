@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface SettingItemProps {
   label: string;
@@ -26,7 +26,7 @@ export const SettingItem = React.memo(function SettingItem({
   secondaryText,
   iconBgColor
 }: SettingItemProps) {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
   
   const iconColor = destructive 
     ? theme.colors.status.error 

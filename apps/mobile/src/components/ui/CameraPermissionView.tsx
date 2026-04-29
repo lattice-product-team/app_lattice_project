@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface CameraPermissionViewProps {
   onRequestPermission: () => void;
 }
 
 export const CameraPermissionView = ({ onRequestPermission }: CameraPermissionViewProps) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
   return (
     <View className="flex-1 items-center justify-center p-6" style={{ backgroundColor: theme.colors.bg.main }}>
       <Feather name="camera-off" size={64} color={theme.colors.text.muted} />

@@ -129,8 +129,8 @@ const styles = StyleSheet.create({
     marginHorizontal: Platform.OS === 'ios' ? 10 : 0,
   },
   blurBackground: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
   },
   innerGlowBorder: {
     ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     borderWidth: 0.8,
     borderColor: 'rgba(255, 255, 255, 0.18)',
     pointerEvents: 'none',

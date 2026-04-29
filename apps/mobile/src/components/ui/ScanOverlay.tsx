@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ActivityIndicator, Pressable, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface ScanOverlayProps {
   isProcessing: boolean;
@@ -14,7 +14,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({
   scanned, 
   onReset 
 }) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
 
   return (
     <View className="absolute inset-0 items-center justify-center pointer-events-none">

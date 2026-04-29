@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { getEventMetadata } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
@@ -51,7 +51,11 @@ const EventCarouselCard = ({ event, onPress, index }: EventCarouselCardProps) =>
             <View 
               style={[styles.categoryBadge, { backgroundColor: `${metadata.color}EE` }]}
             >
-              <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
+              {metadata.iconFamily === 'material' ? (
+                <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
+              ) : (
+                <Feather name={metadata.icon as any} size={12} color="white" />
+              )}
               <Text style={styles.categoryText}>{metadata.label.toUpperCase()}</Text>
             </View>
           </View>

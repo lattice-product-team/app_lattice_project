@@ -44,7 +44,11 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
       <View style={styles.header}>
         <View style={styles.titleSection}>
           <View style={[styles.iconContainer, { backgroundColor: `${metadata.color}20` }]}>
-            <MaterialCommunityIcons name={metadata.icon as any} size={24} color={metadata.color} />
+            {metadata.iconFamily === 'material' ? (
+              <MaterialCommunityIcons name={metadata.icon as any} size={24} color={metadata.color} />
+            ) : (
+              <Feather name={metadata.icon as any} size={24} color={metadata.color} />
+            )}
           </View>
           <View>
             <Text style={styles.name}>{event.name}</Text>

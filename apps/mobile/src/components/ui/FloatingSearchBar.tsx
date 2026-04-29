@@ -3,12 +3,13 @@ import { View, TextInput, StyleSheet, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { typography } from '../../styles/typography';
 import { SafeBlurView } from './SafeBlurView';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface FloatingSearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   onFocus?: () => void;
+  onProfilePress?: () => void;
   placeholder?: string;
 }
 
@@ -18,7 +19,7 @@ export const FloatingSearchBar = ({
   onFocus,
   placeholder = "Search events, stages, food..."
 }: FloatingSearchBarProps) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
 
   return (
     <View style={styles.outerContainer}>
@@ -56,8 +57,15 @@ export const FloatingSearchBar = ({
 
           <View style={[styles.divider, { backgroundColor: theme.colors.border.subtle }]} />
           
-          <Pressable style={styles.micButton}>
-            <Feather name="mic" size={20} color={theme.colors.brand.primary} />
+          <Pressable 
+            style={styles.micButton}
+            onPress={onProfilePress}
+          >
+            <Feather 
+              name={onProfilePress ? "user" : "mic"} 
+              size={20} 
+              color={theme.colors.brand.primary} 
+            />
           </Pressable>
         </View>
       </SafeBlurView>

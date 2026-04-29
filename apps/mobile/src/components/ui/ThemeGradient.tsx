@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface ThemeGradientProps {
   variant?: 'auth' | 'premium' | 'surface' | 'midnight';
@@ -22,7 +22,7 @@ export const ThemeGradient = ({
   style, 
   children 
 }: ThemeGradientProps) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
   
   const primaryColor = theme.colors.brand.primary;
 

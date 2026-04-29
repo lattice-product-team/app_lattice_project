@@ -2,6 +2,7 @@ import { colors } from '@app/theme';
 
 export interface CategoryMetadata {
   icon: string;
+  iconFamily: 'feather' | 'material';
   color: string;
   label: string;
 }
@@ -11,42 +12,43 @@ export const NEUTRAL_MARKER_BORDER = colors.neutral.dark.elevated;
 
 const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   // Food & Drink
-  restaurant: { icon: 'coffee', color: colors.semantic.dark.warning, label: 'Comida y Bebida' }, 
-  food: { icon: 'coffee', color: colors.semantic.dark.warning, label: 'Comida y Bebida' },
-  coffee: { icon: 'coffee', color: colors.semantic.dark.warning, label: 'Cafetería' },
+  restaurant: { icon: 'coffee', iconFamily: 'feather', color: colors.semantic.dark.warning, label: 'Comida y Bebida' }, 
+  food: { icon: 'coffee', iconFamily: 'feather', color: colors.semantic.dark.warning, label: 'Comida y Bebida' },
+  coffee: { icon: 'coffee', iconFamily: 'feather', color: colors.semantic.dark.warning, label: 'Cafetería' },
   
   // Infrastructure
-  parking: { icon: 'map-pin', color: colors.semantic.dark.info, label: 'Parking' }, 
-  wc: { icon: 'user', color: colors.semantic.dark.info, label: 'Aseos' }, 
-  toilet: { icon: 'user', color: colors.semantic.dark.info, label: 'Aseos' },
-  restroom: { icon: 'user', color: colors.semantic.dark.info, label: 'Aseos' },
+  parking: { icon: 'map-pin', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Parking' }, 
+  wc: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' }, 
+  toilet: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' },
+  restroom: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' },
   
   // Event Specific
-  grandstand: { icon: 'map', color: colors.semantic.dark.success, label: 'Tribuna' }, 
-  medical: { icon: 'plus-square', color: colors.semantic.dark.error, label: 'Servicio Médico' }, 
-  hospital: { icon: 'plus-square', color: colors.semantic.dark.error, label: 'Hospital' },
-  gate: { icon: 'log-in', color: colors.brand.primary, label: 'Acceso' }, 
-  entrance: { icon: 'log-in', color: colors.brand.primary, label: 'Acceso' },
+  grandstand: { icon: 'map', iconFamily: 'feather', color: colors.semantic.dark.success, label: 'Tribuna' }, 
+  medical: { icon: 'plus-square', iconFamily: 'feather', color: colors.semantic.dark.error, label: 'Servicio Médico' }, 
+  hospital: { icon: 'plus-square', iconFamily: 'feather', color: colors.semantic.dark.error, label: 'Hospital' },
+  gate: { icon: 'log-in', iconFamily: 'feather', color: colors.brand.primary, label: 'Acceso' }, 
+  entrance: { icon: 'log-in', iconFamily: 'feather', color: colors.brand.primary, label: 'Acceso' },
   
   // Community & Info
-  meetup_point: { icon: 'users', color: colors.brand.accent, label: 'Punto de Encuentro' }, 
-  info: { icon: 'info', color: colors.brand.secondary, label: 'Información' }, 
-  shop: { icon: 'shopping-bag', color: colors.category.tech, label: 'Tienda Oficial' }, 
-  shopping: { icon: 'shopping-bag', color: colors.category.tech, label: 'Tienda Oficial' },
+  meetup_point: { icon: 'users', iconFamily: 'feather', color: colors.brand.accent, label: 'Punto de Encuentro' }, 
+  info: { icon: 'info', iconFamily: 'feather', color: colors.brand.secondary, label: 'Información' }, 
+  shop: { icon: 'shopping-bag', iconFamily: 'feather', color: colors.category.tech, label: 'Tienda Oficial' }, 
+  shopping: { icon: 'shopping-bag', iconFamily: 'feather', color: colors.category.tech, label: 'Tienda Oficial' },
 };
 
 const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
-  music: { icon: 'music-note', color: colors.category.music, label: 'Música' },
-  food: { icon: 'food-fork-drink', color: colors.category.food, label: 'Comida' },
-  tech: { icon: 'laptop', color: colors.category.tech, label: 'Tecnología' },
-  sports: { icon: 'trophy', color: colors.semantic.dark.error, label: 'Deportes' },
-  generic: { icon: 'calendar-star', color: colors.brand.primary, label: 'Evento' },
+  music: { icon: 'music-note', iconFamily: 'material', color: colors.category.music, label: 'Música' },
+  food: { icon: 'food-fork-drink', iconFamily: 'material', color: colors.category.food, label: 'Comida' },
+  tech: { icon: 'laptop', iconFamily: 'material', color: colors.category.tech, label: 'Tecnología' },
+  sports: { icon: 'trophy', iconFamily: 'material', color: colors.semantic.dark.error, label: 'Deportes' },
+  generic: { icon: 'calendar-star', iconFamily: 'material', color: colors.brand.primary, label: 'Evento' },
 };
 
 export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 
 const DEFAULT_METADATA: CategoryMetadata = {
   icon: 'map-pin',
+  iconFamily: 'feather',
   color: colors.neutral.dark.overlay,
   label: 'Point of Interest',
 };

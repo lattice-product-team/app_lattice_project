@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { SearchBar } from '../../../components/SearchBar';
+import { FloatingSearchBar } from '../../../components/ui/FloatingSearchBar';
 import { MapSheetManager } from './MapSheetManager';
 import { POICarousel } from './POICarousel';
 import { GuidesSection } from './GuidesSection';
@@ -61,11 +61,11 @@ export const MapHUD = React.memo(function MapHUD({
         activeCategoryId={activeCategoryId}
         isSearching={isSearching}
         searchBar={
-          <SearchBar
+          <FloatingSearchBar
             placeholder="Busca sitios..."
             value={searchQuery}
-            onSearch={setSearchQuery}
-            onArPress={onProfilePress}
+            onChangeText={setSearchQuery}
+            onProfilePress={onProfilePress}
             onFocus={() => setIsSearching(true)}
           />
         }

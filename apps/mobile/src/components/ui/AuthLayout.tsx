@@ -11,7 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ThemeGradient } from './ThemeGradient';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -38,7 +38,7 @@ export const AuthLayout = ({
   transparent = false,
   midnight = false
 }: AuthLayoutProps) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
 
   const navigationRow = (
     <View className="z-50 mb-2">

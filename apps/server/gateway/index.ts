@@ -117,6 +117,7 @@ router.use(
     '/navigation',
     '/map',
     '/saved',
+    '/events',
   ])
 );
 router.use(createServiceProxy(SOCIAL_SERVICE_URL, 'Social', ['/groups', '/telemetry']));

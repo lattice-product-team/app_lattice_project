@@ -82,7 +82,11 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
             <View style={[styles.categoryBadge, { backgroundColor: `${metadata.color}EE` }]}>
-              <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
+              {metadata.iconFamily === 'material' ? (
+                <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
+              ) : (
+                <Feather name={metadata.icon as any} size={12} color="white" />
+              )}
               <Text style={styles.categoryText}>{metadata.label.toUpperCase()}</Text>
             </View>
             

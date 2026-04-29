@@ -14,14 +14,14 @@
 
 ## 3. Directory Restructuring (Feature-First)
 
-- [ ] 3.1 Create `src/features/map` and move map-specific components.
-- [ ] 3.2 Create `src/features/events` and migrate `EventCarousel`, `EventSummaryCard`, and related hooks.
-- [ ] 3.3 Create `src/features/tickets` and migrate `TicketCard`, `ScanOverlay`, etc.
-- [ ] 3.4 Ensure all imports are updated and path aliases are working correctly.
+- [x] 3.1 Create `src/features/map` and move map-specific components.
+- [x] 3.2 Create `src/features/events` and migrate `EventCarousel`, `EventSummaryCard`, and related hooks.
+- [x] 3.3 Create `src/features/tickets` and migrate `TicketCard`, `ScanOverlay`, etc.
+- [x] 3.4 Ensure all imports are updated and path aliases are working correctly.
 
 ## 4. Component Consolidation & Cleanup
 
-- [ ] 4.1 Merge `FloatingSearchBar` into the unified `SearchBar`.
-- [ ] 4.2 Standardize all `Chips` and `Cards` to use the same atom from `src/components/ui`.
-- [ ] 4.3 Remove unused/legacy components and old store files.
-- [ ] 4.4 Final verification of the whole flow (Map -> Selection -> Navigation).
+- [x] 4.1 Merge `FloatingSearchBar` into the unified `SearchBar`.
+- [x] 4.2 Standardize all `Chips` and `Cards` to use the same atom from `src/components/ui`.
+- [x] 4.3 Remove unused/legacy components and old store files.
+- [x] 4.4 Final verification of the whole flow (Map -> Selection -> Navigation).

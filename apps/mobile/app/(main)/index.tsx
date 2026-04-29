@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { useLatticeTheme } from '../../src/hooks/useLatticeTheme';
+import { useAppTheme as useLatticeTheme } from '../../src/hooks/useAppTheme';
 import { typography } from '../../src/styles/typography';
 import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 import { useSinglePOI } from '../../src/features/poi/hooks/useSinglePOI';
@@ -196,11 +196,19 @@ export default function MapIndexPage() {
             >
               <View style={styles.searchResultInfo}>
                 <View style={[styles.searchResultIcon, { backgroundColor: `${metadata.color}15` }]}>
-                  <MaterialCommunityIcons
-                    name={metadata.icon as any}
-                    size={20}
-                    color={metadata.color}
-                  />
+                  {metadata.iconFamily === 'material' ? (
+                    <MaterialCommunityIcons
+                      name={metadata.icon as any}
+                      size={20}
+                      color={metadata.color}
+                    />
+                  ) : (
+                    <Feather
+                      name={metadata.icon as any}
+                      size={20}
+                      color={metadata.color}
+                    />
+                  )}
                 </View>
                 <View className="flex-1">
                   <Text style={styles.searchResultName} numberOfLines={1}>

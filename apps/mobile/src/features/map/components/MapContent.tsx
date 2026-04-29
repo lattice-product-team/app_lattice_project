@@ -183,6 +183,9 @@ export const MapContent = React.memo(function MapContent({
           // Safe cleanup: hide only POI layers to keep the map clean but colorful
           const layersToHide = [
             'poi', 'poi_label', 'poi_z14', 'poi_z15', 'poi_z16', 
+            'poi_transit', 'poi_education', 'poi_medical', 'poi_park', 
+            'poi_worship', 'poi_other', 'transportation_name',
+            'amenity_point', 'education_point', 'medical_point',
             'food_and_drink', 'shopping', 'healthcare', 'culture', 'sport'
           ];
           layersToHide.forEach(id => {

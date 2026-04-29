@@ -12,7 +12,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { typography } from '../../styles/typography';
-import { useLatticeTheme } from '../../hooks/useLatticeTheme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface PremiumButtonProps {
   onPress: () => void;
@@ -38,7 +38,7 @@ export const PremiumButton = ({
   className = '',
   style
 }: PremiumButtonProps) => {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
 
   const handlePress = () => {
     if (disabled || isLoading) return;
