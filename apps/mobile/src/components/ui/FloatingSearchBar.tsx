@@ -17,6 +17,7 @@ export const FloatingSearchBar = ({
   value,
   onChangeText,
   onFocus,
+  onProfilePress,
   placeholder = "Search events, stages, food..."
 }: FloatingSearchBarProps) => {
   const theme = useAppTheme();
