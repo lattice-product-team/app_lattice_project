@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@app/theme": "workspace:^",
+    "@heroui/react": "^3.0.3",
+    "@heroui/styles": "^3.0.3",
     "maplibre-gl": "^5.23.0",
     "next": "16.2.4",
     "react": "19.1.0",

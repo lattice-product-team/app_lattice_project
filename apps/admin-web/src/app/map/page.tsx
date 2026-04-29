@@ -3,6 +3,8 @@
 import React, { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { Button, Card, CardContent, Chip } from "@heroui/react";
+import { Icons } from "@/components/icons";
 
 // Dynamically import Map components with SSR disabled
 const Map = dynamic(() => import('react-map-gl/maplibre').then(mod => mod.Map), { ssr: false });
@@ -48,25 +50,35 @@ export default function MapEditorPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="glass-card p-6 flex justify-between items-center z-10 border-b border-white/5">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">Map Editor</h2>
-          <p className="text-xs text-white/40 uppercase tracking-widest font-black">Lattice Studio v1.0</p>
+      <header className="flex justify-between items-center mb-8 pt-12 px-6">
+        <div className="flex items-center gap-4">
+          <Button isIconOnly variant="light" className="text-white/70">
+            <Icons.Sidebar className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-[28px] font-semibold text-white tracking-tight">Map Editor</h1>
+            <p className="text-white/30 text-xs font-medium mt-0.5">Lattice Studio v1.0 • Spatial Configuration</p>
+          </div>
         </div>
         <div className="flex gap-4">
-           <button 
-            onClick={clearAll}
-            className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-bold border border-white/10 transition-colors"
+           <Button 
+            variant="flat"
+            onPress={clearAll}
+            className="rounded-full font-medium bg-white/5 text-white/70"
            >
               Clear All
-           </button>
-           <button className="bg-primary hover:bg-red-600 px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-red-900/20 transition-all">
+           </Button>
+           <Button 
+            color="primary"
+            className="rounded-full font-medium"
+            startContent={<Icons.Save className="w-4 h-4" />}
+           >
               Save Venue Map
-           </button>
+           </Button>
         </div>
       </header>
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
         <Map
           {...viewState}
           onMove={evt => setViewState(evt.viewState)}
@@ -83,7 +95,7 @@ export default function MapEditorPage() {
                 id="boundary-fill"
                 type="fill"
                 paint={{
-                  'fill-color': '#ff382e',
+                  'fill-color': '#E2B042',
                   'fill-opacity': 0.1
                 }}
               />
@@ -91,7 +103,7 @@ export default function MapEditorPage() {
                 id="boundary-outline"
                 type="line"
                 paint={{
-                  'line-color': '#ff382e',
+                  'line-color': '#E2B042',
                   'line-width': 2,
                   'line-dasharray': [2, 1]
                 }}
@@ -107,7 +119,7 @@ export default function MapEditorPage() {
               latitude={marker.lat}
               anchor="bottom"
             >
-              <div className="bg-primary text-white p-1.5 rounded-full shadow-lg border border-white text-xs">
+              <div className="bg-accent text-accent-foreground p-1.5 rounded-full shadow-lg border border-white/20 text-xs font-black">
                 📍
               </div>
             </Marker>
@@ -116,40 +128,50 @@ export default function MapEditorPage() {
           {/* Boundary Point Handles */}
           {boundaryPoints.map((point, i) => (
             <Marker key={`bp-${i}`} longitude={point[0]} latitude={point[1]}>
-              <div className="w-2 h-2 bg-white rounded-full border border-primary" />
+              <div className="w-2.5 h-2.5 bg-white rounded-full border-2 border-accent shadow-lg" />
             </Marker>
           ))}
         </Map>
 
         {/* Toolbox */}
-        <div className="absolute left-6 top-6 z-10 space-y-4">
-           <div className="glass-card p-4 rounded-xl w-64">
-              <h3 className="text-xs font-black uppercase tracking-widest text-primary mb-3">Toolbox</h3>
+        <Card className="absolute left-6 top-6 w-72 bg-background/80 backdrop-blur-md border-white/5 rounded-3xl shadow-2xl">
+           <CardContent className="p-6">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-accent mb-4">Toolbox</h3>
               <div className="space-y-2">
-                 <button 
-                  onClick={() => setMode('poi')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-xs font-bold flex items-center gap-3 ${mode === 'poi' ? 'bg-primary text-white' : 'bg-white/5 hover:bg-white/10 text-white/60'}`}
+                 <Button 
+                  fullWidth
+                  onPress={() => setMode('poi')}
+                  className={`
+                    justify-start gap-4 h-12 rounded-2xl font-bold text-xs px-4 transition-all
+                    ${mode === 'poi' ? 'bg-accent text-accent-foreground' : 'bg-white/5 text-white/60 hover:bg-white/10'}
+                  `}
                  >
-                    <span className="text-sm">📍</span> Add POI Marker
-                 </button>
-                 <button 
-                  onClick={() => setMode('boundary')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-xs font-bold flex items-center gap-3 ${mode === 'boundary' ? 'bg-primary text-white' : 'bg-white/5 hover:bg-white/10 text-white/60'}`}
+                    <span className="text-lg">📍</span> Add POI Marker
+                 </Button>
+                 <Button 
+                  fullWidth
+                  onPress={() => setMode('boundary')}
+                  className={`
+                    justify-start gap-4 h-12 rounded-2xl font-bold text-xs px-4 transition-all
+                    ${mode === 'boundary' ? 'bg-accent text-accent-foreground' : 'bg-white/5 text-white/60 hover:bg-white/10'}
+                  `}
                  >
-                    <span className="text-sm">📐</span> Draw Boundary ({boundaryPoints.length})
-                 </button>
+                    <span className="text-lg">📐</span> Draw Boundary ({boundaryPoints.length})
+                 </Button>
               </div>
               
               {mode === 'boundary' && boundaryPoints.length > 0 && (
-                <button 
-                  onClick={() => setBoundaryPoints(prev => prev.slice(0, -1))}
-                  className="w-full mt-2 text-[10px] uppercase font-black tracking-widest text-white/40 hover:text-white"
+                <Button 
+                  fullWidth
+                  variant="light"
+                  onPress={() => setBoundaryPoints(prev => prev.slice(0, -1))}
+                  className="mt-2 text-[9px] uppercase font-black tracking-widest text-white/30 hover:text-white"
                 >
                   Undo last point
-                </button>
+                </Button>
               )}
-           </div>
-        </div>
+           </CardContent>
+        </Card>
       </div>
     </div>
   );
