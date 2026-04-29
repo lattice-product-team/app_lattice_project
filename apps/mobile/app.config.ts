@@ -5,9 +5,24 @@ import path from 'path';
 import { z } from 'zod';
 
 // Load environment variables from the root .env
-const rootEnvPath = path.resolve(__dirname, '../../.env');
+const projectRoot = __dirname;
+const rootDir = path.resolve(projectRoot, '../../');
+const rootEnvPath = path.join(rootDir, '.env');
+console.log('📡 [Config] Root Directory:', rootDir);
+console.log('📡 [Config] Loading .env from:', rootEnvPath);
+
 const envOutput = dotenv.config({ path: rootEnvPath });
 expand(envOutput);
+
+if (envOutput.error) {
+  console.error('❌ [Config] Error loading .env file:', envOutput.error);
+} else {
+  console.log('✅ [Config] .env loaded successfully');
+  // Explicitly ensure LAN_IP is in process.env
+  if (envOutput.parsed?.LAN_IP) {
+    process.env.LAN_IP = envOutput.parsed.LAN_IP;
+  }
+}
 
 /**
  * Environment Variables Schema
@@ -45,6 +60,8 @@ const resolveApiUrl = () => {
 };
 
 const API_URL = resolveApiUrl();
+console.log('🌐 [Config] Resolved API_URL:', API_URL);
+console.log('📶 [Config] Raw LAN_IP:', env.LAN_IP);
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

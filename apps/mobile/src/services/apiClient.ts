@@ -1,7 +1,7 @@
-import { DEFAULT_API_URL } from '../constants/api';
+import { Env } from '../config/env';
 import { getToken } from './storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
+const API_BASE_URL = Env.apiUrl;
 
 export interface ApiError {
   error?: {
