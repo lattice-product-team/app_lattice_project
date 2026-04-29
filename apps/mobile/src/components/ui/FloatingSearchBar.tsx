@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 64,
+    height: 40,
     paddingHorizontal: 20,
     backgroundColor: 'transparent',
   },
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: '100%',
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: typography.secondary.medium,
     paddingVertical: 0,
     letterSpacing: -0.2,

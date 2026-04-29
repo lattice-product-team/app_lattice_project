@@ -50,11 +50,11 @@ export default function MapIndexPage() {
   const SNAP_POINTS = [0, 0.5, 1];
 
   const islandHeight = useDerivedValue(() => {
-    // 0 -> 64
+    // 0 -> 72 (Slimmer base for Level 1)
     // 0.5 -> 450 (Fixed height for Level 2)
     // 1 -> SCREEN_HEIGHT * 0.85
     if (islandState.value <= 0.5) {
-      return interpolate(islandState.value, [0, 0.5], [64, 450]);
+      return interpolate(islandState.value, [0, 0.5], [60, 450]);
     }
     return interpolate(islandState.value, [0.5, 1], [450, SCREEN_HEIGHT * 0.85]);
   });
@@ -65,14 +65,12 @@ export default function MapIndexPage() {
     })
     .onUpdate((event) => {
       // Map pixel delta to 0-1 state delta
-      // height = 64 + state * (full - 64)
-      // delta_state = delta_height / (full - 64)
       const fullHeight = SCREEN_HEIGHT * 0.85;
-      const stateDelta = -event.translationY / (fullHeight - 64);
+      const stateDelta = -event.translationY / (fullHeight - 72);
       islandState.value = Math.max(0, Math.min(1, startState.value + stateDelta));
     })
     .onEnd((event) => {
-      const velocity = -event.velocityY / (SCREEN_HEIGHT * 0.85 - 64);
+      const velocity = -event.velocityY / (SCREEN_HEIGHT * 0.85 - 72);
       const predictedPos = islandState.value + velocity * 0.1;
       
       // Find closest snap point
@@ -208,18 +206,19 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   handleContainer: {
-    paddingTop: 8,
+    paddingTop: 5,
+    paddingBottom: 0,
     alignItems: 'center',
     zIndex: 10,
   },
   handle: {
-    width: 36,
+    width: 50,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   islandHeader: {
-    paddingBottom: 4,
+    paddingBottom: 9,
   },
   islandScroll: {
     flex: 1,
