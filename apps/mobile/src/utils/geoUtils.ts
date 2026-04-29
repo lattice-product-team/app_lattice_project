@@ -12,3 +12,22 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
 
   return R * c;
 };
+
+export const calculateBBox = (coords: [number, number][]): [number, number, number, number] | null => {
+  if (!coords || coords.length === 0) return null;
+
+  let minLng = coords[0][0];
+  let maxLng = coords[0][0];
+  let minLat = coords[0][1];
+  let maxLat = coords[0][1];
+
+  for (const [lng, lat] of coords) {
+    if (lng < minLng) minLng = lng;
+    if (lng > maxLng) maxLng = lng;
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+  }
+
+  // Returns [minLng, minLat, maxLng, maxLat]
+  return [minLng, minLat, maxLng, maxLat];
+};

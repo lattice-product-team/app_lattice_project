@@ -29,9 +29,9 @@ import { useOrientationStore } from '../../src/store/useOrientationStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { MapContent } from '../../src/features/map/components/MapContent';
 import { MapHUD } from '../../src/features/map/components/MapHUD';
-import { useSavedLocations } from '../../src/features/map/hooks/useSavedLocations';
+import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { getCategoryMetadata } from '../../src/utils/poiUtils';
-import { SavedLocationsManager } from '../../src/features/map/components/SavedLocationsManager';
+import { useSavedLocations } from '../../src/features/map/hooks/useSavedLocations';
 import { EventSummaryCard } from '../../src/features/map/components/EventSummaryCard';
 import { useEvents } from '../../src/features/event/hooks/useEvents';
 
@@ -171,7 +171,8 @@ export default function MapIndexPage() {
   }, [isSearching, searchQuery, deselect]);
 
   const rRecenterButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sheetPosition.value - SCREEN_HEIGHT - 100 }],
+    // Keep buttons exactly above the island sheet search bar
+    transform: [{ translateY: sheetPosition.value - 90 }],
   }));
 
   const renderSearchResults = () => (
@@ -234,7 +235,6 @@ export default function MapIndexPage() {
       <View style={StyleSheet.absoluteFill}>
         <MapContent
           poisGeoJSON={poisData}
-          savedLocations={savedData}
           onDeselect={handleMapPress}
           sheetPosition={sheetPosition}
         />
@@ -247,34 +247,62 @@ export default function MapIndexPage() {
 
       <Animated.View
         pointerEvents="box-none"
-        style={[styles.overlay, { bottom: 0 }, rRecenterButtonStyle]}
+        style={[styles.overlay, { top: 0, height: 0 }, rRecenterButtonStyle]}
       >
-        <View pointerEvents="auto" className="flex-row items-center justify-end px-4 mb-4 gap-3">
+        <View pointerEvents="auto" style={styles.floatingControlsWrapper}>
+          {/* Left Side: Binoculars */}
           <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              setManualAR(!manualAR);
-            }}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-              transform: [{ scale: pressed ? 0.92 : 1 }],
-              backgroundColor: manualAR ? theme.colors.brand.primary : 'rgba(0,0,0,0.6)',
-            })}
-            className="w-12 h-12 items-center justify-center rounded-full border border-white/5 shadow-lg"
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            style={({ pressed }) => [
+              styles.floatingCircleButton,
+              { backgroundColor: 'rgba(40, 40, 40, 0.85)', marginLeft: 16, marginBottom: 20 },
+              pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+            ]}
           >
-            <MaterialCommunityIcons name="augmented-reality" size={26} color="white" />
+            <MaterialCommunityIcons name="binoculars" size={24} color="white" />
           </Pressable>
 
-          <Pressable
-            onPress={handleRecenter}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-              transform: [{ scale: pressed ? 0.92 : 1 }],
-            })}
-            className="w-12 h-12 items-center justify-center rounded-full bg-black/60 border border-white/5 shadow-lg"
-          >
-            <Feather name="navigation" size={24} color="white" />
-          </Pressable>
+          {/* Right Side: Controls */}
+          <View style={styles.floatingControlsContainer}>
+            {/* 3D / AR Button */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setManualAR(!manualAR);
+              }}
+              style={({ pressed }) => [
+                styles.floatingCircleButton,
+                { backgroundColor: manualAR ? theme.colors.brand.primary : 'rgba(40, 40, 40, 0.85)' },
+                pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+              ]}
+            >
+              <Text style={[styles.floatingButtonText, { color: manualAR ? 'black' : 'white' }]}>3D</Text>
+            </Pressable>
+
+            {/* Vertical Control Pill */}
+            <View style={styles.verticalControlPill}>
+              <SafeBlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
+              <Pressable
+                onPress={() => console.log('Change Map Style')}
+                style={({ pressed }) => [
+                  styles.pillButton,
+                  pressed && { opacity: 0.5 },
+                  { borderBottomWidth: 0.5, borderBottomColor: 'rgba(255,255,255,0.1)' }
+                ]}
+              >
+                <MaterialCommunityIcons name="earth" size={24} color="white" />
+              </Pressable>
+              <Pressable
+                onPress={handleRecenter}
+                style={({ pressed }) => [
+                  styles.pillButton,
+                  pressed && { opacity: 0.5 }
+                ]}
+              >
+                <Feather name="navigation" size={22} color="white" />
+              </Pressable>
+            </View>
+          </View>
         </View>
       </Animated.View>
 
@@ -302,7 +330,6 @@ export default function MapIndexPage() {
           onSelectPoi={selectPoi}
           isLoading={isLoading}
           rawPoisData={rawPoisData}
-          setShowSavedManager={setShowSavedManager}
           onProfilePress={() => router.push('/(main)/profile')}
           currentEventId={currentEventId}
           selectedEvent={selectedEvent}
@@ -311,19 +338,6 @@ export default function MapIndexPage() {
           onClearCategory={() => setActiveCategoryId(null)}
         />
       )}
-
-
-      <SavedLocationsManager
-        isVisible={showSavedManager}
-        onClose={() => setShowSavedManager(false)}
-        onSelectMarker={(coords, id) => {
-          selectPoi(normalizePOI({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: coords },
-            properties: { id: `saved_${id}`, name: 'Ubicación guardada', category: 'parking' }
-          } as any));
-        }}
-      />
     </View>
   );
 }
@@ -333,7 +347,56 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 100, // Ensure it's above everything
+  },
+  floatingControlsWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingBottom: 20, // Increased to clear the sheet handle
+  },
+  floatingControlsContainer: {
+    alignItems: 'flex-end',
+    paddingRight: 16,
+    gap: 12,
+    paddingBottom: 20,
+  },
+  floatingCircleButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  floatingButtonText: {
+    color: 'white',
+    fontSize: 15,
+    fontFamily: typography.primary.bold,
+  },
+  verticalControlPill: {
+    width: 48,
+    height: 96,
+    borderRadius: 24,
+    backgroundColor: 'rgba(30, 30, 30, 0.4)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.15)',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  pillButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardContainer: {
     backgroundColor: 'rgba(30, 30, 30, 0.95)',

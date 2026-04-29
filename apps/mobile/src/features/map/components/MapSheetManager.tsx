@@ -21,6 +21,7 @@ interface MapSheetManagerProps {
   searchResults: React.ReactNode;
   poiCarousel: React.ReactNode;
   discoveryContent: React.ReactNode;
+  savedContent: React.ReactNode;
   onSelectCategory: (category: string) => void;
   onFocusSearch: () => void;
 }
@@ -32,6 +33,7 @@ export const MapSheetManager = ({
   searchResults,
   poiCarousel,
   discoveryContent,
+  savedContent,
   onSelectCategory,
   onFocusSearch,
 }: MapSheetManagerProps) => {
@@ -65,6 +67,11 @@ export const MapSheetManager = ({
         poiSheetRef.current?.close();
         Keyboard.dismiss();
         break;
+
+      case MapUIState.SAVED_LIST:
+        poiSheetRef.current?.close();
+        mainSheetRef.current?.snapToIndex(2); // Expanded view for the list
+        break;
     }
   }, [uiState]);
 
@@ -80,6 +87,8 @@ export const MapSheetManager = ({
         searchResults={searchResults}
         poiCarousel={poiCarousel}
         discoveryContent={discoveryContent}
+        savedContent={savedContent}
+        uiState={uiState}
         onSelectCategory={onSelectCategory}
       />
 

@@ -56,11 +56,11 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
 
     const snapPoints = React.useMemo(
       () => [
-        insets.bottom + 320, 
-        SCREEN_HEIGHT * 0.6, 
-        SCREEN_HEIGHT - insets.top - 20,
+        220, 
+        SCREEN_HEIGHT * 0.45, 
+        SCREEN_HEIGHT * 0.88,
       ],
-      [insets.bottom, insets.top]
+      []
     );
 
     if (!poi) return null;
@@ -70,6 +70,8 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        detached={true}
+        bottomInset={insets.bottom + 20}
         backgroundComponent={CustomBackground}
         handleIndicatorStyle={[
           styles.handleIndicator,
@@ -115,10 +117,10 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
             </Pressable>
           </View>
 
-          {/* Action Buttons Row (Fixed) */}
+          {/* Action Trident (Fixed) */}
           <View style={styles.fixedActionArea}>
-            <View style={styles.actionRow}>
-              {/* Main Action: IR AHORA */}
+            <View style={styles.tridentRow}>
+              {/* Navigate */}
               <Pressable
                 onPress={() => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -126,37 +128,42 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 }}
                 disabled={!routeMetadata}
                 style={[
-                  styles.actionCard,
+                  styles.tridentButton,
                   { backgroundColor: theme.colors.brand.primary },
                   !routeMetadata && { opacity: 0.6 },
                 ]}
               >
-                <MaterialCommunityIcons name="walk" size={28} color={theme.colors.text.inverse} />
-                <Text style={[styles.actionCardValuePrimary, { color: theme.colors.text.inverse }]}>
-                  {routeMetadata ? formatDuration(routeMetadata.duration) : '...'}
-                </Text>
-                <Text style={[styles.actionCardLabelPrimary, { color: theme.colors.text.inverse }]}>IR AHORA</Text>
+                <MaterialCommunityIcons name="navigation" size={24} color="#000" />
+                <Text style={styles.tridentLabelPrimary}>IR</Text>
               </Pressable>
 
-              {/* Info Action: Distancia */}
-              <View style={styles.actionCard}>
-                <View style={styles.iconContainer}>
-                  <Feather name="map-pin" size={18} color={theme.colors.text.muted} />
-                </View>
-                <Text style={styles.actionCardLabel}>Distancia</Text>
-                <Text style={styles.actionCardValue}>
-                  {routeMetadata ? formatDistance(routeMetadata.distance) : '...'}
-                </Text>
-              </View>
+              {/* Tickets */}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  console.log('Open Tickets');
+                }}
+                style={styles.tridentButtonSecondary}
+              >
+                <SafeBlurView intensity={20} style={styles.buttonBlur}>
+                  <MaterialCommunityIcons name="ticket-confirmation" size={22} color={theme.colors.brand.primary} />
+                </SafeBlurView>
+                <Text style={styles.tridentLabelSecondary}>ENTRADAS</Text>
+              </Pressable>
 
-              {/* Info Action: Horario */}
-              <View style={styles.actionCard}>
-                <View style={styles.iconContainer}>
-                  <Feather name="clock" size={18} color={theme.colors.text.muted} />
-                </View>
-                <Text style={styles.actionCardLabel}>Horario</Text>
-                <Text style={[styles.actionCardValue, { color: theme.colors.status.success }]}>Abierto</Text>
-              </View>
+              {/* Calendar */}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  console.log('Add to Calendar');
+                }}
+                style={styles.tridentButtonSecondary}
+              >
+                <SafeBlurView intensity={20} style={styles.buttonBlur}>
+                  <Feather name="calendar" size={22} color={theme.colors.brand.primary} />
+                </SafeBlurView>
+                <Text style={styles.tridentLabelSecondary}>AÑADIR</Text>
+              </Pressable>
             </View>
           </View>
 
@@ -199,7 +206,7 @@ PoiDetailSheet.displayName = 'PoiDetailSheet';
 
 const styles = StyleSheet.create({
   sheetContainer: {
-    marginHorizontal: Platform.OS === 'ios' ? 8 : 0,
+    marginHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.25,
@@ -208,14 +215,12 @@ const styles = StyleSheet.create({
   },
   blurBackground: {
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderRadius: 32,
     overflow: 'hidden',
   },
   innerGlowBorder: {
     ...StyleSheet.absoluteFillObject,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderRadius: 32,
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.15)',
     pointerEvents: 'none',
@@ -276,51 +281,56 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  actionRow: {
+  tridentRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginTop: 4,
+    justifyContent: 'center',
+    gap: 32,
+    marginTop: 10,
+    marginBottom: 8,
   },
-  actionCard: {
-    flex: 1,
-    height: 95,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+  tridentButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
-  actionCardPrimary: {
-    backgroundColor: primitiveColors.brand.primary,
-    borderColor: 'transparent',
+  tridentButtonSecondary: {
+    width: 64,
+    height: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  iconContainer: {
-    marginBottom: 4,
+  buttonBlur: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  actionCardLabel: {
+  tridentLabelPrimary: {
+    fontSize: 10,
+    fontFamily: typography.secondary.bold,
+    color: '#000',
+    marginTop: 4,
+    position: 'absolute',
+    bottom: -20,
+  },
+  tridentLabelSecondary: {
+    fontSize: 10,
+    fontFamily: typography.secondary.bold,
     color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 10,
-    fontFamily: typography.secondary.bold,
-  },
-  actionCardLabelPrimary: {
-    color: '#000000',
-    fontSize: 10,
-    fontFamily: typography.secondary.bold,
-  },
-  actionCardValue: {
-    color: 'white',
-    fontSize: 15,
-    fontFamily: typography.primary.bold,
-    marginTop: 1,
-  },
-  actionCardValuePrimary: {
-    color: '#000000',
-    fontSize: 15,
-    fontFamily: typography.primary.bold,
-    marginTop: 1,
+    marginTop: 4,
+    position: 'absolute',
+    bottom: -20,
   },
   photoList: {
     gap: 12,

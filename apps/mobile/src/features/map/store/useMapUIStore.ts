@@ -4,6 +4,7 @@ export enum MapUIState {
   EXPLORING = 'EXPLORING',
   POI_DETAIL = 'POI_DETAIL',
   NAVIGATING = 'NAVIGATING',
+  SAVED_LIST = 'SAVED_LIST',
 }
 
 interface MapUIStore {

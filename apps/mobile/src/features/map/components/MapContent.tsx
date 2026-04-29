@@ -21,6 +21,7 @@ import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY } from '../../../
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
 
 import { useLocationStore } from '../../../store/useLocationStore';
+import { calculateBBox } from '../../../utils/geoUtils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -106,22 +107,48 @@ export const MapContent = React.memo(function MapContent({
   }, [selectedCoords, isNavigating, insets.top]);
 
   useEffect(() => {
-    if (selectedEvent?.center && camera.current && !isNavigating) {
-      camera.current.setCamera({
-        centerCoordinate: selectedEvent.center.coordinates,
-        zoomLevel: 16.5,
-        animationDuration: 1200,
-        animationMode: 'flyTo',
-        pitch: 0,
-        padding: {
-          paddingBottom: SCREEN_HEIGHT * 0.4,
-          paddingTop: insets.top + 60,
-          paddingLeft: 40,
-          paddingRight: 40,
-        },
-      });
+    if (selectedEvent && poisGeoJSON?.features && camera.current && !isNavigating) {
+      // Find all POIs that belong to this event (parentId === eventId)
+      const childPoiCoords = poisGeoJSON.features
+        .filter((f: any) => f.properties.parentId === selectedEvent.id || f.properties.event_id === selectedEvent.id)
+        .map((f: any) => f.geometry.coordinates);
+
+      if (childPoiCoords.length > 0) {
+        const bbox = calculateBBox(childPoiCoords);
+        if (bbox) {
+          camera.current.fitBounds(
+            [bbox[2], bbox[3]], // maxLng, maxLat
+            [bbox[0], bbox[1]], // minLng, minLat
+            [
+              SCREEN_HEIGHT * 0.45, // bottom padding for sheet
+              40, // top
+              40, // left
+              40, // right
+            ],
+            1000 // duration
+          );
+          return;
+        }
+      }
+
+      // Fallback to center if no children found
+      if (selectedEvent.center) {
+        camera.current.setCamera({
+          centerCoordinate: selectedEvent.center.coordinates,
+          zoomLevel: 16.5,
+          animationDuration: 1200,
+          animationMode: 'flyTo',
+          pitch: 0,
+          padding: {
+            paddingBottom: SCREEN_HEIGHT * 0.4,
+            paddingTop: insets.top + 60,
+            paddingLeft: 40,
+            paddingRight: 40,
+          },
+        });
+      }
     }
-  }, [selectedEvent, isNavigating, insets.top]);
+  }, [selectedEvent, poisGeoJSON, isNavigating, insets.top]);
 
   useEffect(() => {
     if (!isNavigating && camera.current) {
@@ -220,8 +247,19 @@ export const MapContent = React.memo(function MapContent({
           <MapLibreGL.SymbolLayer
             id="poiIcons"
             style={mapLayerStyles.poiIcons}
-            minZoomLevel={14}
-            filter={['!', ['has', 'point_count']]}
+            minZoomLevel={12}
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              [
+                'any',
+                ['==', ['get', 'category'], 'event'], // Always show events
+                ['>', ['zoom'], 15], // Show others when zoomed in
+                ['==', ['get', 'id'], selectedPoiId || ''], // Always show selected
+                ['==', ['get', 'parentId'], currentEventId || ''], // Show children of active event
+                ['==', ['get', 'event_id'], currentEventId || ''] // Handle both ID formats
+              ]
+            ]}
           />
           <MapLibreGL.SymbolLayer
             id="poiLabels"

@@ -12,6 +12,7 @@ export interface StandardUIPOI {
   categoryIcon: string;
   mainColor: string;
   coordinates: [number, number];
+  parentId?: string | number;
   description?: string;
   images?: string[];
   distance?: string;
