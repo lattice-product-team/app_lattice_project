@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
-import Animated, { useAnimatedStyle, SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, SharedValue, withSpring } from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -8,100 +8,89 @@ import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 
 interface AdaptiveControlOverlayProps {
-  sheetPosition: SharedValue<number>;
+  islandHeight: SharedValue<number>;
+  bottomOffset: number;
   onRecenter: () => void;
   onToggle3D: () => void;
   is3DActive: boolean;
-  onOpenMapStyle?: () => void;
   onOpenBinoculars?: () => void;
 }
 
 /**
- * Floating controls that track the bottom sheet's position.
- * Implements the synchronized "Apple Maps" control layout.
+ * Professional floating controls synchronized with the growing island.
+ * Vertical stack on the right: 3D -> Recenter -> Binoculars.
  */
 export const AdaptiveControlOverlay = ({
-  sheetPosition,
+  islandHeight,
+  bottomOffset,
   onRecenter,
   onToggle3D,
   is3DActive,
-  onOpenMapStyle,
   onOpenBinoculars,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
 
-  // Dynamic positioning logic: track the sheet top but with a safety offset
-  const rOverlayStyle = useAnimatedStyle(() => ({
-    // Positioned at top: 0, we translate it to the sheet position minus its height
-    transform: [{ translateY: sheetPosition.value - 90 }],
-  }));
+  // The controls sit right above the island's current top position
+  const rOverlayStyle = useAnimatedStyle(() => {
+    // Top of island = screen_height - bottomOffset - current_height
+    // We want the controls to be slightly above that
+    const translateY = - (bottomOffset + islandHeight.value + 16);
+    
+    return {
+      transform: [{ translateY }],
+    };
+  });
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
       <View pointerEvents="box-none" style={styles.content}>
-        {/* Left Side: Binoculars */}
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onOpenBinoculars?.();
-          }}
-          style={({ pressed }) => [
-            styles.circleButton,
-            { backgroundColor: 'rgba(35, 35, 35, 0.9)' },
-            pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
-          ]}
-        >
-          <MaterialCommunityIcons name="binoculars" size={24} color="white" />
-        </Pressable>
-
-        {/* Right Side: Action Trident Controls */}
-        <View pointerEvents="box-none" style={styles.rightControls}>
-          {/* 3D Toggle */}
+        <View style={styles.verticalPill}>
+          <SafeBlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
+          
+          {/* 1. 3D Toggle */}
           <Pressable
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               onToggle3D();
             }}
             style={({ pressed }) => [
-              styles.circleButton,
-              { backgroundColor: is3DActive ? theme.colors.brand.primary : 'rgba(35, 35, 35, 0.9)' },
-              pressed && { opacity: 0.7, transform: [{ scale: 0.92 }] },
+              styles.pillAction,
+              { borderBottomWidth: 0.5, borderBottomColor: 'rgba(255,255,255,0.1)' },
+              is3DActive && { backgroundColor: theme.colors.brand.primary },
+              pressed && { opacity: 0.7 }
             ]}
           >
             <Text style={[styles.buttonText, { color: is3DActive ? 'black' : 'white' }]}>3D</Text>
           </Pressable>
 
-          {/* Vertical Pill Group */}
-          <View style={styles.verticalPill}>
-            <SafeBlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
-            
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                onOpenMapStyle?.();
-              }}
-              style={({ pressed }) => [
-                styles.pillAction,
-                { borderBottomWidth: 0.5, borderBottomColor: 'rgba(255,255,255,0.1)' },
-                pressed && { opacity: 0.6 }
-              ]}
-            >
-              <MaterialCommunityIcons name="earth" size={24} color="white" />
-            </Pressable>
+          {/* 2. Recenter Button */}
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              onRecenter();
+            }}
+            style={({ pressed }) => [
+              styles.pillAction,
+              { borderBottomWidth: 0.5, borderBottomColor: 'rgba(255,255,255,0.1)' },
+              pressed && { opacity: 0.6 }
+            ]}
+          >
+            <Feather name="navigation" size={20} color="white" />
+          </Pressable>
 
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                onRecenter();
-              }}
-              style={({ pressed }) => [
-                styles.pillAction,
-                pressed && { opacity: 0.6 }
-              ]}
-            >
-              <Feather name="navigation" size={22} color="white" />
-            </Pressable>
-          </View>
+          {/* 3. Binoculars (AR) */}
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onOpenBinoculars?.();
+            }}
+            style={({ pressed }) => [
+              styles.pillAction,
+              pressed && { opacity: 0.6 }
+            ]}
+          >
+            <MaterialCommunityIcons name="binoculars" size={22} color="white" />
+          </Pressable>
         </View>
       </View>
     </Animated.View>
@@ -111,59 +100,44 @@ export const AdaptiveControlOverlay = ({
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 100,
-    height: 160, // Give it height so we can align to bottom
+    zIndex: 1000,
   },
   content: {
-    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end', // Align all buttons to the bottom of this 160px container
-    paddingHorizontal: 16,
-    paddingBottom: 0,
-  },
-  rightControls: {
-    alignItems: 'flex-end',
-    gap: 12,
-  },
-  circleButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 12,
-  },
-  buttonText: {
-    fontSize: 15,
-    fontFamily: typography.primary.bold,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 12,
   },
   verticalPill: {
-    width: 48,
-    height: 96,
-    borderRadius: 24,
-    backgroundColor: 'rgba(30, 30, 30, 0.6)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    width: 50,
+    height: 150,
+    borderRadius: 25,
+    backgroundColor: 'rgba(30, 30, 30, 0.45)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
+    flexDirection: 'column',
+    alignItems: 'stretch', // Force actions to take full width
   },
   pillAction: {
-    flex: 1,
+    height: 50,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontFamily: typography.primary.bold,
+    letterSpacing: -0.5,
+    color: 'white',
+    textAlign: 'center',
+    width: '100%',
   },
 });

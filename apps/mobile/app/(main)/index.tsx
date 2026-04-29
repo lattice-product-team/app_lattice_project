@@ -7,7 +7,8 @@ import Animated, {
   useSharedValue, 
   useAnimatedStyle, 
   withSpring,
-  interpolate
+  interpolate,
+  useDerivedValue
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -15,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapContent } from '../../src/features/map/components/MapContent';
 import { AdaptiveControlOverlay } from '../../src/features/map/components/AdaptiveControlOverlay';
 import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
+import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -41,12 +43,15 @@ export default function MapIndexPage() {
   // 1 = Expanded (Full list)
   const islandState = useSharedValue(0); 
 
+  const islandHeight = useDerivedValue(() => {
+    return interpolate(islandState.value, [0, 1], [64, SCREEN_HEIGHT * 0.85]);
+  });
+
   const islandStyle = useAnimatedStyle(() => {
-    const height = interpolate(islandState.value, [0, 1], [64, SCREEN_HEIGHT * 0.85]);
-    const bottom = interpolate(islandState.value, [0, 1], [insets.bottom + 12, insets.bottom + 12]);
+    const bottom = insets.bottom;
     
     return {
-      height,
+      height: islandHeight.value,
       bottom,
     };
   });
@@ -71,7 +76,8 @@ export default function MapIndexPage() {
 
       {/* 2. Synchronized Controls (Tracking the island) */}
       <AdaptiveControlOverlay 
-        sheetPosition={useSharedValue(SCREEN_HEIGHT - 150)} // Temporary fixed pos
+        islandHeight={islandHeight}
+        bottomOffset={insets.bottom +5 }
         onRecenter={handleRecenter}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
@@ -79,10 +85,11 @@ export default function MapIndexPage() {
 
       {/* 3. The New "Growing Island" (Manual Implementation) */}
       <Animated.View style={[styles.islandContainer, islandStyle]}>
-        <View style={styles.islandBackground}>
-          {/* We'll use a SafeBlurView inside here once we decide the content */}
-          <View style={[styles.glass, { backgroundColor: theme.colors.glass.background }]} />
-          
+        <SafeBlurView 
+          intensity={90} 
+          tint={theme.colors.glass.tint} 
+          style={styles.islandBackground}
+        >
           <View style={styles.islandContent}>
             <FloatingSearchBar 
               value={searchQuery}
@@ -103,7 +110,7 @@ export default function MapIndexPage() {
               </View>
             )}
           </View>
-        </View>
+        </SafeBlurView>
       </Animated.View>
     </View>
   );
@@ -127,10 +134,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  glass: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: 0.95,
   },
   islandContent: {
     flex: 1,
