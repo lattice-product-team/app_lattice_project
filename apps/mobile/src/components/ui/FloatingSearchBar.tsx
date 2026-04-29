@@ -24,79 +24,58 @@ export const FloatingSearchBar = ({
   const theme = useAppTheme();
 
   return (
-    <View style={styles.outerContainer}>
-      <SafeBlurView 
-        intensity={90} 
-        tint={theme.colors.glass.tint} 
-        style={[
-          styles.blurContainer, 
-          { borderColor: theme.colors.glass.border }
-        ]}
-      >
-        <View style={styles.innerContainer}>
-          <Feather 
-            name="search" 
-            size={22} 
-            color="white" 
-            style={styles.icon} 
-          />
-          
-          <TextInput
-            value={value}
-            onChangeText={onChangeText}
-            onFocus={onFocus}
-            placeholder={placeholder}
-            placeholderTextColor="rgba(255, 255, 255, 0.4)"
-            style={[styles.input, { color: 'white' }]}
-            selectionColor={theme.colors.brand.primary}
-          />
+    <View style={styles.innerContainer}>
+      <Feather 
+        name="search" 
+        size={22} 
+        color="white" 
+        style={styles.icon} 
+      />
+      
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={onFocus}
+        placeholder={placeholder}
+        placeholderTextColor="rgba(255, 255, 255, 0.4)"
+        style={[styles.input, { color: 'white' }]}
+        selectionColor={theme.colors.brand.primary}
+      />
 
-          {value.length > 0 && (
-            <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-              <Feather name="x-circle" size={18} color="rgba(255, 255, 255, 0.4)" />
-            </Pressable>
-          )}
+      {value.length > 0 && (
+        <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
+          <Feather name="x-circle" size={18} color="rgba(255, 255, 255, 0.4)" />
+        </Pressable>
+      )}
 
-          <View style={styles.rightActions}>
-            <Pressable style={styles.micButton}>
-              <MaterialCommunityIcons name="microphone" size={24} color="white" />
-            </Pressable>
-            
-            <View style={styles.verticalDivider} />
-            
-            <Pressable 
-              style={styles.profileButton}
-              onPress={onProfilePress}
-            >
-              <Image 
-                source={{ uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop' }}
-                style={styles.avatar}
-              />
-            </Pressable>
-          </View>
-        </View>
-      </SafeBlurView>
+      <View style={styles.rightActions}>
+        <Pressable style={styles.micButton}>
+          <MaterialCommunityIcons name="microphone" size={24} color="white" />
+        </Pressable>
+        
+        <View style={styles.verticalDivider} />
+        
+        <Pressable 
+          style={styles.profileButton}
+          onPress={onProfilePress}
+        >
+          <Image 
+            source={{ uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop' }}
+            style={styles.avatar}
+          />
+        </Pressable>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  outerContainer: {
-    paddingHorizontal: 16,
-    width: '100%',
-  },
-  blurContainer: {
-    borderRadius: 32,
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-  },
   innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 58,
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    height: 64,
+    paddingHorizontal: 20,
+    backgroundColor: 'transparent',
   },
   icon: {
     marginRight: 12,
