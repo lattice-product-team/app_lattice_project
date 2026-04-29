@@ -91,15 +91,6 @@ export const DiscoveryDashboard = ({
 
       {/* 2. Events Carousel */}
       <View style={styles.carouselSection}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
-            Próximos eventos
-          </Text>
-          <Pressable>
-            <Text style={[styles.seeAll, { color: theme.colors.brand.primary }]}>Ver todos</Text>
-          </Pressable>
-        </View>
-        
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -139,7 +130,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   categoriesContainer: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   categoryScroll: {
     paddingHorizontal: 16,
@@ -162,28 +153,13 @@ const styles = StyleSheet.create({
   carouselSection: {
     gap: 16,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: typography.primary.bold,
-  },
-  seeAll: {
-    fontSize: 14,
-    fontFamily: typography.primary.medium,
-  },
   carouselScrollContainer: {
-    height: 340,
+    height: 300,
   },
   carouselScroll: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
-    minHeight: 340,
     gap: 16,
+    paddingBottom: 10, // Bottom breathing room
   },
 });
 

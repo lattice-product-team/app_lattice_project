@@ -14,3 +14,10 @@
 
 - [x] 3.1 Ajustar animaciones de snapping y feedback háptico.
 - [x] 3.2 Verificar el renderizado de imágenes y gradientes en el carrusel.
+
+## 4. Bug Fix: Event Carousel Squashing
+
+- [x] 4.1 Eliminar `paddingBottom` y `minHeight` conflictivos en `DiscoveryDashboard.tsx`.
+- [x] 4.2 Ajustar `height` de `carouselScrollContainer` para acomodar card + sombras (~350px).
+- [x] 4.3 Definir altura explícita en `shadowWrapper` de `EventCarouselCard.tsx`.
+- [ ] 4.4 Verificar alineación vertical del carrusel dentro de la isla (Nivel 2).

@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   islandScrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 10,
   },
   islandContent: {
     flex: 1,

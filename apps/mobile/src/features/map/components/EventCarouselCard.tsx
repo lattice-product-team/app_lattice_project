@@ -28,39 +28,41 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
       <Pressable 
         onPress={onPress}
         style={({ pressed }) => [
-          styles.container,
+          { width: 260, height: 280 },
           pressed && { transform: [{ scale: 0.97 }] }
         ]}
       >
-        {/* Background Image - Square & Rounded */}
-        <Image 
-          source={event.image} 
-          style={styles.image}
-          contentFit="cover"
-          transition={300}
-        />
-        
-        {/* Subtle Gradient */}
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)']}
-          style={styles.gradient}
-        />
+        <View style={styles.container}>
+          {/* Background Image - Square & Rounded */}
+          <Image 
+            source={event.image} 
+            style={styles.image}
+            contentFit="cover"
+            transition={300}
+          />
+          
+          {/* Subtle Gradient */}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)']}
+            style={styles.gradient}
+          />
 
-        {/* Rating Badge */}
-        {event.rating && (
-          <View style={styles.ratingBadge}>
-            <MaterialCommunityIcons name="star" size={12} color="#FFD700" />
-            <Text style={styles.ratingText}>{event.rating}</Text>
-          </View>
-        )}
+          {/* Rating Badge */}
+          {event.rating && (
+            <View style={styles.ratingBadge}>
+              <MaterialCommunityIcons name="star" size={12} color="#FFD700" />
+              <Text style={styles.ratingText}>{event.rating}</Text>
+            </View>
+          )}
 
-        {/* Content */}
-        <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>{event.name}</Text>
-          <View style={styles.footer}>
-            <View style={styles.infoItem}>
-              <MaterialCommunityIcons name="calendar" size={12} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.infoText}>{event.date}</Text>
+          {/* Content */}
+          <View style={styles.content}>
+            <Text style={styles.title} numberOfLines={2}>{event.name}</Text>
+            <View style={styles.footer}>
+              <View style={styles.infoItem}>
+                <MaterialCommunityIcons name="calendar" size={12} color="rgba(255,255,255,0.7)" />
+                <Text style={styles.infoText}>{event.date}</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -71,7 +73,9 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
 
 const styles = StyleSheet.create({
   shadowWrapper: {
-    width: 300,
+    width: 260,
+    height: 280,
+    marginRight: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
@@ -79,18 +83,19 @@ const styles = StyleSheet.create({
   },
   container: {
     width: 260,
-    height: 320, 
+    height: 280, 
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#1a1a1a',
-    borderWidth: 0.5,
+    borderWidth: 0.5, 
     borderColor: 'rgba(255, 255, 255, 0.1)',
     flexShrink: 0,
   },
 
   image: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 12, // Apply here too to ensure perfect clipping
+    width: 260,
+    height: 280,
+    borderRadius: 12, 
   },
 
   gradient: {
@@ -142,4 +147,3 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
   },
 });
-
