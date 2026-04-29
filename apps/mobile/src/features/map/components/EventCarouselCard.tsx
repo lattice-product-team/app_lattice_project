@@ -71,48 +71,55 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
 
 const styles = StyleSheet.create({
   shadowWrapper: {
+    width: 300,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.2,
     shadowRadius: 10,
-    elevation: 10,
-    paddingBottom: 4, // Space to avoid clipping shadow/border
   },
   container: {
-    width: 240, // Perfect square
-    height: 240, 
-    borderRadius: 20, // Moderate rounding
+    width: 260,
+    height: 320, 
+    borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#1a1a1a',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    flexShrink: 0,
   },
+
   image: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 20,
+    borderRadius: 12, // Apply here too to ensure perfect clipping
   },
+
   gradient: {
     ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
   },
   ratingBadge: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: 10,
+    right: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
+    zIndex: 2,
   },
   ratingText: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: typography.primary.bold,
     color: 'white',
   },
   content: {
     flex: 1,
     justifyContent: 'flex-end',
-    padding: 16,
+    padding: 14,
+    zIndex: 2,
   },
   title: {
     fontSize: 18,
@@ -132,6 +139,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 12,
     fontFamily: typography.primary.medium,
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.8)',
   },
 });
+

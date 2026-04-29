@@ -23,8 +23,6 @@ const CATEGORIES: Category[] = [
   { id: 'culture', label: 'Cultura', icon: 'palette' },
   { id: 'sport', label: 'Deporte', icon: 'run' },
   { id: 'night', label: 'Ocio', icon: 'weather-night' },
-  { id: 'health', label: 'Salud', icon: 'heart-pulse' },
-  { id: 'tech', label: 'Tech', icon: 'cpu' },
 ];
 
 interface DiscoveryDashboardProps {
@@ -54,14 +52,12 @@ export const DiscoveryDashboard = ({
 
   return (
     <Animated.View style={[styles.container, rContainerStyle]}>
-      {/* 1. Categories Row (Carousel) - At the TOP */}
+      {/* 1. Categories Row (Carousel) */}
       <View style={styles.categoriesContainer}>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryScroll}
-          decelerationRate="fast"
-          snapToAlignment="start"
         >
           {CATEGORIES.map((cat) => (
             <Pressable
@@ -71,33 +67,25 @@ export const DiscoveryDashboard = ({
                 { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] }
               ]}
             >
-              <View 
-                style={[
-                  styles.categoryButton, 
-                  { 
-                    backgroundColor: theme.colors.glass.tint === 'dark' 
-                      ? 'rgba(120, 120, 128, 0.36)' 
-                      : 'rgba(120, 120, 128, 0.12)',
-                  }
-                ]}
-              >
-                <View style={styles.buttonContent}>
-                  <MaterialCommunityIcons 
-                    name={cat.icon} 
-                    size={18} 
-                    color="rgba(255, 255, 255, 0.6)" 
-                    style={styles.categoryIcon}
-                  />
-                  <Text style={[styles.categoryLabel, { color: 'rgba(255, 255, 255, 0.6)' }]}>
-                    {cat.label}
-                  </Text>
-                </View>
+              <View style={[
+                styles.categoryPill,
+                { 
+                  backgroundColor: theme.colors.glass.tint === 'dark' 
+                    ? 'rgba(120, 120, 128, 0.36)' 
+                    : 'rgba(120, 120, 128, 0.12)',
+                }
+              ]}>
+                <MaterialCommunityIcons 
+                  name={cat.icon} 
+                  size={18} 
+                  color="rgba(255, 255, 255, 0.6)" 
+                />
+                <Text style={[styles.categoryLabel, { color: 'rgba(255, 255, 255, 0.6)' }]}>
+                  {cat.label}
+                </Text>
               </View>
             </Pressable>
           ))}
-
-
-
         </ScrollView>
       </View>
 
@@ -115,10 +103,12 @@ export const DiscoveryDashboard = ({
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
+          style={styles.carouselScrollContainer}
           contentContainerStyle={styles.carouselScroll}
-          snapToInterval={256} // 240 width + 16 gap
+          snapToInterval={276} // 260 width + 16 gap
           decelerationRate="fast"
         >
+
           {[1, 2, 3].map((id) => (
             <EventCarouselCard 
               key={id}
@@ -146,7 +136,7 @@ export const DiscoveryDashboard = ({
 const styles = StyleSheet.create({
   container: {
     paddingTop: 8,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   categoriesContainer: {
     marginBottom: 24,
@@ -155,32 +145,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 10,
   },
-  categoryButton: {
+  categoryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 30,
-    minHeight: 38, // Slightly more compact
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryIcon: {
-    marginRight: 6,
-    // Removal of manual marginTop for cleaner auto-alignment
+    minHeight: 40,
   },
   categoryLabel: {
     fontSize: 14,
     fontFamily: typography.primary.bold,
     includeFontPadding: false,
-    lineHeight: 18, // Added lineHeight for stability
   },
-
-
   carouselSection: {
     gap: 16,
   },
@@ -198,9 +176,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: typography.primary.medium,
   },
+  carouselScrollContainer: {
+    height: 340,
+  },
   carouselScroll: {
     paddingHorizontal: 16,
+    paddingBottom: 40,
+    minHeight: 340,
     gap: 16,
   },
 });
+
+
 
