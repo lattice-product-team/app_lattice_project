@@ -2,9 +2,10 @@ import React from 'react';
 import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { getEventMetadata } from '../../../utils/poiUtils';
 
 interface Event {
   id: string;
@@ -13,6 +14,8 @@ interface Event {
   date: string;
   location: string;
   rating?: number;
+  type?: string;
+  description?: string;
 }
 
 interface EventCarouselCardProps {
@@ -22,6 +25,7 @@ interface EventCarouselCardProps {
 
 export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) => {
   const theme = useAppTheme();
+  const metadata = getEventMetadata(event.type);
 
   return (
     <View style={styles.shadowWrapper}>
@@ -33,7 +37,7 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
         ]}
       >
         <View style={styles.container}>
-          {/* Background Image - Square & Rounded */}
+          {/* Background Image */}
           <Image 
             source={event.image} 
             style={styles.image}
@@ -41,27 +45,42 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
             transition={300}
           />
           
-          {/* Subtle Gradient */}
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.8)']}
-            style={styles.gradient}
-          />
-
-          {/* Rating Badge */}
-          {event.rating && (
-            <View style={styles.ratingBadge}>
-              <MaterialCommunityIcons name="star" size={12} color="#FFD700" />
-              <Text style={styles.ratingText}>{event.rating}</Text>
+          {/* Top Row for Badges */}
+          <View style={styles.topRow}>
+            <View style={[styles.badge, styles.categoryBadge]}>
+              <MaterialCommunityIcons name={metadata.icon as any} size={14} color="white" />
+              <Text style={styles.categoryLabel}>{metadata.label.toUpperCase()}</Text>
             </View>
-          )}
 
-          {/* Content */}
-          <View style={styles.content}>
-            <Text style={styles.title} numberOfLines={2}>{event.name}</Text>
-            <View style={styles.footer}>
-              <View style={styles.infoItem}>
-                <MaterialCommunityIcons name="calendar" size={12} color="rgba(255,255,255,0.7)" />
-                <Text style={styles.infoText}>{event.date}</Text>
+            {event.rating && (
+              <View style={[styles.badge, styles.ratingBadge]}>
+                <MaterialCommunityIcons name="star" size={14} color="#FFD700" />
+                <Text style={styles.ratingText}>{event.rating}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Info Footer - Blurred/Semi-transparent for Apple look */}
+          <View style={styles.footer}>
+            <View style={styles.footerContent}>
+              <Text style={styles.title} numberOfLines={1}>{event.name}</Text>
+              
+              {event.description && (
+                <Text style={styles.description} numberOfLines={1}>
+                  {event.description}
+                </Text>
+              )}
+
+              <View style={styles.detailsRow}>
+                <View style={styles.detailItem}>
+                  <Feather name="calendar" size={11} color="rgba(255,255,255,0.6)" />
+                  <Text style={styles.detailText}>{event.date}</Text>
+                </View>
+                <View style={styles.detailSeparator} />
+                <View style={styles.detailItem}>
+                  <Feather name="map-pin" size={11} color="rgba(255,255,255,0.6)" />
+                  <Text style={styles.detailText}>{event.location}</Text>
+                </View>
               </View>
             </View>
           </View>
@@ -77,73 +96,103 @@ const styles = StyleSheet.create({
     height: 280,
     marginRight: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 15,
   },
   container: {
     width: 260,
     height: 280, 
-    borderRadius: 12,
+    borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#1a1a1a',
     borderWidth: 0.5, 
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    flexShrink: 0,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-
   image: {
     width: 260,
     height: 280,
-    borderRadius: 12, 
-  },
-
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
-  },
-  ratingBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+  },
+  topRow: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+    right: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex: 2,
+  },
+  badge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 8,
-    zIndex: 2,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
+  categoryBadge: {},
+  categoryLabel: {
+    fontSize: 10,
+    fontFamily: typography.primary.bold,
+    color: 'white',
+    letterSpacing: 0.6,
+  },
+  ratingBadge: {},
   ratingText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: typography.primary.bold,
     color: 'white',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    padding: 14,
-    zIndex: 2,
+  footer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(28, 28, 30, 0.85)', // Apple Dark Mode Surface
+    paddingTop: 12,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderTopWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  footerContent: {
+    gap: 4,
   },
   title: {
     fontSize: 18,
     fontFamily: typography.primary.bold,
     color: 'white',
-    marginBottom: 4,
+    letterSpacing: -0.3,
   },
-  footer: {
+  description: {
+    fontSize: 13,
+    fontFamily: typography.primary.medium,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: 2,
+  },
+  detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
   },
-  infoItem: {
+  detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  infoText: {
-    fontSize: 12,
-    fontFamily: typography.primary.medium,
-    color: 'rgba(255,255,255,0.8)',
+  detailText: {
+    fontSize: 11,
+    fontFamily: typography.primary.bold,
+    color: 'rgba(255, 255, 255, 0.5)',
+  },
+  detailSeparator: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
 });

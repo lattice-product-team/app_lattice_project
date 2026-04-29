@@ -106,6 +106,8 @@ export const DiscoveryDashboard = ({
               event={{
                 id: String(id),
                 name: id === 1 ? 'Música en el Parque' : id === 2 ? 'Fira Gastronòmica' : 'Exposición de Arte',
+                type: id === 1 ? 'music' : id === 2 ? 'food' : 'generic',
+                description: id === 1 ? 'Música en vivo y aire libre' : id === 2 ? 'Lo mejor de la cocina local' : 'Arte contemporáneo y diseño',
                 date: 'Hoy, 20:00',
                 location: 'Olesa de Montserrat',
                 rating: 4.8,

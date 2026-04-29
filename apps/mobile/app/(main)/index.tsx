@@ -142,6 +142,10 @@ export default function MapIndexPage() {
             tint={theme.colors.glass.tint} 
             style={styles.islandBackground}
           >
+            <View style={styles.handleContainer}>
+              <View style={styles.handle} />
+            </View>
+
             <View style={styles.islandHeader}>
               <FloatingSearchBar 
                 value={searchQuery}
@@ -202,6 +206,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  handleContainer: {
+    paddingTop: 8,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   islandHeader: {
     paddingBottom: 4,
