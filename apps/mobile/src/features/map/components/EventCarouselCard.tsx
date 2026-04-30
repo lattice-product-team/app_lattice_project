@@ -152,12 +152,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(28, 28, 30, 0.85)', // Apple Dark Mode Surface
+    backgroundColor: theme.colors.glass.background,
     paddingTop: 12,
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderTopWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: theme.colors.glass.border,
   },
   footerContent: {
     gap: 4,
@@ -165,13 +165,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: typography.primary.bold,
-    color: 'white',
+    color: theme.colors.text.primary,
     letterSpacing: -0.3,
   },
   description: {
     fontSize: 13,
     fontFamily: typography.primary.medium,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: theme.colors.text.secondary,
     marginBottom: 2,
   },
   detailsRow: {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 11,
     fontFamily: typography.primary.bold,
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: theme.colors.text.muted,
   },
   detailSeparator: {
     width: 3,

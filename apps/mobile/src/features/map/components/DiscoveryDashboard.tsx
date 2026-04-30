@@ -72,17 +72,17 @@ export const DiscoveryDashboard = ({
               <View style={[
                 styles.categoryPill,
                 { 
-                  backgroundColor: theme.colors.glass.tint === 'dark' 
-                    ? 'rgba(120, 120, 128, 0.36)' 
-                    : 'rgba(120, 120, 128, 0.12)',
+                  backgroundColor: theme.colors.glass.subtle,
+                  borderColor: theme.dark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
+                  borderWidth: 1,
                 }
               ]}>
                 <MaterialCommunityIcons 
                   name={cat.icon} 
                   size={18} 
-                  color="rgba(255, 255, 255, 0.6)" 
+                  color={theme.colors.text.secondary} 
                 />
-                <Text style={[styles.categoryLabel, { color: 'rgba(255, 255, 255, 0.6)' }]}>
+                <Text style={[styles.categoryLabel, { color: theme.colors.text.secondary }]}>
                   {cat.label}
                 </Text>
               </View>

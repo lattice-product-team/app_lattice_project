@@ -23,8 +23,9 @@ Se modificará el `Gesture.Pan()` en `MapIndexPage` para que, en su fase `onEnd`
 ### 2. Estética Dinámica (Interpolación)
 Utilizaremos `islandStyle` y `islandBackground` en `MapIndexPage` para interpolar:
 - **Width**: De `SCREEN_WIDTH - 24` (margen de 12 a cada lado) en Nivel 2, a `SCREEN_WIDTH` en Nivel 3.
-- **BorderRadius**: De `32` a `0` (o un radio muy pequeño en las esquinas superiores si hay gap).
-- **Margins**: Desaparecerán en el Nivel 3.
+- **BorderRadius**: Se mantendrá constante en `32` para preservar la identidad visual de la "Island" en todos los niveles.
+- **Height**: El Nivel 3 tendrá una altura de aproximadamente el 80% de la pantalla para mantener una jerarquía visual clara de capas y evitar que se sienta como una pantalla completa.
+- **Margins**: Desaparecerán en el Nivel 3 para el ancho total.
 
 ### 3. Efecto de Oscurecimiento de Fondo (Background Dimming)
 Se añadirá una capa de fondo (`BackgroundDimmer`) entre el Mapa y la Island. Su opacidad estará vinculada a `islandState` mediante interpolación:
@@ -36,8 +37,8 @@ Esto proporcionará foco visual al contenido detallado y mejorará la legibilida
 - En `DiscoveryDashboard`, se modificará la interpolación de opacidad para que, al superar el valor 0.5 (Nivel 2), el contenido se desvanezca gradualmente hasta 0 al llegar a 0.6. Esto libera espacio para el contenido detallado del Nivel 3.
 
 ### 5. Transiciones Programáticas y Suavidad
-Para asegurar que la transición al Nivel 3 sea extremadamente fluida:
 - Se usarán configuraciones de spring con `damping: 25`, `stiffness: 120` para evitar rebotes excesivos pero mantener la naturalidad.
+- **Retorno Dinámico**: Se almacenará el último nivel estable (0 o 0.5) antes de entrar al Nivel 3 vía buscador. Al perder el foco (blur), la Island regresará automáticamente a dicho nivel para mantener la continuidad del flujo del usuario.
 - El retorno al Nivel 2 desde el 3 usará la misma configuración para consistencia.
 
 ## Risks / Trade-offs

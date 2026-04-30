@@ -28,7 +28,7 @@ export const FloatingSearchBar = ({
       <Feather 
         name="search" 
         size={22} 
-        color="white" 
+        color={theme.colors.text.primary} 
         style={styles.icon} 
       />
       
@@ -37,23 +37,23 @@ export const FloatingSearchBar = ({
         onChangeText={onChangeText}
         onFocus={onFocus}
         placeholder={placeholder}
-        placeholderTextColor="rgba(255, 255, 255, 0.4)"
-        style={[styles.input, { color: 'white' }]}
+        placeholderTextColor={theme.colors.text.muted}
+        style={[styles.input, { color: theme.colors.text.primary }]}
         selectionColor={theme.colors.brand.primary}
       />
 
       {value.length > 0 && (
         <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-          <Feather name="x-circle" size={18} color="rgba(255, 255, 255, 0.4)" />
+          <Feather name="x-circle" size={18} color={theme.colors.text.muted} />
         </Pressable>
       )}
 
       <View style={styles.rightActions}>
         <Pressable style={styles.micButton}>
-          <MaterialCommunityIcons name="microphone" size={24} color="white" />
+          <MaterialCommunityIcons name="microphone" size={24} color={theme.colors.text.primary} />
         </Pressable>
         
-        <View style={styles.verticalDivider} />
+        <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
         
         <Pressable 
           style={styles.profileButton}
@@ -61,7 +61,7 @@ export const FloatingSearchBar = ({
         >
           <Image 
             source={{ uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop' }}
-            style={styles.avatar}
+            style={[styles.avatar, { borderColor: theme.colors.border.subtle }]}
           />
         </Pressable>
       </View>
@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
   verticalDivider: {
     width: 0.5,
     height: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     marginHorizontal: 4,
   },
   profileButton: {
@@ -116,7 +115,6 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView } from 'react-native';
+import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView, Keyboard } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import * as Haptics from 'expo-haptics';
@@ -50,7 +50,7 @@ export default function MapIndexPage() {
   const startState = useSharedValue(0);
   const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
-  const [islandLevel, setIslandLevel] = useState(0);
+  const [preSearchLevel, setPreSearchLevel] = useState(0);
 
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
@@ -59,16 +59,8 @@ export default function MapIndexPage() {
     }
   }, [selectedPoiId, islandState]);
 
-  useDerivedValue(() => {
-    // Sync shared value to JS state for conditional rendering
-    if (Math.abs(islandState.value - islandLevel) > 0.01) {
-      runOnJS(setIslandLevel)(islandState.value);
-    }
-    return islandState.value;
-  });
-
   const islandHeight = useDerivedValue(() => {
-    const fullHeight = SCREEN_HEIGHT - insets.top; // Pantalla completa con gap superior
+    const fullHeight = SCREEN_HEIGHT * 0.80; // Bajamos la altura máxima al 80%
     if (islandState.value <= 0.5) {
       return interpolate(islandState.value, [0, 0.5], [60, 450]);
     }
@@ -116,6 +108,10 @@ export default function MapIndexPage() {
         damping: 20,
         stiffness: 150,
         mass: 0.6,
+      }, (finished) => {
+        if (finished && (closest === 0 || closest === 0.5)) {
+          runOnJS(setPreSearchLevel)(closest);
+        }
       });
 
       if (closest !== startState.value) {
@@ -126,8 +122,8 @@ export default function MapIndexPage() {
   const islandStyle = useAnimatedStyle(() => {
     // Interpolar de margen 12 (nivel 2) a 0 (nivel 3)
     const margin = interpolate(islandState.value, [0.5, 1], [12, 0], Extrapolation.CLAMP);
-    // Interpolar border radius de 32 a 12
-    const radius = interpolate(islandState.value, [0.5, 1], [32, 12], Extrapolation.CLAMP);
+    // Mantener borderRadius constante en 32
+    const radius = 32;
     // Ajustar el bottom si desaparecen los márgenes
     const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
     
@@ -142,7 +138,7 @@ export default function MapIndexPage() {
   });
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
-    const radius = interpolate(islandState.value, [0.5, 1], [32, 12], Extrapolation.CLAMP);
+    const radius = 32;
     return {
       borderTopLeftRadius: radius,
       borderTopRightRadius: radius,
@@ -159,6 +155,33 @@ export default function MapIndexPage() {
     };
   });
 
+  const level3ContentStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.7, 0.9], [0, 1], Extrapolation.CLAMP);
+    return {
+      opacity,
+      pointerEvents: opacity > 0.5 ? 'auto' : 'none',
+      position: 'absolute',
+      top: 100, // Debajo del header
+      left: 0,
+      right: 0,
+    };
+  });
+
+  const scrollStyle = useAnimatedStyle(() => {
+    return {
+      flex: 1,
+    };
+  });
+
+  const handleMapPress = useCallback(() => {
+    Keyboard.dismiss();
+    deselect();
+    // Si no hay POI seleccionado, volvemos al nivel previo a la búsqueda
+    if (!selectedPoiId) {
+      islandState.value = withSpring(preSearchLevel, { damping: 25, stiffness: 120 });
+    }
+  }, [deselect, selectedPoiId, preSearchLevel, islandState]);
+
   const handleRecenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // Recenter logic via store or local ref
@@ -173,16 +196,21 @@ export default function MapIndexPage() {
         <MapContent 
           poisGeoJSON={null} 
           sheetPosition={useSharedValue(SCREEN_HEIGHT)} // Dummy for now
-          onDeselect={deselect}
+          onDeselect={handleMapPress}
           is3DActive={manualAR}
         />
       </View>
 
       {/* Background Dimmer */}
-      <Animated.View 
-        style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
-        pointerEvents="none"
-      />
+      <Pressable 
+        style={StyleSheet.absoluteFill}
+        onPress={Keyboard.dismiss}
+        pointerEvents="box-none"
+      >
+        <Animated.View 
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
+        />
+      </Pressable>
 
       {/* 2. Synchronized Controls (Tracking the island) */}
       <AdaptiveControlOverlay 
@@ -196,14 +224,21 @@ export default function MapIndexPage() {
 
       {/* 3. The New "Growing Island" (Manual Implementation) */}
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.islandContainer, islandStyle]}>
+        <Animated.View style={[styles.islandContainer, islandStyle, !theme.dark && theme.shadows.soft]}>
           <AnimatedSafeBlurView 
             intensity={90} 
             tint={theme.colors.glass.tint} 
-            style={[styles.islandBackground, islandBackgroundStyle]}
+            style={[
+              styles.islandBackground, 
+              islandBackgroundStyle,
+              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)' }
+            ]}
           >
             <View style={styles.handleContainer}>
-              <View style={styles.handle} />
+              <View style={[
+                styles.handle, 
+                { backgroundColor: theme.dark ? 'rgba(255, 255, 255, 0.25)' : '#C6C6C8' }
+              ]} />
             </View>
 
             <View style={styles.islandHeader}>
@@ -212,38 +247,37 @@ export default function MapIndexPage() {
                 onChangeText={setSearchQuery}
                 onProfilePress={() => router.push('/(main)/profile')}
                 onFocus={() => {
-                  islandState.value = withSpring(1, { damping: 25, stiffness: 120 }); // Focus takes to Level 3
+                  islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
                 }}
               />
             </View>
 
-            <ScrollView 
-              style={styles.islandScroll}
+            <Animated.ScrollView 
+              style={scrollStyle}
               contentContainerStyle={styles.islandScrollContent}
               showsVerticalScrollIndicator={false}
-              bounces={islandLevel > 0.5}
-              enabled={islandLevel > 0.1}
+              bounces={true}
             >
               <DiscoveryDashboard 
                 islandState={islandState}
                 onSelectCategory={(id) => console.log('Selected Category:', id)}
               />
               
-              {/* Content will go here and "grow" with the island */}
-              {islandLevel > 0.7 && (
+              {/* Nivel 3 Content - Always mounted but with opacity 0 */}
+              <Animated.View style={level3ContentStyle}>
                 <View style={styles.placeholderContent}>
-                  <Text style={{ color: 'white', opacity: islandLevel }}>
+                  <Text style={{ color: theme.colors.text.primary }}>
                     Nivel 3: Completo (Listado de eventos detallado)
                   </Text>
                   <Pressable onPress={() => {
-                    deselect(); // Limpia la selección si hay
+                    deselect(); 
                     islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
                   }}>
                     <Text style={{ color: theme.colors.brand.primary, marginTop: 20 }}>Cerrar</Text>
                   </Pressable>
                 </View>
-              )}
-            </ScrollView>
+              </Animated.View>
+            </Animated.ScrollView>
           </AnimatedSafeBlurView>
         </Animated.View>
       </GestureDetector>
@@ -258,17 +292,17 @@ const styles = StyleSheet.create({
   },
   islandContainer: {
     position: 'absolute',
-    left: 12,
-    right: 12,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 1000,
-    overflow: 'hidden',
+    overflow: 'visible', // Allow shadow to show
   },
   islandBackground: {
     flex: 1,
     borderRadius: 32,
     overflow: 'hidden',
     borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   handleContainer: {
     paddingTop: 5,
@@ -280,7 +314,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   islandHeader: {
     paddingBottom: 9,

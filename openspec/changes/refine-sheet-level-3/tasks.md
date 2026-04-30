@@ -21,3 +21,6 @@
 - [x] 4.1 Configurar el trigger en `FloatingSearchBar` (onFocus) para llamar a `withSpring(1)`.
 - [x] 4.2 Configurar el trigger en la selección de POIs/Eventos para llamar a `withSpring(1)`.
 - [x] 4.3 Implementar botón de cierre o acción de retorno que devuelva la Island a `withSpring(0.5)`.
+- [x] 4.4 Integrar `Keyboard.dismiss()` en los eventos de pulsación del mapa y del `BackgroundDimmer`.
+- [x] 4.6 Implementar lógica de `preSearchLevel` para restaurar el nivel 0 o 0.5 al desenfocar el buscador.
+- [x] 4.5 Ajustar altura máxima del Nivel 3 al 93% y fijar `borderRadius` a 32px para consitencia.

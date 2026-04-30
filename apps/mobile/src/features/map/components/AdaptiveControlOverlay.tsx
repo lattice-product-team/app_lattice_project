@@ -30,7 +30,7 @@ export const AdaptiveControlOverlay = ({
   onOpenBinoculars,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
-  const iconColor = "rgba(255, 255, 255, 0.8)";
+  const iconColor = theme.colors.text.primary;
 
   const rOverlayStyle = useAnimatedStyle(() => {
     const opacity = islandState
@@ -48,8 +48,8 @@ export const AdaptiveControlOverlay = ({
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
-      <View style={styles.pill}>
-        <SafeBlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={[styles.pill, !theme.dark && theme.shadows.soft]}>
+        <SafeBlurView intensity={90} tint={theme.colors.glass.tint} style={StyleSheet.absoluteFill} />
         
         {/* 1. 3D Toggle */}
         <Pressable

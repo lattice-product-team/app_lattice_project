@@ -12,12 +12,13 @@ El sistema SHALL permitir la transición al Nivel 3 (Pantalla Completa) únicame
 - **THEN** la "Island" debe transicionar suavemente al valor de estado 1.0 (Nivel 3)
 
 ### Requirement: Estética de Pantalla Completa en Nivel 3
-Cuando el estado es 1.0, la "Island" debe cubrir el ancho total de la pantalla y ajustarse a la altura máxima disponible respetando el margen superior.
+Cuando el estado es 1.0, la "Island" debe cubrir el ancho total de la pantalla y ajustarse a una altura máxima que permita visualizar ligeramente el fondo superior.
 
 #### Scenario: Adaptación de Bordes y Márgenes
 - **WHEN** el valor de `islandState` progresa de 0.5 a 1.0
 - **THEN** los márgenes laterales deben reducirse a 0
-- **THEN** el `borderRadius` debe reducirse significativamente (de 32 a 12 o menos)
+- **THEN** el `borderTopLeftRadius` y `borderTopRightRadius` SHALL mantenerse en 32
+- **THEN** la altura máxima SHALL ser de `SCREEN_HEIGHT * 0.80`
 
 ### Requirement: Visibilidad de Controles Laterales
 Los botones del HUD derecho deben ocultarse progresivamente según la altura del desplegable.
@@ -50,6 +51,14 @@ El sistema SHALL cerrar el teclado virtual cuando el usuario interactúe con cua
 - **WHEN** el teclado está abierto y el buscador tiene el foco
 - **WHEN** el usuario pulsa en el mapa o en la capa de oscurecimiento de fondo
 - **THEN** el teclado debe cerrarse inmediatamente
+
+### Requirement: Retorno Dinámico al Desenfocar
+El sistema SHALL restaurar el nivel previo de la "Island" cuando el buscador pierda el foco si no hay un elemento seleccionado.
+
+#### Scenario: Restaurar Nivel Pre-Búsqueda
+- **WHEN** la "Island" está en Nivel 3 debido al foco en el buscador
+- **WHEN** el buscador pierde el foco (blur) por interacción externa
+- **THEN** la "Island" debe volver al nivel en el que estaba antes de iniciar la búsqueda (0 o 0.5)
 
 ### Requirement: Retorno Progresivo al Nivel 2
 Al abandonar el Nivel 3 por acción del usuario, el sistema debe volver al estado de descubrimiento.
