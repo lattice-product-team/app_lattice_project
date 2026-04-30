@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LatticeEvent } from '../../../types';
+import { geoService } from '../../../services/geoService';
 
 export interface EventDetails extends LatticeEvent {
   description?: string;
@@ -14,6 +15,7 @@ export interface EventDetails extends LatticeEvent {
 export const useEventDetails = (eventId: string | null) => {
   const [details, setDetails] = useState<EventDetails | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!eventId) {
@@ -21,29 +23,42 @@ export const useEventDetails = (eventId: string | null) => {
       return;
     }
 
-    setLoading(true);
-    // Mocking an API call
-    setTimeout(() => {
-      setDetails({
-        id: Number(eventId),
-        name: eventId === '1' ? 'Música en el Parque' : eventId === '2' ? 'Fira Gastronòmica' : 'Exposición de Arte',
-        type: eventId === '1' ? 'music' : eventId === '2' ? 'food' : 'generic',
-        description: 'The Real Club de Polo de Barcelona is a sports venue located in Barcelona. Established in 1897, it had 9000 members at the time of the 1992 Summer Olympics.',
-        rating: 4.8,
-        reviewsCount: 26,
-        openingHours: 'Open',
-        distance: '900m',
-        website: 'https://rcpolo.com',
-        phone: '+34 932 03 12 12',
-        imageUrl: eventId === '1' 
-          ? 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4'
-          : eventId === '2' 
-            ? 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1'
-            : 'https://images.unsplash.com/photo-1460666819451-7410f5ef13ac'
-      });
-      setLoading(false);
-    }, 400);
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        const data = await geoService.getEvent(Number(eventId));
+        
+        // Parse metadata if it exists and is a string
+        let metadataObj = {};
+        if (data.metadata) {
+          if (typeof data.metadata === 'string') {
+            try {
+              metadataObj = JSON.parse(data.metadata);
+            } catch (e) {
+              console.warn('Failed to parse metadata JSON', e);
+            }
+          } else {
+            metadataObj = data.metadata;
+          }
+        }
+
+        setDetails({
+          ...data,
+          ...metadataObj,
+          openingHours: 'Open', // Mocking for now as it's not in DB yet
+          distance: '900m',    // Mocking for now
+        });
+        setError(null);
+      } catch (e) {
+        console.error('Failed to fetch event details', e);
+        setError('Failed to load details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetails();
   }, [eventId]);
 
-  return { details, loading };
+  return { details, loading, error };
 };

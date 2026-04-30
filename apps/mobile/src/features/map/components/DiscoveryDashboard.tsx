@@ -10,6 +10,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { EventCarouselCard } from './EventCarouselCard';
+import { useSearchEvents } from '../hooks/useSearchEvents';
+import { LatticeEvent } from '../../../types';
 
 interface Category {
   id: string;
@@ -28,7 +30,7 @@ const CATEGORIES: Category[] = [
 interface DiscoveryDashboardProps {
   islandState: SharedValue<number>;
   onSelectCategory?: (id: string) => void;
-  onSelectEvent?: (eventId: string) => void;
+  onSelectEvent?: (event: LatticeEvent) => void;
 }
 
 export const DiscoveryDashboard = React.memo(({ 
@@ -37,6 +39,7 @@ export const DiscoveryDashboard = React.memo(({
   onSelectEvent,
 }: DiscoveryDashboardProps) => {
   const theme = useAppTheme();
+  const { events, loading: eventsLoading } = useSearchEvents(''); // Fetch all events for the dashboard
 
   const rContainerStyle = useAnimatedStyle(() => {
     // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
@@ -95,35 +98,31 @@ export const DiscoveryDashboard = React.memo(({
 
       {/* 2. Events Carousel */}
       <View style={styles.carouselSection}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.carouselScrollContainer}
-          contentContainerStyle={styles.carouselScroll}
-          snapToInterval={276} // 260 width + 16 gap
-          decelerationRate="fast"
-        >
-          {[1, 2, 3].map((id) => (
-            <EventCarouselCard 
-              key={id}
-              event={React.useMemo(() => ({
-                id: String(id),
-                name: id === 1 ? 'Música en el Parque' : id === 2 ? 'Fira Gastronòmica' : 'Exposición de Arte',
-                type: id === 1 ? 'music' : id === 2 ? 'food' : 'generic',
-                description: id === 1 ? 'Música en vivo y aire libre' : id === 2 ? 'Lo mejor de la cocina local' : 'Arte contemporáneo y diseño',
-                date: 'Hoy, 20:00',
-                location: 'Olesa de Montserrat',
-                rating: 4.8,
-                image: id === 1 
-                  ? 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4'
-                  : id === 2 
-                    ? 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1'
-                    : 'https://images.unsplash.com/photo-1460666819451-7410f5ef13ac'
-              }), [id])}
-              onPress={() => onSelectEvent?.(String(id))}
-            />
-          ))}
-        </ScrollView>
+        {eventsLoading ? (
+          <View style={[styles.carouselScrollContainer, { justifyContent: 'center' }]}>
+            <Text style={{ color: theme.colors.text.muted, textAlign: 'center' }}>Cargando eventos...</Text>
+          </View>
+        ) : (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.carouselScrollContainer}
+            contentContainerStyle={styles.carouselScroll}
+            snapToInterval={276} // 260 width + 16 gap
+            decelerationRate="fast"
+          >
+            {events.map((event) => (
+              <EventCarouselCard 
+                key={event.id}
+                event={event as any}
+                onPress={() => onSelectEvent?.(event as any)}
+              />
+            ))}
+            {events.length === 0 && (
+              <Text style={{ color: theme.colors.text.muted, padding: 20 }}>No hay eventos programados hoy.</Text>
+            )}
+          </ScrollView>
+        )}
       </View>
     </Animated.View>
   );

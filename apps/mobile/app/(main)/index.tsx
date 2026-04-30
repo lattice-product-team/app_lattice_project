@@ -51,13 +51,9 @@ export default function MapIndexPage() {
   const { selectedPoiId, deselect } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<LatticeEvent | null>(null);
   
   const { events } = useSearchEvents(searchQuery);
-  const selectedEvent = useMemo(() => 
-    events.find(e => e.id === selectedEventId), 
-    [events, selectedEventId]
-  );
   
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
@@ -73,17 +69,17 @@ export default function MapIndexPage() {
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
     if (selectedPoiId) {
-      islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+      islandState.value = withSpring(1, { damping: 28, stiffness: 90 });
     }
   }, [selectedPoiId, islandState]);
 
-  const handleEventSelect = useCallback((eventId: string) => {
-    setSelectedEventId(eventId);
+  const handleEventSelect = useCallback((event: LatticeEvent) => {
+    setSelectedEvent(event);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, []);
 
   const handleCloseDetails = useCallback(() => {
-    setSelectedEventId(null);
+    setSelectedEvent(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
@@ -142,9 +138,9 @@ export default function MapIndexPage() {
       }
 
       islandState.value = withSpring(closest, {
-        damping: 20,
-        stiffness: 150,
-        mass: 0.6,
+        damping: 28,
+        stiffness: 90,
+        mass: 0.8,
       }, (finished) => {
         if (finished && (closest === 0 || closest === 0.5)) {
           runOnJS(setPreSearchLevel)(closest);
@@ -215,7 +211,7 @@ export default function MapIndexPage() {
     deselect();
     setIsSearching(false);
     if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel, { damping: 25, stiffness: 120 });
+      islandState.value = withSpring(preSearchLevel, { damping: 28, stiffness: 90 });
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
@@ -226,7 +222,7 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
     
     // If we have coordinates, move map. For now just collapse.
-    islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
+    islandState.value = withSpring(0.5, { damping: 28, stiffness: 90 });
     
     if (coords) {
       console.log('Moving map to:', coords);
@@ -270,7 +266,7 @@ export default function MapIndexPage() {
 
       <GestureDetector gesture={gesture}>
         <Animated.View 
-          pointerEvents={selectedEventId ? 'none' : 'auto'}
+          pointerEvents={selectedEvent ? 'none' : 'auto'}
           style={[styles.islandContainer, islandStyle]}
         >
           <AnimatedSafeBlurView 
@@ -299,7 +295,7 @@ export default function MapIndexPage() {
                 onProfilePress={() => router.push('/(main)/profile')}
                 onFocus={() => {
                   setIsSearching(true);
-                  islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+                  islandState.value = withSpring(1, { damping: 28, stiffness: 90 });
                 }}
                 onSubmit={() => {
                   saveSearch(searchQuery);
@@ -322,7 +318,7 @@ export default function MapIndexPage() {
                   onSelectResult={(q, coords) => {
                     onSelectSearchResult(q, coords);
                     const match = events.find(e => e.name.toLowerCase() === q.toLowerCase());
-                    if (match) handleEventSelect(match.id);
+                    if (match) handleEventSelect(match);
                   }}
                 />
               ) : (
@@ -351,7 +347,7 @@ export default function MapIndexPage() {
       </GestureDetector>
 
       <EventDetailSheet 
-        event={selectedEvent || null} 
+        event={selectedEvent} 
         onClose={handleCloseDetails} 
       />
     </View>

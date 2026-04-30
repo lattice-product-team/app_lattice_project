@@ -13,6 +13,7 @@ import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
@@ -28,6 +29,7 @@ interface EventDetailSheetProps {
 
 export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   
@@ -39,9 +41,9 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
 
   useEffect(() => {
     if (event) {
-      islandState.value = withSpring(SNAP_POINTS.MID, { damping: 20, stiffness: 90 });
+      islandState.value = withSpring(SNAP_POINTS.MID, { damping: 28, stiffness: 90 });
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN);
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, { damping: 28, stiffness: 90 });
     }
   }, [event]);
 
@@ -49,20 +51,18 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     .onUpdate((e) => {
       const delta = -e.translationY / SCREEN_HEIGHT;
       const newValue = islandState.value + delta;
-      islandState.value = Math.max(0, Math.min(1.2, newValue));
+      // Clamp to minimum 0.5 (Nivel 2) during active drag
+      islandState.value = Math.max(0.5, Math.min(1.2, newValue));
     })
     .onEnd((e) => {
       const velocity = -e.velocityY / SCREEN_HEIGHT;
       const finalValue = islandState.value + velocity * 0.1;
 
-      if (finalValue < 0.3) {
-        islandState.value = withSpring(SNAP_POINTS.HIDDEN, {}, () => {
-          // Callback to onClose is tricky here, we'll rely on the parent
-        });
-      } else if (finalValue < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID);
+      // Never hide via drag, only snap between MID and FULL
+      if (finalValue < 0.75) {
+        islandState.value = withSpring(SNAP_POINTS.MID, { damping: 28, stiffness: 90 });
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL);
+        islandState.value = withSpring(SNAP_POINTS.FULL, { damping: 28, stiffness: 90 });
       }
     });
 
@@ -70,15 +70,19 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     const translateY = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [SCREEN_HEIGHT, SCREEN_HEIGHT * 0.45, 0],
+      [SCREEN_HEIGHT, SCREEN_HEIGHT * 0.45, SCREEN_HEIGHT * 0.20],
       Extrapolation.CLAMP
     );
 
     const margin = interpolate(islandState.value, [0.5, 0.8], [12, 0], Extrapolation.CLAMP);
+    const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
 
     return {
       transform: [{ translateY }],
       marginHorizontal: margin,
+      bottom,
+      // We need to adjust height to not overflow when bottom is applied
+      height: SCREEN_HEIGHT - bottom,
     };
   });
 

@@ -8,11 +8,13 @@ import { typography } from '../../../styles/typography';
 import { getEventMetadata } from '../../../utils/poiUtils';
 
 interface Event {
-  id: string;
+  id: string | number;
   name: string;
   image?: string;
-  date: string;
-  location: string;
+  imageUrl?: string;
+  date?: string;
+  startDate?: string;
+  location?: string;
   rating?: number;
   type?: string;
   description?: string;
@@ -39,7 +41,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
         <View style={styles.container}>
           {/* Background Image */}
           <Image 
-            source={event.image} 
+            source={event.image || event.imageUrl} 
             style={styles.image}
             contentFit="cover"
             transition={300}
@@ -74,12 +76,12 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
                   <Feather name="calendar" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.date}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.date || event.startDate || 'Hoy'}</Text>
                 </View>
                 <View style={styles.detailSeparator} />
                 <View style={styles.detailItem}>
                   <Feather name="map-pin" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.location}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.location || 'Barcelona'}</Text>
                 </View>
               </View>
             </View>
