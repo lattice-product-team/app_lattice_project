@@ -29,6 +29,21 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
   const theme = useAppTheme();
   const metadata = getEventMetadata(event.type);
 
+  const formattedDate = React.useMemo(() => {
+    if (event.date) return event.date;
+    if (!event.startDate) return 'Hoy';
+    
+    const date = new Date(event.startDate);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    
+    if (isToday) return `Hoy, ${timeStr}`;
+    
+    return date.toLocaleDateString([], { day: '2-digit', month: 'short' }) + `, ${timeStr}`;
+  }, [event.date, event.startDate]);
+
   return (
     <View style={styles.shadowWrapper}>
       <Pressable 
@@ -76,7 +91,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
                   <Feather name="calendar" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.date || event.startDate || 'Hoy'}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{formattedDate}</Text>
                 </View>
                 <View style={styles.detailSeparator} />
                 <View style={styles.detailItem}>

@@ -121,7 +121,7 @@ export const lightTheme: LatticeTheme = {
       strong: primitiveColors.neutral.light['border-med'],
     },
     glass: {
-      background: 'rgba(248, 248, 246, 0.92)', // Milky white from Apple Maps
+      background: 'rgba(248, 248, 246, 0.7)', // Reduced from 0.92 to allow blur visibility
       border: 'rgba(0, 0, 0, 0.08)', // Increased from 0.04 for 1px sharpness
       subtle: 'rgba(0, 0, 0, 0.03)',
       subtleBorder: 'rgba(0, 0, 0, 0.05)',

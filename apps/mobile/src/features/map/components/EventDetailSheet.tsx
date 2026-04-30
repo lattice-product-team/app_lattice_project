@@ -92,7 +92,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
     const bgColor = interpolateColor(
       islandState.value,
-      [0.8, 1],
+      [0.7, 1],
       [theme.colors.glass.background, theme.colors.bg.surface]
     );
 
@@ -107,7 +107,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
 
   const blurProps = useAnimatedProps(() => {
     return {
-      intensity: interpolate(islandState.value, [0.8, 1], [90, 0], Extrapolation.CLAMP)
+      intensity: interpolate(islandState.value, [0.5, 0.7, 1], [100, 100, 0], Extrapolation.CLAMP)
     };
   });
 

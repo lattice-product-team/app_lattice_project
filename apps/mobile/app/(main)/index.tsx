@@ -65,6 +65,9 @@ export default function MapIndexPage() {
 
   const [preSearchLevel, setPreSearchLevel] = useState(0);
   const isPanning = useSharedValue(false);
+  const islandOpacity = useDerivedValue(() => {
+    return withTiming(selectedEvent ? 0 : 1, { duration: 300 });
+  });
 
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
@@ -164,6 +167,7 @@ export default function MapIndexPage() {
       bottom,
       borderTopLeftRadius: radius,
       borderTopRightRadius: radius,
+      opacity: islandOpacity.value,
     };
   });
 
