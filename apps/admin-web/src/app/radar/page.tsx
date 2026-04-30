@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { Button } from "@heroui/react";
+import { Icons } from "@/components/icons";
 
 // Dynamically import Map components with SSR disabled
 const Map = dynamic(() => import('react-map-gl/maplibre').then(mod => mod.Map), { ssr: false });
@@ -47,14 +49,19 @@ export default function CrowdRadarPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="glass-card p-6 flex justify-between items-center z-10 border-b border-white/5">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">Crowd Radar</h2>
-          <p className="text-xs text-white/40 uppercase tracking-widest font-black">Real-time Density Analysis</p>
+      <header className="glass-card p-6 pt-12 flex justify-between items-center z-10 border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <Button isIconOnly variant="light" className="text-white/70">
+            <Icons.Sidebar className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-[28px] font-semibold text-white tracking-tight">Crowd Radar</h1>
+            <p className="text-white/30 text-xs font-medium mt-0.5">Real-time Density Analysis</p>
+          </div>
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Live Feed</span>
           </div>
           <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-bold text-white outline-none focus:border-primary">
