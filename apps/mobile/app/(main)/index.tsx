@@ -26,7 +26,9 @@ import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
 import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
+import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
+import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -49,6 +51,14 @@ export default function MapIndexPage() {
   const { selectedPoiId, deselect } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  
+  const { events } = useSearchEvents(searchQuery);
+  const selectedEvent = useMemo(() => 
+    events.find(e => e.id === selectedEventId), 
+    [events, selectedEventId]
+  );
+  
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
 
@@ -66,6 +76,16 @@ export default function MapIndexPage() {
       islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
     }
   }, [selectedPoiId, islandState]);
+
+  const handleEventSelect = useCallback((eventId: string) => {
+    setSelectedEventId(eventId);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
+  const handleCloseDetails = useCallback(() => {
+    setSelectedEventId(null);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -249,7 +269,10 @@ export default function MapIndexPage() {
       />
 
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.islandContainer, islandStyle]}>
+        <Animated.View 
+          pointerEvents={selectedEventId ? 'none' : 'auto'}
+          style={[styles.islandContainer, islandStyle]}
+        >
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint} 
             animatedProps={blurProps}
@@ -296,13 +319,18 @@ export default function MapIndexPage() {
               {isSearching ? (
                 <SearchExperience 
                   query={searchQuery}
-                  onSelectResult={onSelectSearchResult}
+                  onSelectResult={(q, coords) => {
+                    onSelectSearchResult(q, coords);
+                    const match = events.find(e => e.name.toLowerCase() === q.toLowerCase());
+                    if (match) handleEventSelect(match.id);
+                  }}
                 />
               ) : (
                 <>
                   <DiscoveryDashboard 
                     islandState={islandState}
                     onSelectCategory={handleSelectCategory}
+                    onSelectEvent={handleEventSelect}
                   />
                   
                   {/* Contenido dinámico del Nivel 3 (Detalles de POI, etc.) */}
@@ -321,6 +349,11 @@ export default function MapIndexPage() {
           </AnimatedSafeBlurView>
         </Animated.View>
       </GestureDetector>
+
+      <EventDetailSheet 
+        event={selectedEvent || null} 
+        onClose={handleCloseDetails} 
+      />
     </View>
   );
 }

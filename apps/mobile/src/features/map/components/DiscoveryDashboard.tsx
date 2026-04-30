@@ -28,11 +28,13 @@ const CATEGORIES: Category[] = [
 interface DiscoveryDashboardProps {
   islandState: SharedValue<number>;
   onSelectCategory?: (id: string) => void;
+  onSelectEvent?: (eventId: string) => void;
 }
 
 export const DiscoveryDashboard = React.memo(({ 
   islandState, 
   onSelectCategory,
+  onSelectEvent,
 }: DiscoveryDashboardProps) => {
   const theme = useAppTheme();
 
@@ -118,7 +120,7 @@ export const DiscoveryDashboard = React.memo(({
                     ? 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1'
                     : 'https://images.unsplash.com/photo-1460666819451-7410f5ef13ac'
               }), [id])}
-              onPress={React.useCallback(() => console.log('Event pressed:', id), [id])}
+              onPress={() => onSelectEvent?.(String(id))}
             />
           ))}
         </ScrollView>
