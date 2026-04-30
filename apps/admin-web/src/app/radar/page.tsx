@@ -51,7 +51,7 @@ export default function CrowdRadarPage() {
     <div className="flex flex-col h-full">
       <header className="glass-card p-6 pt-12 flex justify-between items-center z-10 border-b border-white/5">
         <div className="flex items-center gap-4">
-          <Button isIconOnly variant="light" className="text-white/70">
+          <Button isIconOnly variant="ghost" className="text-white/70">
             <Icons.Sidebar className="w-5 h-5" />
           </Button>
           <div>

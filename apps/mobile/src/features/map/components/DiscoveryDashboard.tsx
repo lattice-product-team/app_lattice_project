@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Pressable, Text } from 'react-native';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, { 
   useAnimatedStyle, 
   interpolate, 

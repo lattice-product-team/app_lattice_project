@@ -112,6 +112,7 @@ export default function MapIndexPage() {
   });
 
   const gesture = Gesture.Pan()
+    .activeOffsetY([-10, 10])
     .onStart(() => {
       isPanning.value = true;
       startState.value = islandState.value;
@@ -256,7 +257,10 @@ export default function MapIndexPage() {
         onPress={handleMapPress}
         pointerEvents="box-none"
       >
-        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} />
+        <Animated.View 
+          pointerEvents={islandState.value > 0.5 ? 'auto' : 'none'}
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
+        />
       </Pressable>
 
       <AdaptiveControlOverlay 
