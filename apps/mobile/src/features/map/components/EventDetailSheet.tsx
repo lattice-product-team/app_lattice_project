@@ -32,6 +32,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const insets = useSafeAreaInsets();
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
+  const startState = useSharedValue(0);
   
   const SNAP_POINTS = {
     HIDDEN: 0,
@@ -48,9 +49,12 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   }, [event]);
 
   const gesture = Gesture.Pan()
+    .onStart(() => {
+      startState.value = islandState.value;
+    })
     .onUpdate((e) => {
-      const delta = -e.translationY / SCREEN_HEIGHT;
-      const newValue = islandState.value + delta;
+      const delta = -e.translationY / 300; // Natural divisor for height changes
+      const newValue = startState.value + delta;
       // Clamp to minimum 0.5 (Nivel 2) during active drag
       islandState.value = Math.max(0.5, Math.min(1.2, newValue));
     })
@@ -67,22 +71,20 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     });
 
   const islandStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
+    const bottom = interpolate(islandState.value, [0, 0.5, 1], [-SCREEN_HEIGHT, insets.bottom + 5, 0], Extrapolation.CLAMP);
+    const height = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [SCREEN_HEIGHT, SCREEN_HEIGHT * 0.45, SCREEN_HEIGHT * 0.20],
+      [0, 450, SCREEN_HEIGHT * 0.80],
       Extrapolation.CLAMP
     );
 
     const margin = interpolate(islandState.value, [0.5, 0.8], [12, 0], Extrapolation.CLAMP);
-    const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
 
     return {
-      transform: [{ translateY }],
-      marginHorizontal: margin,
+      height,
       bottom,
-      // We need to adjust height to not overflow when bottom is applied
-      height: SCREEN_HEIGHT - bottom,
+      marginHorizontal: margin,
     };
   });
 
@@ -91,7 +93,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     const bgColor = interpolateColor(
       islandState.value,
       [0.8, 1],
-      ['transparent', theme.colors.bg.surface]
+      [theme.colors.glass.background, theme.colors.bg.surface]
     );
 
     return {
@@ -118,7 +120,11 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint}
             animatedProps={blurProps}
-            style={[styles.background, islandBackgroundStyle]}
+            style={[
+              styles.background, 
+              islandBackgroundStyle,
+              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+            ]}
           >
             {/* Header / Drag Handle */}
             <View style={styles.header}>
@@ -235,15 +241,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
-    height: SCREEN_HEIGHT,
     zIndex: 2000,
   },
   background: {
     flex: 1,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
   },
   header: {
     paddingTop: 8,
