@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
-import Animated, { useAnimatedStyle, SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, SharedValue, interpolate, Extrapolation } from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -9,6 +9,7 @@ import { typography } from '../../../styles/typography';
 
 interface AdaptiveControlOverlayProps {
   islandHeight: SharedValue<number>;
+  islandState?: SharedValue<number>;
   bottomOffset: number;
   onRecenter: () => void;
   onToggle3D: () => void;
@@ -21,6 +22,7 @@ interface AdaptiveControlOverlayProps {
  */
 export const AdaptiveControlOverlay = ({
   islandHeight,
+  islandState,
   bottomOffset,
   onRecenter,
   onToggle3D,
@@ -30,9 +32,19 @@ export const AdaptiveControlOverlay = ({
   const theme = useAppTheme();
   const iconColor = "rgba(255, 255, 255, 0.8)";
 
-  const rOverlayStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -(bottomOffset + islandHeight.value + 16) }],
-  }));
+  const rOverlayStyle = useAnimatedStyle(() => {
+    const opacity = islandState
+      ? interpolate(islandState.value, [0.5, 0.6], [1, 0], Extrapolation.CLAMP)
+      : 1;
+
+    return {
+      opacity,
+      pointerEvents: opacity === 0 ? 'none' : 'auto',
+      transform: [{ translateY: -(bottomOffset + islandHeight.value + 16) }],
+    };
+  });
+
+
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
@@ -47,11 +59,12 @@ export const AdaptiveControlOverlay = ({
           }}
           style={({ pressed }) => [
             styles.action,
-            is3DActive && { backgroundColor: theme.colors.brand.primary, borderRadius: 20 },
             pressed && { opacity: 0.7 }
           ]}
         >
-          <Text style={[styles.text3D, { color: is3DActive ? 'black' : iconColor }]}>3D</Text>
+          <Text style={[styles.text3D, { color: iconColor }]}>
+            {is3DActive ? '2D' : '3D'}
+          </Text>
         </Pressable>
 
         {/* 2. Recenter */}

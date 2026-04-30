@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
@@ -11,7 +11,8 @@ import Animated, {
   interpolate,
   useDerivedValue,
   runOnJS,
-  withTiming
+  withTiming,
+  Extrapolation
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,31 +33,46 @@ import { typography } from '../../src/styles/typography';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
+
 export default function MapIndexPage() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   // Map & POI State
-  const { selectPoi, deselect } = usePOIStore();
+  const { selectedPoiId, selectPoi, deselect } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [manualAR, setManualAR] = useState(false);
 
-  // Island State (0 = Compact, 0.45 = Medium, 1 = Full)
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
   const islandState = useSharedValue(0); 
   const startState = useSharedValue(0);
+  const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
-  const SNAP_POINTS = [0, 0.5, 1];
+  const [islandLevel, setIslandLevel] = useState(0);
+
+  // Effect to handle POI selection triggering Level 3
+  useEffect(() => {
+    if (selectedPoiId) {
+      islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+    }
+  }, [selectedPoiId, islandState]);
+
+  useDerivedValue(() => {
+    // Sync shared value to JS state for conditional rendering
+    if (Math.abs(islandState.value - islandLevel) > 0.01) {
+      runOnJS(setIslandLevel)(islandState.value);
+    }
+    return islandState.value;
+  });
 
   const islandHeight = useDerivedValue(() => {
-    // 0 -> 72 (Slimmer base for Level 1)
-    // 0.5 -> 450 (Fixed height for Level 2)
-    // 1 -> SCREEN_HEIGHT * 0.85
+    const fullHeight = SCREEN_HEIGHT - insets.top; // Pantalla completa con gap superior
     if (islandState.value <= 0.5) {
       return interpolate(islandState.value, [0, 0.5], [60, 450]);
     }
-    return interpolate(islandState.value, [0.5, 1], [450, SCREEN_HEIGHT * 0.85]);
+    return interpolate(islandState.value, [0.5, 1], [450, fullHeight]);
   });
 
   const gesture = Gesture.Pan()
@@ -67,23 +83,34 @@ export default function MapIndexPage() {
       // Map pixel delta to 0-1 state delta
       const fullHeight = SCREEN_HEIGHT * 0.85;
       const stateDelta = -event.translationY / (fullHeight - 72);
-      islandState.value = Math.max(0, Math.min(1, startState.value + stateDelta));
+      
+      // Permitimos arrastrar un poco hacia arriba de 0.5 por rubber-banding, pero lo limitamos
+      let newPos = startState.value + stateDelta;
+      if (newPos > 0.55 && startState.value <= 0.5) {
+        newPos = 0.5 + (newPos - 0.5) * 0.2; // Rubber banding
+      }
+      
+      islandState.value = Math.max(0, Math.min(1, newPos));
     })
     .onEnd((event) => {
       const velocity = -event.velocityY / (SCREEN_HEIGHT * 0.85 - 72);
       const predictedPos = islandState.value + velocity * 0.1;
       
-      // Find closest snap point
       let closest = SNAP_POINTS[0];
-      let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
       
-      SNAP_POINTS.forEach((point) => {
-        const diff = Math.abs(predictedPos - point);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closest = point;
-        }
-      });
+      // Si el gesto manual intenta ir más allá de 0.5, forzamos a volver a 0.5
+      if (predictedPos > 0.5) {
+        closest = 0.5;
+      } else {
+        let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
+        SNAP_POINTS.forEach((point) => {
+          const diff = Math.abs(predictedPos - point);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = point;
+          }
+        });
+      }
 
       islandState.value = withSpring(closest, {
         damping: 20,
@@ -97,11 +124,38 @@ export default function MapIndexPage() {
     });
 
   const islandStyle = useAnimatedStyle(() => {
-    const bottom = insets.bottom + 5;
+    // Interpolar de margen 12 (nivel 2) a 0 (nivel 3)
+    const margin = interpolate(islandState.value, [0.5, 1], [12, 0], Extrapolation.CLAMP);
+    // Interpolar border radius de 32 a 12
+    const radius = interpolate(islandState.value, [0.5, 1], [32, 12], Extrapolation.CLAMP);
+    // Ajustar el bottom si desaparecen los márgenes
+    const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
     
     return {
       height: islandHeight.value,
+      left: margin,
+      right: margin,
       bottom,
+      borderTopLeftRadius: radius,
+      borderTopRightRadius: radius,
+    };
+  });
+
+  const islandBackgroundStyle = useAnimatedStyle(() => {
+    const radius = interpolate(islandState.value, [0.5, 1], [32, 12], Extrapolation.CLAMP);
+    return {
+      borderTopLeftRadius: radius,
+      borderTopRightRadius: radius,
+      borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
+      borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
+    };
+  });
+
+  const dimmerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
+    return {
+      opacity,
+      pointerEvents: opacity > 0.1 ? 'auto' : 'none', // Bloquear toques al mapa
     };
   });
 
@@ -120,13 +174,21 @@ export default function MapIndexPage() {
           poisGeoJSON={null} 
           sheetPosition={useSharedValue(SCREEN_HEIGHT)} // Dummy for now
           onDeselect={deselect}
+          is3DActive={manualAR}
         />
       </View>
+
+      {/* Background Dimmer */}
+      <Animated.View 
+        style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
+        pointerEvents="none"
+      />
 
       {/* 2. Synchronized Controls (Tracking the island) */}
       <AdaptiveControlOverlay 
         islandHeight={islandHeight}
-        bottomOffset={insets.bottom +5 }
+        islandState={islandState}
+        bottomOffset={insets.bottom + 5}
         onRecenter={handleRecenter}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
@@ -135,10 +197,10 @@ export default function MapIndexPage() {
       {/* 3. The New "Growing Island" (Manual Implementation) */}
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.islandContainer, islandStyle]}>
-          <SafeBlurView 
+          <AnimatedSafeBlurView 
             intensity={90} 
             tint={theme.colors.glass.tint} 
-            style={styles.islandBackground}
+            style={[styles.islandBackground, islandBackgroundStyle]}
           >
             <View style={styles.handleContainer}>
               <View style={styles.handle} />
@@ -150,7 +212,7 @@ export default function MapIndexPage() {
                 onChangeText={setSearchQuery}
                 onProfilePress={() => router.push('/(main)/profile')}
                 onFocus={() => {
-                  islandState.value = withSpring(0.5); // Focus takes to Medium
+                  islandState.value = withSpring(1, { damping: 25, stiffness: 120 }); // Focus takes to Level 3
                 }}
               />
             </View>
@@ -159,8 +221,8 @@ export default function MapIndexPage() {
               style={styles.islandScroll}
               contentContainerStyle={styles.islandScrollContent}
               showsVerticalScrollIndicator={false}
-              bounces={islandState.value > 0.5}
-              enabled={islandState.value > 0.1}
+              bounces={islandLevel > 0.5}
+              enabled={islandLevel > 0.1}
             >
               <DiscoveryDashboard 
                 islandState={islandState}
@@ -168,18 +230,21 @@ export default function MapIndexPage() {
               />
               
               {/* Content will go here and "grow" with the island */}
-              {islandState.value > 0.7 && (
+              {islandLevel > 0.7 && (
                 <View style={styles.placeholderContent}>
-                  <Text style={{ color: 'white', opacity: islandState.value }}>
+                  <Text style={{ color: 'white', opacity: islandLevel }}>
                     Nivel 3: Completo (Listado de eventos detallado)
                   </Text>
-                  <Pressable onPress={() => islandState.value = withSpring(0)}>
+                  <Pressable onPress={() => {
+                    deselect(); // Limpia la selección si hay
+                    islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
+                  }}>
                     <Text style={{ color: theme.colors.brand.primary, marginTop: 20 }}>Cerrar</Text>
                   </Pressable>
                 </View>
               )}
             </ScrollView>
-          </SafeBlurView>
+          </AnimatedSafeBlurView>
         </Animated.View>
       </GestureDetector>
     </View>

@@ -4,7 +4,7 @@ import Animated, {
   useAnimatedStyle, 
   interpolate, 
   SharedValue,
-  Extrapolate
+  Extrapolation
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -37,16 +37,18 @@ export const DiscoveryDashboard = ({
   const theme = useAppTheme();
 
   const rContainerStyle = useAnimatedStyle(() => {
+    // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
+    // Opacidad baja de 0.5 a 0.6 (Nivel 2 -> 3)
     const opacity = interpolate(
       islandState.value,
-      [0.05, 0.3],
-      [0, 1],
-      Extrapolate.CLAMP
+      [0.05, 0.3, 0.5, 0.6],
+      [0, 1, 1, 0],
+      Extrapolation.CLAMP
     );
 
     return {
       opacity,
-      display: islandState.value < 0.05 ? 'none' : 'flex',
+      display: opacity === 0 ? 'none' : 'flex',
     };
   });
 

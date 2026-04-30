@@ -35,6 +35,7 @@ interface MapContentProps {
   savedLocations?: any;
   onDeselect?: () => void;
   sheetPosition: SharedValue<number>;
+  is3DActive?: boolean;
 }
 
 export const MapContent = React.memo(function MapContent({
@@ -42,12 +43,13 @@ export const MapContent = React.memo(function MapContent({
   savedLocations,
   onDeselect,
   sheetPosition,
+  is3DActive = false,
 }: MapContentProps) {
   const camera = useRef<MapLibreGL.CameraRef>(null);
   const mapRef = useRef<any>(null);
   const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
-  const { style: patchedMapStyle } = useMapStyle(theme.dark ? MAP_STYLES.dark : MAP_STYLES.light);
+  const { style: patchedMapStyle, isLoading: isStyleLoading } = useMapStyle(theme.dark ? MAP_STYLES.dark : MAP_STYLES.light);
 
   const { selectedPoiId, selectedCoords, selectPoi, deselect: storeDeselect } = usePOIStore();
   const { currentRoute, isNavigating } = useNavigationStore();
@@ -82,7 +84,7 @@ export const MapContent = React.memo(function MapContent({
         zoomLevel: DEFAULT_ZOOM,
         animationDuration: 800,
         animationMode: 'flyTo',
-        pitch: 0,
+        pitch: is3DActive ? 60 : 0,
         padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
       });
     }
@@ -95,7 +97,7 @@ export const MapContent = React.memo(function MapContent({
         zoomLevel: 17.2,
         animationDuration: 400,
         animationMode: 'flyTo',
-        pitch: 0,
+        pitch: is3DActive ? 60 : 0,
         padding: {
           paddingBottom: SCREEN_HEIGHT * 0.45,
           paddingTop: insets.top + 40,
@@ -138,7 +140,7 @@ export const MapContent = React.memo(function MapContent({
           zoomLevel: 16.5,
           animationDuration: 1200,
           animationMode: 'flyTo',
-          pitch: 0,
+          pitch: is3DActive ? 60 : 0,
           padding: {
             paddingBottom: SCREEN_HEIGHT * 0.4,
             paddingTop: insets.top + 60,
@@ -151,13 +153,14 @@ export const MapContent = React.memo(function MapContent({
   }, [selectedEvent, poisGeoJSON, isNavigating, insets.top]);
 
   useEffect(() => {
-    if (!isNavigating && camera.current) {
+    if (camera.current) {
       camera.current.setCamera({
-        pitch: 0,
-        animationDuration: 600,
+        pitch: is3DActive ? 60 : 0,
+        animationDuration: 1000,
+        animationMode: 'flyTo',
       });
     }
-  }, [isNavigating]);
+  }, [is3DActive]);
 
   const handlePoiPress = useCallback(
     (data: any) => {
@@ -203,7 +206,7 @@ export const MapContent = React.memo(function MapContent({
       <MapLibreGL.MapView
         ref={mapRef}
         style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
-        mapStyle={patchedMapStyle}
+        mapStyle={typeof patchedMapStyle === 'object' ? patchedMapStyle : undefined}
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
@@ -213,11 +216,10 @@ export const MapContent = React.memo(function MapContent({
         <MapLibreGL.Camera
           ref={camera}
           minZoomLevel={11}
-          defaultSettings={{ centerCoordinate: MAP_CENTER, zoomLevel: DEFAULT_ZOOM, pitch: 45 }}
+          defaultSettings={{ centerCoordinate: MAP_CENTER, zoomLevel: DEFAULT_ZOOM, pitch: 0 }}
           followUserLocation={isNavigating}
           followUserMode={(isNavigating ? 'compass' : 'normal') as any}
           followZoomLevel={18}
-          followPitch={45}
         />
         {/* 1. PATH NETWORK */}
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
