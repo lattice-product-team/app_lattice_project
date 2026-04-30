@@ -19,21 +19,20 @@ const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: Sett
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.itemContainer,
-        { backgroundColor: pressed ? theme.colors.interactive.pressed : 'transparent' }
-      ]}
+      style={({ pressed }) => ({
+        backgroundColor: pressed ? theme.colors.interactive.pressed : 'transparent'
+      })}
     >
-      <View style={styles.iconSlot}>
-        <Feather 
-          name={icon as any} 
-          size={20} 
-          color={destructive ? theme.colors.status.error : theme.colors.brand.primary} 
-        />
-      </View>
-      
-      <View style={styles.contentContainer}>
-        <View style={styles.textWrapper}>
+      <View style={styles.itemContainer}>
+        <View style={styles.iconBox}>
+          <Feather 
+            name={icon as any} 
+            size={20} 
+            color={destructive ? theme.colors.status.error : theme.colors.brand.primary} 
+          />
+        </View>
+        
+        <View style={styles.contentRow}>
           <Text style={[styles.label, { color: destructive ? theme.colors.status.error : theme.colors.text.primary }]}>
             {label}
           </Text>
@@ -43,11 +42,18 @@ const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: Sett
                 {value}
               </Text>
             )}
-            <Feather name="chevron-right" size={16} color={theme.colors.text.muted} />
+            <Feather name="chevron-right" size={18} color={theme.colors.text.muted} />
           </View>
         </View>
+        
         {!isLast && (
-          <View style={[styles.separator, { backgroundColor: theme.colors.border.subtle }]} />
+          <View style={[styles.separator, { 
+            backgroundColor: theme.colors.border.subtle,
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            left: 62,
+          }]} />
         )}
       </View>
     </Pressable>

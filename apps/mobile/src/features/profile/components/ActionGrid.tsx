@@ -12,19 +12,19 @@ export const ActionGrid = () => {
     {
       id: 'tickets',
       label: 'Entradas',
-      icon: <MaterialCommunityIcons name="ticket-confirmation" size={22} color={theme.colors.brand.primary} />,
+      icon: <MaterialCommunityIcons name="ticket-confirmation-outline" size={26} color={theme.colors.brand.primary} />,
       onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
     },
     {
       id: 'wallet',
       label: 'Wallet',
-      icon: <MaterialCommunityIcons name="wallet" size={22} color={theme.colors.brand.primary} />,
+      icon: <MaterialCommunityIcons name="wallet-outline" size={26} color={theme.colors.brand.primary} />,
       onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
     },
     {
       id: 'saved',
       label: 'Favoritos',
-      icon: <Feather name="heart" size={20} color={theme.colors.brand.primary} />,
+      icon: <Feather name="heart" size={24} color={theme.colors.brand.primary} />,
       onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
     },
   ];
@@ -38,11 +38,13 @@ export const ActionGrid = () => {
           style={({ pressed }) => [
             styles.card,
             { backgroundColor: theme.colors.bg.surface },
-            pressed && { transform: [{ scale: 0.98 }], opacity: 0.9 }
+            pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
           ]}
         >
           <View style={styles.cardContent}>
-            {action.icon}
+            <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary + '10' }]}>
+              {action.icon}
+            </View>
             <Text style={[styles.label, { color: theme.colors.text.primary }]} numberOfLines={1}>
               {action.label}
             </Text>
@@ -58,37 +60,47 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    gap: 16,
-    marginBottom: 40,
+    gap: 12,
+    marginBottom: 24,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   card: {
     flex: 1,
-    borderRadius: 12,
-    height: 48,
+    maxWidth: '31%', // Ensure they don't grow too much if there's extra space
+    borderRadius: 20,
+    height: 100,
     position: 'relative',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   cardContent: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    paddingHorizontal: 8,
+    padding: 12,
+    gap: 8,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: typography.primary.bold,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
   },
   border: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
   },
 });
