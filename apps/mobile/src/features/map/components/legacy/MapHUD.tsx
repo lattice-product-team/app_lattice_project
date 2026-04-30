@@ -10,6 +10,9 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { LatticeEvent } from '../../../types';
 import { StandardUIPOI } from '../../../types/models/poi';
 import { normalizePOI } from '../../poi/adapters/poiAdapter';
+import { SavedListContent } from './SavedListContent';
+import { useSavedLocations } from '../hooks/useSavedLocations';
+import { useMapUIStore, MapUIState } from '../store/useMapUIStore';
 
 interface MapHUDProps {
   activeCategoryId: string | null;
@@ -23,7 +26,6 @@ interface MapHUDProps {
   onSelectPoi: (poi: StandardUIPOI) => void;
   isLoading?: boolean;
   rawPoisData?: any;
-  setShowSavedManager: (show: boolean) => void;
   onProfilePress?: () => void;
   
   // Event Props
@@ -46,7 +48,6 @@ export const MapHUD = React.memo(function MapHUD({
   onSelectPoi,
   isLoading,
   rawPoisData,
-  setShowSavedManager,
   onProfilePress,
   currentEventId,
   selectedEvent,
@@ -55,6 +56,13 @@ export const MapHUD = React.memo(function MapHUD({
   onClearCategory,
 }: MapHUDProps) {
   const theme = useLatticeTheme();
+  const { setUIState } = useMapUIStore();
+  const { data: savedData } = useSavedLocations();
+
+  const savedPois = React.useMemo(() => {
+    return savedData?.features?.map((f: any) => normalizePOI(f)) || [];
+  }, [savedData]);
+
   return (
     <>
       <MapSheetManager
@@ -75,6 +83,15 @@ export const MapHUD = React.memo(function MapHUD({
           <POICarousel 
             pois={carouselPois} 
             onSelectPoi={onSelectPoi} 
+          />
+        }
+        savedContent={
+          <SavedListContent 
+            savedItems={savedPois}
+            onSelectItem={(poi) => {
+              onSelectPoi(poi);
+              setUIState(MapUIState.POI_DETAIL);
+            }}
           />
         }
         discoveryContent={
@@ -101,7 +118,7 @@ export const MapHUD = React.memo(function MapHUD({
             />
             
             <GuidesSection
-              onSeeAll={() => setShowSavedManager(true)}
+              onSeeAll={() => setUIState(MapUIState.SAVED_LIST)}
               onSelectMarker={(coords, id) => {
                 onSelectPoi({ id: `saved_${id}`, coordinates: coords as [number, number] } as any);
               }}

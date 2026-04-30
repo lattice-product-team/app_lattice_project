@@ -12,13 +12,13 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
 const CARD_HEIGHT = 180;
 
-interface EventCarouselCardProps {
+interface EventCarouselLegacyCardProps {
   event: LatticeEvent;
   onPress: () => void;
   index: number;
 }
 
-const EventCarouselCard = ({ event, onPress, index }: EventCarouselCardProps) => {
+const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyCardProps) => {
   const metadata = getEventMetadata(event.type);
   const imageUrl = event.imageUrl || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=800&auto=format&fit=crop';
 
@@ -94,7 +94,7 @@ export const EventCarousel = ({ events, onSelectEvent, title }: EventCarouselPro
         contentContainerStyle={styles.scrollContent}
       >
         {events.map((event, index) => (
-          <EventCarouselCard 
+          <EventCarouselLegacyCard 
             key={event.id} 
             event={event} 
             index={index}

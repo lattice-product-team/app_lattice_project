@@ -80,7 +80,7 @@ const baseTheme = {
     soft: {
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.12,
       shadowRadius: 12,
       elevation: 5,
     },
@@ -111,9 +111,9 @@ export const lightTheme: LatticeTheme = {
       elevation: primitiveColors.neutral.light.elevated,
     },
     text: {
-      primary: '#1A1A19', // New semantic dark for light mode
-      secondary: '#666664',
-      muted: '#999997',
+      primary: '#000000', 
+      secondary: '#3A3A3C',
+      muted: '#8E8E93', // Apple standard muted grey
       inverse: '#FFFFFF',
     },
     border: {
@@ -121,10 +121,10 @@ export const lightTheme: LatticeTheme = {
       strong: primitiveColors.neutral.light['border-med'],
     },
     glass: {
-      background: 'rgba(252, 252, 250, 0.7)',
-      border: 'rgba(0, 0, 0, 0.05)',
-      subtle: 'rgba(0, 0, 0, 0.1)',
-      subtleBorder: 'rgba(0, 0, 0, 0.15)',
+      background: 'rgba(248, 248, 246, 0.92)', // Milky white from Apple Maps
+      border: 'rgba(0, 0, 0, 0.08)', // Increased from 0.04 for 1px sharpness
+      subtle: 'rgba(0, 0, 0, 0.03)',
+      subtleBorder: 'rgba(0, 0, 0, 0.05)',
       tint: 'light',
     },
     status: {

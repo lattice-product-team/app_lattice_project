@@ -1,385 +1,337 @@
-import React, { useMemo, useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  Pressable,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Keyboard,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView, Keyboard } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { useAppTheme as useLatticeTheme } from '../../src/hooks/useAppTheme';
-import { typography } from '../../src/styles/typography';
-import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
-import { useSinglePOI } from '../../src/features/poi/hooks/useSinglePOI';
-import { useCategories } from '../../src/features/poi/hooks/useCategories';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import { useLocationService } from '../../src/hooks/useLocationService';
-import { useCameraTilt } from '../../src/hooks/useCameraTilt';
-import { AROverlay } from '../../src/features/map/components/ar/AROverlay';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
-import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
-import { useEventStore } from '../../src/features/event/store/useEventStore';
-import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
-import { useLocationStore } from '../../src/store/useLocationStore';
-import { useOrientationStore } from '../../src/store/useOrientationStore';
-import { useAuthStore } from '../../src/store/useAuthStore';
-import { MapContent } from '../../src/features/map/components/MapContent';
-import { MapHUD } from '../../src/features/map/components/MapHUD';
-import { useSavedLocations } from '../../src/features/map/hooks/useSavedLocations';
-import { getCategoryMetadata } from '../../src/utils/poiUtils';
-import { SavedLocationsManager } from '../../src/features/map/components/SavedLocationsManager';
-import { EventSummaryCard } from '../../src/features/map/components/EventSummaryCard';
-import { useEvents } from '../../src/features/event/hooks/useEvents';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  interpolate,
+  interpolateColor,
+  useDerivedValue,
+  useAnimatedProps,
+  runOnJS,
+  withTiming,
+  Extrapolation,
+  useAnimatedReaction
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Configure MapLibre
-MapLibreGL.setAccessToken(null);
+// Core Components
+import { MapContent } from '../../src/features/map/components/MapContent';
+import { AdaptiveControlOverlay } from '../../src/features/map/components/AdaptiveControlOverlay';
+import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
+import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
+import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
+import { SearchExperience } from '../../src/features/map/components/SearchExperience';
+import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
+
+// Stores & Hooks
+import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
+import { useLocationStore } from '../../src/store/useLocationStore';
+import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
+import { MAPTILER_KEY } from '../../src/constants/mapConstants';
+import { typography } from '../../src/styles/typography';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
+
 export default function MapIndexPage() {
-  const theme = useLatticeTheme();
+  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { status: locationStatus, requestPermission } = useLocationService();
-  const userCoords = useLocationStore((s) => s.logicalCoords);
 
-  const { selectedPoiId, selectedPoi, deselect, selectPoi } = usePOIStore();
-  const { triggerRecenter } = useMapUIStore();
-  const { currentEventId, selectedEvent, setCurrentEvent } = useEventStore();
-
-  const { data: eventsData } = useEvents();
-
-  const { data: categories } = useCategories();
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
-
-  const { isVisible: isCameraARVisible } = useCameraTilt();
-  const heading = useOrientationStore((s) => s.heading);
-  const isLandscape = useOrientationStore((s) => s.isLandscape);
-  const [manualAR, setManualAR] = useState(false);
-  const isARVisible = isCameraARVisible || manualAR;
-
-  const sheetPosition = useSharedValue(SCREEN_HEIGHT);
-
-  const { data: savedData } = useSavedLocations();
+  // Map & POI State
+  const { selectedPoiId, deselect } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [showSavedManager, setShowSavedManager] = useState(false);
+  const [manualAR, setManualAR] = useState(false);
+  const { saveSearch } = useSearchHistory();
 
-  const activeTicket = useAuthStore((s: any) => s.activeTicket);
-  const activeCategory = useMemo(() => {
-    if (!activeCategoryId) return undefined;
-    return categories?.find((c) => c.id === activeCategoryId)?.category;
-  }, [activeCategoryId, categories]);
+  // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
+  const islandState = useSharedValue(0); 
+  const startState = useSharedValue(0);
+  const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
-  const { data: rawPoisData, isLoading } = usePOIs(activeCategory, currentEventId || undefined);
+  const [preSearchLevel, setPreSearchLevel] = useState(0);
+  const isPanning = useSharedValue(false);
 
-  const poisData = useMemo(() => {
-    if (!rawPoisData?.features || !activeTicket) return rawPoisData;
-    const filteredFeatures = rawPoisData.features.filter((f: any) => {
-      const { category, name } = f.properties;
-      if (category === 'gate' && activeTicket.gate) {
-        return (
-          name.toLowerCase().includes(activeTicket.gate.toLowerCase()) ||
-          activeTicket.gate.toLowerCase().includes(name.toLowerCase())
-        );
+  // Effect to handle POI selection triggering Level 3
+  useEffect(() => {
+    if (selectedPoiId) {
+      islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+    }
+  }, [selectedPoiId, islandState]);
+
+  const dismissSearch = useCallback(() => {
+    setIsSearching(false);
+    Keyboard.dismiss();
+  }, []);
+
+  // Cancel search only if island is MANUALLY dragged down
+  useAnimatedReaction(
+    () => islandState.value,
+    (val) => {
+      // Solo cancelamos si hay un gesto activo (panning), estamos buscando y bajamos del umbral
+      if (val < 0.8 && isSearching && isPanning.value) {
+        runOnJS(dismissSearch)();
       }
-      if (category === 'grandstand' && activeTicket.zoneName) {
-        return (
-          name.toLowerCase().includes(activeTicket.zoneName.toLowerCase()) ||
-          activeTicket.zoneName.toLowerCase().includes(name.toLowerCase())
-        );
-      }
-      return true;
-    });
-    return { ...rawPoisData, features: filteredFeatures };
-  }, [rawPoisData, activeTicket]);
-
-  const carouselPois = useMemo(() => {
-    if (!poisData?.features || !activeCategoryId) return [];
-    return poisData.features
-      .filter((f: any) => f.properties.category === activeCategory)
-      .map((f: any) => ({ ...f.properties, geometry: f.geometry }));
-  }, [poisData, activeCategoryId, activeCategory]);
-
-  const { isSelectedSaved, numericPoiId } = useMemo(() => {
-    if (!selectedPoiId) return { isSelectedSaved: false, numericPoiId: null };
-    const isPrefixed = selectedPoiId.toString().startsWith('saved_');
-    const rawId = isPrefixed ? selectedPoiId.toString().replace('saved_', '') : selectedPoiId;
-    const numId = Number(rawId);
-    const existsInSaved =
-      savedData?.features?.some((f: any) => Number(f.properties.id) === numId) || false;
-    return {
-      isSelectedSaved: isPrefixed || existsInSaved,
-      numericPoiId: isNaN(numId) ? null : numId,
-    };
-  }, [selectedPoiId, savedData]);
-
-  const isAlreadyLoaded = useMemo(() => {
-    if (!numericPoiId || !poisData?.features) return false;
-    return poisData.features.some((f: any) => Number(f.properties.id) === numericPoiId);
-  }, [numericPoiId, poisData]);
-
-  const { data: soloPoiData } = useSinglePOI(
-    isSelectedSaved || isAlreadyLoaded || selectedPoi ? null : numericPoiId
+    },
+    [isSearching, dismissSearch]
   );
 
-  useEffect(() => {
-    if (!selectedPoi && soloPoiData && Number(soloPoiData.properties.id) === numericPoiId) {
-      selectPoi(normalizePOI(soloPoiData));
-    } else if (!selectedPoi && poisData && numericPoiId) {
-      const f = poisData.features.find((f: any) => Number(f.properties.id) === numericPoiId);
-      if (f) selectPoi(normalizePOI(f));
+  const islandHeight = useDerivedValue(() => {
+    const fullHeight = SCREEN_HEIGHT * 0.80; // Altura máxima al 80%
+    if (islandState.value <= 0.5) {
+      return interpolate(islandState.value, [0, 0.5], [60, 450]);
     }
-  }, [soloPoiData, poisData, numericPoiId, selectedPoi, selectPoi]);
+    return interpolate(islandState.value, [0.5, 1], [450, fullHeight]);
+  });
 
-  const searchResultsData = useMemo(() => {
-    if (!searchQuery.trim() || !poisData?.features) return [];
-    const query = searchQuery.toLowerCase();
-    return poisData.features
-      .filter(
-        (f: any) =>
-          f.properties.name?.toLowerCase().includes(query) ||
-          f.properties.category?.toLowerCase().includes(query)
-      )
-      .slice(0, 5);
-  }, [searchQuery, poisData]);
-
-  const handleRecenter = useCallback(async () => {
-    try {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      if (locationStatus === 'granted') {
-        triggerRecenter();
-        return;
+  const gesture = Gesture.Pan()
+    .onStart(() => {
+      isPanning.value = true;
+      startState.value = islandState.value;
+    })
+    .onUpdate((event) => {
+      const stateDelta = -event.translationY / (450 - 60); // Basado en el recorrido Nivel 1 -> 2
+      let newPos = startState.value + stateDelta;
+      islandState.value = Math.max(0, Math.min(1, newPos));
+    })
+    .onEnd((event) => {
+      isPanning.value = false;
+      const velocity = -event.velocityY / (450 - 60);
+      const predictedPos = islandState.value + velocity * 0.1;
+      
+      let closest = SNAP_POINTS[0];
+      if (predictedPos > 0.5) {
+        closest = 0.5;
+      } else {
+        let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
+        SNAP_POINTS.forEach((point) => {
+          const diff = Math.abs(predictedPos - point);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = point;
+          }
+        });
       }
-      const granted = await requestPermission();
-      if (granted) triggerRecenter();
-    } catch (err) {
-      console.error('[Recenter] Error:', err);
-    }
-  }, [locationStatus, requestPermission, triggerRecenter]);
+
+      islandState.value = withSpring(closest, {
+        damping: 20,
+        stiffness: 150,
+        mass: 0.6,
+      }, (finished) => {
+        if (finished && (closest === 0 || closest === 0.5)) {
+          runOnJS(setPreSearchLevel)(closest);
+        }
+      });
+
+      if (closest !== startState.value) {
+        runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+      }
+    });
+
+  const islandStyle = useAnimatedStyle(() => {
+    const margin = interpolate(islandState.value, [0.5, 1], [12, 0], Extrapolation.CLAMP);
+    const radius = 32;
+    const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
+    
+    return {
+      height: islandHeight.value,
+      left: margin,
+      right: margin,
+      bottom,
+      borderTopLeftRadius: radius,
+      borderTopRightRadius: radius,
+    };
+  });
+
+  const islandBackgroundStyle = useAnimatedStyle(() => {
+    return {
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
+      borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
+      backgroundColor: interpolateColor(
+        islandState.value,
+        [0.7, 1],
+        ['transparent', theme.colors.bg.surface]
+      ),
+    };
+  });
+
+  const blurProps = useAnimatedProps(() => {
+    return {
+      intensity: interpolate(islandState.value, [0.7, 1], [90, 0], Extrapolation.CLAMP)
+    };
+  });
+
+  const dimmerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
+    return {
+      opacity,
+    };
+  });
+
+  const level3ContentStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.7, 0.9], [0, 1], Extrapolation.CLAMP);
+    return {
+      opacity,
+      pointerEvents: opacity > 0.5 ? 'auto' : 'none',
+      position: 'absolute',
+      top: 80, 
+      left: 0,
+      right: 0,
+    };
+  });
 
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
-    if (isSearching || searchQuery !== '') {
-      setIsSearching(false);
-      setSearchQuery('');
-    }
     deselect();
-  }, [isSearching, searchQuery, deselect]);
+    setIsSearching(false);
+    if (!selectedPoiId) {
+      islandState.value = withSpring(preSearchLevel, { damping: 25, stiffness: 120 });
+    }
+  }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
-  const rRecenterButtonStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: sheetPosition.value - SCREEN_HEIGHT - 100 }],
-  }));
+  const onSelectSearchResult = useCallback((name: string, coords?: [number, number]) => {
+    saveSearch(name);
+    setSearchQuery(name);
+    setIsSearching(false);
+    Keyboard.dismiss();
+    
+    // If we have coordinates, move map. For now just collapse.
+    islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
+    
+    if (coords) {
+      console.log('Moving map to:', coords);
+      // In a real app, we would use mapRef.current.flyTo
+    }
+  }, [saveSearch, islandState]);
 
-  const renderSearchResults = () => (
-    <View style={styles.cardContainer}>
-      {searchResultsData.length > 0 ? (
-        searchResultsData.map((f: any, index: number) => {
-          const metadata = getCategoryMetadata(f.properties.category);
-          return (
-            <Pressable
-              key={f.properties.id}
-              onPress={() => {
-                Keyboard.dismiss();
-                selectPoi(normalizePOI(f));
-                setSearchQuery('');
-                setIsSearching(false);
-              }}
-              style={({ pressed }) => [
-                styles.searchResultItem,
-                index === searchResultsData.length - 1 && { borderBottomWidth: 0 },
-                pressed && { backgroundColor: 'rgba(255, 255, 255, 0.05)' },
-              ]}
-            >
-              <View style={styles.searchResultInfo}>
-                <View style={[styles.searchResultIcon, { backgroundColor: `${metadata.color}15` }]}>
-                  {metadata.iconFamily === 'material' ? (
-                    <MaterialCommunityIcons
-                      name={metadata.icon as any}
-                      size={20}
-                      color={metadata.color}
-                    />
-                  ) : (
-                    <Feather
-                      name={metadata.icon as any}
-                      size={20}
-                      color={metadata.color}
-                    />
-                  )}
-                </View>
-                <View className="flex-1">
-                  <Text style={styles.searchResultName} numberOfLines={1}>
-                    {f.properties.name}
-                  </Text>
-                  <Text style={styles.searchResultCat}>{metadata.label}</Text>
-                </View>
-              </View>
-            </Pressable>
-          );
-        })
-      ) : (
-        <View className="py-12 items-center">
-          <MaterialCommunityIcons name="magnify" size={48} color="rgba(255,255,255,0.1)" />
-          <Text style={styles.emptyResultsText}>No se encontraron resultados</Text>
-        </View>
-      )}
-    </View>
-  );
+  const handleSelectCategory = useCallback((id: string) => {
+    console.log('Selected Category:', id);
+  }, []);
 
   return (
-    <View className="flex-1 overflow-hidden" style={{ backgroundColor: theme.colors.bg.main }}>
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
       <View style={StyleSheet.absoluteFill}>
-        <MapContent
-          poisGeoJSON={poisData}
-          savedLocations={savedData}
+        <MapContent 
+          poisGeoJSON={null} 
+          sheetPosition={useSharedValue(SCREEN_HEIGHT)} 
           onDeselect={handleMapPress}
-          sheetPosition={sheetPosition}
-        />
-        <AROverlay
-          isVisible={isARVisible}
-          onExitAR={() => setManualAR(false)}
-          pois={poisData?.features || []}
+          is3DActive={manualAR}
         />
       </View>
 
-      <Animated.View
+      <Pressable 
+        style={StyleSheet.absoluteFill}
+        onPress={handleMapPress}
         pointerEvents="box-none"
-        style={[styles.overlay, { bottom: 0 }, rRecenterButtonStyle]}
       >
-        <View pointerEvents="auto" className="flex-row items-center justify-end px-4 mb-4 gap-3">
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              setManualAR(!manualAR);
-            }}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-              transform: [{ scale: pressed ? 0.92 : 1 }],
-              backgroundColor: manualAR ? theme.colors.brand.primary : 'rgba(0,0,0,0.6)',
-            })}
-            className="w-12 h-12 items-center justify-center rounded-full border border-white/5 shadow-lg"
-          >
-            <MaterialCommunityIcons name="augmented-reality" size={26} color="white" />
-          </Pressable>
+        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} />
+      </Pressable>
 
-          <Pressable
-            onPress={handleRecenter}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.7 : 1,
-              transform: [{ scale: pressed ? 0.92 : 1 }],
-            })}
-            className="w-12 h-12 items-center justify-center rounded-full bg-black/60 border border-white/5 shadow-lg"
-          >
-            <Feather name="navigation" size={24} color="white" />
-          </Pressable>
-        </View>
-      </Animated.View>
-
-      {!isARVisible && (
-        <MapHUD
-          activeCategoryId={activeCategoryId}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isSearching={isSearching}
-          setIsSearching={setIsSearching}
-          onSelectCategory={(category) => {
-            if (activeCategoryId === category) {
-              setActiveCategoryId(null);
-              return;
-            }
-            setActiveCategoryId(category);
-            const foundCategory = categories?.find((c) => c.id === category)?.category;
-            if (foundCategory && poisData?.features) {
-              const foundPoi = poisData.features.find((f: any) => f.properties.category === foundCategory);
-              if (foundPoi) selectPoi(normalizePOI(foundPoi));
-            }
-          }}
-          searchResults={renderSearchResults()}
-          carouselPois={carouselPois}
-          onSelectPoi={selectPoi}
-          isLoading={isLoading}
-          rawPoisData={rawPoisData}
-          setShowSavedManager={setShowSavedManager}
-          onProfilePress={() => router.push('/(main)/profile')}
-          currentEventId={currentEventId}
-          selectedEvent={selectedEvent}
-          eventsData={eventsData}
-          setCurrentEvent={setCurrentEvent}
-          onClearCategory={() => setActiveCategoryId(null)}
-        />
-      )}
-
-
-      <SavedLocationsManager
-        isVisible={showSavedManager}
-        onClose={() => setShowSavedManager(false)}
-        onSelectMarker={(coords, id) => {
-          selectPoi(normalizePOI({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: coords },
-            properties: { id: `saved_${id}`, name: 'Ubicación guardada', category: 'parking' }
-          } as any));
-        }}
+      <AdaptiveControlOverlay 
+        islandHeight={islandHeight}
+        islandState={islandState}
+        bottomOffset={insets.bottom + 5}
+        onRecenter={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+        onToggle3D={() => setManualAR(!manualAR)}
+        is3DActive={manualAR}
       />
+
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.islandContainer, islandStyle]}>
+          <AnimatedSafeBlurView 
+            tint={theme.colors.glass.tint} 
+            animatedProps={blurProps}
+            style={[
+              styles.islandBackground, 
+              islandBackgroundStyle,
+              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+            ]}
+          >
+            <View style={styles.handleContainer}>
+              <View style={[
+                styles.handle, 
+                { backgroundColor: theme.dark ? 'rgba(255, 255, 255, 0.25)' : '#C6C6C8' }
+              ]} />
+            </View>
+
+            <View style={styles.islandHeader}>
+              <FloatingSearchBar 
+                value={searchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  if (text.length > 0) setIsSearching(true);
+                }}
+                onProfilePress={() => router.push('/(main)/profile')}
+                onFocus={() => {
+                  setIsSearching(true);
+                  islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+                }}
+                onSubmit={() => {
+                  saveSearch(searchQuery);
+                  Keyboard.dismiss();
+                }}
+              />
+            </View>
+
+            <Animated.ScrollView 
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.islandScrollContent}
+              showsVerticalScrollIndicator={false}
+              bounces={true}
+              keyboardShouldPersistTaps="handled"
+              scrollEnabled={islandState.value > 0.9}
+            >
+              {isSearching ? (
+                <SearchExperience 
+                  query={searchQuery}
+                  onSelectResult={onSelectSearchResult}
+                />
+              ) : (
+                <>
+                  <DiscoveryDashboard 
+                    islandState={islandState}
+                    onSelectCategory={handleSelectCategory}
+                  />
+                  
+                  {/* Contenido dinámico del Nivel 3 (Detalles de POI, etc.) */}
+                  {!selectedPoiId && (
+                    <Animated.View style={level3ContentStyle}>
+                      <View style={styles.placeholderContent}>
+                        <Text style={{ color: theme.colors.text.primary, opacity: 0.5 }}>
+                          Selecciona un punto en el mapa para ver detalles
+                        </Text>
+                      </View>
+                    </Animated.View>
+                  )}
+                </>
+              )}
+            </Animated.ScrollView>
+          </AnimatedSafeBlurView>
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    zIndex: 10,
-  },
-  cardContainer: {
-    backgroundColor: 'rgba(30, 30, 30, 0.95)',
-    borderRadius: 24,
-    marginHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-  },
-  searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  searchResultInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  searchResultIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  searchResultName: {
-    color: 'white',
-    fontSize: 16,
-    fontFamily: typography.primary.bold,
-    letterSpacing: -0.2,
-  },
-  searchResultCat: {
-    color: 'rgba(255, 255, 255, 0.4)',
-    fontSize: 13,
-    marginTop: 2,
-  },
-  emptyResultsText: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 12,
-  },
+  container: { flex: 1, backgroundColor: 'black' },
+  islandContainer: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
+  islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
+  handleContainer: { paddingTop: 5, alignItems: 'center', zIndex: 10 },
+  handle: { width: 50, height: 4, borderRadius: 2 },
+  islandHeader: { paddingBottom: 9 },
+  islandScrollContent: { paddingBottom: 10 },
+  placeholderContent: { padding: 20, alignItems: 'center' }
 });

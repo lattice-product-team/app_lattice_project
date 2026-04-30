@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, ViewStyle, StyleProp, Platform } from 'react-native';
+import { View, ViewStyle, StyleProp, Platform, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
+import Animated from 'react-native-reanimated';
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 interface SafeBlurViewProps {
   intensity?: number;
@@ -32,9 +35,27 @@ export const SafeBlurView = ({
   if (useNativeBlur && (Platform.OS === 'ios' || Platform.OS === 'android')) {
     try {
       return (
-        <BlurView intensity={intensity} tint={tint} style={style}>
+        <View style={[style, styles.container]}>
+          <AnimatedBlurView 
+            intensity={intensity} 
+            tint={tint} 
+            style={StyleSheet.absoluteFill} 
+          />
           {children}
-        </BlurView>
+          {/* Border Overlay */}
+          <View 
+            pointerEvents="none" 
+            style={[
+              StyleSheet.absoluteFill, 
+              styles.borderOverlay,
+              { 
+                borderColor: (style as any)?.borderColor,
+                borderRadius: (style as any)?.borderRadius || 0,
+                borderWidth: (style as any)?.borderWidth ? 1 : 0,
+              }
+            ]} 
+          />
+        </View>
       );
     } catch (e) {
       console.warn('[SafeBlurView] Native BlurView failed, falling back to transparency');
@@ -42,8 +63,32 @@ export const SafeBlurView = ({
   }
 
   return (
-    <View style={[style, { backgroundColor: fallbackColor, overflow: 'hidden' }]}>
+    <View style={[style, styles.container, { backgroundColor: fallbackColor }]}>
       {children}
+      {/* Border Overlay Fallback */}
+      <View 
+        pointerEvents="none" 
+        style={[
+          StyleSheet.absoluteFill, 
+          styles.borderOverlay,
+          { 
+            borderColor: (style as any)?.borderColor,
+            borderRadius: (style as any)?.borderRadius || 0,
+            borderWidth: (style as any)?.borderWidth ? 1 : 0,
+          }
+        ]} 
+      />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    overflow: 'hidden',
+    // We remove border styles from the main container in the actual usage
+  },
+  borderOverlay: {
+    borderStyle: 'solid',
+    zIndex: 999,
+  },
+});
