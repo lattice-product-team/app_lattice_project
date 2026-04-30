@@ -122,12 +122,6 @@ const styles = StyleSheet.create({
     width: 260,
     height: 280,
     marginRight: 16,
-    // Las sombras pesadas pueden causar lag durante la animación.
-    // En un entorno de alto rendimiento, es mejor usarlas con moderación.
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
   },
   container: {
     width: 260,
