@@ -48,8 +48,19 @@ export const AdaptiveControlOverlay = ({
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
-      <View style={[styles.pill, !theme.dark && theme.shadows.soft, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
-        <SafeBlurView intensity={90} tint={theme.colors.glass.tint} style={StyleSheet.absoluteFill} />
+      <View style={[styles.pill, !theme.dark && theme.shadows.soft, { backgroundColor: theme.colors.glass.background }]}>
+        <SafeBlurView 
+          intensity={90} 
+          tint={theme.colors.glass.tint} 
+          style={[
+            StyleSheet.absoluteFill, 
+            { 
+              borderRadius: 25, 
+              borderWidth: 1, 
+              borderColor: theme.colors.glass.border 
+            }
+          ]} 
+        />
         
         {/* 1. 3D Toggle */}
         <Pressable
@@ -111,7 +122,7 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 25,
     overflow: 'visible',
-    borderWidth: 0.5,
+    // Border handled by SafeBlurView overlay
     // Distribution logic
     alignItems: 'center',
     justifyContent: 'space-between',

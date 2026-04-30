@@ -84,6 +84,16 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
               </View>
             </View>
           </View>
+          
+          {/* Border Overlay - Ensures sharp edges on rounded corners */}
+          <View 
+            pointerEvents="none" 
+            style={[
+              StyleSheet.absoluteFill, 
+              styles.borderOverlay,
+              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)' }
+            ]} 
+          />
         </View>
       </Pressable>
     </View>
@@ -108,8 +118,11 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#1a1a1a',
-    borderWidth: 0.5, 
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    // Border moved to overlay
+  },
+  borderOverlay: {
+    borderRadius: 24,
+    borderWidth: 1,
   },
   image: {
     width: 260,
@@ -133,7 +146,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
-    borderWidth: 0.5,
+    borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   categoryBadge: {},
@@ -157,7 +170,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    borderTopWidth: 0.5,
+    borderTopWidth: 1,
   },
   footerContent: {
     gap: 4,

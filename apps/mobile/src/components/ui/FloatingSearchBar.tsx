@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   verticalDivider: {
-    width: 0.5,
+    width: 1,
     height: 24,
     marginHorizontal: 4,
   },

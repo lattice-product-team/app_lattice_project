@@ -9,7 +9,9 @@ import Animated, {
   useAnimatedStyle, 
   withSpring,
   interpolate,
+  interpolateColor,
   useDerivedValue,
+  useAnimatedProps,
   runOnJS,
   withTiming,
   Extrapolation,
@@ -155,6 +157,17 @@ export default function MapIndexPage() {
       borderTopRightRadius: 32,
       borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
       borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
+      backgroundColor: interpolateColor(
+        islandState.value,
+        [0.7, 1],
+        ['transparent', theme.colors.bg.surface]
+      ),
+    };
+  });
+
+  const blurProps = useAnimatedProps(() => {
+    return {
+      intensity: interpolate(islandState.value, [0.7, 1], [90, 0], Extrapolation.CLAMP)
     };
   });
 
@@ -238,12 +251,12 @@ export default function MapIndexPage() {
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.islandContainer, islandStyle]}>
           <AnimatedSafeBlurView 
-            intensity={90} 
             tint={theme.colors.glass.tint} 
+            animatedProps={blurProps}
             style={[
               styles.islandBackground, 
               islandBackgroundStyle,
-              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)' }
+              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
             ]}
           >
             <View style={styles.handleContainer}>
@@ -315,7 +328,7 @@ export default function MapIndexPage() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black' },
   islandContainer: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
-  islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 0.5 },
+  islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
   handleContainer: { paddingTop: 5, alignItems: 'center', zIndex: 10 },
   handle: { width: 50, height: 4, borderRadius: 2 },
   islandHeader: { paddingBottom: 9 },

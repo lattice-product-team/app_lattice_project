@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   divider: {
-    height: 0.5,
+    height: 1,
     marginLeft: 36,
   },
   eventImageContainer: {

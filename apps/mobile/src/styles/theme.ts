@@ -122,7 +122,7 @@ export const lightTheme: LatticeTheme = {
     },
     glass: {
       background: 'rgba(248, 248, 246, 0.92)', // Milky white from Apple Maps
-      border: 'rgba(0, 0, 0, 0.04)',
+      border: 'rgba(0, 0, 0, 0.08)', // Increased from 0.04 for 1px sharpness
       subtle: 'rgba(0, 0, 0, 0.03)',
       subtleBorder: 'rgba(0, 0, 0, 0.05)',
       tint: 'light',
