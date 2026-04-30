@@ -11,6 +11,7 @@ interface FloatingSearchBarProps {
   onChangeText: (text: string) => void;
   onFocus?: () => void;
   onProfilePress?: () => void;
+  onSubmit?: () => void;
   placeholder?: string;
 }
 
@@ -19,6 +20,7 @@ export const FloatingSearchBar = ({
   onChangeText,
   onFocus,
   onProfilePress,
+  onSubmit,
   placeholder = "Search events, stages, food..."
 }: FloatingSearchBarProps) => {
   const theme = useAppTheme();
@@ -40,6 +42,8 @@ export const FloatingSearchBar = ({
         placeholderTextColor={theme.colors.text.muted}
         style={[styles.input, { color: theme.colors.text.primary }]}
         selectionColor={theme.colors.brand.primary}
+        returnKeyType="search"
+        onSubmitEditing={onSubmit}
       />
 
       {value.length > 0 && (

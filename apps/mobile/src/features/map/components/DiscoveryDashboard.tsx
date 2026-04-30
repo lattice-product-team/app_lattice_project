@@ -30,7 +30,7 @@ interface DiscoveryDashboardProps {
   onSelectCategory?: (id: string) => void;
 }
 
-export const DiscoveryDashboard = ({ 
+export const DiscoveryDashboard = React.memo(({ 
   islandState, 
   onSelectCategory,
 }: DiscoveryDashboardProps) => {
@@ -48,7 +48,7 @@ export const DiscoveryDashboard = ({
 
     return {
       opacity,
-      display: opacity === 0 ? 'none' : 'flex',
+      pointerEvents: opacity < 0.1 ? 'none' : 'auto',
     };
   });
 
@@ -72,17 +72,17 @@ export const DiscoveryDashboard = ({
               <View style={[
                 styles.categoryPill,
                 { 
-                  backgroundColor: theme.colors.glass.subtle,
-                  borderColor: theme.dark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
-                  borderWidth: 1,
+                  backgroundColor: theme.colors.glass.tint === 'dark' 
+                    ? 'rgba(120, 120, 128, 0.36)' 
+                    : 'rgba(120, 120, 128, 0.12)',
                 }
               ]}>
                 <MaterialCommunityIcons 
                   name={cat.icon} 
                   size={18} 
-                  color={theme.colors.text.secondary} 
+                  color="rgba(255, 255, 255, 0.6)" 
                 />
-                <Text style={[styles.categoryLabel, { color: theme.colors.text.secondary }]}>
+                <Text style={[styles.categoryLabel, { color: 'rgba(255, 255, 255, 0.6)' }]}>
                   {cat.label}
                 </Text>
               </View>
@@ -101,11 +101,10 @@ export const DiscoveryDashboard = ({
           snapToInterval={276} // 260 width + 16 gap
           decelerationRate="fast"
         >
-
           {[1, 2, 3].map((id) => (
             <EventCarouselCard 
               key={id}
-              event={{
+              event={React.useMemo(() => ({
                 id: String(id),
                 name: id === 1 ? 'Música en el Parque' : id === 2 ? 'Fira Gastronòmica' : 'Exposición de Arte',
                 type: id === 1 ? 'music' : id === 2 ? 'food' : 'generic',
@@ -118,15 +117,15 @@ export const DiscoveryDashboard = ({
                   : id === 2 
                     ? 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1'
                     : 'https://images.unsplash.com/photo-1460666819451-7410f5ef13ac'
-              }}
-              onPress={() => console.log('Event pressed:', id)}
+              }), [id])}
+              onPress={React.useCallback(() => console.log('Event pressed:', id), [id])}
             />
           ))}
         </ScrollView>
       </View>
     </Animated.View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -166,6 +165,3 @@ const styles = StyleSheet.create({
     paddingBottom: 10, // Bottom breathing room
   },
 });
-
-
-

@@ -12,7 +12,8 @@ import Animated, {
   useDerivedValue,
   runOnJS,
   withTiming,
-  Extrapolation
+  Extrapolation,
+  useAnimatedReaction
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,6 +23,8 @@ import { AdaptiveControlOverlay } from '../../src/features/map/components/Adapti
 import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
 import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
+import { SearchExperience } from '../../src/features/map/components/SearchExperience';
+import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -41,9 +44,11 @@ export default function MapIndexPage() {
   const router = useRouter();
 
   // Map & POI State
-  const { selectedPoiId, selectPoi, deselect } = usePOIStore();
+  const { selectedPoiId, deselect } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [manualAR, setManualAR] = useState(false);
+  const { saveSearch } = useSearchHistory();
 
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
   const islandState = useSharedValue(0); 
@@ -51,6 +56,7 @@ export default function MapIndexPage() {
   const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
   const [preSearchLevel, setPreSearchLevel] = useState(0);
+  const wasAboveThreshold = useSharedValue(false);
 
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
@@ -59,8 +65,36 @@ export default function MapIndexPage() {
     }
   }, [selectedPoiId, islandState]);
 
+  const dismissSearch = useCallback(() => {
+    setIsSearching(false);
+    Keyboard.dismiss();
+  }, []);
+
+  // Cancel search if island is dragged down
+  useAnimatedReaction(
+    () => islandState.value,
+    (val) => {
+      // Si llegamos arriba, marcamos que ya estamos en zona de búsqueda
+      if (val >= 0.9) {
+        wasAboveThreshold.value = true;
+      }
+      
+      // Solo cancelamos si ya habíamos superado el umbral y ahora bajamos
+      if (val < 0.8 && isSearching && wasAboveThreshold.value) {
+        runOnJS(dismissSearch)();
+        wasAboveThreshold.value = false;
+      }
+
+      // Si volvemos a la base, reseteamos el testigo
+      if (val === 0) {
+        wasAboveThreshold.value = false;
+      }
+    },
+    [isSearching, dismissSearch]
+  );
+
   const islandHeight = useDerivedValue(() => {
-    const fullHeight = SCREEN_HEIGHT * 0.80; // Bajamos la altura máxima al 80%
+    const fullHeight = SCREEN_HEIGHT * 0.80; // Altura máxima al 80%
     if (islandState.value <= 0.5) {
       return interpolate(islandState.value, [0, 0.5], [60, 450]);
     }
@@ -72,25 +106,15 @@ export default function MapIndexPage() {
       startState.value = islandState.value;
     })
     .onUpdate((event) => {
-      // Map pixel delta to 0-1 state delta
-      const fullHeight = SCREEN_HEIGHT * 0.85;
-      const stateDelta = -event.translationY / (fullHeight - 72);
-      
-      // Permitimos arrastrar un poco hacia arriba de 0.5 por rubber-banding, pero lo limitamos
+      const stateDelta = -event.translationY / (450 - 60); // Basado en el recorrido Nivel 1 -> 2
       let newPos = startState.value + stateDelta;
-      if (newPos > 0.55 && startState.value <= 0.5) {
-        newPos = 0.5 + (newPos - 0.5) * 0.2; // Rubber banding
-      }
-      
       islandState.value = Math.max(0, Math.min(1, newPos));
     })
     .onEnd((event) => {
-      const velocity = -event.velocityY / (SCREEN_HEIGHT * 0.85 - 72);
+      const velocity = -event.velocityY / (450 - 60);
       const predictedPos = islandState.value + velocity * 0.1;
       
       let closest = SNAP_POINTS[0];
-      
-      // Si el gesto manual intenta ir más allá de 0.5, forzamos a volver a 0.5
       if (predictedPos > 0.5) {
         closest = 0.5;
       } else {
@@ -120,11 +144,8 @@ export default function MapIndexPage() {
     });
 
   const islandStyle = useAnimatedStyle(() => {
-    // Interpolar de margen 12 (nivel 2) a 0 (nivel 3)
     const margin = interpolate(islandState.value, [0.5, 1], [12, 0], Extrapolation.CLAMP);
-    // Mantener borderRadius constante en 32
     const radius = 32;
-    // Ajustar el bottom si desaparecen los márgenes
     const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
     
     return {
@@ -138,10 +159,9 @@ export default function MapIndexPage() {
   });
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
-    const radius = 32;
     return {
-      borderTopLeftRadius: radius,
-      borderTopRightRadius: radius,
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
       borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
       borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
     };
@@ -151,7 +171,6 @@ export default function MapIndexPage() {
     const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
     return {
       opacity,
-      pointerEvents: opacity > 0.1 ? 'auto' : 'none', // Bloquear toques al mapa
     };
   });
 
@@ -161,70 +180,72 @@ export default function MapIndexPage() {
       opacity,
       pointerEvents: opacity > 0.5 ? 'auto' : 'none',
       position: 'absolute',
-      top: 100, // Debajo del header
+      top: 80, 
       left: 0,
       right: 0,
-    };
-  });
-
-  const scrollStyle = useAnimatedStyle(() => {
-    return {
-      flex: 1,
     };
   });
 
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
     deselect();
-    // Si no hay POI seleccionado, volvemos al nivel previo a la búsqueda
+    setIsSearching(false);
     if (!selectedPoiId) {
       islandState.value = withSpring(preSearchLevel, { damping: 25, stiffness: 120 });
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
-  const handleRecenter = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Recenter logic via store or local ref
-  };
+  const onSelectSearchResult = useCallback((name: string, coords?: [number, number]) => {
+    saveSearch(name);
+    setSearchQuery(name);
+    setIsSearching(false);
+    Keyboard.dismiss();
+    
+    // If we have coordinates, move map. For now just collapse.
+    islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
+    
+    if (coords) {
+      console.log('Moving map to:', coords);
+      // In a real app, we would use mapRef.current.flyTo
+    }
+  }, [saveSearch, islandState]);
+
+  const handleSelectCategory = useCallback((id: string) => {
+    console.log('Selected Category:', id);
+  }, []);
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      {/* 1. Background Map */}
       <View style={StyleSheet.absoluteFill}>
         <MapContent 
           poisGeoJSON={null} 
-          sheetPosition={useSharedValue(SCREEN_HEIGHT)} // Dummy for now
+          sheetPosition={useSharedValue(SCREEN_HEIGHT)} 
           onDeselect={handleMapPress}
           is3DActive={manualAR}
         />
       </View>
 
-      {/* Background Dimmer */}
       <Pressable 
         style={StyleSheet.absoluteFill}
-        onPress={Keyboard.dismiss}
+        onPress={handleMapPress}
         pointerEvents="box-none"
       >
-        <Animated.View 
-          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
-        />
+        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} />
       </Pressable>
 
-      {/* 2. Synchronized Controls (Tracking the island) */}
       <AdaptiveControlOverlay 
         islandHeight={islandHeight}
         islandState={islandState}
         bottomOffset={insets.bottom + 5}
-        onRecenter={handleRecenter}
+        onRecenter={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
       />
 
-      {/* 3. The New "Growing Island" (Manual Implementation) */}
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.islandContainer, islandStyle, !theme.dark && theme.shadows.soft]}>
+        <Animated.View style={[styles.islandContainer, islandStyle]}>
           <AnimatedSafeBlurView 
             intensity={90} 
             tint={theme.colors.glass.tint} 
@@ -244,39 +265,53 @@ export default function MapIndexPage() {
             <View style={styles.islandHeader}>
               <FloatingSearchBar 
                 value={searchQuery}
-                onChangeText={setSearchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  if (text.length > 0) setIsSearching(true);
+                }}
                 onProfilePress={() => router.push('/(main)/profile')}
                 onFocus={() => {
+                  setIsSearching(true);
                   islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+                }}
+                onSubmit={() => {
+                  saveSearch(searchQuery);
+                  Keyboard.dismiss();
                 }}
               />
             </View>
 
             <Animated.ScrollView 
-              style={scrollStyle}
+              style={{ flex: 1 }}
               contentContainerStyle={styles.islandScrollContent}
               showsVerticalScrollIndicator={false}
               bounces={true}
+              keyboardShouldPersistTaps="handled"
             >
-              <DiscoveryDashboard 
-                islandState={islandState}
-                onSelectCategory={(id) => console.log('Selected Category:', id)}
-              />
-              
-              {/* Nivel 3 Content - Always mounted but with opacity 0 */}
-              <Animated.View style={level3ContentStyle}>
-                <View style={styles.placeholderContent}>
-                  <Text style={{ color: theme.colors.text.primary }}>
-                    Nivel 3: Completo (Listado de eventos detallado)
-                  </Text>
-                  <Pressable onPress={() => {
-                    deselect(); 
-                    islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
-                  }}>
-                    <Text style={{ color: theme.colors.brand.primary, marginTop: 20 }}>Cerrar</Text>
-                  </Pressable>
-                </View>
-              </Animated.View>
+              {isSearching ? (
+                <SearchExperience 
+                  query={searchQuery}
+                  onSelectResult={onSelectSearchResult}
+                />
+              ) : (
+                <>
+                  <DiscoveryDashboard 
+                    islandState={islandState}
+                    onSelectCategory={handleSelectCategory}
+                  />
+                  
+                  {/* Contenido dinámico del Nivel 3 (Detalles de POI, etc.) */}
+                  {!selectedPoiId && (
+                    <Animated.View style={level3ContentStyle}>
+                      <View style={styles.placeholderContent}>
+                        <Text style={{ color: theme.colors.text.primary, opacity: 0.5 }}>
+                          Selecciona un punto en el mapa para ver detalles
+                        </Text>
+                      </View>
+                    </Animated.View>
+                  )}
+                </>
+              )}
             </Animated.ScrollView>
           </AnimatedSafeBlurView>
         </Animated.View>
@@ -286,49 +321,12 @@ export default function MapIndexPage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
-  islandContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000,
-    overflow: 'visible', // Allow shadow to show
-  },
-  islandBackground: {
-    flex: 1,
-    borderRadius: 32,
-    overflow: 'hidden',
-    borderWidth: 0.5,
-  },
-  handleContainer: {
-    paddingTop: 5,
-    paddingBottom: 0,
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  handle: {
-    width: 50,
-    height: 4,
-    borderRadius: 2,
-  },
-  islandHeader: {
-    paddingBottom: 9,
-  },
-  islandScroll: {
-    flex: 1,
-  },
-  islandScrollContent: {
-    paddingBottom: 10,
-  },
-  islandContent: {
-    flex: 1,
-  },
-  placeholderContent: {
-    padding: 20,
-    alignItems: 'center',
-  }
+  container: { flex: 1, backgroundColor: 'black' },
+  islandContainer: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
+  islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 0.5 },
+  handleContainer: { paddingTop: 5, alignItems: 'center', zIndex: 10 },
+  handle: { width: 50, height: 4, borderRadius: 2 },
+  islandHeader: { paddingBottom: 9 },
+  islandScrollContent: { paddingBottom: 10 },
+  placeholderContent: { padding: 20, alignItems: 'center' }
 });

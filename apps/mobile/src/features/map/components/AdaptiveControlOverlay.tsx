@@ -48,7 +48,7 @@ export const AdaptiveControlOverlay = ({
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
-      <View style={[styles.pill, !theme.dark && theme.shadows.soft]}>
+      <View style={[styles.pill, !theme.dark && theme.shadows.soft, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
         <SafeBlurView intensity={90} tint={theme.colors.glass.tint} style={StyleSheet.absoluteFill} />
         
         {/* 1. 3D Toggle */}
@@ -110,10 +110,8 @@ const styles = StyleSheet.create({
     width: 50,
     height: 150,
     borderRadius: 25,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(30, 30, 30, 0.45)',
+    overflow: 'visible',
     borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
     // Distribution logic
     alignItems: 'center',
     justifyContent: 'space-between',

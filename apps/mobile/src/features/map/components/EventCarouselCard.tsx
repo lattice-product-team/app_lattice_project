@@ -23,7 +23,7 @@ interface EventCarouselCardProps {
   onPress?: () => void;
 }
 
-export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) => {
+export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCardProps) => {
   const theme = useAppTheme();
   const metadata = getEventMetadata(event.type);
 
@@ -61,25 +61,25 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
           </View>
 
           {/* Info Footer - Blurred/Semi-transparent for Apple look */}
-          <View style={styles.footer}>
+          <View style={[styles.footer, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
             <View style={styles.footerContent}>
-              <Text style={styles.title} numberOfLines={1}>{event.name}</Text>
+              <Text style={[styles.title, { color: theme.colors.text.primary }]} numberOfLines={1}>{event.name}</Text>
               
               {event.description && (
-                <Text style={styles.description} numberOfLines={1}>
+                <Text style={[styles.description, { color: theme.colors.text.secondary }]} numberOfLines={1}>
                   {event.description}
                 </Text>
               )}
 
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
-                  <Feather name="calendar" size={11} color="rgba(255,255,255,0.6)" />
-                  <Text style={styles.detailText}>{event.date}</Text>
+                  <Feather name="calendar" size={11} color={theme.colors.text.muted} />
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.date}</Text>
                 </View>
                 <View style={styles.detailSeparator} />
                 <View style={styles.detailItem}>
-                  <Feather name="map-pin" size={11} color="rgba(255,255,255,0.6)" />
-                  <Text style={styles.detailText}>{event.location}</Text>
+                  <Feather name="map-pin" size={11} color={theme.colors.text.muted} />
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.location}</Text>
                 </View>
               </View>
             </View>
@@ -88,17 +88,19 @@ export const EventCarouselCard = ({ event, onPress }: EventCarouselCardProps) =>
       </Pressable>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   shadowWrapper: {
     width: 260,
     height: 280,
     marginRight: 16,
+    // Las sombras pesadas pueden causar lag durante la animación.
+    // En un entorno de alto rendimiento, es mejor usarlas con moderación.
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.35,
-    shadowRadius: 15,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   container: {
     width: 260,
@@ -152,12 +154,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: theme.colors.glass.background,
     paddingTop: 12,
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderTopWidth: 0.5,
-    borderColor: theme.colors.glass.border,
   },
   footerContent: {
     gap: 4,
@@ -165,13 +165,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: typography.primary.bold,
-    color: theme.colors.text.primary,
     letterSpacing: -0.3,
   },
   description: {
     fontSize: 13,
     fontFamily: typography.primary.medium,
-    color: theme.colors.text.secondary,
     marginBottom: 2,
   },
   detailsRow: {
@@ -187,7 +185,6 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 11,
     fontFamily: typography.primary.bold,
-    color: theme.colors.text.muted,
   },
   detailSeparator: {
     width: 3,
