@@ -157,11 +157,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   carouselScrollContainer: {
-    height: 300,
+    height: 320,
   },
   carouselScroll: {
     paddingHorizontal: 16,
     gap: 16,
-    paddingBottom: 10, // Bottom breathing room
+    paddingBottom: 25, // Ample room for shadows
   },
 });

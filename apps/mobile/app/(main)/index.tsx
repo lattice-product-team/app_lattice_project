@@ -56,7 +56,7 @@ export default function MapIndexPage() {
   const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
   const [preSearchLevel, setPreSearchLevel] = useState(0);
-  const wasAboveThreshold = useSharedValue(false);
+  const isPanning = useSharedValue(false);
 
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
@@ -70,24 +70,13 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
   }, []);
 
-  // Cancel search if island is dragged down
+  // Cancel search only if island is MANUALLY dragged down
   useAnimatedReaction(
     () => islandState.value,
     (val) => {
-      // Si llegamos arriba, marcamos que ya estamos en zona de búsqueda
-      if (val >= 0.9) {
-        wasAboveThreshold.value = true;
-      }
-      
-      // Solo cancelamos si ya habíamos superado el umbral y ahora bajamos
-      if (val < 0.8 && isSearching && wasAboveThreshold.value) {
+      // Solo cancelamos si hay un gesto activo (panning), estamos buscando y bajamos del umbral
+      if (val < 0.8 && isSearching && isPanning.value) {
         runOnJS(dismissSearch)();
-        wasAboveThreshold.value = false;
-      }
-
-      // Si volvemos a la base, reseteamos el testigo
-      if (val === 0) {
-        wasAboveThreshold.value = false;
       }
     },
     [isSearching, dismissSearch]
@@ -103,6 +92,7 @@ export default function MapIndexPage() {
 
   const gesture = Gesture.Pan()
     .onStart(() => {
+      isPanning.value = true;
       startState.value = islandState.value;
     })
     .onUpdate((event) => {
@@ -111,6 +101,7 @@ export default function MapIndexPage() {
       islandState.value = Math.max(0, Math.min(1, newPos));
     })
     .onEnd((event) => {
+      isPanning.value = false;
       const velocity = -event.velocityY / (450 - 60);
       const predictedPos = islandState.value + velocity * 0.1;
       
@@ -287,6 +278,7 @@ export default function MapIndexPage() {
               showsVerticalScrollIndicator={false}
               bounces={true}
               keyboardShouldPersistTaps="handled"
+              scrollEnabled={islandState.value > 0.9}
             >
               {isSearching ? (
                 <SearchExperience 
