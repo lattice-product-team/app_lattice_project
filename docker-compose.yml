@@ -101,7 +101,7 @@ services:
       dockerfile: Dockerfile
       target: admin-web-dev
     ports:
-      - "${ADMIN_WEB_PORT:-3004}:3000"
+      - "${ADMIN_WEB_PORT:-3004}:${ADMIN_WEB_PORT:-3004}"
     volumes:
       - .:/app:z
       - /app/node_modules
