@@ -51,12 +51,12 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
             )}
           </View>
           <View>
-            <Text style={styles.name}>{event.name}</Text>
-            <Text style={styles.type}>{metadata.label}</Text>
+            <Text style={[styles.name, { color: theme.colors.text.primary }]}>{event.name}</Text>
+            <Text style={[styles.type, { color: theme.colors.text.muted }]}>{metadata.label}</Text>
           </View>
         </View>
         <Pressable onPress={onClear} style={styles.closeButton}>
-          <Feather name="x" size={20} color="rgba(255,255,255,0.4)" />
+          <Feather name="x" size={20} color={theme.colors.text.muted} />
         </Pressable>
       </View>
 
@@ -96,9 +96,9 @@ const styles = StyleSheet.create({
     marginTop: 0,
     padding: 20,
     borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: theme.colors.glass.subtle,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: theme.colors.glass.border,
   },
   header: {
     flexDirection: 'row',
@@ -119,13 +119,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   name: {
-    color: 'white',
     fontSize: 20,
     fontFamily: typography.primary.bold,
     letterSpacing: -0.5,
   },
   type: {
-    color: 'rgba(255,255,255,0.5)',
     fontSize: 14,
     fontFamily: typography.secondary.medium,
   },

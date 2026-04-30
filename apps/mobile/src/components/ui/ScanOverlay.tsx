@@ -22,7 +22,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({
       <View 
         className="w-64 h-64 border-2 rounded-3xl items-center justify-center"
         style={{
-          borderColor: scanned ? theme.colors.status.success : 'rgba(255, 255, 255, 0.5)',
+          borderColor: scanned ? theme.colors.status.success : theme.colors.text.muted,
           borderStyle: scanned ? 'solid' : 'dashed',
         }}
       >

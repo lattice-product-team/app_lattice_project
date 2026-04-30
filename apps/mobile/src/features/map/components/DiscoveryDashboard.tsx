@@ -80,9 +80,9 @@ export const DiscoveryDashboard = React.memo(({
                 <MaterialCommunityIcons 
                   name={cat.icon} 
                   size={18} 
-                  color="rgba(255, 255, 255, 0.6)" 
+                  color={theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'} 
                 />
-                <Text style={[styles.categoryLabel, { color: 'rgba(255, 255, 255, 0.6)' }]}>
+                <Text style={[styles.categoryLabel, { color: theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' }]}>
                   {cat.label}
                 </Text>
               </View>
