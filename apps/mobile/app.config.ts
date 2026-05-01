@@ -129,6 +129,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     '@maplibre/maplibre-react-native',
+    'expo-apple-authentication',
   ],
   experiments: {
     typedRoutes: true,

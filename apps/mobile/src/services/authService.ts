@@ -1,56 +1,121 @@
-import { apiClient } from './apiClient';
-import { API_ENDPOINTS } from '../constants/api';
-import { Ticket, User } from '../types/models/auth';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import { useAuthStore } from '../store/useAuthStore';
+import { Platform } from 'react-native';
 
-export interface AuthResponse {
-  token: string;
-  user: User;
-  tickets: Ticket[];
-  requires_setup?: boolean;
-  ticket_info?: Ticket;
+WebBrowser.maybeCompleteAuthSession();
+
+export class AuthService {
+  private static API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+
+  static async signInWithApple() {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      const response = await fetch(`${this.API_URL}/auth/apple`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: credential.identityToken,
+          fullName: credential.fullName,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.token) {
+        useAuthStore.getState().setAuth(data.token, data.user);
+        return { success: true };
+      }
+      return { success: false, error: data.error };
+    } catch (e: any) {
+      if (e.code === 'ERR_CANCELED') {
+        return { success: false, cancelled: true };
+      }
+      return { success: false, error: e.message };
+    }
+  }
+
+  static async signInWithGoogle(idToken: string) {
+    try {
+      const response = await fetch(`${this.API_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: idToken }),
+      });
+
+      const data = await response.json();
+      if (data.token) {
+        useAuthStore.getState().setAuth(data.token, data.user);
+        return { success: true };
+      }
+      return { success: false, error: data.error };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  static async registerPasskey() {
+    try {
+      // 1. Get challenge from backend
+      const challengeRes = await fetch(`${this.API_URL}/auth/passkey/register-challenge`, {
+        headers: { 'Authorization': `Bearer ${useAuthStore.getState().token}` }
+      });
+      const options = await challengeRes.json();
+
+      // 2. Create credential natively
+      // Note: react-native-passkey would be used here
+      console.log('Passkey registration initiated with options:', options);
+      
+      // MOCK for now
+      const mockCredential = { id: 'mock_cred_id', rawId: '...', response: { clientDataJSON: '...', attestationObject: '...' } };
+
+      // 3. Send attestation to backend
+      const verifyRes = await fetch(`${this.API_URL}/auth/passkey/register-verify`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${useAuthStore.getState().token}`
+        },
+        body: JSON.stringify(mockCredential),
+      });
+
+      return await verifyRes.json();
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  static async signInWithPasskey() {
+    try {
+      // 1. Get assertion challenge
+      const challengeRes = await fetch(`${this.API_URL}/auth/passkey/login-challenge`);
+      const options = await challengeRes.json();
+
+      // 2. Get assertion natively
+      console.log('Passkey login initiated with options:', options);
+      const mockAssertion = { id: 'mock_cred_id', response: { clientDataJSON: '...', authenticatorData: '...', signature: '...' } };
+
+      // 3. Verify with backend
+      const verifyRes = await fetch(`${this.API_URL}/auth/passkey/login-verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mockAssertion),
+      });
+
+      const data = await verifyRes.json();
+      if (data.token) {
+        useAuthStore.getState().setAuth(data.token, data.user);
+        return { success: true };
+      }
+      return { success: false, error: data.error };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  }
 }
-
-export interface ClaimTicketResponse {
-  ticket_info: Ticket;
-  tickets?: Ticket[];
-}
-
-export const authService = {
-  login: async (payload: any): Promise<AuthResponse> => {
-    return apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, payload);
-  },
-
-  register: async (payload: any): Promise<AuthResponse> => {
-    return apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, payload);
-  },
-
-  ticketSync: async (payload: any): Promise<AuthResponse> => {
-    return apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH.TICKET_SYNC, payload);
-  },
-
-  claimTicket: async (ticketCode: string): Promise<ClaimTicketResponse> => {
-    return apiClient.post<ClaimTicketResponse>(
-      API_ENDPOINTS.AUTH.TICKET_CLAIM, 
-      { ticket_code: ticketCode }
-    );
-  },
-
-  getMe: async (): Promise<User> => {
-    return apiClient.get<User>(API_ENDPOINTS.AUTH.ME);
-  },
-
-  updateMe: async (data: Partial<User>): Promise<User> => {
-    return apiClient.patch<User>(API_ENDPOINTS.AUTH.ME, data);
-  },
-
-  getUserTickets: async (): Promise<Ticket[]> => {
-    return apiClient.get<Ticket[]>(API_ENDPOINTS.AUTH.TICKET_WALLET);
-  },
-  
-  unclaimTicket: async (ticketCode: string): Promise<{ tickets: Ticket[] }> => {
-    return apiClient.post<{ tickets: Ticket[] }>(
-      API_ENDPOINTS.AUTH.TICKET_UNCLAIM,
-      { ticket_code: ticketCode }
-    );
-  },
-};

@@ -16,7 +16,10 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { AuthDivider } from '../../src/components/ui/AuthDivider';
+import { PasskeyOnboardingSheet } from '../../src/components/ui/PasskeyOnboardingSheet';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { AuthService } from '../../src/services/AuthService';
+import * as Google from 'expo-auth-session/providers/google';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -24,13 +27,47 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const token = useAuthStore((state) => state.token);
   const isGuest = useAuthStore((state) => state.isGuest);
+  const user = useAuthStore((state) => state.user);
   const setGuestMode = useAuthStore((state) => state.setGuestMode);
+  const [isPasskeySheetVisible, setIsPasskeySheetVisible] = React.useState(false);
   
   useEffect(() => {
     if (token || isGuest) {
-      router.replace('/(main)');
+      // If we have a user but no passkey, show the onboarding sheet
+      if (token && user && !user.isPasskeyEnabled) {
+        setIsPasskeySheetVisible(true);
+      } else {
+        router.replace('/(main)');
+      }
     }
-  }, [token, isGuest, router]);
+  }, [token, isGuest, user, router]);
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
+    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      handleGoogleLogin(id_token);
+    }
+  }, [response]);
+
+  const handleAppleLogin = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const result = await AuthService.signInWithApple();
+    if (result.error) {
+      Alert.alert('Error', result.error);
+    }
+  };
+
+  const handleGoogleLogin = async (idToken: string) => {
+    const result = await AuthService.signInWithGoogle(idToken);
+    if (result.error) {
+      Alert.alert('Error', result.error);
+    }
+  };
 
   const handleGuestMode = () => {
     Haptics.selectionAsync();
@@ -62,12 +99,13 @@ export default function LoginScreen() {
             <PremiumButton 
               label="Continue with Apple" 
               variant="apple" 
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              onPress={handleAppleLogin}
             />
             <PremiumButton 
               label="Continue with Google" 
               variant="google" 
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              onPress={() => promptAsync()}
+              disabled={!request}
             />
             
             <View style={styles.dividerWrapper}>
@@ -124,6 +162,19 @@ export default function LoginScreen() {
           </Text>
         </Animated.View>
       </View>
+
+      <PasskeyOnboardingSheet 
+        isVisible={isPasskeySheetVisible}
+        onClose={() => {
+          setIsPasskeySheetVisible(false);
+          router.replace('/(main)');
+        }}
+        onConfirm={async () => {
+          const result = await AuthService.registerPasskey();
+          setIsPasskeySheetVisible(false);
+          router.replace('/(main)');
+        }}
+      />
     </AuthLayout>
   );
 }
