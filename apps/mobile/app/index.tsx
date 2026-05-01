@@ -22,7 +22,7 @@ export default function Index() {
       if (token) {
         router.replace('/(main)');
       } else {
-        router.replace('/(auth)/welcome');
+        router.replace('/(auth)/login');
       }
     }
   }, [isReady, token, router]);

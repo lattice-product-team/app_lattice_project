@@ -1,4 +1,4 @@
-package com.appmonorepo
+package com.kore29.appmonorepo
 
 import android.os.Build
 import android.os.Bundle

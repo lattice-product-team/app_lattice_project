@@ -59,7 +59,7 @@ export default function LoginScreen() {
   const isLoading = login.isPending;
 
   return (
-    <AuthLayout showBack onBack={() => router.replace('/(auth)/welcome')} midnight>
+    <AuthLayout midnight>
       {/* Header */}
       <Animated.View 
         entering={FadeInDown.duration(800).delay(200).springify()}

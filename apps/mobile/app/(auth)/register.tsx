@@ -77,7 +77,7 @@ export default function RegisterScreen() {
       showBack 
       onBack={() => {
         useAuthStore.getState().clearRegistrationData();
-        router.replace('/(auth)/welcome');
+        router.replace('/(auth)/login');
       }}
       midnight
     >
