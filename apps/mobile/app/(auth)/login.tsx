@@ -15,6 +15,7 @@ import { useLogin } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { colors as primitiveColors } from '@app/theme';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { authStyles } from '../../src/styles/typography';
 
 /**
@@ -23,6 +24,7 @@ import { authStyles } from '../../src/styles/typography';
  */
 export default function LoginScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
   const token = useAuthStore((state) => state.token);
   
   const [email, setEmail] = useState('');
@@ -39,7 +41,7 @@ export default function LoginScreen() {
 
   const handleLogin = () => {
     if (!email || !password) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Haptics.notificationAsync(Haptics.ImpactFeedbackStyle.Medium);
       Alert.alert('Error', 'Email and password are required');
       return;
     }
@@ -63,17 +65,17 @@ export default function LoginScreen() {
       {/* Header */}
       <Animated.View 
         entering={FadeInDown.duration(800).delay(200).springify()}
-        className="pt-8 pb-10 items-start w-full"
+        className="pt-16 pb-12 items-start w-full"
       >
         <Text 
-          className="text-white mb-4"
-          style={authStyles.title}
+          className="mb-2"
+          style={[authStyles.title, { color: theme.colors.text.primary, fontSize: 34, letterSpacing: -1 }]}
         >
           Sign In
         </Text>
         <Text 
-          className="text-white/60 leading-6"
-          style={authStyles.subtitle}
+          className="leading-6"
+          style={[authStyles.subtitle, { color: theme.colors.text.secondary, fontSize: 16 }]}
         >
           Access your Lattice profile to sync performance data and preferences.
         </Text>
@@ -83,37 +85,57 @@ export default function LoginScreen() {
       <Animated.View 
         layout={Layout.springify()}
         entering={FadeInDown.duration(600).delay(400).springify()}
-        className="mb-8"
+        className="mb-6"
       >
-        <View className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-8 p-1">
-          <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="mail" size={20} color="rgba(255,255,255,0.4)" />
+        <View 
+          className="rounded-[32px] overflow-hidden mb-6 border"
+          style={{ 
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border
+          }}
+        >
+          {/* Email Input */}
+          <View 
+            className="flex-row items-center px-7 py-5 border-b"
+            style={{ borderBottomColor: theme.colors.glass.subtleBorder }}
+          >
+            <Feather name="mail" size={18} color={theme.colors.text.secondary} />
             <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
+              className="flex-1 text-base font-medium ml-4 h-10"
               keyboardType="email-address" 
               autoCapitalize="none" 
               placeholder="Email address"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={theme.colors.text.muted}
               value={email}
               onChangeText={setEmail}
               editable={!isLoading}
-              style={{ fontFamily: 'Outfit-Medium' }}
+              style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
             />
           </View>
-          <View className="flex-row items-center px-6 py-5">
-            <Feather name="lock" size={20} color="rgba(255,255,255,0.4)" />
+
+          {/* Password Input */}
+          <View className="flex-row items-center px-7 py-5">
+            <Feather name="lock" size={18} color={theme.colors.text.secondary} />
             <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
+              className="flex-1 text-base font-medium ml-4 h-10"
               secureTextEntry={!showPassword} 
               placeholder="Password"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={theme.colors.text.muted}
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
-              style={{ fontFamily: 'Outfit-Medium' }}
+              style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
             />
-            <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={20} className="active:opacity-70">
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.4)" />
+            <Pressable 
+              onPress={() => setShowPassword(!showPassword)} 
+              hitSlop={20} 
+              className="active:opacity-70"
+            >
+              <Feather 
+                name={showPassword ? "eye-off" : "eye"} 
+                size={18} 
+                color={theme.colors.text.muted} 
+              />
             </Pressable>
           </View>
         </View>
@@ -123,13 +145,42 @@ export default function LoginScreen() {
           label="SIGN IN" 
           isLoading={isLoading} 
           variant="primary"
+          className="mb-4"
         />
+
+        {/* Divider */}
+        <View className="flex-row items-center my-6 px-4">
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: theme.colors.border.subtle }} />
+          <Text 
+            className="mx-4 text-xs font-bold tracking-widest" 
+            style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Bold' }}
+          >
+            OR CONTINUE WITH
+          </Text>
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: theme.colors.border.subtle }} />
+        </View>
+
+        {/* Social Buttons */}
+        <View className="flex-row gap-x-3 mb-8">
+          <PremiumButton 
+            onPress={() => {}} 
+            label="APPLE" 
+            variant="apple" 
+            className="flex-1"
+          />
+          <PremiumButton 
+            onPress={() => {}} 
+            label="GOOGLE" 
+            variant="google" 
+            className="flex-1"
+          />
+        </View>
       </Animated.View>
 
       {/* Footer */}
       <Animated.View 
         entering={FadeInDown.duration(800).delay(600).springify()}
-        className="items-center pb-8"
+        className="items-center pb-12"
       >
         <Pressable 
           onPress={() => {
@@ -139,10 +190,10 @@ export default function LoginScreen() {
           className="active:opacity-70 p-4"
         >
           <Text 
-            className="text-white/60 text-sm font-medium tracking-wide"
-            style={{ fontFamily: 'PlusJakartaSans-Bold' }}
+            className="text-xs font-bold tracking-widest"
+            style={{ fontFamily: 'PlusJakartaSans-Bold', color: theme.colors.text.secondary }}
           >
-            NEW TO LATTICE? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>JOIN THE CREW</Text>
+            NEW TO LATTICE? <Text style={{ color: theme.colors.brand.primary }}>JOIN THE CREW</Text>
           </Text>
         </Pressable>
       </Animated.View>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  Pressable, 
   Text, 
   ActivityIndicator, 
   ViewStyle, 
@@ -8,16 +7,25 @@ import {
   View,
   StyleSheet
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring, 
+  PressableProps
+} from 'react-native-reanimated';
+import { Pressable } from 'react-native';
 import { typography } from '../../styles/typography';
 import { useAppTheme } from '../../hooks/useAppTheme';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface PremiumButtonProps {
   onPress: () => void;
   label: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'surface';
+  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'surface' | 'apple' | 'google';
   icon?: string;
   isLoading?: boolean;
   disabled?: boolean;
@@ -26,7 +34,7 @@ interface PremiumButtonProps {
 }
 
 /**
- * High-end interactive button with standardized gradients and theme awareness.
+ * High-end interactive button with pill shape and Apple/Google inspired aesthetics.
  */
 export const PremiumButton = ({
   onPress,
@@ -39,49 +47,82 @@ export const PremiumButton = ({
   style
 }: PremiumButtonProps) => {
   const theme = useAppTheme();
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.96, { damping: 10, stiffness: 200 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 10, stiffness: 200 });
+  };
 
   const handlePress = () => {
     if (disabled || isLoading) return;
-    Haptics.impactAsync(
-      variant === 'primary' 
-        ? Haptics.ImpactFeedbackStyle.Medium 
-        : Haptics.ImpactFeedbackStyle.Light
-    );
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
   };
 
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return [theme.colors.brand.primary, theme.colors.brand.primaryVariant] as const;
-      case 'secondary':
-        return [theme.colors.brand.secondary, theme.colors.brand.secondaryVariant] as const;
+        return [theme.colors.brand.primary, theme.colors.brand.primary] as const;
+      case 'apple':
+        return ['#000000', '#000000'] as const;
+      case 'google':
+        return ['#FFFFFF', '#FFFFFF'] as const;
       case 'glass':
-        return [theme.colors.glass.background, theme.colors.interactive.pressed] as const;
-      case 'surface':
-        return [theme.colors.bg.surface, theme.colors.bg.elevation] as const;
+        return [theme.colors.glass.background, theme.colors.glass.background] as const;
       default:
         return null;
     }
   };
 
-  const getSecondaryStyles = () => {
-    if (variant === 'outline') return { borderWidth: 1, borderColor: theme.colors.border.subtle };
-    if (variant === 'glass') return { borderWidth: 1, borderColor: theme.colors.glass.border };
-    if (variant === 'surface') return theme.shadows.soft;
-    return {};
+  const getContainerStyle = () => {
+    const base: ViewStyle = {
+      height: 56,
+      borderRadius: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      paddingHorizontal: 24,
+    };
+
+    if (variant === 'outline') {
+      return { ...base, borderWidth: 1, borderColor: theme.colors.border.strong };
+    }
+    if (variant === 'google') {
+      return { ...base, borderWidth: 1, borderColor: '#E5E5E5' };
+    }
+    if (variant === 'glass') {
+      return { ...base, borderWidth: 1, borderColor: theme.colors.glass.border };
+    }
+    return base;
   };
 
   const getTextStyle = () => {
+    const base = { 
+      fontSize: 15, 
+      fontFamily: typography.primary.bold,
+      letterSpacing: -0.2
+    };
+
     switch (variant) {
       case 'primary':
-        return { color: theme.colors.text.inverse, fontFamily: typography.primary.bold };
+        return { ...base, color: '#000000' };
+      case 'apple':
+        return { ...base, color: '#FFFFFF' };
+      case 'google':
+        return { ...base, color: '#000000' };
+      case 'outline':
       case 'glass':
-        return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
-      case 'surface':
-        return { color: theme.colors.text.primary, fontFamily: typography.primary.bold };
+        return { ...base, color: theme.colors.text.primary };
       default:
-        return { color: theme.colors.text.primary, fontFamily: typography.secondary.medium };
+        return { ...base, color: theme.colors.text.primary };
     }
   };
 
@@ -89,30 +130,35 @@ export const PremiumButton = ({
   const textColor = getTextStyle().color;
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || isLoading}
-      className={`h-14 rounded-2xl overflow-hidden active:scale-[0.98] ${disabled ? 'opacity-50' : 'active:opacity-90'} ${className}`}
-      style={style}
+      style={[animatedStyle, style]}
+      className={`${disabled ? 'opacity-50' : ''} ${className}`}
     >
-      {gradientColors && (
-        <LinearGradient
-          colors={gradientColors as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      )}
-      
-      <View 
-        className="flex-1 flex-row items-center justify-center px-6"
-        style={getSecondaryStyles()}
-      >
+      <View style={getContainerStyle()} className="overflow-hidden">
+        {gradientColors && (
+          <LinearGradient
+            colors={gradientColors as any}
+            style={StyleSheet.absoluteFill}
+          />
+        )}
+        
         {isLoading ? (
           <ActivityIndicator color={textColor} />
         ) : (
-          <>
-            {icon && (
+          <View className="flex-row items-center justify-center">
+            {variant === 'apple' && (
+              <FontAwesome5 name="apple" size={18} color={textColor} style={{ marginRight: 10, marginBottom: 2 }} />
+            )}
+            {variant === 'google' && (
+              <View style={{ marginRight: 10 }}>
+                 <FontAwesome5 name="google" size={16} color="#4285F4" />
+              </View>
+            )}
+            {icon && !['apple', 'google'].includes(variant) && (
               <MaterialCommunityIcons 
                 name={icon as any} 
                 size={20} 
@@ -120,16 +166,13 @@ export const PremiumButton = ({
                 style={{ marginRight: 8 }}
               />
             )}
-            <Text 
-              className="text-base tracking-tight"
-              style={getTextStyle()}
-            >
+            <Text style={getTextStyle()}>
               {label}
             </Text>
-          </>
+          </View>
         )}
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 

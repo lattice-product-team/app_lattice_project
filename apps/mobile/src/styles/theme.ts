@@ -144,9 +144,9 @@ export const lightTheme: LatticeTheme = {
       thin: 'rgba(0, 0, 0, 0.02)',
     },
     gradient: {
-      auth: ['#FFFFFF', '#FFF9E5'] as const,
-      premium: ['#FFFFFF', primitiveColors.brand.accent] as const,
-      midnight: ['#FFFFFF', '#FDF5E6'] as const,
+      auth: ['#FFFFFF', '#F0F0F0'] as const,
+      premium: ['#E2B042', '#A67C27'] as const,
+      midnight: ['#F8F8F6', '#D1D1CF'] as const,
     },
   },
 };
@@ -201,9 +201,9 @@ export const darkTheme: LatticeTheme = {
       thin: 'rgba(255, 255, 255, 0.03)',
     },
     gradient: {
-      auth: [primitiveColors.neutral.dark.base, '#000000'] as const,
-      premium: ['#FFFFFF', primitiveColors.brand.accent] as const,
-      midnight: [primitiveColors.neutral.dark.elevated, '#000000'] as const,
+      auth: ['#1C1C1A', '#0A0A09'] as const,
+      premium: ['#A67C27', '#1C1C1A'] as const,
+      midnight: ['#0A0A09', '#000000'] as const,
     },
   },
 };

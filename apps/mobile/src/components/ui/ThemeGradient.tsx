@@ -30,8 +30,14 @@ export const ThemeGradient = ({
     switch (variant) {
       case 'premium':
         return {
-          colors: ['#4A2C3A', theme.colors.bg.main] as const, // Deep Wine to Black
+          colors: theme.colors.gradient.premium,
           locations: [0, 0.6] as [number, number],
+          defaultBlob: primaryColor,
+        };
+      case 'midnight':
+        return {
+          colors: theme.colors.gradient.midnight,
+          locations: [0, 1] as [number, number],
           defaultBlob: primaryColor,
         };
       case 'surface':
@@ -43,7 +49,7 @@ export const ThemeGradient = ({
       case 'auth':
       default:
         return {
-          colors: ['#2D2B2C', '#121212'] as const,
+          colors: theme.colors.gradient.auth,
           locations: [0, 0.7] as [number, number],
           defaultBlob: primaryColor,
         };

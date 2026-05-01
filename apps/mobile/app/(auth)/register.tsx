@@ -15,6 +15,7 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { colors as primitiveColors } from '@app/theme';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { authStyles } from '../../src/styles/typography';
 
 /**
@@ -23,6 +24,7 @@ import { authStyles } from '../../src/styles/typography';
  */
 export default function RegisterScreen() {
   const router = useRouter();
+  const theme = useAppTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -45,7 +47,7 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!email || !password || !fullName) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Haptics.notificationAsync(Haptics.ImpactFeedbackStyle.Medium);
       Alert.alert('Required Fields', 'All fields are mandatory to create your account.');
       return;
     }
@@ -84,39 +86,51 @@ export default function RegisterScreen() {
       {/* Header section matching login */}
       <Animated.View 
         entering={FadeInDown.duration(800).delay(100).springify()}
-        className="pt-8 pb-10 items-start w-full"
+        className="pt-16 pb-12 items-start w-full"
       >
         <Text 
-          className="text-white mb-4"
-          style={authStyles.title}
+          className="mb-2"
+          style={[authStyles.title, { color: theme.colors.text.primary, fontSize: 34, letterSpacing: -1 }]}
         >
           {registrationRequired ? 'Finish Profile' : 'Create Profile'}
         </Text>
         
         {registrationRequired ? (
-          <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
+          <View 
+            className="px-5 py-3 rounded-2xl border flex-row items-center mt-2"
+            style={{ 
+              backgroundColor: theme.colors.status.successSurface,
+              borderColor: theme.colors.status.success
+            }}
+          >
+             <Feather name="check-circle" size={16} color={theme.colors.status.success} />
              <Text 
-               className="text-white text-sm font-bold ml-2"
-               style={{ fontFamily: 'PlusJakartaSans-Bold' }}
+               className="text-sm font-bold ml-2"
+               style={{ fontFamily: 'PlusJakartaSans-Bold', color: theme.colors.status.success }}
              >
                Ticket Scanned! Set Password
              </Text>
           </View>
         ) : pendingTicketCode ? (
-          <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
+          <View 
+            className="px-5 py-3 rounded-2xl border flex-row items-center mt-2"
+            style={{ 
+              backgroundColor: theme.colors.status.successSurface,
+              borderColor: theme.colors.status.success
+            }}
+          >
+             <Feather name="check-circle" size={16} color={theme.colors.status.success} />
              <Text 
-               className="text-white text-sm font-bold ml-2"
-               style={{ fontFamily: 'PlusJakartaSans-Bold' }}
+               className="text-sm font-bold ml-2"
+               style={{ fontFamily: 'PlusJakartaSans-Bold', color: theme.colors.status.success }}
              >
                Ticket Ready to Sync
              </Text>
           </View>
         ) : (
           <Text 
-            className="text-white/60 leading-6"
-            style={authStyles.subtitle}
+            className="leading-6"
+            style={[authStyles.subtitle, { color: theme.colors.text.secondary, fontSize: 16 }]}
           >
             Join the Lattice community and access real-time performance analytics.
           </Text>
@@ -127,55 +141,75 @@ export default function RegisterScreen() {
       <Animated.View 
         layout={Layout.springify()}
         entering={FadeInDown.duration(600).delay(300).springify()}
-        className="mb-8"
+        className="mb-6"
       >
-        <View className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-8 p-1">
+        <View 
+          className="rounded-[32px] overflow-hidden mb-6 border"
+          style={{ 
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border
+          }}
+        >
           {/* Full Name Input */}
-          <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="user" size={20} color="rgba(255,255,255,0.4)" />
+          <View 
+            className="flex-row items-center px-7 py-5 border-b"
+            style={{ borderBottomColor: theme.colors.glass.subtleBorder }}
+          >
+            <Feather name="user" size={18} color={theme.colors.text.secondary} />
             <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
+              className="flex-1 text-base font-medium ml-4 h-10"
               autoCapitalize="words" 
               placeholder="Full Name"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={theme.colors.text.muted}
               value={fullName}
               onChangeText={setFullName}
               editable={!isLoading}
-              style={{ fontFamily: 'Outfit-Medium' }}
+              style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
             />
           </View>
 
           {/* Email Input */}
-          <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="mail" size={20} color="rgba(255,255,255,0.4)" />
+          <View 
+            className="flex-row items-center px-7 py-5 border-b"
+            style={{ borderBottomColor: theme.colors.glass.subtleBorder }}
+          >
+            <Feather name="mail" size={18} color={theme.colors.text.secondary} />
             <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
+              className="flex-1 text-base font-medium ml-4 h-10"
               keyboardType="email-address" 
               autoCapitalize="none" 
               placeholder="Email address"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={theme.colors.text.muted}
               value={email}
               onChangeText={setEmail}
               editable={!isLoading && !registrationRequired}
-              style={{ fontFamily: 'Outfit-Medium' }}
+              style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
             />
           </View>
           
           {/* Password Input */}
-          <View className="flex-row items-center px-6 py-5">
-            <Feather name="lock" size={20} color="rgba(255,255,255,0.4)" />
+          <View className="flex-row items-center px-7 py-5">
+            <Feather name="lock" size={18} color={theme.colors.text.secondary} />
             <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
+              className="flex-1 text-base font-medium ml-4 h-10"
               secureTextEntry={!showPassword} 
               placeholder="Create Password"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={theme.colors.text.muted}
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
-              style={{ fontFamily: 'Outfit-Medium' }}
+              style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
             />
-            <Pressable onPress={() => setShowPassword(!showPassword)} className="active:opacity-70" hitSlop={20}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.4)" />
+            <Pressable 
+              onPress={() => setShowPassword(!showPassword)} 
+              className="active:opacity-70" 
+              hitSlop={20}
+            >
+              <Feather 
+                name={showPassword ? "eye-off" : "eye"} 
+                size={18} 
+                color={theme.colors.text.muted} 
+              />
             </Pressable>
           </View>
         </View>
@@ -185,13 +219,42 @@ export default function RegisterScreen() {
           label="LAUNCH ACCOUNT" 
           isLoading={isLoading} 
           variant="primary"
+          className="mb-4"
         />
+
+        {/* Divider */}
+        <View className="flex-row items-center my-6 px-4">
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: theme.colors.border.subtle }} />
+          <Text 
+            className="mx-4 text-xs font-bold tracking-widest" 
+            style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Bold' }}
+          >
+            OR JOIN WITH
+          </Text>
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: theme.colors.border.subtle }} />
+        </View>
+
+        {/* Social Buttons */}
+        <View className="flex-row gap-x-3 mb-8">
+          <PremiumButton 
+            onPress={() => {}} 
+            label="APPLE" 
+            variant="apple" 
+            className="flex-1"
+          />
+          <PremiumButton 
+            onPress={() => {}} 
+            label="GOOGLE" 
+            variant="google" 
+            className="flex-1"
+          />
+        </View>
       </Animated.View>
 
       {/* Footer */}
       <Animated.View 
         entering={FadeInDown.duration(800).delay(500).springify()}
-        className="items-center pb-8"
+        className="items-center pb-12"
       >
         <Pressable 
           onPress={() => {
@@ -201,10 +264,10 @@ export default function RegisterScreen() {
           className="active:opacity-70 p-4"
         >
           <Text 
-            className="text-white/60 text-sm font-medium tracking-wide"
-            style={{ fontFamily: 'PlusJakartaSans-Bold' }}
+            className="text-xs font-bold tracking-widest"
+            style={{ fontFamily: 'PlusJakartaSans-Bold', color: theme.colors.text.secondary }}
           >
-            ALREADY A MEMBER? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>LOG IN HERE</Text>
+            ALREADY A MEMBER? <Text style={{ color: theme.colors.brand.primary }}>LOG IN HERE</Text>
           </Text>
         </Pressable>
       </Animated.View>
