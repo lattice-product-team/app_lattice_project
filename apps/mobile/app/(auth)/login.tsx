@@ -12,6 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import Constants from 'expo-constants';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
@@ -43,8 +44,8 @@ export default function LoginScreen() {
   }, [token, isGuest, user, router]);
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
-    androidClientId: 'YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com',
+    iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
+    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
   });
 
   useEffect(() => {
@@ -96,11 +97,12 @@ export default function LoginScreen() {
         {/* Action Section */}
         <View style={styles.actionsContainer}>
           <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 14 }}>
-            <PremiumButton 
+            {/* Apple login hidden until developer account is configured */}
+            {/* <PremiumButton 
               label="Continue with Apple" 
               variant="apple" 
               onPress={handleAppleLogin}
-            />
+            /> */}
             <PremiumButton 
               label="Continue with Google" 
               variant="google" 

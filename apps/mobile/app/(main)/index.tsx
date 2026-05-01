@@ -35,6 +35,7 @@ import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
+import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -50,6 +51,7 @@ export default function MapIndexPage() {
   const isGuest = useAuthStore((state) => state.isGuest);
   const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
+  const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
 
   // Map & POI State
   const { selectedPoiId, deselect } = usePOIStore();
@@ -292,7 +294,10 @@ export default function MapIndexPage() {
         islandHeight={islandHeight}
         islandState={islandState}
         bottomOffset={insets.bottom + 5}
-        onRecenter={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+        onRecenter={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          triggerRecenter();
+        }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
       />

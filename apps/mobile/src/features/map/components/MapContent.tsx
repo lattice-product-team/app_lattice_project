@@ -53,7 +53,7 @@ export const MapContent = React.memo(function MapContent({
 
   const { selectedPoiId, selectedCoords, selectPoi, deselect: storeDeselect } = usePOIStore();
   const { currentRoute, isNavigating } = useNavigationStore();
-  const { recenterCount } = useMapUIStore();
+  const { recenterCount, isFollowingUser, setIsFollowingUser, lastCameraPosition, setLastCameraPosition } = useMapUIStore();
   const { currentEventId, selectedEvent } = useEventStore();
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
@@ -192,6 +192,21 @@ export const MapContent = React.memo(function MapContent({
     [selectPoi]
   );
 
+  const handleRegionChange = useCallback(async (feature: any) => {
+    const { geometry, properties } = feature;
+    const center = geometry.coordinates as [number, number];
+    const zoom = properties.zoomLevel;
+    const pitch = properties.pitch;
+
+    // Guardar posición para persistencia
+    setLastCameraPosition({ center, zoom, pitch });
+
+    // Si el movimiento fue manual (isUserInteraction), desactivamos el seguimiento
+    if (properties.isUserInteraction && isFollowingUser) {
+      setIsFollowingUser(false);
+    }
+  }, [isFollowingUser, setIsFollowingUser, setLastCameraPosition]);
+
   const poisAndSaved = useMemo(() => {
     const pois = poisGeoJSON?.features || [];
     const saved =
@@ -211,13 +226,18 @@ export const MapContent = React.memo(function MapContent({
         attributionEnabled={false}
         compassEnabled={false}
         onPress={onDeselect || storeDeselect}
+        onRegionDidChange={handleRegionChange}
       >
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         <MapLibreGL.Camera
           ref={camera}
           minZoomLevel={11}
-          defaultSettings={{ centerCoordinate: MAP_CENTER, zoomLevel: DEFAULT_ZOOM, pitch: 0 }}
-          followUserLocation={isNavigating}
+          defaultSettings={{ 
+            centerCoordinate: lastCameraPosition?.center || MAP_CENTER, 
+            zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM, 
+            pitch: lastCameraPosition?.pitch || 0 
+          }}
+          followUserLocation={isFollowingUser || isNavigating}
           followUserMode={(isNavigating ? 'compass' : 'normal') as any}
           followZoomLevel={18}
         />

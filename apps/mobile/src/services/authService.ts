@@ -3,11 +3,14 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '../store/useAuthStore';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export class AuthService {
-  private static API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+  private static get API_URL() {
+    return Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api/v1';
+  }
 
   static async signInWithApple() {
     try {
