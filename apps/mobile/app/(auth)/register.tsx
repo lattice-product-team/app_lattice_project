@@ -98,11 +98,13 @@ export default function RegisterScreen() {
                 pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }
               ]}
             >
-              <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
-                Explore as Guest
-              </Text>
-              <View style={[styles.arrowCircle, { backgroundColor: theme.colors.text.primary }]}>
-                <Feather name="arrow-right" size={14} color={theme.dark ? "#000" : "#fff"} />
+              <View style={styles.skipButtonContent}>
+                <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
+                  Explore as Guest
+                </Text>
+                <View style={[styles.arrowCircle, { backgroundColor: '#000' }]}>
+                  <Feather name="arrow-right" size={14} color="#fff" />
+                </View>
               </View>
             </Pressable>
           </Animated.View>
@@ -139,7 +141,7 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 100,
+    marginTop: 60,
     alignItems: 'center',
   },
   logoSpacing: {
@@ -170,18 +172,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   skipButton: {
+    borderRadius: 40,
+    borderWidth: 1,
+    minWidth: 220,
+    overflow: 'hidden',
+  },
+  skipButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 28,
+    justifyContent: 'center',
+    paddingLeft: 24,
     paddingRight: 8,
     paddingVertical: 8,
-    borderRadius: 40,
-    gap: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    gap: 12,
   },
   skipButtonText: {
     fontSize: 15,

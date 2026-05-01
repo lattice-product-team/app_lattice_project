@@ -223,6 +223,18 @@ export default function MapIndexPage() {
     };
   });
 
+  const dimmerProps = useAnimatedProps(() => {
+    return {
+      pointerEvents: islandState.value > 0.5 ? 'auto' : 'none' as any,
+    };
+  });
+
+  const scrollProps = useAnimatedProps(() => {
+    return {
+      scrollEnabled: islandState.value > 0.9,
+    };
+  });
+
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
     deselect();
@@ -270,7 +282,7 @@ export default function MapIndexPage() {
         pointerEvents="box-none"
       >
         <Animated.View 
-          pointerEvents={islandState.value > 0.5 ? 'auto' : 'none'}
+          animatedProps={dimmerProps}
           style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
         />
       </Pressable>
@@ -330,7 +342,7 @@ export default function MapIndexPage() {
               showsVerticalScrollIndicator={false}
               bounces={true}
               keyboardShouldPersistTaps="handled"
-              scrollEnabled={islandState.value > 0.9}
+              animatedProps={scrollProps}
             >
               {isSearching ? (
                 <SearchExperience 

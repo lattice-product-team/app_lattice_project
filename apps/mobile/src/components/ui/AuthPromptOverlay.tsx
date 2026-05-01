@@ -10,11 +10,10 @@ import { AuthPromptSheet } from './AuthPromptSheet';
 export const AuthPromptOverlay = () => {
   const sheetRef = useRef<BottomSheet>(null);
   const isAuthPromptOpen = useAuthStore((state) => state.isAuthPromptOpen);
-  const closeAuthPrompt = useAuthStore((state) => state.closeAuthPrompt);
 
   useEffect(() => {
     if (isAuthPromptOpen) {
-      sheetRef.current?.expand();
+      sheetRef.current?.snapToIndex(0);
     } else {
       sheetRef.current?.close();
     }
@@ -23,9 +22,8 @@ export const AuthPromptOverlay = () => {
   return (
     <AuthPromptSheet 
       sheetRef={sheetRef}
-      onClose={closeAuthPrompt}
-      title="Explore with Lattice"
-      subtitle="Sign in to personalize your map, save places, and track your performance stats."
+      title="Unlock the full experience"
+      subtitle="Sign in to Lattice to access this feature and personalize your urban discovery."
     />
   );
 };

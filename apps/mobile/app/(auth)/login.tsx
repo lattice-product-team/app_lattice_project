@@ -23,13 +23,14 @@ export default function LoginScreen() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const token = useAuthStore((state) => state.token);
+  const isGuest = useAuthStore((state) => state.isGuest);
   const setGuestMode = useAuthStore((state) => state.setGuestMode);
   
   useEffect(() => {
-    if (token) {
+    if (token || isGuest) {
       router.replace('/(main)');
     }
-  }, [token, router]);
+  }, [token, isGuest, router]);
 
   const handleGuestMode = () => {
     Haptics.selectionAsync();
@@ -41,7 +42,7 @@ export default function LoginScreen() {
     <AuthLayout midnight>
       <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: insets.bottom + 40 }}>
         
-        {/* Header Section - High Impact */}
+        {/* Header Section - Higher and more compact */}
         <Animated.View 
           entering={FadeInDown.duration(1000).springify()}
           style={styles.header}
@@ -83,7 +84,7 @@ export default function LoginScreen() {
             />
           </Animated.View>
 
-          {/* Elevated Guest Button */}
+          {/* Elevated Guest Button - Fixed Alignment */}
           <Animated.View 
             entering={FadeInDown.delay(400).duration(1000).springify()}
             style={styles.skipSection}
@@ -99,17 +100,19 @@ export default function LoginScreen() {
                 pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }
               ]}
             >
-              <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
-                Explore as Guest
-              </Text>
-              <View style={[styles.arrowCircle, { backgroundColor: theme.colors.text.primary }]}>
-                <Feather name="arrow-right" size={14} color={theme.dark ? "#000" : "#fff"} />
+              <View style={styles.skipButtonContent}>
+                <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
+                  Explore as Guest
+                </Text>
+                <View style={[styles.arrowCircle, { backgroundColor: '#000' }]}>
+                  <Feather name="arrow-right" size={14} color="#fff" />
+                </View>
               </View>
             </Pressable>
           </Animated.View>
         </View>
 
-        {/* Footer Section - Simplified */}
+        {/* Footer Section */}
         <Animated.View 
           entering={FadeIn.delay(800).duration(1200)}
           style={styles.footer}
@@ -127,7 +130,7 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 100,
+    marginTop: 60,
     alignItems: 'center',
   },
   logoSpacing: {
@@ -158,18 +161,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   skipButton: {
+    borderRadius: 40,
+    borderWidth: 1,
+    minWidth: 220,
+    overflow: 'hidden',
+  },
+  skipButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 28,
+    justifyContent: 'center',
+    paddingLeft: 24,
     paddingRight: 8,
     paddingVertical: 8,
-    borderRadius: 40,
-    gap: 16,
-    borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    gap: 12,
   },
   skipButtonText: {
     fontSize: 15,
@@ -186,11 +190,6 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     paddingHorizontal: 40,
-    gap: 24,
-  },
-  registerLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   legalText: {
     fontSize: 11,
@@ -204,3 +203,4 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
