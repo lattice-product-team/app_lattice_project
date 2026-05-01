@@ -32,3 +32,17 @@
 
 - [x] 6.1 Add legal footer with links to Terms and Privacy Policy.
 - [x] 6.2 Ensure all animations (Layout Transitions) are smooth and performant.
+
+## 7. Global Auth Prompt Refinement
+
+- [x] 7.1 Create a global trigger mechanism in `useAuthStore` to show the auth prompt.
+- [x] 7.2 Implement `AuthPromptOverlay` and inject it into the root `_layout.tsx`.
+- [x] 7.3 Refactor `(main)/index.tsx` to use the global trigger instead of local state.
+
+## 8. Style & UX Refinement
+
+- [ ] 8.1 Remove Crypto button and apply `outline` style to "Connect with Email".
+- [ ] 8.2 Replace "Join the crew" with "Don't have an account? Sign up".
+- [ ] 8.3 Redesign "Skip for now" to be more prominent (pill style).
+- [ ] 8.4 Implement dedicated Email Auth screen/flow (separate from social-first landing).
+- [ ] 8.5 Sync "Skip for now" behavior and text across all auth entry points.

@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppFonts } from '../src/hooks/useAppFonts';
 import { ThemeProvider, useAppTheme } from '../src/providers/ThemeProvider';
+import { AuthPromptOverlay } from '../src/components/ui/AuthPromptOverlay';
 import '../global.css';
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="+not-found" />
             </Stack>
+            <AuthPromptOverlay />
             <AppStatusBar />
           </ThemeProvider>
         </QueryClientProvider>

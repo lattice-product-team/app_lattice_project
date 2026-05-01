@@ -1,78 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
-  TextInput,
   Text,
   Pressable,
   Alert,
-  Linking
+  Linking,
+  StyleSheet
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown, Layout, FadeIn } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuthStore } from '../../src/store/useAuthStore';
-import { useLogin } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { AuthDivider } from '../../src/components/ui/AuthDivider';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
-import { authStyles } from '../../src/styles/typography';
 
 export default function LoginScreen() {
   const router = useRouter();
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const token = useAuthStore((state) => state.token);
   const setGuestMode = useAuthStore((state) => state.setGuestMode);
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
-
-  const login = useLogin();
-
   useEffect(() => {
     if (token) {
       router.replace('/(main)');
     }
   }, [token, router]);
-
-  const handleLogin = () => {
-    if (!email || !password) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('Error', 'Email and password are required');
-      return;
-    }
-    
-    login.mutate({ email, password }, {
-      onSuccess: () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        
-        const { intendedDestination, hasSeenPasskeyPrompt } = useAuthStore.getState();
-        
-        // Logic to determine if we should show Passkey Intro
-        // Show if never seen before
-        const shouldShowPasskey = !hasSeenPasskeyPrompt;
-
-        if (shouldShowPasskey) {
-          router.replace('/(auth)/passkey-intro');
-          return;
-        }
-
-        if (intendedDestination) {
-          useAuthStore.getState().setIntendedDestination(null);
-          router.replace(intendedDestination as any);
-        } else {
-          router.replace('/(main)');
-        }
-      },
-      onError: (error: any) => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert('Login Failed', error.message);
-      }
-    });
-  };
 
   const handleGuestMode = () => {
     Haptics.selectionAsync();
@@ -80,189 +37,170 @@ export default function LoginScreen() {
     router.replace('/(main)');
   };
 
-  const isLoading = login.isPending;
-
   return (
     <AuthLayout midnight>
-      {/* Header */}
-      <Animated.View 
-        entering={FadeInDown.duration(800).delay(100).springify()}
-        className="pt-16 pb-12 items-center w-full"
-      >
-        <Text 
-          className="mb-3 text-center"
-          style={[authStyles.title, { color: theme.colors.text.primary, fontSize: 34, letterSpacing: -1 }]}
+      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: insets.bottom + 40 }}>
+        
+        {/* Header Section - High Impact */}
+        <Animated.View 
+          entering={FadeInDown.duration(1000).springify()}
+          style={styles.header}
         >
-          Sign in to continue
-        </Text>
-        <Text 
-          className="leading-5 text-center px-6"
-          style={[authStyles.subtitle, { color: theme.colors.text.secondary, fontSize: 14 }]}
-        >
-          Please try one of the following ways to register or log in to your account.
-        </Text>
-      </Animated.View>
+          <View style={styles.logoSpacing} />
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+            Lattice
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+            The social layer of your city.
+          </Text>
+        </Animated.View>
 
-      {/* Social Buttons Block */}
-      <Animated.View 
-        entering={FadeInDown.duration(600).delay(300).springify()}
-        className="w-full gap-y-3"
-      >
-        <PremiumButton 
-          onPress={() => {}} 
-          label="Continue with Google" 
-          variant="google" 
-          className="w-full"
-        />
-        <PremiumButton 
-          onPress={() => {}} 
-          label="Continue with Apple" 
-          variant="apple" 
-          className="w-full"
-        />
-        <PremiumButton 
-          onPress={() => {}} 
-          label="Connect With Crypto Wallet" 
-          variant="outline" 
-          className="w-full"
-        />
-      </Animated.View>
-
-      <AuthDivider label="OR" />
-
-      {/* Email Form Section */}
-      <Animated.View 
-        layout={Layout.springify()}
-        className="w-full mb-8"
-      >
-        {!showEmailForm ? (
-          <Animated.View entering={FadeIn}>
+        {/* Action Section */}
+        <View style={styles.actionsContainer}>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 14 }}>
             <PremiumButton 
-              onPress={() => {
-                Haptics.selectionAsync();
-                setShowEmailForm(true);
-              }} 
-              label="Connect With Email" 
-              variant="dark" 
-              className="w-full"
-              icon="email-outline"
+              label="Continue with Apple" 
+              variant="apple" 
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
             />
-          </Animated.View>
-        ) : (
-          <Animated.View entering={FadeInDown.springify()}>
-            <View 
-              className="rounded-[32px] overflow-hidden mb-4 border"
-              style={{ 
-                backgroundColor: theme.colors.glass.background,
-                borderColor: theme.colors.glass.border
-              }}
-            >
-              {/* Email Input */}
-              <View 
-                className="flex-row items-center px-7 py-5 border-b"
-                style={{ borderBottomColor: theme.colors.glass.subtleBorder }}
-              >
-                <Feather name="mail" size={18} color={theme.colors.text.secondary} />
-                <TextInput 
-                  className="flex-1 text-base font-medium ml-4 h-10"
-                  keyboardType="email-address" 
-                  autoCapitalize="none" 
-                  placeholder="Email address"
-                  placeholderTextColor={theme.colors.text.muted}
-                  value={email}
-                  onChangeText={setEmail}
-                  editable={!isLoading}
-                  style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
-                />
-              </View>
-
-              {/* Password Input */}
-              <View className="flex-row items-center px-7 py-5">
-                <Feather name="lock" size={18} color={theme.colors.text.secondary} />
-                <TextInput 
-                  className="flex-1 text-base font-medium ml-4 h-10"
-                  secureTextEntry={!showPassword} 
-                  placeholder="Password"
-                  placeholderTextColor={theme.colors.text.muted}
-                  value={password}
-                  onChangeText={setPassword}
-                  editable={!isLoading}
-                  style={{ fontFamily: 'Outfit-Medium', color: theme.colors.text.primary }}
-                />
-                <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={20}>
-                  <Feather 
-                    name={showPassword ? "eye-off" : "eye"} 
-                    size={18} 
-                    color={theme.colors.text.muted} 
-                  />
-                </Pressable>
-              </View>
+            <PremiumButton 
+              label="Continue with Google" 
+              variant="google" 
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+            />
+            
+            <View style={styles.dividerWrapper}>
+              <AuthDivider label="OR" />
             </View>
 
             <PremiumButton 
-              onPress={handleLogin} 
-              label="SIGN IN" 
-              isLoading={isLoading} 
-              variant="primary"
+              label="Connect with Email" 
+              variant="outline" 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/(auth)/email-auth');
+              }}
             />
           </Animated.View>
-        )}
-      </Animated.View>
 
-      {/* Legal Footer */}
-      <Animated.View 
-        entering={FadeInDown.duration(800).delay(600).springify()}
-        className="items-center px-6 mb-8"
-      >
-        <Text 
-          className="text-center text-[11px] leading-4"
-          style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Medium' }}
-        >
-          By continuing, you confirm that you've read and agreed to our{' '}
-          <Text 
-            className="font-bold" 
-            style={{ color: theme.colors.text.secondary }}
-            onPress={() => Linking.openURL('#')}
-          >Terms of Service</Text>
-          {' '}and consent to the{' '}
-          <Text 
-            className="font-bold" 
-            style={{ color: theme.colors.text.secondary }}
-            onPress={() => Linking.openURL('#')}
-          >Privacy Policy</Text>.
-        </Text>
-      </Animated.View>
-
-      {/* Secondary Actions */}
-      <Animated.View 
-        entering={FadeInDown.duration(800).delay(700).springify()}
-        className="items-center pb-12 w-full"
-      >
-        <Pressable 
-          onPress={() => router.replace('/(auth)/register')}
-          className="active:opacity-70 mb-6"
-        >
-          <Text 
-            className="text-xs font-bold tracking-widest"
-            style={{ fontFamily: 'PlusJakartaSans-Bold', color: theme.colors.text.secondary }}
+          {/* Elevated Guest Button */}
+          <Animated.View 
+            entering={FadeInDown.delay(400).duration(1000).springify()}
+            style={styles.skipSection}
           >
-            NEW TO LATTICE? <Text style={{ color: theme.colors.brand.primary }}>JOIN THE CREW</Text>
-          </Text>
-        </Pressable>
+            <Pressable 
+              onPress={handleGuestMode}
+              style={({ pressed }) => [
+                styles.skipButton,
+                { 
+                  backgroundColor: theme.colors.glass.subtle,
+                  borderColor: 'rgba(255,255,255,0.08)'
+                },
+                pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }
+              ]}
+            >
+              <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
+                Explore as Guest
+              </Text>
+              <View style={[styles.arrowCircle, { backgroundColor: theme.colors.text.primary }]}>
+                <Feather name="arrow-right" size={14} color={theme.dark ? "#000" : "#fff"} />
+              </View>
+            </Pressable>
+          </Animated.View>
+        </View>
 
-        <Pressable 
-          onPress={handleGuestMode}
-          className="active:opacity-70"
+        {/* Footer Section - Simplified */}
+        <Animated.View 
+          entering={FadeIn.delay(800).duration(1200)}
+          style={styles.footer}
         >
-          <Text 
-            className="text-xs font-bold tracking-widest uppercase"
-            style={{ fontFamily: 'PlusJakartaSans-Bold', color: theme.colors.text.muted }}
-          >
-            Skip for now
+          <Text style={styles.legalText}>
+            By continuing, you confirm that you've read and agreed to our{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Privacy</Text>.
           </Text>
-        </Pressable>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </AuthLayout>
   );
 }
 
+const styles = StyleSheet.create({
+  header: {
+    marginTop: 100,
+    alignItems: 'center',
+  },
+  logoSpacing: {
+    height: 40,
+  },
+  title: {
+    fontSize: 56,
+    fontFamily: 'Outfit-Bold',
+    letterSpacing: -2.5,
+    lineHeight: 60,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Medium',
+    marginTop: 6,
+    opacity: 0.8,
+  },
+  actionsContainer: {
+    paddingHorizontal: 28,
+    width: '100%',
+    gap: 32,
+  },
+  dividerWrapper: {
+    paddingVertical: 8,
+  },
+  skipSection: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  skipButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 28,
+    paddingRight: 8,
+    paddingVertical: 8,
+    borderRadius: 40,
+    gap: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+  },
+  skipButtonText: {
+    fontSize: 15,
+    fontFamily: 'PlusJakartaSans-Bold',
+    letterSpacing: 0.2,
+  },
+  arrowCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footer: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    gap: 24,
+  },
+  registerLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legalText: {
+    fontSize: 11,
+    color: 'rgba(150, 150, 150, 0.5)',
+    textAlign: 'center',
+    lineHeight: 16,
+    fontFamily: 'PlusJakartaSans-Medium',
+    maxWidth: 240,
+  },
+  legalLink: {
+    textDecorationLine: 'underline',
+  },
+});

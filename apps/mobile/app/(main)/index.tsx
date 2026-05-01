@@ -27,7 +27,6 @@ import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
-import { AuthPromptSheet } from '../../src/components/ui/AuthPromptSheet';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 
@@ -36,7 +35,6 @@ import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
-import BottomSheet from '@gorhom/bottom-sheet';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -50,7 +48,7 @@ export default function MapIndexPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const isGuest = useAuthStore((state) => state.isGuest);
-  const authSheetRef = React.useRef<BottomSheet>(null);
+  const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
 
   // Map & POI State
   const { selectedPoiId, deselect } = usePOIStore();
@@ -66,12 +64,11 @@ export default function MapIndexPage() {
   const handleProfilePress = useCallback(() => {
     Haptics.selectionAsync();
     if (isGuest) {
-      useAuthStore.getState().setIntendedDestination('/(main)/profile');
-      authSheetRef.current?.expand();
+      openAuthPrompt('/(main)/profile');
     } else {
       router.push('/(main)/profile');
     }
-  }, [isGuest, router]);
+  }, [isGuest, router, openAuthPrompt]);
 
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
   const islandState = useSharedValue(0); 
@@ -372,12 +369,6 @@ export default function MapIndexPage() {
       <EventDetailSheet 
         event={selectedEvent} 
         onClose={handleCloseDetails} 
-      />
-
-      <AuthPromptSheet 
-        sheetRef={authSheetRef} 
-        title="Explore with Lattice"
-        subtitle="Sign in to personalize your map, save places, and track your performance stats."
       />
     </View>
   );

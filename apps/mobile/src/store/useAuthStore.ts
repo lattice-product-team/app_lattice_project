@@ -14,6 +14,7 @@ interface AuthState {
   registrationRequired: boolean;
   prefilledEmail: string | null;
   intendedDestination: string | null;
+  isAuthPromptOpen: boolean;
   
   // Setters
   setAuth: (token: string, user: User, tickets?: Ticket[], isGuest?: boolean) => void;
@@ -25,6 +26,8 @@ interface AuthState {
   setPendingTicketCode: (code: string | null) => void;
   setRegistrationRequired: (required: boolean, email?: string | null) => void;
   setIntendedDestination: (path: string | null) => void;
+  openAuthPrompt: (destination?: string) => void;
+  closeAuthPrompt: () => void;
   clearRegistrationData: () => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
@@ -41,6 +44,7 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
   registrationRequired: false,
   prefilledEmail: null,
   intendedDestination: null,
+  isAuthPromptOpen: false,
 
   setAuth: (token, user, tickets, isGuest = false) => 
     set((state) => ({ 
@@ -81,6 +85,10 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
   
   setIntendedDestination: (path) => set({ intendedDestination: path }),
   
+  openAuthPrompt: (dest) => set({ isAuthPromptOpen: true, intendedDestination: dest || null }),
+  
+  closeAuthPrompt: () => set({ isAuthPromptOpen: false }),
+  
   updateUser: (userUpdates) => set((state) => ({
     user: state.user ? { ...state.user, ...userUpdates } : null
   })),
@@ -95,7 +103,8 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
     hasSeenPasskeyPrompt: null,
     registrationRequired: false,
     prefilledEmail: null,
-    intendedDestination: null
+    intendedDestination: null,
+    isAuthPromptOpen: false
   }),
 });
 

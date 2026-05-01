@@ -1,0 +1,182 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useAuthStore } from '../../src/store/useAuthStore';
+import { useLogin } from '../../src/hooks/queries/useAuth';
+import { AuthLayout } from '../../src/components/ui/AuthLayout';
+import { PremiumButton } from '../../src/components/ui/PremiumButton';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
+
+export default function EmailAuthScreen() {
+  const router = useRouter();
+  const theme = useAppTheme();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const login = useLogin();
+
+  const handleLogin = () => {
+    if (!email || !password) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    login.mutate({ email, password }, {
+      onSuccess: () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        const { intendedDestination, hasSeenPasskeyPrompt } = useAuthStore.getState();
+        
+        if (!hasSeenPasskeyPrompt) {
+          router.replace('/(auth)/passkey-intro');
+        } else if (intendedDestination) {
+          useAuthStore.getState().setIntendedDestination(null);
+          router.replace(intendedDestination as any);
+        } else {
+          router.replace('/(main)');
+        }
+      },
+      onError: (error: any) => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert('Login Failed', error.message);
+      }
+    });
+  };
+
+  return (
+    <AuthLayout midnight>
+      <View style={styles.container}>
+        {/* Back Button */}
+        <Pressable 
+          onPress={() => router.back()} 
+          style={styles.backButton}
+        >
+          <Feather name="arrow-left" size={24} color={theme.colors.text.primary} />
+        </Pressable>
+
+        <Animated.View entering={FadeInDown.duration(600).springify()}>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>Sign in with Email</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+            Enter your details to access your account.
+          </Text>
+        </Animated.View>
+
+        <Animated.View 
+          entering={FadeInDown.delay(200).duration(600).springify()}
+          style={styles.form}
+        >
+          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle }]}>
+            <Feather name="mail" size={20} color={theme.colors.text.muted} />
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor={theme.colors.text.muted}
+              style={[styles.input, { color: theme.colors.text.primary }]}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
+
+          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle }]}>
+            <Feather name="lock" size={20} color={theme.colors.text.muted} />
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor={theme.colors.text.muted}
+              style={[styles.input, { color: theme.colors.text.primary }]}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <Pressable onPress={() => setShowPassword(!showPassword)}>
+              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color={theme.colors.text.muted} />
+            </Pressable>
+          </View>
+
+          <View style={styles.forgotPassword}>
+            <Text style={{ color: theme.colors.brand.primary, fontFamily: 'PlusJakartaSans-Bold', fontSize: 13 }}>
+              Forgot Password?
+            </Text>
+          </View>
+
+          <PremiumButton 
+            label={login.isPending ? "Connecting..." : "SIGN IN"} 
+            variant="primary" 
+            onPress={handleLogin}
+            disabled={login.isPending}
+          />
+
+          <View style={styles.registerLink}>
+            <Text style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Medium', fontSize: 14 }}>
+              Don't have an account?{' '}
+            </Text>
+            <Pressable onPress={() => router.push('/(auth)/email-register')} hitSlop={10}>
+              <Text style={{ color: theme.colors.brand.primary, fontFamily: 'PlusJakartaSans-Bold', fontSize: 14 }}>
+                Create one
+              </Text>
+            </Pressable>
+          </View>
+        </Animated.View>
+      </View>
+    </AuthLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 40,
+    paddingHorizontal: 24,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+    marginLeft: -10,
+  },
+  title: {
+    fontSize: 28,
+    fontFamily: 'Outfit-Bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: 'Outfit-Medium',
+    marginBottom: 40,
+  },
+  form: {
+    gap: 16,
+  },
+  inputGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    height: 64,
+    borderRadius: 20,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'PlusJakartaSans-Medium',
+  },
+  forgotPassword: {
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
+  registerLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+  }
+});
