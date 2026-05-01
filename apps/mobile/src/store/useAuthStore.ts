@@ -10,16 +10,21 @@ interface AuthState {
   tickets: Ticket[];
   pendingTicketCode: string | null;
   isGuest: boolean;
+  hasSeenPasskeyPrompt: number | null;
   registrationRequired: boolean;
   prefilledEmail: string | null;
+  intendedDestination: string | null;
   
   // Setters
   setAuth: (token: string, user: User, tickets?: Ticket[], isGuest?: boolean) => void;
+  setGuestMode: (isGuest: boolean) => void;
+  setHasSeenPasskeyPrompt: (timestamp: number | null) => void;
   setTicket: (ticket: Ticket) => void;
   setTickets: (tickets: Ticket[]) => void;
   addTicketToWallet: (ticket: Ticket) => void;
   setPendingTicketCode: (code: string | null) => void;
   setRegistrationRequired: (required: boolean, email?: string | null) => void;
+  setIntendedDestination: (path: string | null) => void;
   clearRegistrationData: () => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
@@ -32,8 +37,10 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
   tickets: [],
   pendingTicketCode: null,
   isGuest: false,
+  hasSeenPasskeyPrompt: null,
   registrationRequired: false,
   prefilledEmail: null,
+  intendedDestination: null,
 
   setAuth: (token, user, tickets, isGuest = false) => 
     set((state) => ({ 
@@ -44,6 +51,10 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
       registrationRequired: false, 
       prefilledEmail: null 
     })),
+
+  setGuestMode: (isGuest) => set({ isGuest }),
+  
+  setHasSeenPasskeyPrompt: (timestamp) => set({ hasSeenPasskeyPrompt: timestamp }),
 
   setTicket: (ticket) => set((state) => ({ 
     activeTicket: ticket,
@@ -68,6 +79,8 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
   clearRegistrationData: () => 
     set({ registrationRequired: false, prefilledEmail: null, pendingTicketCode: null }),
   
+  setIntendedDestination: (path) => set({ intendedDestination: path }),
+  
   updateUser: (userUpdates) => set((state) => ({
     user: state.user ? { ...state.user, ...userUpdates } : null
   })),
@@ -79,8 +92,10 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
     tickets: [], 
     pendingTicketCode: null, 
     isGuest: false,
+    hasSeenPasskeyPrompt: null,
     registrationRequired: false,
-    prefilledEmail: null
+    prefilledEmail: null,
+    intendedDestination: null
   }),
 });
 

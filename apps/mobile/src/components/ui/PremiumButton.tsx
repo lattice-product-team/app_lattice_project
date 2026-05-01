@@ -25,7 +25,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 interface PremiumButtonProps {
   onPress: () => void;
   label: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'surface' | 'apple' | 'google';
+  variant?: 'primary' | 'secondary' | 'outline' | 'glass' | 'surface' | 'apple' | 'google' | 'dark';
   icon?: string;
   isLoading?: boolean;
   disabled?: boolean;
@@ -72,6 +72,7 @@ export const PremiumButton = ({
       case 'primary':
         return [theme.colors.brand.primary, theme.colors.brand.primary] as const;
       case 'apple':
+      case 'dark':
         return ['#000000', '#000000'] as const;
       case 'google':
         return ['#FFFFFF', '#FFFFFF'] as const;
@@ -98,6 +99,9 @@ export const PremiumButton = ({
     if (variant === 'google') {
       return { ...base, borderWidth: 1, borderColor: '#E5E5E5' };
     }
+    if (variant === 'dark') {
+      return { ...base, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' };
+    }
     if (variant === 'glass') {
       return { ...base, borderWidth: 1, borderColor: theme.colors.glass.border };
     }
@@ -115,6 +119,7 @@ export const PremiumButton = ({
       case 'primary':
         return { ...base, color: '#000000' };
       case 'apple':
+      case 'dark':
         return { ...base, color: '#FFFFFF' };
       case 'google':
         return { ...base, color: '#000000' };
