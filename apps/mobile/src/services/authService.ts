@@ -118,4 +118,54 @@ export class AuthService {
       return { success: false, error: e.message };
     }
   }
+  async login(credentials: any) {
+    const response = await fetch(`${AuthService.API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    return response.json();
+  }
+
+  async register(data: any) {
+    const response = await fetch(`${AuthService.API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  }
+
+  async getUserTickets() {
+    const response = await fetch(`${AuthService.API_URL}/auth/tickets`, {
+      headers: { 'Authorization': `Bearer ${useAuthStore.getState().token}` }
+    });
+    return response.json();
+  }
+
+  async claimTicket(code: string) {
+    const response = await fetch(`${AuthService.API_URL}/auth/ticket/claim`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${useAuthStore.getState().token}`
+      },
+      body: JSON.stringify({ ticket_code: code }),
+    });
+    return response.json();
+  }
+
+  async unclaimTicket(code: string) {
+    const response = await fetch(`${AuthService.API_URL}/auth/ticket/unclaim`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${useAuthStore.getState().token}`
+      },
+      body: JSON.stringify({ ticket_code: code }),
+    });
+    return response.json();
+  }
 }
+
+export const authService = new AuthService();

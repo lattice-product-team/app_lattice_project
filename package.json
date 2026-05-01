@@ -58,6 +58,8 @@
     "overrides": {
       "react": "19.1.0",
       "react-dom": "19.1.0",
+      "expo": "~54.0.34",
+      "react-native": "0.81.5",
       "metro": "0.83.3",
       "metro-core": "0.83.3",
       "metro-file-map": "0.83.3",
@@ -74,12 +76,12 @@
   },
   "overrides": {
     "eslint-plugin-react-hooks": "^5.2.0",
-    "expo": "~54.0.33",
+    "expo": "~54.0.34",
     "react": "19.1.0",
     "react-native": "0.81.5"
   },
   "dependencies": {
-    "expo": "~54.0.33",
+    "expo": "~54.0.34",
     "react": "19.1.0",
     "react-native": "0.81.5"
   }

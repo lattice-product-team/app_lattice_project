@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { authService } from '../../../services/authService';
+import { authService } from '../../../services/AuthService';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 export const useUserTickets = () => {
