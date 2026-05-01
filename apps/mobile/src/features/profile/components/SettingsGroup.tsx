@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { useRouter } from 'expo-router';
 
 interface SettingsItemProps {
   icon: string;
@@ -62,6 +64,28 @@ const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: Sett
 
 export const SettingsGroup = () => {
   const theme = useAppTheme();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Estás seguro de que quieres salir de Lattice?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Salir", 
+          style: "destructive",
+          onPress: () => {
+            useAuthStore.getState().logout();
+          }
+        }
+      ]
+    );
+  };
+
+  const handlePress = (label: string) => {
+    console.log(`Setting ${label} pressed`);
+  };
 
   return (
     <View style={styles.container}>
@@ -70,9 +94,9 @@ export const SettingsGroup = () => {
       </Text>
       
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
-        <SettingsItem icon="user" label="Información Personal" />
-        <SettingsItem icon="shield" label="Privacidad y Seguridad" />
-        <SettingsItem icon="bell" label="Notificaciones" isLast />
+        <SettingsItem icon="user" label="Información Personal" onPress={() => handlePress('Información Personal')} />
+        <SettingsItem icon="shield" label="Privacidad y Seguridad" onPress={() => handlePress('Privacidad y Seguridad')} />
+        <SettingsItem icon="bell" label="Notificaciones" isLast onPress={() => handlePress('Notificaciones')} />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
 
@@ -81,8 +105,8 @@ export const SettingsGroup = () => {
       </Text>
       
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
-        <SettingsItem icon="help-circle" label="Centro de Ayuda" />
-        <SettingsItem icon="info" label="Términos de Servicio" isLast />
+        <SettingsItem icon="help-circle" label="Centro de Ayuda" onPress={() => handlePress('Centro de Ayuda')} />
+        <SettingsItem icon="info" label="Términos de Servicio" isLast onPress={() => handlePress('Términos de Servicio')} />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
 
@@ -92,7 +116,7 @@ export const SettingsGroup = () => {
           label="Cerrar Sesión" 
           destructive 
           isLast 
-          onPress={() => console.log('Logout')} 
+          onPress={handleLogout} 
         />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>

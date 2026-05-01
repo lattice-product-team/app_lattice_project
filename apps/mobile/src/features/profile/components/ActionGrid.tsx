@@ -4,28 +4,48 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { useRouter } from 'expo-router';
 
 export const ActionGrid = () => {
   const theme = useAppTheme();
+  const router = useRouter();
+
+  const handlePress = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    switch (id) {
+      case 'tickets':
+        router.push('/tickets');
+        break;
+      case 'wallet':
+        router.push('/wallet');
+        break;
+      case 'saved':
+        router.push('/saved');
+        break;
+      default:
+        console.log(`Action ${id} pressed`);
+    }
+  };
 
   const actions = [
     {
       id: 'tickets',
       label: 'Entradas',
       icon: <MaterialCommunityIcons name="ticket-confirmation-outline" size={26} color={theme.colors.brand.primary} />,
-      onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+      onPress: () => handlePress('tickets'),
     },
     {
       id: 'wallet',
       label: 'Wallet',
       icon: <MaterialCommunityIcons name="wallet-outline" size={26} color={theme.colors.brand.primary} />,
-      onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+      onPress: () => handlePress('wallet'),
     },
     {
       id: 'saved',
       label: 'Favoritos',
       icon: <Feather name="heart" size={24} color={theme.colors.brand.primary} />,
-      onPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+      onPress: () => handlePress('saved'),
     },
   ];
 

@@ -3,6 +3,13 @@ export interface User {
   email: string;
   fullName: string;
   avatarUrl?: string;
+  bio?: string;
+  stats?: {
+    eventsAttended: number;
+    savedEvents: number;
+    latticePoints: number;
+  };
+  medals?: any[];
   hasTicket?: boolean;
   avoidStairs?: boolean;
   avoidCrowds?: boolean;
