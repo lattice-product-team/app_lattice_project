@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Image } from 'expo-image';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { UserProfile } from '../types';
+import { UserAvatar } from '../../../components/ui/UserAvatar';
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -15,13 +15,7 @@ export const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <Image
-          source={{ uri: profile.avatarUrl }}
-          style={styles.avatar}
-          contentFit="cover"
-          transition={500}
-        />
-        <View style={[styles.avatarBorder, { borderColor: theme.colors.glass.border }]} />
+        <UserAvatar size={110} url={profile.avatarUrl} />
       </View>
       
       <View style={styles.infoContainer}>

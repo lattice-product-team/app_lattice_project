@@ -2,6 +2,7 @@ export interface User {
   id: number;
   email: string;
   fullName: string;
+  avatarUrl?: string;
   hasTicket?: boolean;
   avoidStairs?: boolean;
   avoidCrowds?: boolean;

@@ -48,6 +48,7 @@ export default function MapIndexPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const isGuest = useAuthStore((state) => state.isGuest);
+  const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
 
   // Map & POI State
@@ -333,6 +334,8 @@ export default function MapIndexPage() {
                   saveSearch(searchQuery);
                   Keyboard.dismiss();
                 }}
+                avatarUrl={user?.avatarUrl}
+                isGuest={isGuest}
               />
             </View>
 

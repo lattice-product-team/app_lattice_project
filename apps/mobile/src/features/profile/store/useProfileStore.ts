@@ -6,7 +6,6 @@ const MOCK_PROFILE: UserProfile = {
   name: 'Alex Rivera',
   email: 'alex@lattice.app',
   bio: 'Explorador urbano y amante de los festivales. Buscando siempre la próxima joya escondida en la ciudad.',
-  avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
   stats: {
     eventsAttended: 12,
     savedEvents: 8,
