@@ -215,3 +215,46 @@ export const getEvents = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };
+
+export const getEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const eventId = parseInt(id as string, 10);
+
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: 'Invalid Event ID' });
+    }
+
+    const result = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        description: events.description,
+        type: events.type,
+        imageUrl: events.imageUrl,
+        startDate: events.startDate,
+        endDate: events.endDate,
+        metadata: events.metadata,
+        center: sql<string>`ST_AsGeoJSON(${events.location})`,
+        boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,
+      })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1);
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const event = result[0];
+    res.json({
+      ...event,
+      center: event.center ? JSON.parse(event.center) : null,
+      boundary: event.boundary ? JSON.parse(event.boundary) : null,
+      metadata: event.metadata ? JSON.parse(event.metadata) : null,
+    });
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};

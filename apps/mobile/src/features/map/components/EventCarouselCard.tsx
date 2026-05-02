@@ -8,11 +8,13 @@ import { typography } from '../../../styles/typography';
 import { getEventMetadata } from '../../../utils/poiUtils';
 
 interface Event {
-  id: string;
+  id: string | number;
   name: string;
   image?: string;
-  date: string;
-  location: string;
+  imageUrl?: string;
+  date?: string;
+  startDate?: string;
+  location?: string;
   rating?: number;
   type?: string;
   description?: string;
@@ -27,6 +29,21 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
   const theme = useAppTheme();
   const metadata = getEventMetadata(event.type);
 
+  const formattedDate = React.useMemo(() => {
+    if (event.date) return event.date;
+    if (!event.startDate) return 'Hoy';
+    
+    const date = new Date(event.startDate);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    
+    if (isToday) return `Hoy, ${timeStr}`;
+    
+    return date.toLocaleDateString([], { day: '2-digit', month: 'short' }) + `, ${timeStr}`;
+  }, [event.date, event.startDate]);
+
   return (
     <View style={styles.shadowWrapper}>
       <Pressable 
@@ -39,7 +56,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
         <View style={styles.container}>
           {/* Background Image */}
           <Image 
-            source={event.image} 
+            source={event.image || event.imageUrl} 
             style={styles.image}
             contentFit="cover"
             transition={300}
@@ -74,12 +91,12 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
                   <Feather name="calendar" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.date}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{formattedDate}</Text>
                 </View>
                 <View style={styles.detailSeparator} />
                 <View style={styles.detailItem}>
                   <Feather name="map-pin" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.location}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.location || 'Barcelona'}</Text>
                 </View>
               </View>
             </View>
@@ -105,12 +122,6 @@ const styles = StyleSheet.create({
     width: 260,
     height: 280,
     marginRight: 16,
-    // Las sombras pesadas pueden causar lag durante la animación.
-    // En un entorno de alto rendimiento, es mejor usarlas con moderación.
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
   },
   container: {
     width: 260,

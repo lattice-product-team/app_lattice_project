@@ -87,12 +87,27 @@ export const users = pgTable('users', {
   email: varchar('email').unique().notNull(),
   passwordHash: varchar('password_hash').notNull(),
   fullName: varchar('full_name'),
+  googleId: varchar('google_id').unique(),
+  appleId: varchar('apple_id').unique(),
+  bio: text('bio'),
+  avatarUrl: text('avatar_url'),
+  isPasskeyEnabled: boolean('is_passkey_enabled').default(false),
   mobilityMode: mobilityModeEnum('mobility_mode').default('standard'),
   avoidStairs: boolean('avoid_stairs').default(false),
   avoidCrowds: boolean('avoid_crowds').default(false),
   avoidSlopes: boolean('avoid_slopes').default(false),
   avoidGrandstands: boolean('avoid_grandstands').default(false),
   hasTicket: boolean('has_ticket').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const passkeyCredentials = pgTable('passkey_credentials', {
+  id: varchar('id').primaryKey(), // Credential ID
+  userId: integer('user_id').references(() => users.id).notNull(),
+  publicKey: text('public_key').notNull(),
+  counter: integer('counter').default(0),
+  deviceType: varchar('device_type'),
+  backedUp: boolean('backed_up').default(false),
   createdAt: timestamp('created_at').defaultNow(),
 });
 

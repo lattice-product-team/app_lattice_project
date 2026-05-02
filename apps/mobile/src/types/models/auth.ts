@@ -2,6 +2,15 @@ export interface User {
   id: number;
   email: string;
   fullName: string;
+  avatarUrl?: string;
+  bio?: string;
+  isPasskeyEnabled?: boolean;
+  stats?: {
+    eventsAttended: number;
+    savedEvents: number;
+    latticePoints: number;
+  };
+  medals?: any[];
   hasTicket?: boolean;
   avoidStairs?: boolean;
   avoidCrowds?: boolean;

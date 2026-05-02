@@ -33,6 +33,8 @@ const envSchema = z.object({
   // Variables provided by scripts (overrides)
   TUNNEL_URL: z.string().url().optional(),
   LAN_IP: z.string().optional(),
+  GOOGLE_IOS_CLIENT_ID: z.string().optional(),
+  GOOGLE_ANDROID_CLIENT_ID: z.string().optional(),
 });
 
 // Validate process.env against schema
@@ -129,6 +131,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     '@maplibre/maplibre-react-native',
+    'expo-apple-authentication',
+    'expo-web-browser',
   ],
   experiments: {
     typedRoutes: true,
@@ -138,6 +142,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.extra,
     apiUrl: API_URL,
     nodeEnv: env.NODE_ENV,
+    googleIosClientId: env.GOOGLE_IOS_CLIENT_ID,
+    googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID,
     eas: {
       projectId: '2fbc4e45-153f-443a-b152-c034ef3964b0',
     },

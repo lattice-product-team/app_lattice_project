@@ -1,10 +1,9 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, Pressable } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { typography } from '../../styles/typography';
-import { Image } from 'expo-image';
-import { SafeBlurView } from './SafeBlurView';
 import { useAppTheme } from '../../hooks/useAppTheme';
+import { UserAvatar } from './UserAvatar';
+import { typography } from '../../styles/typography';
 
 interface FloatingSearchBarProps {
   value: string;
@@ -13,6 +12,8 @@ interface FloatingSearchBarProps {
   onProfilePress?: () => void;
   onSubmit?: () => void;
   placeholder?: string;
+  avatarUrl?: string | null;
+  isGuest?: boolean;
 }
 
 export const FloatingSearchBar = ({
@@ -21,7 +22,9 @@ export const FloatingSearchBar = ({
   onFocus,
   onProfilePress,
   onSubmit,
-  placeholder = "Search events, stages, food..."
+  placeholder = "Search events, stages, food...",
+  avatarUrl,
+  isGuest
 }: FloatingSearchBarProps) => {
   const theme = useAppTheme();
 
@@ -63,10 +66,7 @@ export const FloatingSearchBar = ({
           style={styles.profileButton}
           onPress={onProfilePress}
         >
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop' }}
-            style={[styles.avatar, { borderColor: theme.colors.border.subtle }]}
-          />
+          <UserAvatar size={32} url={avatarUrl} isGuest={isGuest} />
         </Pressable>
       </View>
     </View>

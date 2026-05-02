@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db, users, tickets, venues, events, eq, and, sql } from '@app/db';
+import { db, users, tickets, venues, events, passkeyCredentials, eq, and, sql } from '@app/db';
 
 /**
  * Get configuration for a specific event including venue branding
@@ -530,6 +530,190 @@ export const unclaimTicket = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Unclaim Error:', error);
+    res.status(500).json({ error: String(error) });
+  }
+};
+
+/**
+ * Social Login: Google
+ */
+export const googleLogin = async (req: Request, res: Response) => {
+  const { token, ticket_code } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: 'Google token is required' });
+  }
+
+  try {
+    // TODO: Verify token with google-auth-library
+    // const ticket = await client.verifyIdToken({ idToken: token, audience: CLIENT_ID });
+    // const payload = ticket.getPayload();
+    
+    // MOCK Verification for now
+    const mockEmail = `google_${token.substring(0, 8)}@example.com`;
+    const mockGoogleId = `g_${token.substring(0, 10)}`;
+    const mockName = 'Google User';
+
+    let userResult = await db.select().from(users).where(eq(users.googleId, mockGoogleId)).limit(1);
+    let user = userResult[0];
+
+    if (!user) {
+      // Check if user exists with same email but different provider
+      const emailUserResult = await db.select().from(users).where(eq(users.email, mockEmail)).limit(1);
+      const emailUser = emailUserResult[0];
+
+      if (emailUser) {
+        // Link Google ID to existing email account
+        const updatedUser = await db.update(users).set({ googleId: mockGoogleId }).where(eq(users.id, emailUser.id)).returning();
+        user = updatedUser[0];
+      } else {
+        // Create new user
+        const newUser = await db.insert(users).values({
+          email: mockEmail,
+          googleId: mockGoogleId,
+          fullName: mockName,
+          passwordHash: 'social_login_no_password',
+        }).returning();
+        user = newUser[0];
+      }
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        hasTicket: user.hasTicket,
+        avatarUrl: user.avatarUrl,
+      },
+      token: `mock_jwt_token_for_${user.id}`,
+    });
+  } catch (error) {
+    console.error('Google Login Error:', error);
+    res.status(500).json({ error: String(error) });
+  }
+};
+
+/**
+ * Social Login: Apple
+ */
+export const appleLogin = async (req: Request, res: Response) => {
+  const { token, fullName, ticket_code } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: 'Apple token is required' });
+  }
+
+  try {
+    // TODO: Verify token with apple-signin-verify
+    
+    // MOCK Verification for now
+    const mockAppleId = `apple_${token.substring(0, 10)}`;
+    const mockEmail = `apple_${token.substring(0, 8)}@example.com`;
+
+    let userResult = await db.select().from(users).where(eq(users.appleId, mockAppleId)).limit(1);
+    let user = userResult[0];
+
+    if (!user) {
+      const newUser = await db.insert(users).values({
+        email: mockEmail,
+        appleId: mockAppleId,
+        fullName: fullName ? `${fullName.firstName} ${fullName.lastName}` : 'Apple User',
+        passwordHash: 'social_login_no_password',
+      }).returning();
+      user = newUser[0];
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        hasTicket: user.hasTicket,
+        avatarUrl: user.avatarUrl,
+      },
+      token: `mock_jwt_token_for_${user.id}`,
+    });
+  } catch (error) {
+    console.error('Apple Login Error:', error);
+    res.status(500).json({ error: String(error) });
+  }
+};
+
+/**
+ * Passkey: Registration Challenge
+ */
+export const registerPasskeyChallenge = async (req: Request, res: Response) => {
+  // TODO: Use generateRegistrationOptions from @simplewebauthn/server
+  res.json({
+    challenge: 'mock_registration_challenge',
+    rp: { name: 'Lattice', id: 'lattice.dev' },
+    user: { id: 'user_123', name: 'user@example.com', displayName: 'User' },
+    pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+  });
+};
+
+/**
+ * Passkey: Registration Verification
+ */
+export const registerPasskeyVerify = async (req: Request, res: Response) => {
+  const { id, response } = req.body;
+  const authHeader = req.headers.authorization;
+  const userId = parseInt(authHeader!.replace('Bearer mock_jwt_token_for_', ''), 10);
+
+  try {
+    await db.insert(passkeyCredentials).values({
+      id,
+      userId,
+      publicKey: 'mock_public_key',
+      counter: 0,
+    });
+
+    await db.update(users).set({ isPasskeyEnabled: true }).where(eq(users.id, userId));
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: String(error) });
+  }
+};
+
+/**
+ * Passkey: Login Challenge
+ */
+export const loginPasskeyChallenge = async (req: Request, res: Response) => {
+  // TODO: Use generateAuthenticationOptions
+  res.json({
+    challenge: 'mock_login_challenge',
+    allowCredentials: [], // Allow all registered for the RP
+  });
+};
+
+/**
+ * Passkey: Login Verification
+ */
+export const loginPasskeyVerify = async (req: Request, res: Response) => {
+  const { id, response } = req.body;
+
+  try {
+    const credResult = await db.select().from(passkeyCredentials).where(eq(passkeyCredentials.id, id)).limit(1);
+    const credential = credResult[0];
+
+    if (!credential) {
+      return res.status(404).json({ error: 'Credential not found' });
+    }
+
+    const userResult = await db.select().from(users).where(eq(users.id, credential.userId)).limit(1);
+    const user = userResult[0];
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+      },
+      token: `mock_jwt_token_for_${user.id}`,
+    });
+  } catch (error) {
     res.status(500).json({ error: String(error) });
   }
 };

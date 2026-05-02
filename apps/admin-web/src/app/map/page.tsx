@@ -52,7 +52,7 @@ export default function MapEditorPage() {
     <div className="flex flex-col h-full">
       <header className="flex justify-between items-center mb-8 pt-12 px-6">
         <div className="flex items-center gap-4">
-          <Button isIconOnly variant="light" className="text-white/70">
+          <Button isIconOnly variant="ghost" className="text-white/70">
             <Icons.Sidebar className="w-5 h-5" />
           </Button>
           <div>
@@ -163,7 +163,7 @@ export default function MapEditorPage() {
               {mode === 'boundary' && boundaryPoints.length > 0 && (
                 <Button 
                   fullWidth
-                  variant="light"
+                  variant="ghost"
                   onPress={() => setBoundaryPoints(prev => prev.slice(0, -1))}
                   className="mt-2 text-[9px] uppercase font-black tracking-widest text-white/30 hover:text-white"
                 >

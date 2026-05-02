@@ -20,6 +20,7 @@ export {
   groupMembers,
   savedLocations,
   offlinePackages,
+  passkeyCredentials,
   mobilityModeEnum,
   poiTypeEnum,
   eventTypeEnum,

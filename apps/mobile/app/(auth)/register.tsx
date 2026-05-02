@@ -1,41 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
-  TextInput,
   Text,
-  Alert,
-  Pressable
+  Pressable,
+  Linking,
+  StyleSheet
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
-import { useRegister } from '../../src/hooks/queries/useAuth';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useAuthStore } from '../../src/store/useAuthStore';
-import { colors as primitiveColors } from '@app/theme';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
-import { authStyles } from '../../src/styles/typography';
+import { AuthDivider } from '../../src/components/ui/AuthDivider';
+import { useAppTheme } from '../../src/hooks/useAppTheme';
 
-/**
- * Standard Registration Screen.
- * Simplified to match the clean Lattice cleanup.
- */
 export default function RegisterScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
   
-  const { pendingTicketCode, token, registrationRequired, prefilledEmail } = useAuthStore();
-  const register = useRegister();
-
-  useEffect(() => {
-    if (prefilledEmail) {
-      setEmail(prefilledEmail);
-    }
-  }, [prefilledEmail]);
+  const { token, setGuestMode } = useAuthStore();
 
   useEffect(() => {
     if (token) {
@@ -43,171 +30,192 @@ export default function RegisterScreen() {
     }
   }, [token, router]);
 
-  const handleRegister = async () => {
-    if (!email || !password || !fullName) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      Alert.alert('Required Fields', 'All fields are mandatory to create your account.');
-      return;
-    }
-
-    register.mutate({ email, password, fullName }, {
-      onSuccess: () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        if (pendingTicketCode) {
-          Alert.alert(
-            "Account Created", 
-            "Your profile is ready and your ticket has been successfully linked.",
-            [{ text: "Continue", onPress: () => router.replace('/(main)') }]
-          );
-        } else {
-          router.replace('/(main)');
-        }
-      },
-      onError: (error: any) => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert('Registration Error', error.message);
-      }
-    });
+  const handleGuestMode = () => {
+    Haptics.selectionAsync();
+    setGuestMode(true);
+    router.replace('/(main)');
   };
 
-  const isLoading = register.isPending;
-
   return (
-    <AuthLayout 
-      showBack 
-      onBack={() => {
-        useAuthStore.getState().clearRegistrationData();
-        router.replace('/(auth)/welcome');
-      }}
-      midnight
-    >
-      {/* Header section matching login */}
-      <Animated.View 
-        entering={FadeInDown.duration(800).delay(100).springify()}
-        className="pt-8 pb-10 items-start w-full"
-      >
-        <Text 
-          className="text-white mb-4"
-          style={authStyles.title}
-        >
-          {registrationRequired ? 'Finish Profile' : 'Create Profile'}
-        </Text>
+    <AuthLayout midnight>
+      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: insets.bottom + 40 }}>
         
-        {registrationRequired ? (
-          <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
-             <Text 
-               className="text-white text-sm font-bold ml-2"
-               style={{ fontFamily: 'PlusJakartaSans-Bold' }}
-             >
-               Ticket Scanned! Set Password
-             </Text>
-          </View>
-        ) : pendingTicketCode ? (
-          <View className="bg-primary/20 px-5 py-2.5 rounded-2xl border border-primary/30 mt-3 flex-row items-center">
-             <Feather name="check-circle" size={16} color={primitiveColors.brand.primary} />
-             <Text 
-               className="text-white text-sm font-bold ml-2"
-               style={{ fontFamily: 'PlusJakartaSans-Bold' }}
-             >
-               Ticket Ready to Sync
-             </Text>
-          </View>
-        ) : (
-          <Text 
-            className="text-white/60 leading-6"
-            style={authStyles.subtitle}
-          >
-            Join the Lattice community and access real-time performance analytics.
+        {/* Header Section */}
+        <Animated.View 
+          entering={FadeInDown.duration(1000).springify()}
+          style={styles.header}
+        >
+          <View style={styles.logoSpacing} />
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+            Join In
           </Text>
-        )}
-      </Animated.View>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+            Start your urban adventure.
+          </Text>
+        </Animated.View>
 
-      {/* Form Container */}
-      <Animated.View 
-        layout={Layout.springify()}
-        entering={FadeInDown.duration(600).delay(300).springify()}
-        className="mb-8"
-      >
-        <View className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-8 p-1">
-          {/* Full Name Input */}
-          <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="user" size={20} color="rgba(255,255,255,0.4)" />
-            <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
-              autoCapitalize="words" 
-              placeholder="Full Name"
-              placeholderTextColor="rgba(255,255,255,0.3)"
-              value={fullName}
-              onChangeText={setFullName}
-              editable={!isLoading}
-              style={{ fontFamily: 'Outfit-Medium' }}
+        {/* Action Section */}
+        <View style={styles.actionsContainer}>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 14 }}>
+            <PremiumButton 
+              label="Sign up with Apple" 
+              variant="apple" 
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
             />
-          </View>
+            <PremiumButton 
+              label="Sign up with Google" 
+              variant="google" 
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+            />
+            
+            <View style={styles.dividerWrapper}>
+              <AuthDivider label="OR" />
+            </View>
 
-          {/* Email Input */}
-          <View className="flex-row items-center px-6 py-5 border-b border-white/5">
-            <Feather name="mail" size={20} color="rgba(255,255,255,0.4)" />
-            <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
-              keyboardType="email-address" 
-              autoCapitalize="none" 
-              placeholder="Email address"
-              placeholderTextColor="rgba(255,255,255,0.3)"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isLoading && !registrationRequired}
-              style={{ fontFamily: 'Outfit-Medium' }}
+            <PremiumButton 
+              label="Sign up with Email" 
+              variant="outline" 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/(auth)/email-auth');
+              }}
             />
-          </View>
-          
-          {/* Password Input */}
-          <View className="flex-row items-center px-6 py-5">
-            <Feather name="lock" size={20} color="rgba(255,255,255,0.4)" />
-            <TextInput 
-              className="flex-1 text-white text-lg font-medium ml-4 h-10"
-              secureTextEntry={!showPassword} 
-              placeholder="Create Password"
-              placeholderTextColor="rgba(255,255,255,0.3)"
-              value={password}
-              onChangeText={setPassword}
-              editable={!isLoading}
-              style={{ fontFamily: 'Outfit-Medium' }}
-            />
-            <Pressable onPress={() => setShowPassword(!showPassword)} className="active:opacity-70" hitSlop={20}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color="rgba(255,255,255,0.4)" />
+          </Animated.View>
+
+          {/* Elevated Guest Button */}
+          <Animated.View 
+            entering={FadeInDown.delay(400).duration(1000).springify()}
+            style={styles.skipSection}
+          >
+            <Pressable 
+              onPress={handleGuestMode}
+              style={({ pressed }) => [
+                styles.skipButton,
+                { 
+                  backgroundColor: theme.colors.glass.subtle,
+                  borderColor: 'rgba(255,255,255,0.08)'
+                },
+                pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }
+              ]}
+            >
+              <View style={styles.skipButtonContent}>
+                <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
+                  Explore as Guest
+                </Text>
+                <View style={[styles.arrowCircle, { backgroundColor: '#000' }]}>
+                  <Feather name="arrow-right" size={14} color="#fff" />
+                </View>
+              </View>
             </Pressable>
-          </View>
+          </Animated.View>
         </View>
 
-        <PremiumButton 
-          onPress={handleRegister} 
-          label="LAUNCH ACCOUNT" 
-          isLoading={isLoading} 
-          variant="primary"
-        />
-      </Animated.View>
-
-      {/* Footer */}
-      <Animated.View 
-        entering={FadeInDown.duration(800).delay(500).springify()}
-        className="items-center pb-8"
-      >
-        <Pressable 
-          onPress={() => {
-            Haptics.selectionAsync();
-            router.replace('/(auth)/login');
-          }}
-          className="active:opacity-70 p-4"
+        {/* Footer Section */}
+        <Animated.View 
+          entering={FadeIn.delay(800).duration(1200)}
+          style={styles.footer}
         >
-          <Text 
-            className="text-white/60 text-sm font-medium tracking-wide"
-            style={{ fontFamily: 'PlusJakartaSans-Bold' }}
-          >
-            ALREADY A MEMBER? <Text className="text-white font-black" style={{ color: primitiveColors.brand.primary }}>LOG IN HERE</Text>
+          <View style={styles.registerLink}>
+            <Text style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Medium', fontSize: 14 }}>
+              Already a member?{' '}
+            </Text>
+            <Link href="/(auth)/login" asChild>
+              <Pressable hitSlop={10}>
+                <Text style={{ color: theme.colors.brand.primary, fontFamily: 'PlusJakartaSans-Bold', fontSize: 14 }}>
+                  Sign In
+                </Text>
+              </Pressable>
+            </Link>
+          </View>
+
+          <Text style={styles.legalText}>
+            By joining, you confirm that you've read and agreed to our{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
+            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Privacy</Text>.
           </Text>
-        </Pressable>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </AuthLayout>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    marginTop: 60,
+    alignItems: 'center',
+  },
+  logoSpacing: {
+    height: 40,
+  },
+  title: {
+    fontSize: 56,
+    fontFamily: 'Outfit-Bold',
+    letterSpacing: -2.5,
+    lineHeight: 60,
+  },
+  subtitle: {
+    fontSize: 18,
+    fontFamily: 'Outfit-Medium',
+    marginTop: 6,
+    opacity: 0.8,
+  },
+  actionsContainer: {
+    paddingHorizontal: 28,
+    width: '100%',
+    gap: 32,
+  },
+  dividerWrapper: {
+    paddingVertical: 8,
+  },
+  skipSection: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  skipButton: {
+    borderRadius: 40,
+    borderWidth: 1,
+    minWidth: 220,
+    overflow: 'hidden',
+  },
+  skipButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 24,
+    paddingRight: 8,
+    paddingVertical: 8,
+    gap: 12,
+  },
+  skipButtonText: {
+    fontSize: 15,
+    fontFamily: 'PlusJakartaSans-Bold',
+    letterSpacing: 0.2,
+  },
+  arrowCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footer: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    gap: 24,
+  },
+  registerLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legalText: {
+    fontSize: 11,
+    color: 'rgba(150, 150, 150, 0.5)',
+    textAlign: 'center',
+    lineHeight: 16,
+    fontFamily: 'PlusJakartaSans-Medium',
+    maxWidth: 240,
+  },
+  legalLink: {
+    textDecorationLine: 'underline',
+  },
+});

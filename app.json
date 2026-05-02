@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.kore29.appmonorepo"
+  },
+  "ios": {
+    "bundleIdentifier": "com.kore29.appmonorepo"
+  }
+}

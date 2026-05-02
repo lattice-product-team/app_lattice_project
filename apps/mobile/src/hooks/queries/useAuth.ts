@@ -1,25 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/useAuthStore';
-import { authService } from '../../services/authService';
-
-export const useSyncTicket = () => {
-  return useMutation({
-    mutationFn: async (ticketCode: string) => {
-      return authService.ticketSync({ qr_code_data: ticketCode, device_id: 'mobile-app' });
-    },
-    onSuccess: (data) => {
-      const { setRegistrationRequired, setAuth, setTicket } = useAuthStore.getState();
-      
-      if (data.requires_setup) {
-        setRegistrationRequired(true, data.user.email);
-        setTicket(data.ticket_info!);
-      } else {
-        setAuth(data.token, data.user, data.tickets || [], true);
-        if (data.ticket_info) setTicket(data.ticket_info);
-      }
-    },
-  });
-};
+import { authService } from '../../services/AuthService';
 
 export const useLogin = () => {
   const pendingTicketCode = useAuthStore((state) => state.pendingTicketCode);

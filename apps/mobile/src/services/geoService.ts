@@ -14,6 +14,10 @@ export const geoService = {
     return apiClient.get<any[]>('/events');
   },
 
+  getEvent: async (id: number): Promise<any> => {
+    return apiClient.get<any>(`/events/${id}`);
+  },
+
   getPOI: async (id: number): Promise<any> => {
     return apiClient.get<any>(`${API_ENDPOINTS.GEO.POIS}/${id}`);
   },

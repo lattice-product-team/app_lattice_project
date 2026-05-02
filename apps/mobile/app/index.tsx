@@ -8,6 +8,7 @@ export default function Index() {
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const token = useAuthStore((state) => state.token);
+  const isGuest = useAuthStore((state) => state.isGuest);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -18,14 +19,14 @@ export default function Index() {
 
   useEffect(() => {
     if (isReady) {
-      console.log('[Index] Ready to redirect, token present:', !!token);
-      if (token) {
+      console.log('[Index] Ready to redirect, token present:', !!token, 'isGuest:', isGuest);
+      if (token || isGuest) {
         router.replace('/(main)');
       } else {
-        router.replace('/(auth)/welcome');
+        router.replace('/(auth)/login');
       }
     }
-  }, [isReady, token, router]);
+  }, [isReady, token, isGuest, router]);
 
   return (
     <View style={{ flex: 1, backgroundColor: 'black', alignItems: 'center', justifyContent: 'center' }}>

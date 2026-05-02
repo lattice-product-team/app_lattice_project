@@ -122,10 +122,10 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button isIconOnly variant="flat" className="bg-white/5 text-white/70 rounded-full">
+          <Button isIconOnly variant="ghost" className="bg-white/5 text-white/70 rounded-full">
             <Icons.Search className="w-5 h-5" />
           </Button>
-          <Button color="primary" className="rounded-full font-medium">
+          <Button variant="primary" className="rounded-full font-medium">
             <Icons.Plus className="w-4 h-4" />
             New Event
           </Button>
@@ -227,11 +227,11 @@ export default function Dashboard() {
 
         <div className="flex justify-between items-center">
           <div className="flex gap-2">
-            <Button variant="flat" size="sm" className="bg-white/5 text-white/70 rounded-full">
+            <Button variant="ghost" size="sm" className="bg-white/5 text-white/70 rounded-full">
               <Icons.Filter className="w-4 h-4" />
               Filter
             </Button>
-            <Button variant="flat" size="sm" className="bg-white/5 text-white/70 rounded-full">
+            <Button variant="ghost" size="sm" className="bg-white/5 text-white/70 rounded-full">
               <Icons.SortDesc className="w-4 h-4" />
               Sort
             </Button>
@@ -247,69 +247,62 @@ export default function Dashboard() {
           </InputGroup>
         </div>
 
-        <Table>
-          <Table.ScrollContainer>
-            <Table.Content 
-              aria-label="Gate Status Table"
-              classNames={{
-                wrapper: "bg-surface border border-white/5 shadow-none p-0",
-                th: "bg-transparent text-white/50 font-medium border-b border-white/5 px-6 py-4",
-                td: "px-6 py-4 border-b border-white/5",
-              }}
-            >
-              <Table.Header>
-                <Table.Column key="id" isRowHeader>ID</Table.Column>
-                <Table.Column key="name">Location Name</Table.Column>
-                <Table.Column key="load">Current Load</Table.Column>
-                <Table.Column key="wait">Est. Wait</Table.Column>
-                <Table.Column key="status" align="center">Status</Table.Column>
-              </Table.Header>
-              <Table.Body 
-                items={activeGates}
-              >
-                {(gate: any) => (
-                  <Table.Row key={gate.id}>
-                    <Table.Cell>
-                      <span className="font-mono text-xs font-bold text-white/40">{gate.id}</span>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <div className="flex items-center gap-2">
-                        <Icons.MapPin className="w-3 h-3 text-white/20" />
-                        <span className="text-sm font-medium">{gate.name}</span>
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Chip 
-                        size="sm" 
-                        variant="flat" 
-                        color={gate.load === "High" ? "danger" : gate.load === "Moderate" ? "warning" : "success"}
-                        className="font-bold text-[10px] uppercase tracking-wider"
-                      >
-                        {gate.load}
-                      </Chip>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <span className={`text-sm ${gate.load === "High" ? "text-danger font-bold" : "text-white/60"}`}>
-                        {gate.wait}
-                      </span>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <div className="flex items-center justify-center">
-                        <Chip 
-                          size="sm" 
-                          variant="dot" 
-                          color={gate.status === "Open" ? "success" : "warning"}
-                          className="border-none bg-transparent text-[10px] font-bold uppercase"
-                        >
-                          {gate.status}
-                        </Chip>
-                      </div>
-                    </Table.Cell>
-                  </Table.Row>
-                )}
-              </Table.Body>
-            </Table.Content>
-          </Table.ScrollContainer>
+        <Table
+          classNames={{
+            wrapper: "bg-surface border border-white/5 shadow-none p-0",
+            th: "bg-transparent text-white/50 font-medium border-b border-white/5 px-6 py-4",
+            td: "px-6 py-4 border-b border-white/5",
+          }}
+        >
+          <TableHeader>
+            <TableColumn key="id">ID</TableColumn>
+            <TableColumn key="name">Location Name</TableColumn>
+            <TableColumn key="load">Current Load</TableColumn>
+            <TableColumn key="wait">Est. Wait</TableColumn>
+            <TableColumn key="status" align="center">Status</TableColumn>
+          </TableHeader>
+          <TableBody items={activeGates}>
+            {(gate: any) => (
+              <TableRow key={gate.id}>
+                <TableCell>
+                  <span className="font-mono text-xs font-bold text-white/40">{gate.id}</span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Icons.MapPin className="w-3 h-3 text-white/20" />
+                    <span className="text-sm font-medium">{gate.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Chip 
+                    size="sm" 
+                    variant="flat" 
+                    color={gate.load === "High" ? "danger" : gate.load === "Moderate" ? "warning" : "success"}
+                    className="font-bold text-[10px] uppercase tracking-wider"
+                  >
+                    {gate.load}
+                  </Chip>
+                </TableCell>
+                <TableCell>
+                  <span className={`text-sm ${gate.load === "High" ? "text-danger font-bold" : "text-white/60"}`}>
+                    {gate.wait}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center justify-center">
+                    <Chip 
+                      size="sm" 
+                      variant="dot" 
+                      color={gate.status === "Open" ? "success" : "warning"}
+                      className="border-none bg-transparent text-[10px] font-bold uppercase"
+                    >
+                      {gate.status}
+                    </Chip>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
         </Table>
       </div>
     </div>

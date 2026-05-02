@@ -26,12 +26,16 @@ import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
 import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
+import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
+import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
+import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
+import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -44,13 +48,30 @@ export default function MapIndexPage() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const isGuest = useAuthStore((state) => state.isGuest);
+  const user = useAuthStore((state) => state.user);
+  const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
+  const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
 
   // Map & POI State
   const { selectedPoiId, deselect } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<LatticeEvent | null>(null);
+  
+  const { events } = useSearchEvents(searchQuery);
+  
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
+
+  const handleProfilePress = useCallback(() => {
+    Haptics.selectionAsync();
+    if (isGuest) {
+      openAuthPrompt('/(main)/profile');
+    } else {
+      router.push('/(main)/profile');
+    }
+  }, [isGuest, router, openAuthPrompt]);
 
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
   const islandState = useSharedValue(0); 
@@ -59,13 +80,26 @@ export default function MapIndexPage() {
 
   const [preSearchLevel, setPreSearchLevel] = useState(0);
   const isPanning = useSharedValue(false);
+  const islandOpacity = useDerivedValue(() => {
+    return withTiming(selectedEvent ? 0 : 1, { duration: 300 });
+  });
 
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
     if (selectedPoiId) {
-      islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+      islandState.value = withSpring(1, { damping: 28, stiffness: 90 });
     }
   }, [selectedPoiId, islandState]);
+
+  const handleEventSelect = useCallback((event: LatticeEvent) => {
+    setSelectedEvent(event);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
+  const handleCloseDetails = useCallback(() => {
+    setSelectedEvent(null);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, []);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -93,6 +127,7 @@ export default function MapIndexPage() {
   });
 
   const gesture = Gesture.Pan()
+    .activeOffsetY([-10, 10])
     .onStart(() => {
       isPanning.value = true;
       startState.value = islandState.value;
@@ -122,9 +157,9 @@ export default function MapIndexPage() {
       }
 
       islandState.value = withSpring(closest, {
-        damping: 20,
-        stiffness: 150,
-        mass: 0.6,
+        damping: 28,
+        stiffness: 90,
+        mass: 0.8,
       }, (finished) => {
         if (finished && (closest === 0 || closest === 0.5)) {
           runOnJS(setPreSearchLevel)(closest);
@@ -148,6 +183,7 @@ export default function MapIndexPage() {
       bottom,
       borderTopLeftRadius: radius,
       borderTopRightRadius: radius,
+      opacity: islandOpacity.value,
     };
   });
 
@@ -190,12 +226,24 @@ export default function MapIndexPage() {
     };
   });
 
+  const dimmerProps = useAnimatedProps(() => {
+    return {
+      pointerEvents: islandState.value > 0.5 ? 'auto' : 'none' as any,
+    };
+  });
+
+  const scrollProps = useAnimatedProps(() => {
+    return {
+      scrollEnabled: islandState.value > 0.9,
+    };
+  });
+
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
     deselect();
     setIsSearching(false);
     if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel, { damping: 25, stiffness: 120 });
+      islandState.value = withSpring(preSearchLevel, { damping: 28, stiffness: 90 });
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
@@ -206,7 +254,7 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
     
     // If we have coordinates, move map. For now just collapse.
-    islandState.value = withSpring(0.5, { damping: 25, stiffness: 120 });
+    islandState.value = withSpring(0.5, { damping: 28, stiffness: 90 });
     
     if (coords) {
       console.log('Moving map to:', coords);
@@ -236,20 +284,29 @@ export default function MapIndexPage() {
         onPress={handleMapPress}
         pointerEvents="box-none"
       >
-        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} />
+        <Animated.View 
+          animatedProps={dimmerProps}
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
+        />
       </Pressable>
 
       <AdaptiveControlOverlay 
         islandHeight={islandHeight}
         islandState={islandState}
         bottomOffset={insets.bottom + 5}
-        onRecenter={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+        onRecenter={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          triggerRecenter();
+        }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
       />
 
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.islandContainer, islandStyle]}>
+        <Animated.View 
+          pointerEvents={selectedEvent ? 'none' : 'auto'}
+          style={[styles.islandContainer, islandStyle]}
+        >
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint} 
             animatedProps={blurProps}
@@ -273,15 +330,17 @@ export default function MapIndexPage() {
                   setSearchQuery(text);
                   if (text.length > 0) setIsSearching(true);
                 }}
-                onProfilePress={() => router.push('/(main)/profile')}
+                onProfilePress={handleProfilePress}
                 onFocus={() => {
                   setIsSearching(true);
-                  islandState.value = withSpring(1, { damping: 25, stiffness: 120 });
+                  islandState.value = withSpring(1, { damping: 28, stiffness: 90 });
                 }}
                 onSubmit={() => {
                   saveSearch(searchQuery);
                   Keyboard.dismiss();
                 }}
+                avatarUrl={user?.avatarUrl}
+                isGuest={isGuest}
               />
             </View>
 
@@ -291,18 +350,23 @@ export default function MapIndexPage() {
               showsVerticalScrollIndicator={false}
               bounces={true}
               keyboardShouldPersistTaps="handled"
-              scrollEnabled={islandState.value > 0.9}
+              animatedProps={scrollProps}
             >
               {isSearching ? (
                 <SearchExperience 
                   query={searchQuery}
-                  onSelectResult={onSelectSearchResult}
+                  onSelectResult={(q, coords) => {
+                    onSelectSearchResult(q, coords);
+                    const match = events.find(e => e.name.toLowerCase() === q.toLowerCase());
+                    if (match) handleEventSelect(match);
+                  }}
                 />
               ) : (
                 <>
                   <DiscoveryDashboard 
                     islandState={islandState}
                     onSelectCategory={handleSelectCategory}
+                    onSelectEvent={handleEventSelect}
                   />
                   
                   {/* Contenido dinámico del Nivel 3 (Detalles de POI, etc.) */}
@@ -321,6 +385,11 @@ export default function MapIndexPage() {
           </AnimatedSafeBlurView>
         </Animated.View>
       </GestureDetector>
+
+      <EventDetailSheet 
+        event={selectedEvent} 
+        onClose={handleCloseDetails} 
+      />
     </View>
   );
 }
