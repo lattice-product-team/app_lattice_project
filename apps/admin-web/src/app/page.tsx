@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Button, Table, Chip, Card, InputGroup, Select, ListBox } from "@heroui/react";
+import { Button, Table, TableContent, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Card, InputGroup, Select, ListBox } from "@heroui/react";
 import { Icons } from "@/components/icons";
 
 // Mock Data
@@ -254,55 +254,57 @@ export default function Dashboard() {
             td: "px-6 py-4 border-b border-white/5",
           }}
         >
-          <TableHeader>
-            <TableColumn key="id">ID</TableColumn>
-            <TableColumn key="name">Location Name</TableColumn>
-            <TableColumn key="load">Current Load</TableColumn>
-            <TableColumn key="wait">Est. Wait</TableColumn>
-            <TableColumn key="status" align="center">Status</TableColumn>
-          </TableHeader>
-          <TableBody items={activeGates}>
-            {(gate: any) => (
-              <TableRow key={gate.id}>
-                <TableCell>
-                  <span className="font-mono text-xs font-bold text-white/40">{gate.id}</span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Icons.MapPin className="w-3 h-3 text-white/20" />
-                    <span className="text-sm font-medium">{gate.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Chip 
-                    size="sm" 
-                    variant="flat" 
-                    color={gate.load === "High" ? "danger" : gate.load === "Moderate" ? "warning" : "success"}
-                    className="font-bold text-[10px] uppercase tracking-wider"
-                  >
-                    {gate.load}
-                  </Chip>
-                </TableCell>
-                <TableCell>
-                  <span className={`text-sm ${gate.load === "High" ? "text-danger font-bold" : "text-white/60"}`}>
-                    {gate.wait}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-center">
+          <TableContent>
+            <TableHeader>
+              <TableColumn key="id">ID</TableColumn>
+              <TableColumn key="name">Location Name</TableColumn>
+              <TableColumn key="load">Current Load</TableColumn>
+              <TableColumn key="wait">Est. Wait</TableColumn>
+              <TableColumn key="status" align="center">Status</TableColumn>
+            </TableHeader>
+            <TableBody items={activeGates}>
+              {(gate: any) => (
+                <TableRow key={gate.id}>
+                  <TableCell>
+                    <span className="font-mono text-xs font-bold text-white/40">{gate.id}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Icons.MapPin className="w-3 h-3 text-white/20" />
+                      <span className="text-sm font-medium">{gate.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <Chip 
                       size="sm" 
-                      variant="dot" 
-                      color={gate.status === "Open" ? "success" : "warning"}
-                      className="border-none bg-transparent text-[10px] font-bold uppercase"
+                      variant="flat" 
+                      color={gate.load === "High" ? "danger" : gate.load === "Moderate" ? "warning" : "success"}
+                      className="font-bold text-[10px] uppercase tracking-wider"
                     >
-                      {gate.status}
+                      {gate.load}
                     </Chip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`text-sm ${gate.load === "High" ? "text-danger font-bold" : "text-white/60"}`}>
+                      {gate.wait}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center">
+                      <Chip 
+                        size="sm" 
+                        variant="dot" 
+                        color={gate.status === "Open" ? "success" : "warning"}
+                        className="border-none bg-transparent text-[10px] font-bold uppercase"
+                      >
+                        {gate.status}
+                      </Chip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </TableContent>
         </Table>
       </div>
     </div>

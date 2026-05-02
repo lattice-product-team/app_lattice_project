@@ -2,6 +2,7 @@ import {
   Button, 
   Chip,
   Table,
+  TableContent,
   TableHeader,
   TableColumn,
   TableBody,
@@ -57,54 +58,56 @@ export default function EventsPage() {
             td: "px-6 py-4 border-b border-white/5",
           }}
         >
-          <TableHeader>
-            <TableColumn key="id">Event ID</TableColumn>
-            <TableColumn key="name">Event Name</TableColumn>
-            <TableColumn key="venue">Venue</TableColumn>
-            <TableColumn key="status">Status</TableColumn>
-            <TableColumn key="actions" align="center">Actions</TableColumn>
-          </TableHeader>
-          <TableBody items={events}>
-            {(event) => (
-              <TableRow key={event.id}>
-                <TableCell>
-                  <span className="font-mono text-xs text-white/40">{event.id}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="font-semibold text-white">{event.name}</span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Icons.MapPin className="w-3 h-3 text-white/30" />
-                    <span className="text-sm">{event.venue}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Chip 
-                    size="sm" 
-                    variant="flat"
-                    color={event.status === "Active" ? "success" : event.status === "Upcoming" ? "primary" : event.status === "Planning" ? "warning" : "default"}
-                    className="font-medium h-5 text-[10px] uppercase tracking-wider"
-                  >
-                    {event.status}
-                  </Chip>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-2">
-                    <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
-                      <Icons.Eye className="w-4 h-4" />
-                    </Button>
-                    <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
-                      <Icons.Edit className="w-4 h-4" />
-                    </Button>
-                    <Button isIconOnly size="sm" variant="ghost" className="text-danger/70 hover:text-danger">
-                      <Icons.Trash className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <TableContent>
+            <TableHeader>
+              <TableColumn key="id">Event ID</TableColumn>
+              <TableColumn key="name">Event Name</TableColumn>
+              <TableColumn key="venue">Venue</TableColumn>
+              <TableColumn key="status">Status</TableColumn>
+              <TableColumn key="actions" align="center">Actions</TableColumn>
+            </TableHeader>
+            <TableBody items={events}>
+              {(event) => (
+                <TableRow key={event.id}>
+                  <TableCell>
+                    <span className="font-mono text-xs text-white/40">{event.id}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-semibold text-white">{event.name}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Icons.MapPin className="w-3 h-3 text-white/30" />
+                      <span className="text-sm">{event.venue}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      size="sm" 
+                      variant="flat"
+                      color={event.status === "Active" ? "success" : event.status === "Upcoming" ? "primary" : event.status === "Planning" ? "warning" : "default"}
+                      className="font-medium h-5 text-[10px] uppercase tracking-wider"
+                    >
+                      {event.status}
+                    </Chip>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
+                        <Icons.Eye className="w-4 h-4" />
+                      </Button>
+                      <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
+                        <Icons.Edit className="w-4 h-4" />
+                      </Button>
+                      <Button isIconOnly size="sm" variant="ghost" className="text-danger/70 hover:text-danger">
+                        <Icons.Trash className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </TableContent>
         </Table>
       </div>
     </div>
