@@ -7,6 +7,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppFonts } from '../src/hooks/useAppFonts';
 import { ThemeProvider, useAppTheme } from '../src/providers/ThemeProvider';
 import { AuthPromptOverlay } from '../src/components/ui/AuthPromptOverlay';
+import { prewarmMapStyle } from '../src/features/map/hooks/useMapStyle';
+import { MAP_STYLES } from '../src/constants/mapConstants';
 import '../global.css';
 
 const queryClient = new QueryClient();
@@ -33,6 +35,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     console.log('[RootLayout] Mounted');
+    // Pre-warm map styles to minimize loading time when entering the map
+    prewarmMapStyle(MAP_STYLES.light);
+    prewarmMapStyle(MAP_STYLES.dark);
     return () => console.log('[RootLayout] Unmounted');
   }, []);
 

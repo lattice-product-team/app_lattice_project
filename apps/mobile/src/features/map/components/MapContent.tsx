@@ -17,18 +17,13 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { useMapStyle } from '../hooks/useMapStyle';
 
 // Constants & Utilities
-import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY } from '../../../constants/mapConstants';
+import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY, MAP_STYLES } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
 
 import { useLocationStore } from '../../../store/useLocationStore';
 import { calculateBBox } from '../../../utils/geoUtils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-const MAP_STYLES = {
-  light: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
-  dark: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`
-} as const;
 
 interface MapContentProps {
   poisGeoJSON: any;
@@ -49,6 +44,8 @@ export const MapContent = React.memo(function MapContent({
   const mapRef = useRef<any>(null);
   const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
+  const hasInitialRendered = React.useRef(false);
+  const setInitialLoadComplete = useMapUIStore((s) => s.setInitialLoadComplete);
   const { style: patchedMapStyle, isLoading: isStyleLoading } = useMapStyle(theme.dark ? MAP_STYLES.dark : MAP_STYLES.light);
 
   const { selectedPoiId, selectedCoords, selectPoi, deselect: storeDeselect } = usePOIStore();
@@ -57,6 +54,18 @@ export const MapContent = React.memo(function MapContent({
   const { currentEventId, selectedEvent } = useEventStore();
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
+
+  // Safety timeout to ensure overlay is hidden even if map event fails
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!hasInitialRendered.current) {
+        console.log('⚠️ [MapContent] Safety timeout triggered: forcing map ready');
+        hasInitialRendered.current = true;
+        setInitialLoadComplete(true);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [setInitialLoadComplete]);
 
   // --- Logic Extraction ---
   useRoutingLogic();
@@ -221,19 +230,30 @@ export const MapContent = React.memo(function MapContent({
       <MapLibreGL.MapView
         ref={mapRef}
         style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
-        mapStyle={typeof patchedMapStyle === 'object' ? patchedMapStyle : undefined}
+        mapStyle={patchedMapStyle || undefined}
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
         onPress={onDeselect || storeDeselect}
         onRegionDidChange={handleRegionChange}
+        onMapIdle={() => {
+          const locationStatus = useLocationStore.getState().status;
+          const hasCoords = !!useLocationStore.getState().logicalCoords;
+          
+          if (!hasInitialRendered.current) {
+            if (locationStatus !== 'granted' || hasCoords) {
+              hasInitialRendered.current = true;
+              setInitialLoadComplete(true);
+            }
+          }
+        }}
       >
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         <MapLibreGL.Camera
           ref={camera}
           minZoomLevel={11}
           defaultSettings={{ 
-            centerCoordinate: lastCameraPosition?.center || MAP_CENTER, 
+            centerCoordinate: userCoords || lastCameraPosition?.center || MAP_CENTER, 
             zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM, 
             pitch: lastCameraPosition?.pitch || 0 
           }}

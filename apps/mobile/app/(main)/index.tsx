@@ -27,6 +27,7 @@ import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
+import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 import { useVenueSpatial } from '../../src/features/map/hooks/useVenueSpatial';
@@ -54,6 +55,7 @@ export default function MapIndexPage() {
   const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
+  const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
 
   // Map & POI State
   const { selectedPoiId, deselect } = usePOIStore();
@@ -393,6 +395,8 @@ export default function MapIndexPage() {
         event={selectedEvent} 
         onClose={handleCloseDetails} 
       />
+      
+      <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );
 }
