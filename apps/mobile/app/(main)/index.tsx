@@ -29,6 +29,7 @@ import { SearchExperience } from '../../src/features/map/components/SearchExperi
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
+import { useVenueSpatial } from '../../src/features/map/hooks/useVenueSpatial';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -39,6 +40,7 @@ import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
+import { LatticeEvent } from '../../src/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -60,6 +62,7 @@ export default function MapIndexPage() {
   const [selectedEvent, setSelectedEvent] = useState<LatticeEvent | null>(null);
   
   const { events } = useSearchEvents(searchQuery);
+  const { spatialData: venueSpatial } = useVenueSpatial(selectedEvent?.venueId);
   
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
@@ -272,7 +275,7 @@ export default function MapIndexPage() {
       
       <View style={StyleSheet.absoluteFill}>
         <MapContent 
-          poisGeoJSON={null} 
+          poisGeoJSON={venueSpatial} 
           sheetPosition={useSharedValue(SCREEN_HEIGHT)} 
           onDeselect={handleMapPress}
           is3DActive={manualAR}

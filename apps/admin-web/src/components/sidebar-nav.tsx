@@ -9,6 +9,7 @@ export function SidebarNav() {
 
   return (
     <nav className="flex-1 px-3 py-4 space-y-2.5 mt-2">
+      <NavItem href="/" icon={<Icons.LayoutDashboard className="w-6 h-6" />} label="Dashboard" active={pathname === "/"} />
       <NavItem href="/venues" icon={<Icons.MapPin className="w-6 h-6" />} label="Venues" active={pathname === "/venues"} />
       <NavItem href="/events" icon={<Icons.Calendar className="w-6 h-6" />} label="Events" active={pathname === "/events"} />
       <NavItem href="/map" icon={<Icons.Map className="w-6 h-6" />} label="Map Editor" active={pathname === "/map"} />

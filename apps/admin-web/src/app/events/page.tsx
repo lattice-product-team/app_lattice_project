@@ -52,36 +52,32 @@ export default function EventsPage() {
         </div>
 
         <Table
-          classNames={{
-            wrapper: "bg-surface border border-white/5 shadow-none p-0",
-            th: "bg-transparent text-white/50 font-medium border-b border-white/5 px-6 py-4",
-            td: "px-6 py-4 border-b border-white/5",
-          }}
+          className="bg-surface border border-white/5 shadow-none p-0 overflow-hidden rounded-3xl"
         >
           <TableContent>
-            <TableHeader>
+            <TableHeader className="bg-transparent text-white/50 font-medium border-b border-white/5 px-6 py-4">
               <TableColumn key="id">Event ID</TableColumn>
               <TableColumn key="name">Event Name</TableColumn>
               <TableColumn key="venue">Venue</TableColumn>
               <TableColumn key="status">Status</TableColumn>
               <TableColumn key="actions" align="center">Actions</TableColumn>
             </TableHeader>
-            <TableBody items={events}>
-              {(event) => (
-                <TableRow key={event.id}>
-                  <TableCell>
+            <TableBody>
+              {events.map((event) => (
+                <TableRow key={event.id} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <TableCell className="px-6 py-4">
                     <span className="font-mono text-xs text-white/40">{event.id}</span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-6 py-4">
                     <span className="font-semibold text-white">{event.name}</span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <Icons.MapPin className="w-3 h-3 text-white/30" />
                       <span className="text-sm">{event.venue}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-6 py-4">
                     <Chip 
                       size="sm" 
                       variant="flat"
@@ -91,7 +87,7 @@ export default function EventsPage() {
                       {event.status}
                     </Chip>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
                         <Icons.Eye className="w-4 h-4" />
@@ -105,7 +101,7 @@ export default function EventsPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </TableContent>
         </Table>

@@ -241,6 +241,30 @@ export const MapContent = React.memo(function MapContent({
           followUserMode={(isNavigating ? 'compass' : 'normal') as any}
           followZoomLevel={18}
         />
+        {/* 0. VENUE BOUNDARY */}
+        <MapLibreGL.ShapeSource 
+          id="boundarySource" 
+          shape={poisGeoJSON || EMPTY_GEOJSON}
+        >
+          <MapLibreGL.FillLayer
+            id="boundaryFill"
+            filter={['==', ['get', 'type'], 'boundary']}
+            style={{
+              fillColor: theme.colors.brand.primary,
+              fillOpacity: 0.1,
+            }}
+          />
+          <MapLibreGL.LineLayer
+            id="boundaryOutline"
+            filter={['==', ['get', 'type'], 'boundary']}
+            style={{
+              lineColor: theme.colors.brand.primary,
+              lineWidth: 2,
+              lineDasharray: [2, 1],
+            }}
+          />
+        </MapLibreGL.ShapeSource>
+
         {/* 1. PATH NETWORK */}
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
