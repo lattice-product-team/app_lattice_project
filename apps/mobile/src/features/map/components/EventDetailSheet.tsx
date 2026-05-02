@@ -18,6 +18,8 @@ import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
 import { useEventDetails } from '../hooks/useEventDetails';
+import { usePOIStore } from '../../poi/store/usePOIStore';
+import { getCategoryMetadata } from '../../../utils/poiUtils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
@@ -31,6 +33,13 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
+  
+  const { 
+    activeCategoryFilters, 
+    toggleCategoryFilter, 
+    getFilteredPOIs 
+  } = usePOIStore();
+
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
   
@@ -197,6 +206,41 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               </Pressable>
             </View>
 
+            {/* Quick Services Bar */}
+            <View style={styles.servicesContainer}>
+              <Text style={[styles.servicesTitle, { color: theme.colors.text.muted }]}>Services Available</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.servicesScroll}
+              >
+                {Array.from(new Set(getFilteredPOIs([]).map(p => p.category))).map(cat => {
+                  const metadata = getCategoryMetadata(cat);
+                  const isActive = activeCategoryFilters.includes(cat);
+                  return (
+                    <Pressable
+                      key={cat}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        toggleCategoryFilter(cat);
+                      }}
+                      style={[
+                        styles.serviceItem,
+                        { backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.glass.subtle },
+                        isActive && styles.activeService
+                      ]}
+                    >
+                      <MaterialCommunityIcons 
+                        name={metadata.icon as any} 
+                        size={20} 
+                        color={isActive ? 'white' : theme.colors.text.primary} 
+                      />
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
             {/* Info Grid */}
             <View style={styles.infoGrid}>
               <View style={styles.infoItem}>
@@ -351,5 +395,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontFamily: typography.primary.regular,
+  },
+  servicesContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  servicesTitle: {
+    fontSize: 12,
+    fontFamily: typography.primary.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  servicesScroll: {
+    gap: 12,
+  },
+  serviceItem: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  activeService: {
+    borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

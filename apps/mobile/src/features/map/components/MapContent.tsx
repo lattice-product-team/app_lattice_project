@@ -10,11 +10,13 @@ import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore } from '../store/useMapUIStore';
 import { useEventStore } from '../../event/store/useEventStore';
-import { normalizePOI } from '../../poi/adapters/poiAdapter';
+import { normalizePOI, normalizePOIList } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { useMapStyle } from '../hooks/useMapStyle';
+import { EventPin } from './EventPin';
+import { POIPin } from './POIPin';
 
 // Constants & Utilities
 import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY, MAP_STYLES } from '../../../constants/mapConstants';
@@ -48,10 +50,19 @@ export const MapContent = React.memo(function MapContent({
   const setInitialLoadComplete = useMapUIStore((s) => s.setInitialLoadComplete);
   const { style: patchedMapStyle, isLoading: isStyleLoading } = useMapStyle(theme.dark ? MAP_STYLES.dark : MAP_STYLES.light);
 
-  const { selectedPoiId, selectedCoords, selectPoi, deselect: storeDeselect } = usePOIStore();
+  const { 
+    selectedPoiId, 
+    selectedCoords, 
+    selectPoi, 
+    deselect: storeDeselect,
+    selectedEventId,
+    userInsideEventId,
+    getFilteredPOIs,
+    setSelectedEvent
+  } = usePOIStore();
   const { currentRoute, isNavigating } = useNavigationStore();
   const { recenterCount, isFollowingUser, setIsFollowingUser, lastCameraPosition, setLastCameraPosition } = useMapUIStore();
-  const { currentEventId, selectedEvent } = useEventStore();
+  const { currentEventId, selectedEvent, setCurrentEvent } = useEventStore();
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
 
@@ -131,12 +142,12 @@ export const MapContent = React.memo(function MapContent({
             [bbox[2], bbox[3]], // maxLng, maxLat
             [bbox[0], bbox[1]], // minLng, minLat
             [
-              SCREEN_HEIGHT * 0.45, // bottom padding for sheet
-              40, // top
+              SCREEN_HEIGHT * 0.48, // bottom padding for sheet
+              60, // top
               40, // left
               40, // right
             ],
-            1000 // duration
+            800 // duration
           );
           return;
         }
@@ -225,6 +236,21 @@ export const MapContent = React.memo(function MapContent({
       })) || [];
     return { type: 'FeatureCollection' as const, features: [...pois, ...saved] };
   }, [poisGeoJSON, savedLocations]);
+
+  // Hierarchical Pin Logic
+  const allUIPois = useMemo(() => normalizePOIList(poisGeoJSON?.features || []), [poisGeoJSON]);
+  const visiblePois = useMemo(() => getFilteredPOIs(allUIPois), [allUIPois, selectedEventId, userInsideEventId]);
+  
+  const events = useMemo(() => 
+    allUIPois.filter(p => p.category === 'event'), 
+  [allUIPois]);
+
+  const handleEventPress = useCallback((event: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedEvent(event.id);
+    setCurrentEvent(event.raw); // Sync with event store
+    selectPoi(event);
+  }, [setSelectedEvent, setCurrentEvent, selectPoi]);
   return (
     <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
@@ -336,8 +362,12 @@ export const MapContent = React.memo(function MapContent({
               textHaloColor: theme.colors.bg.main,
               textHaloWidth: 1.5,
             }}
-            minZoomLevel={15.8}
-            filter={['!', ['has', 'point_count']]}
+            minZoomLevel={16.5}
+            filter={[
+              'all',
+              ['!', ['has', 'point_count']],
+              ['!', ['has', 'parentId']] // Hide labels for children in SymbolLayer
+            ]}
           />
           
           <MapLibreGL.CircleLayer
@@ -364,6 +394,35 @@ export const MapContent = React.memo(function MapContent({
             }}
           />
         </MapLibreGL.ShapeSource>
+
+        {/* --- PREMIUM INTERACTION LAYER (MarkerViews) --- */}
+        
+        {/* 1. Main Events */}
+        {events.map((event) => (
+          <EventPin
+            key={event.id}
+            id={event.id}
+            name={event.displayName}
+            imageUrl={event.images?.[0]}
+            coordinates={event.coordinates}
+            isSelected={String(selectedEventId) === String(event.id)}
+            onPress={() => handleEventPress(event)}
+          />
+        ))}
+
+        {/* 2. Sub-POIs (Revealed Hierarchically) */}
+        {visiblePois.filter(p => p.category !== 'event').map((poi) => (
+          <POIPin
+            key={poi.id}
+            id={poi.id}
+            category={poi.category}
+            icon={poi.categoryIcon}
+            color={poi.mainColor}
+            coordinates={poi.coordinates}
+            isSelected={selectedPoiId === poi.id}
+            onPress={() => handlePoiPress(poi)}
+          />
+        ))}
 
         {/* 3. VISUAL POIS (Handled in previous blocks) */}
 

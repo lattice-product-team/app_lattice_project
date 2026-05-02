@@ -27,6 +27,7 @@ import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
+import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
@@ -38,6 +39,7 @@ import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
+import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -58,10 +60,17 @@ export default function MapIndexPage() {
   const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
 
   // Map & POI State
-  const { selectedPoiId, deselect } = usePOIStore();
+  const { 
+    selectedPoiId, 
+    selectedPoi,
+    deselect, 
+    selectedEventId, 
+    setSelectedEvent 
+  } = usePOIStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<LatticeEvent | null>(null);
+  
+  const { selectedEvent, setCurrentEvent } = useEventStore();
   
   const { events } = useSearchEvents(searchQuery);
   const { spatialData: venueSpatial } = useVenueSpatial(selectedEvent?.venueId);
@@ -97,14 +106,16 @@ export default function MapIndexPage() {
   }, [selectedPoiId, islandState]);
 
   const handleEventSelect = useCallback((event: LatticeEvent) => {
-    setSelectedEvent(event);
+    setSelectedEvent(event.id);
+    setCurrentEvent(event);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, []);
+  }, [setSelectedEvent, setCurrentEvent]);
 
   const handleCloseDetails = useCallback(() => {
     setSelectedEvent(null);
+    setCurrentEvent(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+  }, [setSelectedEvent, setCurrentEvent]);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -392,8 +403,13 @@ export default function MapIndexPage() {
       </GestureDetector>
 
       <EventDetailSheet 
-        event={selectedEvent} 
+        event={selectedPoi?.parentId ? null : selectedEvent} 
         onClose={handleCloseDetails} 
+      />
+
+      <POIMiniCard 
+        poi={selectedPoi?.parentId ? selectedPoi : null}
+        onClose={deselect}
       />
       
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
