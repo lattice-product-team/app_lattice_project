@@ -33,6 +33,14 @@ export const poiTypeEnum = pgEnum('poi_type', [
   'shop',
   'parking',
   'meetup_point',
+  'bar',
+  'information',
+  'entrance',
+  'exit',
+  'emergency',
+  'stage',
+  'merch',
+  'security',
 ]);
 
 export const crowdLevelEnum = pgEnum('crowd_level', ['low', 'moderate', 'high', 'blocked']);
@@ -60,7 +68,7 @@ export const eventTypeEnum = pgEnum('event_type', [
 export const venues = pgTable('venues', {
   id: serial('id').primaryKey(),
   name: varchar('name').notNull(),
-  boundary: geometry('boundary'), // Polygon for venue area
+  boundary: polygon('boundary'), // Polygon for venue area
   center: geometry('center'), // Default map center
   primaryColor: varchar('primary_color', { length: 7 }).default('#ff382e'),
   createdAt: timestamp('created_at').defaultNow(),

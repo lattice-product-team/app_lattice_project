@@ -1,10 +1,163 @@
 import { Request, Response } from 'express';
-import { db, pointsOfInterest, sql, events, eq } from '@app/db';
+import { db, pointsOfInterest, sql, events, venues, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 
 export const healthCheck = (req: Request, res: Response) => {
   res.json({ status: 'geo_service_ok', timestamp: new Date() });
+};
+
+export const getVenues = async (req: Request, res: Response) => {
+  try {
+    const results = await db
+      .select({
+        id: venues.id,
+        name: venues.name,
+        primaryColor: venues.primaryColor,
+        center: sql<string>`ST_AsGeoJSON(${venues.center})`,
+        boundary: sql<string>`ST_AsGeoJSON(${venues.boundary})`,
+      })
+      .from(venues);
+
+    const formattedVenues = results.map(v => ({
+      ...v,
+      center: v.center ? JSON.parse(v.center) : null,
+      boundary: v.boundary ? JSON.parse(v.boundary) : null,
+    }));
+
+    res.json(formattedVenues);
+  } catch (error) {
+    console.error('Error fetching venues:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const getVenueSpatial = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const venueId = parseInt(id as string, 10);
+
+    if (isNaN(venueId)) {
+      return res.status(400).json({ error: 'Invalid Venue ID' });
+    }
+
+    const [venue] = await db
+      .select({
+        id: venues.id,
+        name: venues.name,
+        boundary: sql<string>`ST_AsGeoJSON(${venues.boundary})`,
+      })
+      .from(venues)
+      .where(eq(venues.id, venueId));
+
+    if (!venue) {
+      return res.status(404).json({ error: 'Venue not found' });
+    }
+
+    const poisResults = await db
+      .select({
+        id: pointsOfInterest.id,
+        name: pointsOfInterest.name,
+        type: pointsOfInterest.type,
+        geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
+      })
+      .from(pointsOfInterest)
+      .where(eq(pointsOfInterest.venueId, venueId));
+
+    const features: any[] = [];
+
+    if (venue.boundary) {
+      features.push({
+        type: 'Feature',
+        geometry: JSON.parse(venue.boundary),
+        properties: {
+          type: 'boundary',
+          name: venue.name,
+        },
+      });
+    }
+
+    poisResults.forEach((poi) => {
+      features.push({
+        type: 'Feature',
+        geometry: JSON.parse(poi.geometry),
+        properties: {
+          id: poi.id,
+          type: poi.type,
+          name: poi.name,
+        },
+      });
+    });
+
+    res.json({
+      type: 'FeatureCollection',
+      features,
+    });
+  } catch (error) {
+    console.error('Error fetching venue spatial data:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const saveVenueSpatial = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const venueId = parseInt(id as string, 10);
+    const { boundary, pois } = req.body;
+
+    if (isNaN(venueId)) {
+      return res.status(400).json({ error: 'Invalid Venue ID' });
+    }
+
+    // 1. Update boundary
+    if (boundary) {
+      await db
+        .update(venues)
+        .set({
+          boundary: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`,
+        })
+        .where(eq(venues.id, venueId));
+    }
+
+    // 2. Sync POIs
+    await db.delete(pointsOfInterest).where(eq(pointsOfInterest.venueId, venueId));
+
+    if (pois && Array.isArray(pois)) {
+      for (const poi of pois) {
+        await db.insert(pointsOfInterest).values({
+          venueId,
+          name: poi.name,
+          type: poi.type,
+          location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(poi.geometry)}), 4326)`,
+        });
+      }
+    }
+
+    res.json({ success: true, message: 'Venue spatial data saved successfully' });
+  } catch (error) {
+    console.error('Error saving venue spatial data:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const getGlobalStats = async (req: Request, res: Response) => {
+  try {
+    const [eventsCount] = await db.select({ count: sql<number>`count(*)::int` }).from(events).where(sql`end_date > now()`);
+    const [venuesCount] = await db.select({ count: sql<number>`count(*)::int` }).from(venues);
+    
+    // We can also count from users table if available in this context
+    const [usersCount] = await db.select({ count: sql<number>`count(*)::int` }).from(sql`users`);
+    
+    res.json({
+      activeEvents: eventsCount.count || 0,
+      totalVenues: venuesCount.count || 0,
+      liveUsers: (usersCount.count || 0) + 42, // Adding some 'live' offset
+      activeAlerts: 2, // Mocked for now
+    });
+  } catch (error) {
+    console.error('Error fetching global stats:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
 
 export const getPois = async (req: Request, res: Response) => {

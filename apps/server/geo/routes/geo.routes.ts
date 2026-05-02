@@ -6,6 +6,10 @@ import { authenticate } from '@app/core';
 const router = Router();
 
 router.get('/health', geoController.healthCheck);
+router.get('/stats', geoController.getGlobalStats);
+router.get('/venues', geoController.getVenues);
+router.get('/venues/:id/spatial', geoController.getVenueSpatial);
+router.post('/venues/:id/spatial', geoController.saveVenueSpatial);
 router.get('/events', geoController.getEvents);
 router.get('/events/:id', geoController.getEvent);
 router.get('/pois', geoController.getPois);
