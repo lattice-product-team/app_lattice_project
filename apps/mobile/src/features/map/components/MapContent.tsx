@@ -29,6 +29,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface MapContentProps {
   poisGeoJSON: any;
+  allEvents?: LatticeEvent[];
   savedLocations?: any;
   onDeselect?: () => void;
   sheetPosition: SharedValue<number>;
@@ -37,6 +38,7 @@ interface MapContentProps {
 
 export const MapContent = React.memo(function MapContent({
   poisGeoJSON,
+  allEvents = [],
   savedLocations,
   onDeselect,
   sheetPosition,
@@ -129,31 +131,33 @@ export const MapContent = React.memo(function MapContent({
   }, [selectedCoords, isNavigating, insets.top]);
 
   useEffect(() => {
-    if (selectedEvent && poisGeoJSON?.features && camera.current && !isNavigating) {
-      // Find all POIs that belong to this event (parentId === eventId)
-      const childPoiCoords = poisGeoJSON.features
-        .filter((f: any) => f.properties.parentId === selectedEvent.id || f.properties.event_id === selectedEvent.id)
-        .map((f: any) => f.geometry.coordinates);
+    if (selectedEvent && camera.current && !isNavigating) {
+      // 1. Try to focus on children POIs if they exist
+      if (poisGeoJSON?.features) {
+        const childPoiCoords = poisGeoJSON.features
+          .filter((f: any) => f.properties.parentId === selectedEvent.id || f.properties.event_id === selectedEvent.id)
+          .map((f: any) => f.geometry.coordinates);
 
-      if (childPoiCoords.length > 0) {
-        const bbox = calculateBBox(childPoiCoords);
-        if (bbox) {
-          camera.current.fitBounds(
-            [bbox[2], bbox[3]], // maxLng, maxLat
-            [bbox[0], bbox[1]], // minLng, minLat
-            [
-              SCREEN_HEIGHT * 0.48, // bottom padding for sheet
-              60, // top
-              40, // left
-              40, // right
-            ],
-            800 // duration
-          );
-          return;
+        if (childPoiCoords.length > 0) {
+          const bbox = calculateBBox(childPoiCoords);
+          if (bbox) {
+            camera.current.fitBounds(
+              [bbox[2], bbox[3]], // maxLng, maxLat
+              [bbox[0], bbox[1]], // minLng, minLat
+              [
+                SCREEN_HEIGHT * 0.48, // bottom padding for sheet
+                60, // top
+                40, // left
+                40, // right
+              ],
+              800 // duration
+            );
+            return;
+          }
         }
       }
 
-      // Fallback to center if no children found
+      // 2. Fallback to center if no children found or data not yet loaded
       if (selectedEvent.center) {
         camera.current.setCamera({
           centerCoordinate: selectedEvent.center.coordinates,
@@ -238,7 +242,29 @@ export const MapContent = React.memo(function MapContent({
   }, [poisGeoJSON, savedLocations]);
 
   // Hierarchical Pin Logic
-  const allUIPois = useMemo(() => normalizePOIList(poisGeoJSON?.features || []), [poisGeoJSON]);
+  const allUIPois = useMemo(() => {
+    const venuePois = normalizePOIList(poisGeoJSON?.features || []);
+    
+    // Normalize LatticeEvents into StandardUIPOI format
+    const eventPois = (allEvents || []).map(event => ({
+      id: String(event.id),
+      displayName: event.name,
+      category: 'event',
+      categoryLabel: 'Evento',
+      categoryIcon: 'calendar-star',
+      mainColor: '#FF3B30',
+      coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
+      images: event.imageUrl ? [event.imageUrl] : [],
+      raw: event
+    }));
+
+    // Filter out venue pois that are already represented in eventPois to avoid overlap
+    const eventIds = new Set(eventPois.map(e => e.id));
+    const uniqueVenuePois = venuePois.filter(p => !eventIds.has(p.id));
+
+    return [...uniqueVenuePois, ...eventPois];
+  }, [poisGeoJSON, allEvents]);
+
   const visiblePois = useMemo(() => getFilteredPOIs(allUIPois), [allUIPois, selectedEventId, userInsideEventId]);
   
   const events = useMemo(() => 

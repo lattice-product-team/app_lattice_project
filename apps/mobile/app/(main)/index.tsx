@@ -32,6 +32,7 @@ import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingO
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 import { useVenueSpatial } from '../../src/features/map/hooks/useVenueSpatial';
+import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -63,17 +64,30 @@ export default function MapIndexPage() {
   const { 
     selectedPoiId, 
     selectedPoi,
+    selectPoi,
     deselect, 
     selectedEventId, 
     setSelectedEvent 
   } = usePOIStore();
+  
+  const selectedEvent = useEventStore((s) => s.selectedEvent);
+  const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   
-  const { selectedEvent, setCurrentEvent } = useEventStore();
-  
   const { events } = useSearchEvents(searchQuery);
   const { spatialData: venueSpatial } = useVenueSpatial(selectedEvent?.venueId);
+  const { data: globalPois } = usePOIs(); // Load global POIs
+  
+  // Merge global POIs with venue-specific spatial data
+  const mergedPois = useMemo(() => {
+    const features = [...(globalPois?.features || [])];
+    if (venueSpatial?.features) {
+      features.push(...venueSpatial.features);
+    }
+    return { type: 'FeatureCollection', features };
+  }, [globalPois, venueSpatial]);
   
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
@@ -108,8 +122,10 @@ export default function MapIndexPage() {
   const handleEventSelect = useCallback((event: LatticeEvent) => {
     setSelectedEvent(event.id);
     setCurrentEvent(event);
+    selectPoi(null); // Clear any active POI selection
+    islandState.value = withSpring(0, { damping: 28, stiffness: 90 }); // Collapse search island
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, [setSelectedEvent, setCurrentEvent]);
+  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
 
   const handleCloseDetails = useCallback(() => {
     setSelectedEvent(null);
@@ -288,7 +304,8 @@ export default function MapIndexPage() {
       
       <View style={StyleSheet.absoluteFill}>
         <MapContent 
-          poisGeoJSON={venueSpatial} 
+          poisGeoJSON={mergedPois} 
+          allEvents={events}
           sheetPosition={useSharedValue(SCREEN_HEIGHT)} 
           onDeselect={handleMapPress}
           is3DActive={manualAR}
