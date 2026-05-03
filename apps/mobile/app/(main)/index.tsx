@@ -77,7 +77,8 @@ export default function MapIndexPage() {
   const [isSearching, setIsSearching] = useState(false);
   
   const { events } = useSearchEvents(searchQuery);
-  const { spatialData: venueSpatial } = useVenueSpatial(selectedEvent?.venueId);
+  const venueId = selectedEvent?.venueId || (selectedEvent as any)?.venue_id;
+  const { spatialData: venueSpatial } = useVenueSpatial(venueId);
   const { data: globalPois } = usePOIs(); // Load global POIs
   
   // Merge global POIs with venue-specific spatial data

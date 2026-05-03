@@ -6,7 +6,7 @@ import Animated, {
   withSpring, 
   useSharedValue 
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 
@@ -14,6 +14,7 @@ interface POIPinProps {
   id: string | number;
   category: string;
   icon: string;
+  iconFamily?: 'feather' | 'material';
   color: string;
   coordinates: number[];
   isSelected: boolean;
@@ -23,6 +24,7 @@ interface POIPinProps {
 export const POIPin = React.memo(({ 
   category, 
   icon, 
+  iconFamily = 'feather',
   color, 
   coordinates, 
   isSelected, 
@@ -47,6 +49,8 @@ export const POIPin = React.memo(({
     opacity: withSpring(isDimmed ? 0.3 : 1),
   }));
 
+  const IconComponent = iconFamily === 'material' ? MaterialCommunityIcons : Feather;
+
   return (
     <MapLibreGL.MarkerView coordinate={coordinates}>
       <Animated.View style={[styles.container, animatedStyle]}>
@@ -55,9 +59,9 @@ export const POIPin = React.memo(({
             styles.glyphCircle, 
             { backgroundColor: color || theme.colors.brand.primary }
           ]}>
-            <MaterialCommunityIcons 
+            <IconComponent 
               name={icon as any} 
-              size={14} 
+              size={12} 
               color="#FFFFFF" 
             />
           </View>

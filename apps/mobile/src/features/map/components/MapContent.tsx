@@ -67,6 +67,7 @@ export const MapContent = React.memo(function MapContent({
   const { currentEventId, selectedEvent, setCurrentEvent } = useEventStore();
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
+  const [currentZoom, setCurrentZoom] = React.useState(DEFAULT_ZOOM);
 
   // Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
@@ -222,6 +223,9 @@ export const MapContent = React.memo(function MapContent({
     const zoom = properties.zoomLevel;
     const pitch = properties.pitch;
 
+    // Actualizar zoom reactivo para filtrado de POIs
+    setCurrentZoom(zoom);
+
     // Guardar posición para persistencia
     setLastCameraPosition({ center, zoom, pitch });
 
@@ -252,6 +256,7 @@ export const MapContent = React.memo(function MapContent({
       category: 'event',
       categoryLabel: 'Evento',
       categoryIcon: 'calendar-star',
+      iconFamily: 'material' as const,
       mainColor: '#FF3B30',
       coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
       images: event.imageUrl ? [event.imageUrl] : [],
@@ -265,7 +270,7 @@ export const MapContent = React.memo(function MapContent({
     return [...uniqueVenuePois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
-  const visiblePois = useMemo(() => getFilteredPOIs(allUIPois), [allUIPois, selectedEventId, userInsideEventId]);
+  const visiblePois = useMemo(() => getFilteredPOIs(allUIPois, currentZoom), [allUIPois, selectedEventId, userInsideEventId, currentZoom]);
   
   const events = useMemo(() => 
     allUIPois.filter(p => p.category === 'event'), 
@@ -349,77 +354,12 @@ export const MapContent = React.memo(function MapContent({
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 2. VISUAL POIS */}
+        {/* Visual POIs are now handled via MarkerViews for hierarchical experience */}
         <MapLibreGL.ShapeSource 
           id="poisSource" 
           shape={poisGeoJSON || EMPTY_GEOJSON}
-          cluster={true}
-          clusterRadius={50}
-        >
-          <MapLibreGL.CircleLayer
-            id="poiCircles"
-            style={mapLayerStyles.poiCircles}
-            minZoomLevel={12.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-          <MapLibreGL.SymbolLayer
-            id="poiIcons"
-            style={mapLayerStyles.poiIcons}
-            minZoomLevel={12}
-            filter={[
-              'all',
-              ['!', ['has', 'point_count']],
-              [
-                'any',
-                ['==', ['get', 'category'], 'event'], // Always show events
-                ['>', ['zoom'], 15], // Show others when zoomed in
-                ['==', ['get', 'id'], selectedPoiId || ''], // Always show selected
-                ['==', ['get', 'parentId'], currentEventId || ''], // Show children of active event
-                ['==', ['get', 'event_id'], currentEventId || ''] // Handle both ID formats
-              ]
-            ]}
-          />
-          <MapLibreGL.SymbolLayer
-            id="poiLabels"
-            style={{
-              ...mapLayerStyles.poiLabels,
-              textField: ['get', 'name'],
-              textColor: theme.colors.text.primary,
-              textHaloColor: theme.colors.bg.main,
-              textHaloWidth: 1.5,
-            }}
-            minZoomLevel={16.5}
-            filter={[
-              'all',
-              ['!', ['has', 'point_count']],
-              ['!', ['has', 'parentId']] // Hide labels for children in SymbolLayer
-            ]}
-          />
-          
-          <MapLibreGL.CircleLayer
-            id="clusterCircles"
-            style={mapLayerStyles.clusterCircles}
-            filter={['has', 'point_count']}
-          />
-          <MapLibreGL.SymbolLayer
-            id="clusterLabels"
-            style={mapLayerStyles.clusterLabels}
-            filter={['has', 'point_count']}
-          />
-
-          {/* Selected POI Highlight */}
-          <MapLibreGL.CircleLayer
-            id="selectedPoiHighlight"
-            filter={['==', ['get', 'id'], selectedPoiId || '']}
-            style={{
-              circleRadius: 22,
-              circleColor: theme.colors.text.primary,
-              circleOpacity: 0.2,
-              circleStrokeWidth: 2,
-              circleStrokeColor: theme.colors.text.primary,
-            }}
-          />
-        </MapLibreGL.ShapeSource>
+          cluster={false}
+        />
 
         {/* --- PREMIUM INTERACTION LAYER (MarkerViews) --- */}
         
@@ -443,6 +383,7 @@ export const MapContent = React.memo(function MapContent({
             id={poi.id}
             category={poi.category}
             icon={poi.categoryIcon}
+            iconFamily={poi.iconFamily}
             color={poi.mainColor}
             coordinates={poi.coordinates}
             isSelected={selectedPoiId === poi.id}
@@ -456,26 +397,8 @@ export const MapContent = React.memo(function MapContent({
         <MapLibreGL.ShapeSource 
           id="savedSource" 
           shape={savedLocations || EMPTY_GEOJSON}
-          cluster={true}
-          clusterRadius={40}
-        >
-          <MapLibreGL.CircleLayer
-            id="savedCircles"
-            style={mapLayerStyles.savedPoiCircles}
-            minZoomLevel={12.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-          <MapLibreGL.SymbolLayer
-            id="savedLabels"
-            style={{
-              ...mapLayerStyles.poiLabels,
-              textColor: theme.colors.text.primary,
-              textHaloColor: theme.colors.bg.main,
-            }}
-            minZoomLevel={15.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-        </MapLibreGL.ShapeSource>
+          cluster={false}
+        />
 
         {/* 3. ROUTE & SELECTION VISUALS */}
         {!!(isNavigating && currentRoute) && (

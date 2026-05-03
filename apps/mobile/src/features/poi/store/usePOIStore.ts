@@ -24,7 +24,7 @@ interface POIState {
   clearFilters: () => void;
   
   // Helpers
-  getFilteredPOIs: (allPOIs: StandardUIPOI[]) => StandardUIPOI[];
+  getFilteredPOIs: (allPOIs: StandardUIPOI[], zoom?: number) => StandardUIPOI[];
 }
 
 /**
@@ -78,19 +78,29 @@ export const usePOIStore = create<POIState>((set) => ({
   }),
 
   clearFilters: () => set({ activeCategoryFilters: [] }),
-
-  getFilteredPOIs: (allPOIs) => {
+  getFilteredPOIs: (allPOIs, zoom = 0) => {
     const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
     
     // Effective event ID to show POIs for (Selected or Current physical location)
     const activeEventId = selectedEventId || userInsideEventId;
     
-    // 1. Filter by parent event if selected OR user is inside
-    let filtered = activeEventId 
-      ? allPOIs.filter(poi => String(poi.parentId) === String(activeEventId))
-      : allPOIs.filter(poi => !poi.parentId); // Show top-level POIs if no event active
+    // 1. Zoom-based logic
+    // If we are zoomed out and no event is selected, show nothing (Events are handled by separate loop)
+    if (!activeEventId && zoom < 16.0) return [];
 
-    // 2. Filter by category if active
+    // 2. Selection-based logic
+    // If an event is active, we PRIORITIZE its children.
+    // If we are zoomed in very close (>17), we show everything to allow context.
+    let filtered = allPOIs;
+    if (activeEventId && zoom < 17.0) {
+      filtered = allPOIs.filter(poi => 
+        poi.parentId !== undefined && 
+        poi.parentId !== null && 
+        String(poi.parentId) === String(activeEventId)
+      );
+    }
+
+    // 3. Filter by category if active
     if (activeCategoryFilters.length > 0) {
       filtered = filtered.filter(poi => activeCategoryFilters.includes(poi.category));
     }

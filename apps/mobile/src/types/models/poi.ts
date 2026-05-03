@@ -10,6 +10,7 @@ export interface StandardUIPOI {
   category: string;
   categoryLabel: string;
   categoryIcon: string;
+  iconFamily: 'feather' | 'material';
   mainColor: string;
   coordinates: [number, number];
   parentId?: string | number;

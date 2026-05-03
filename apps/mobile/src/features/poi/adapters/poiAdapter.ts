@@ -15,9 +15,10 @@ export const normalizePOI = (raw: POIGeoJSON): StandardUIPOI => {
     category: properties.category || 'generic',
     categoryLabel: metadata.label,
     categoryIcon: metadata.icon,
+    iconFamily: metadata.iconFamily,
     mainColor: metadata.color,
     coordinates: [geometry.coordinates[0], geometry.coordinates[1]],
-    parentId: properties.parentId,
+    parentId: properties.parentId || properties.event_id,
     description: properties.description,
     images: properties.images,
     raw: properties, // Preserve original properties
