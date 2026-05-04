@@ -5,7 +5,9 @@ import Animated, {
   useAnimatedStyle, 
   withSpring, 
   Extrapolation,
-  interpolate
+  interpolate,
+  useDerivedValue,
+  useAnimatedProps
 } from 'react-native-reanimated';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -43,13 +45,19 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
     };
   });
 
+  const blurProps = useAnimatedProps(() => {
+    return {
+      intensity: interpolate(visibility.value, [0, 0.1, 1], [0, 95, 95], Extrapolation.CLAMP)
+    };
+  });
+
   // No unmount based on visibility.value to avoid render-time reads
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
       <AnimatedSafeBlurView 
         tint={theme.colors.glass.tint}
-        intensity={100}
+        animatedProps={blurProps}
         style={[
           styles.content,
           { 

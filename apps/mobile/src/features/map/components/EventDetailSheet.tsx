@@ -108,8 +108,11 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     };
   });
 
-  // Keep intensity high and constant like the main search island
-  const blurIntensity = 95;
+  const blurProps = useAnimatedProps(() => {
+    return {
+      intensity: interpolate(islandState.value, [0, 0.1, 1], [0, 95, 95], Extrapolation.CLAMP)
+    };
+  });
 
   // No unmount based on islandState.value to avoid render-time reads
 
@@ -119,7 +122,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
         <Animated.View style={[styles.container, islandStyle]}>
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint}
-            intensity={blurIntensity}
+            animatedProps={blurProps}
             style={[
               styles.background, 
               islandBackgroundStyle,

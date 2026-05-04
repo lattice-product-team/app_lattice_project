@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ViewStyle, StyleProp, Platform, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
-import Animated from 'react-native-reanimated';
+import Animated, { useAnimatedProps } from 'react-native-reanimated';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -22,22 +22,26 @@ export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
   style,
   children
 }, ref) => {
-  // Use a light-themed semi-transparent fallback as baseline
-  const fallbackColor = tint === 'dark' ? 'rgba(28, 27, 28, 0.92)' : 'rgba(255, 255, 255, 0.92)';
+  const fallbackColor = tint === 'dark' ? 'rgba(28, 27, 28, 0.7)' : 'rgba(255, 255, 255, 0.7)';
+  const useNativeBlur = true;
 
-  const useNativeBlur = true; // Forced true for Development Client
+  // Internal animated props to bridge JS props to Native BlurView
+  const animatedBlurProps = useAnimatedProps(() => {
+    return {
+      intensity: typeof intensity === 'number' ? intensity : (intensity as any)?.value ?? 95,
+      tint: tint
+    };
+  });
 
   if (useNativeBlur && (Platform.OS === 'ios' || Platform.OS === 'android')) {
     try {
       return (
         <View ref={ref} style={[style, styles.container]}>
           <AnimatedBlurView 
-            intensity={intensity} 
-            tint={tint} 
+            animatedProps={animatedBlurProps}
             style={StyleSheet.absoluteFill} 
           />
           {children}
-          {/* Border Overlay */}
           <View 
             pointerEvents="none" 
             style={[
@@ -53,26 +57,13 @@ export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
         </View>
       );
     } catch (e) {
-      console.warn('[SafeBlurView] Native BlurView failed, falling back to transparency');
+      console.warn('[SafeBlurView] Native BlurView failed');
     }
   }
 
   return (
     <View ref={ref} style={[style, styles.container, { backgroundColor: fallbackColor }]}>
       {children}
-      {/* Border Overlay Fallback */}
-      <View 
-        pointerEvents="none" 
-        style={[
-          StyleSheet.absoluteFill, 
-          styles.borderOverlay,
-          { 
-            borderColor: (style as any)?.borderColor,
-            borderRadius: (style as any)?.borderRadius || 0,
-            borderWidth: (style as any)?.borderWidth ? 1 : 0,
-          }
-        ]} 
-      />
     </View>
   );
 });
