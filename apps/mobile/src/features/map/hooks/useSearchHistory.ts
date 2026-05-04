@@ -46,7 +46,7 @@ export const useSearchHistory = () => {
 
   const clearHistory = useCallback(() => {
     setHistory([]);
-    storage.delete(SEARCH_HISTORY_KEY);
+    storage.remove(SEARCH_HISTORY_KEY);
   }, []);
 
   return {

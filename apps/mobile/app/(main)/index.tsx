@@ -49,7 +49,7 @@ import { LatticeEvent } from '../../src/types';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
-const SNAP_POINTS = [0, 0.5];
+const SNAP_POINTS = [0, 0.5, 1];
 
 export default function MapIndexPage() {
   const theme = useAppTheme();
@@ -157,6 +157,10 @@ export default function MapIndexPage() {
       if (val < 0.8 && isSearching && isPanning.value) {
         runOnJS(dismissSearch)();
       }
+      // Activamos búsqueda si subimos al Nivel 3
+      if (val > 0.8 && !isSearching && isPanning.value) {
+        runOnJS(setIsSearching)(true);
+      }
     },
     [isSearching, dismissSearch]
   );
@@ -186,18 +190,15 @@ export default function MapIndexPage() {
       const predictedPos = islandState.value + velocity * 0.1;
       
       let closest = SNAP_POINTS[0];
-      if (predictedPos > 0.5) {
-        closest = 0.5;
-      } else {
-        let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
-        SNAP_POINTS.forEach((point) => {
-          const diff = Math.abs(predictedPos - point);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closest = point;
-          }
-        });
-      }
+      let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
+      
+      SNAP_POINTS.forEach((point) => {
+        const diff = Math.abs(predictedPos - point);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = point;
+        }
+      });
 
       islandState.value = withSpring(closest, {
         damping: 28,
