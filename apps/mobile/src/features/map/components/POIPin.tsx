@@ -2,9 +2,13 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import Animated, { 
-  useAnimatedStyle, 
   withSpring, 
-  useSharedValue 
+  withTiming,
+  withDelay,
+  useSharedValue,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -19,6 +23,7 @@ interface POIPinProps {
   coordinates: number[];
   isSelected: boolean;
   onPress: () => void;
+  zoom: SharedValue<number>;
 }
 
 export const POIPin = React.memo(({ 
@@ -28,26 +33,42 @@ export const POIPin = React.memo(({
   color, 
   coordinates, 
   isSelected, 
-  onPress 
+  onPress,
+  zoom
 }: POIPinProps) => {
   const theme = useAppTheme();
   const activeFilters = usePOIStore(s => s.activeCategoryFilters);
   const scale = useSharedValue(0); // Start at 0 for pop animation
+  const opacity = useSharedValue(0);
   
   const isDimmed = activeFilters.length > 0 && !activeFilters.includes(category);
 
-  React.useEffect(() => {
-    // Pop animation on mount
+  useEffect(() => {
+    // Very short delay only to prevent (0,0) flash, then let zoom drive it
+    opacity.value = withTiming(1, { duration: 150 });
+  }, []);
+
+  useEffect(() => {
     scale.value = withSpring(isSelected ? 1.3 : 1, {
       damping: 15,
       stiffness: 150,
     });
   }, [isSelected]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: withSpring(isDimmed ? 0.3 : 1),
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    // Zoom-based opacity (Fade out between 16.0 and 15.5)
+    const zoomOpacity = interpolate(
+      zoom.value,
+      [15.5, 16.0],
+      [0, 1],
+      Extrapolation.CLAMP
+    );
+
+    return {
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value * zoomOpacity * (isDimmed ? 0.3 : 1),
+    };
+  });
 
   const IconComponent = iconFamily === 'material' ? MaterialCommunityIcons : Feather;
 

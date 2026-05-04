@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Dimensions, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { SharedValue } from 'react-native-reanimated';
+import { SharedValue, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
@@ -72,6 +72,9 @@ export const MapContent = function MapContent({
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const [currentZoom, setCurrentZoom] = React.useState(DEFAULT_ZOOM);
+  const zoomSharedValue = useSharedValue(DEFAULT_ZOOM);
+  const lastZoomUpdateRef = useRef(0);
+  const ZOOM_THROTTLE_MS = 100;
 
   // Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
@@ -227,7 +230,7 @@ export const MapContent = function MapContent({
     const zoom = properties.zoomLevel;
     const pitch = properties.pitch;
 
-    // Actualizar zoom reactivo para filtrado de POIs
+    // Actualizar zoom reactivo para filtrado de POIs (aseguramos el valor final)
     setCurrentZoom(zoom);
 
     // Guardar posición para persistencia
@@ -238,6 +241,21 @@ export const MapContent = function MapContent({
       setIsFollowingUser(false);
     }
   }, [isFollowingUser, setIsFollowingUser, setLastCameraPosition]);
+
+  const handleRegionIsChanging = useCallback((feature: any) => {
+    const zoom = feature.properties.zoomLevel;
+    if (zoom) {
+      // 1. Update shared value for real-time animations (no re-renders)
+      zoomSharedValue.value = zoom;
+
+      // 2. Throttle React state update for filtering logic
+      const now = Date.now();
+      if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
+        setCurrentZoom(zoom);
+        lastZoomUpdateRef.current = now;
+      }
+    }
+  }, []);
 
   const poisAndSaved = useMemo(() => {
     const pois = poisGeoJSON?.features || [];
@@ -274,10 +292,17 @@ export const MapContent = function MapContent({
     return [...uniqueVenuePois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
-  const visiblePois = useMemo(() => getFilteredPOIs(allUIPois, currentZoom), [allUIPois, selectedEventId, userInsideEventId, currentZoom]);
+  const isValidCoord = (coords?: number[]) => {
+    return coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
+  };
+
+  const visiblePois = useMemo(() => {
+    const filtered = getFilteredPOIs(allUIPois, currentZoom);
+    return filtered.filter(p => isValidCoord(p.coordinates));
+  }, [allUIPois, selectedEventId, userInsideEventId, currentZoom]);
   
   const events = useMemo(() => 
-    allUIPois.filter(p => p.category === 'event'), 
+    allUIPois.filter(p => p.category === 'event' && isValidCoord(p.coordinates)), 
   [allUIPois]);
 
   const handleEventPress = useCallback((poi: any) => {
@@ -301,6 +326,7 @@ export const MapContent = function MapContent({
         attributionEnabled={false}
         compassEnabled={false}
         onPress={onDeselect || storeDeselect}
+        onRegionIsChanging={handleRegionIsChanging}
         onRegionDidChange={handleRegionChange}
         onMapIdle={() => {
           const locationStatus = useLocationStore.getState().status;
@@ -382,6 +408,7 @@ export const MapContent = function MapContent({
             coordinates={event.coordinates}
             isSelected={String(selectedEventId) === String(event.id)}
             onPress={() => handleEventPress(event)}
+            zoom={zoomSharedValue}
           />
         ))}
 
@@ -397,6 +424,7 @@ export const MapContent = function MapContent({
             coordinates={poi.coordinates}
             isSelected={selectedPoiId === poi.id}
             onPress={() => handlePoiPress(poi)}
+            zoom={zoomSharedValue}
           />
         ))}
 

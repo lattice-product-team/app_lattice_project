@@ -81,26 +81,39 @@ export const usePOIStore = create<POIState>((set) => ({
   getFilteredPOIs: (allPOIs, zoom = 0) => {
     const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
     
-    // Effective event ID to show POIs for (Selected or Current physical location)
     const activeEventId = selectedEventId || userInsideEventId;
     
-    // 1. Zoom-based logic
-    // If we are zoomed out and no event is selected, show nothing (Events are handled by separate loop)
-    if (!activeEventId && zoom < 16.0) return [];
-
-    // 2. Selection-based logic
-    // If an event is active, we PRIORITIZE its children.
-    // If we are zoomed in very close (>17), we show everything to allow context.
-    let filtered = allPOIs;
-    if (activeEventId && zoom < 17.0) {
-      filtered = allPOIs.filter(poi => 
+    // 1. Selection-based logic (Highest Priority)
+    // If an event is selected, we show its children NO MATTER the zoom.
+    // This solves the "they only appear if I zoom in" issue.
+    if (activeEventId) {
+      let children = allPOIs.filter(poi => 
         poi.parentId !== undefined && 
         poi.parentId !== null && 
         String(poi.parentId) === String(activeEventId)
       );
+
+      // If we are zoomed in very close (>17), we also show other POIs for context
+      if (zoom >= 17.0) {
+        const others = allPOIs.filter(poi => String(poi.parentId) !== String(activeEventId));
+        children = [...children, ...others];
+      }
+
+      // Filter by category if active
+      if (activeCategoryFilters.length > 0) {
+        children = children.filter(poi => activeCategoryFilters.includes(poi.category));
+      }
+
+      return children;
     }
 
-    // 3. Filter by category if active
+    // 2. Global zoom-based logic (When NO event is selected)
+    // We use a slightly more lenient threshold (15.5 instead of 16.0) to allow for fade-in animations
+    if (zoom < 15.5) return [];
+
+    let filtered = allPOIs;
+    
+    // Filter by category if active
     if (activeCategoryFilters.length > 0) {
       filtered = filtered.filter(poi => activeCategoryFilters.includes(poi.category));
     }

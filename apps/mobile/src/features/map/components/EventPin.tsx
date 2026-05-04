@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import Animated, { 
-  useAnimatedStyle, 
   withSpring, 
-  useSharedValue 
+  withTiming,
+  withDelay,
+  useSharedValue,
+  useAnimatedStyle
 } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -17,6 +19,7 @@ interface EventPinProps {
   coordinates: number[];
   isSelected: boolean;
   onPress: () => void;
+  zoom: SharedValue<number>;
 }
 
 export const EventPin = React.memo(({ 
@@ -25,13 +28,20 @@ export const EventPin = React.memo(({
   imageUrl, 
   coordinates, 
   isSelected, 
-  onPress 
+  onPress,
+  zoom
 }: EventPinProps) => {
   const theme = useAppTheme();
   const activeFilters = usePOIStore(s => s.activeCategoryFilters);
   const scale = useSharedValue(1);
+  const opacity = useSharedValue(0);
 
   const isDimmed = activeFilters.length > 0 && !isSelected;
+
+  useEffect(() => {
+    // Faster reveal, similar to the zoom-driven feel
+    opacity.value = withTiming(1, { duration: 200 });
+  }, []);
 
   React.useEffect(() => {
     scale.value = withSpring(isSelected ? 1.25 : 1, {
@@ -42,7 +52,7 @@ export const EventPin = React.memo(({
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: withSpring(isDimmed ? 0.4 : 1),
+    opacity: opacity.value * (isDimmed ? 0.4 : 1),
     zIndex: isSelected ? 1000 : 1,
   }));
 
