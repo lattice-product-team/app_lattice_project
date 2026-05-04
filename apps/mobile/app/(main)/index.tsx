@@ -246,7 +246,7 @@ export default function MapIndexPage() {
 
   const blurProps = useAnimatedProps(() => {
     return {
-      intensity: interpolate(islandState.value, [0.7, 1], [90, 0], Extrapolation.CLAMP)
+      // intensity should be passed as a regular prop
     };
   });
 
@@ -355,6 +355,7 @@ export default function MapIndexPage() {
         >
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint} 
+            intensity={90}
             animatedProps={blurProps}
             style={[
               styles.islandBackground, 

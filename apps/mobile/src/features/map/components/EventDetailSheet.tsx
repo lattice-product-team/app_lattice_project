@@ -104,13 +104,17 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       borderTopRightRadius: 32,
       borderBottomLeftRadius: radius,
       borderBottomRightRadius: radius,
-      backgroundColor: 'transparent',
+      backgroundColor: interpolateColor(
+        islandState.value,
+        [0.7, 1],
+        ['transparent', theme.colors.bg.surface]
+      ),
     };
   });
 
   const blurProps = useAnimatedProps(() => {
     return {
-      intensity: interpolate(islandState.value, [0, 0.1, 1], [0, 95, 95], Extrapolation.CLAMP)
+      // intensity should be passed as a regular prop for SafeBlurView to handle it correctly
     };
   });
 
@@ -122,6 +126,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
         <Animated.View style={[styles.container, islandStyle]}>
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint}
+            intensity={90}
             animatedProps={blurProps}
             style={[
               styles.background, 
@@ -129,6 +134,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
             ]}
           >
+            <Animated.View style={[styles.innerGlowBorder, islandBackgroundStyle, { backgroundColor: 'transparent' }]} />
             {/* Header / Drag Handle */}
             <View style={styles.header}>
               <View style={styles.handle} />
@@ -285,6 +291,12 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
     borderWidth: 1,
+  },
+  innerGlowBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    pointerEvents: 'none',
   },
   header: {
     paddingTop: 8,

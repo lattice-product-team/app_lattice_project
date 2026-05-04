@@ -47,7 +47,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
 
   const blurProps = useAnimatedProps(() => {
     return {
-      intensity: interpolate(visibility.value, [0, 0.1, 1], [0, 95, 95], Extrapolation.CLAMP)
+      // intensity should be passed as a regular prop
     };
   });
 
@@ -57,6 +57,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
     <Animated.View style={[styles.container, animatedStyle]}>
       <AnimatedSafeBlurView 
         tint={theme.colors.glass.tint}
+        intensity={90}
         animatedProps={blurProps}
         style={[
           styles.content,
@@ -66,6 +67,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
           }
         ]}
       >
+        <View style={styles.innerGlowBorder} />
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
             <MaterialCommunityIcons name={poi?.categoryIcon || 'map-marker'} size={24} color="white" />
@@ -104,6 +106,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     gap: 16,
+  },
+  innerGlowBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 24,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    pointerEvents: 'none',
   },
   header: {
     flexDirection: 'row',
