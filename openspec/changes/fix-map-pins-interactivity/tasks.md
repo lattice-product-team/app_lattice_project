@@ -19,3 +19,12 @@
 - [x] 3.1 Verify pins appear/disappear smoothly during a zoom gesture
 - [x] 3.2 Verify pins no longer flash in the top-left corner on mount or map reset
 - [x] 3.3 Verify panning performance remains smooth (60fps)
+
+## 4. Phase 2: Hybrid Rendering & Refactoring
+
+- [ ] 4.1 Create `poiAdapter.ts` to centralize POI/Event normalization logic
+- [ ] 4.2 Implement `POISymbolLayer` to render non-selected POIs using MapLibre's GL engine
+- [ ] 4.3 Refactor `MapContent.tsx` into sub-components (`MapCamera`, `MapLayers`, `MapInteraction`)
+- [ ] 4.4 Update filtering logic to split data between `SymbolLayer` and `MarkerView`
+- [ ] 4.5 Audit all coordinate sources to ensure no `[0,0]` values reach the native layer
+- [ ] 4.6 Final performance pass: ensure no redundant re-renders of the MapView

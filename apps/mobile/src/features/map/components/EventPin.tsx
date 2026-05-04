@@ -6,7 +6,9 @@ import Animated, {
   withTiming,
   withDelay,
   useSharedValue,
-  useAnimatedStyle
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation
 } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -39,8 +41,8 @@ export const EventPin = React.memo(({
   const isDimmed = activeFilters.length > 0 && !isSelected;
 
   useEffect(() => {
-    // Faster reveal, similar to the zoom-driven feel
-    opacity.value = withTiming(1, { duration: 200 });
+    // Small delay to allow MapLibre to sync projection before showing the marker
+    opacity.value = withDelay(50, withTiming(1, { duration: 200 }));
   }, []);
 
   React.useEffect(() => {
@@ -50,11 +52,21 @@ export const EventPin = React.memo(({
     });
   }, [isSelected]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value * (isDimmed ? 0.4 : 1),
-    zIndex: isSelected ? 1000 : 1,
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    // Zoom-based opacity (Fade out between 12.5 and 13.0) - broader for events
+    const zoomOpacity = interpolate(
+      zoom.value,
+      [12.5, 13.0],
+      [0, 1],
+      Extrapolation.CLAMP
+    );
+
+    return {
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value * zoomOpacity * (isDimmed ? 0.4 : 1),
+      zIndex: isSelected ? 1000 : 1,
+    };
+  });
 
   return (
     <MapLibreGL.MarkerView coordinate={coordinates}>

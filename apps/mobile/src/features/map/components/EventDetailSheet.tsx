@@ -7,7 +7,9 @@ import Animated, {
   interpolate, 
   Extrapolation,
   useAnimatedProps,
-  interpolateColor
+  interpolateColor,
+  useAnimatedReaction,
+  runOnJS
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -42,6 +44,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
+  const [scrollEnabled, setScrollEnabled] = React.useState(false);
   
   const SNAP_POINTS = {
     HIDDEN: 0,
@@ -118,7 +121,17 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     };
   });
 
-  // No unmount based on islandState.value to avoid render-time reads
+  // Sync scroll enabled state to avoid render-time reads of islandState.value
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      const shouldEnable = curr > 0.9;
+      if (shouldEnable !== scrollEnabled) {
+        runOnJS(setScrollEnabled)(shouldEnable);
+      }
+    },
+    [scrollEnabled]
+  );
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -263,7 +276,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               </View>
             </View>
 
-            <ScrollView style={{ flex: 1 }} scrollEnabled={islandState.value > 0.9}>
+            <ScrollView style={{ flex: 1 }} scrollEnabled={scrollEnabled}>
               <View style={styles.content}>
                 <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
                 <Text style={[styles.description, { color: theme.colors.text.secondary }]}>

@@ -8,9 +8,11 @@ Fixing these is essential for the "premium" feel of the application.
 
 ## What Changes
 
-- **Real-time Pin Filtering**: Transition from `onRegionDidChange` to `onRegionIsChanging` for zoom updates, ensuring pins appear/disappear fluidly during movement.
+- **Real-time Pin Filtering**: Transition from `onRegionIsChanging` to `onRegionIsChanging` for zoom updates, ensuring pins appear/disappear fluidly during movement.
 - **Throttled State Updates**: Implement a throttle mechanism for zoom updates to maintain high performance while dragging.
-- **Marker Positioning Fix**: Implement an opacity-based reveal strategy for `MarkerView` components to hide the initial (0,0) positioning flash.
+- **Hybrid Rendering (New)**: Migrate background/non-selected POIs to `SymbolLayer` (GL-based) to improve scalability and eliminate the (0,0) flash for the majority of icons.
+- **Marker Positioning Fix**: Implement an opacity-based reveal strategy for remaining `MarkerView` components to hide the initial (0,0) positioning flash.
+- **Component Refactor (New)**: Decompose `MapContent.tsx` into specialized sub-components (Camera, Layers, Interaction) and move data normalization to an adapter/selector.
 - **Coordinate Validation**: Add strict validation for pin coordinates to prevent rendering at default [0,0] locations.
 
 ## Capabilities

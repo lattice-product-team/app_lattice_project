@@ -24,9 +24,17 @@ Instead of relying solely on `onRegionDidChange`, we will add `onRegionIsChangin
 - **Decision**: Filter out any events or POIs with [0,0] coordinates in `MapContent.tsx` before they even reach the pin components.
 - **Rationale**: Prevents accidental rendering of "phantom" pins if data is incomplete.
 
-### 3. Opacity-Based Reveal Strategy
-- **Decision**: Initialize `EventPin` and `POIPin` with `opacity: 0` using a Reanimated SharedValue. Use a `useEffect` to trigger a `withDelay(50, withSpring(1))` or simple `withTiming(1)` animation.
-- **Rationale**: This gives the MapLibre engine enough time to calculate the marker's screen-space position before it becomes visible to the user, effectively hiding the coordinate synchronization lag.
+### 3. Hybrid Rendering & GL Optimization (New)
+- **Decision**: Use `SymbolLayer` for all non-selected and non-primary event POIs. Only use `MarkerView` for the currently selected POI and primary events that require high-fidelity React animations.
+- **Rationale**: `SymbolLayer` is rendered directly by the GPU in the GL engine, which is much faster and doesn't suffer from the coordinate synchronization lag that causes the (0,0) flash.
+
+### 4. Component Decomposition & Adapter Pattern (New)
+- **Decision**: Extract POI normalization logic into a dedicated adapter. Split `MapContent` into `MapLayers`, `MapCameraManager`, and `MapInteractionLayer`.
+- **Rationale**: Reduces the complexity of the main map component, making it more maintainable and easier to optimize individual rendering paths.
+
+### 5. Opacity-Based Reveal Strategy
+- **Decision**: Initialize remaining `MarkerView` components (Events/Selected) with `opacity: 0` using a Reanimated SharedValue. Use a `useEffect` to trigger a `withTiming(1, { duration: 150 })` animation.
+- **Rationale**: Provides a buffer for the native side to sync coordinates, while `SymbolLayer` handles the rest of the icons instantly.
 
 ## Risks / Trade-offs
 

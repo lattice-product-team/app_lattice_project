@@ -44,8 +44,8 @@ export const POIPin = React.memo(({
   const isDimmed = activeFilters.length > 0 && !activeFilters.includes(category);
 
   useEffect(() => {
-    // Very short delay only to prevent (0,0) flash, then let zoom drive it
-    opacity.value = withTiming(1, { duration: 150 });
+    // Small delay to allow MapLibre to sync projection before showing the marker
+    opacity.value = withDelay(50, withTiming(1, { duration: 200 }));
   }, []);
 
   useEffect(() => {
