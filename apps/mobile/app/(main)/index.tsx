@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView, Keyboard } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
@@ -49,6 +49,7 @@ import { LatticeEvent } from '../../src/types';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
+const SNAP_POINTS = [0, 0.5];
 
 export default function MapIndexPage() {
   const theme = useAppTheme();
@@ -105,10 +106,11 @@ export default function MapIndexPage() {
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
   const islandState = useSharedValue(0); 
   const startState = useSharedValue(0);
-  const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
-  const [preSearchLevel, setPreSearchLevel] = useState(0);
+  const preSearchLevel = useSharedValue(0);
+  
   const isPanning = useSharedValue(false);
+  const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
     return withTiming(selectedEvent ? 0 : 1, { duration: 300 });
   });
@@ -121,6 +123,9 @@ export default function MapIndexPage() {
   }, [selectedPoiId, islandState]);
 
   const handleEventSelect = useCallback((event: LatticeEvent) => {
+    // Save current level before collapsing
+    preSearchLevel.value = islandState.value;
+    
     setSelectedEvent(event.id);
     setCurrentEvent(event);
     selectPoi(null); // Clear any active POI selection
@@ -131,8 +136,13 @@ export default function MapIndexPage() {
   const handleCloseDetails = useCallback(() => {
     setSelectedEvent(null);
     setCurrentEvent(null);
+    selectPoi(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [setSelectedEvent, setCurrentEvent]);
+    // Restore island if needed
+    if (preSearchLevel.value > 0.1) {
+      islandState.value = withSpring(preSearchLevel.value, { damping: 28, stiffness: 90 });
+    }
+  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState, preSearchLevel]);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -195,7 +205,7 @@ export default function MapIndexPage() {
         mass: 0.8,
       }, (finished) => {
         if (finished && (closest === 0 || closest === 0.5)) {
-          runOnJS(setPreSearchLevel)(closest);
+          preSearchLevel.value = closest;
         }
       });
 
@@ -276,7 +286,7 @@ export default function MapIndexPage() {
     deselect();
     setIsSearching(false);
     if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel, { damping: 28, stiffness: 90 });
+      islandState.value = withSpring(preSearchLevel.value, { damping: 28, stiffness: 90 });
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
@@ -307,8 +317,10 @@ export default function MapIndexPage() {
         <MapContent 
           poisGeoJSON={mergedPois} 
           allEvents={events}
-          sheetPosition={useSharedValue(SCREEN_HEIGHT)} 
+          sheetPosition={sheetPosition} 
+          islandState={islandState}
           onDeselect={handleMapPress}
+          onSelectEvent={handleEventSelect}
           is3DActive={manualAR}
         />
       </View>

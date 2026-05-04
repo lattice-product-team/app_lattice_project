@@ -16,26 +16,21 @@ interface SafeBlurViewProps {
  * SafeBlurView uses native expo-blur for high-fidelity frosted glass effects.
  * It provides a consistent aesthetic across iOS and Android.
  */
-export const SafeBlurView = ({
+export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
   intensity = 80,
   tint = 'light',
   style,
   children
-}: SafeBlurViewProps) => {
+}, ref) => {
   // Use a light-themed semi-transparent fallback as baseline
   const fallbackColor = tint === 'dark' ? 'rgba(28, 27, 28, 0.92)' : 'rgba(255, 255, 255, 0.92)';
 
-  /**
-   * NOTE: We are temporarily forcing the fallback because the current 
-   * development build is missing the native ExpoBlurView module.
-   * To enable real blur, run a new native build (e.g., npx expo run:ios).
-   */
   const useNativeBlur = true; // Forced true for Development Client
 
   if (useNativeBlur && (Platform.OS === 'ios' || Platform.OS === 'android')) {
     try {
       return (
-        <View style={[style, styles.container]}>
+        <View ref={ref} style={[style, styles.container]}>
           <AnimatedBlurView 
             intensity={intensity} 
             tint={tint} 
@@ -63,7 +58,7 @@ export const SafeBlurView = ({
   }
 
   return (
-    <View style={[style, styles.container, { backgroundColor: fallbackColor }]}>
+    <View ref={ref} style={[style, styles.container, { backgroundColor: fallbackColor }]}>
       {children}
       {/* Border Overlay Fallback */}
       <View 
@@ -80,7 +75,7 @@ export const SafeBlurView = ({
       />
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -1,4 +1,4 @@
-import * as AppleAuthentication from 'expo-apple-authentication';
+
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '../store/useAuthStore';
@@ -12,37 +12,7 @@ export class AuthService {
     return Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api/v1';
   }
 
-  static async signInWithApple() {
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
 
-      const response = await fetch(`${this.API_URL}/auth/apple`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: credential.identityToken,
-          fullName: credential.fullName,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.token) {
-        useAuthStore.getState().setAuth(data.token, data.user);
-        return { success: true };
-      }
-      return { success: false, error: data.error };
-    } catch (e: any) {
-      if (e.code === 'ERR_CANCELED') {
-        return { success: false, cancelled: true };
-      }
-      return { success: false, error: e.message };
-    }
-  }
 
   static async signInWithGoogle(idToken: string) {
     try {

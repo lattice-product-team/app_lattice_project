@@ -99,28 +99,19 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
     const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
-    const bgColor = interpolateColor(
-      islandState.value,
-      [0.7, 1],
-      [theme.colors.glass.background, theme.colors.bg.surface]
-    );
-
     return {
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       borderBottomLeftRadius: radius,
       borderBottomRightRadius: radius,
-      backgroundColor: bgColor,
+      backgroundColor: 'transparent',
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      intensity: interpolate(islandState.value, [0.5, 0.7, 1], [100, 100, 0], Extrapolation.CLAMP)
-    };
-  });
+  // Keep intensity high and constant like the main search island
+  const blurIntensity = 95;
 
-  if (!event && islandState.value === 0) return null;
+  // No unmount based on islandState.value to avoid render-time reads
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -128,7 +119,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
         <Animated.View style={[styles.container, islandStyle]}>
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint}
-            animatedProps={blurProps}
+            intensity={blurIntensity}
             style={[
               styles.background, 
               islandBackgroundStyle,

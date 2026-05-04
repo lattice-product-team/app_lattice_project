@@ -32,16 +32,20 @@ interface MapContentProps {
   allEvents?: LatticeEvent[];
   savedLocations?: any;
   onDeselect?: () => void;
+  onSelectEvent?: (event: LatticeEvent) => void;
   sheetPosition: SharedValue<number>;
+  islandState: SharedValue<number>;
   is3DActive?: boolean;
 }
 
-export const MapContent = React.memo(function MapContent({
+export const MapContent = function MapContent({
   poisGeoJSON,
   allEvents = [],
   savedLocations,
   onDeselect,
+  onSelectEvent,
   sheetPosition,
+  islandState,
   is3DActive = false,
 }: MapContentProps) {
   const camera = useRef<MapLibreGL.CameraRef>(null);
@@ -196,7 +200,7 @@ export const MapContent = React.memo(function MapContent({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         camera.current?.setCamera({
           centerCoordinate: feature.geometry.coordinates,
-          zoomLevel: (camera.current as any).getZoom() + 2,
+          zoomLevel: currentZoom + 2,
           animationDuration: 400,
         });
         return;
@@ -276,12 +280,17 @@ export const MapContent = React.memo(function MapContent({
     allUIPois.filter(p => p.category === 'event'), 
   [allUIPois]);
 
-  const handleEventPress = useCallback((event: any) => {
+  const handleEventPress = useCallback((poi: any) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setSelectedEvent(event.id);
-    setCurrentEvent(event.raw); // Sync with event store
-    selectPoi(event);
-  }, [setSelectedEvent, setCurrentEvent, selectPoi]);
+    if (onSelectEvent) {
+      onSelectEvent(poi.raw);
+    } else {
+      setSelectedEvent(poi.id);
+      setCurrentEvent(poi.raw);
+      selectPoi(poi);
+      islandState.value = withSpring(0, { damping: 28, stiffness: 90 });
+    }
+  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState, onSelectEvent]);
   return (
     <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
@@ -426,7 +435,7 @@ export const MapContent = React.memo(function MapContent({
       </MapLibreGL.MapView>
     </View>
   );
-});
+};
 
 MapContent.displayName = 'MapContent';
 

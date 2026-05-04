@@ -131,7 +131,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     '@maplibre/maplibre-react-native',
-    'expo-apple-authentication',
+
     'expo-web-browser',
   ],
   experiments: {

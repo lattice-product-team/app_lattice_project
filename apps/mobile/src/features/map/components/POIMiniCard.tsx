@@ -43,7 +43,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
     };
   });
 
-  if (!poi && visibility.value === 0) return null;
+  // No unmount based on visibility.value to avoid render-time reads
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
@@ -53,7 +53,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
         style={[
           styles.content,
           { 
-            backgroundColor: theme.colors.glass.background,
+            backgroundColor: 'transparent',
             borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' 
           }
         ]}
