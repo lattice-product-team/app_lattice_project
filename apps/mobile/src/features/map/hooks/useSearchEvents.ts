@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { geoService } from '../../../services/geoService';
 
 export interface SearchEvent {
@@ -15,27 +16,10 @@ export interface SearchEvent {
 }
 
 export const useSearchEvents = (query: string) => {
-  const [events, setEvents] = useState<SearchEvent[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setLoading(true);
-      try {
-        const data = await geoService.getEvents();
-        setEvents(data);
-        setError(null);
-      } catch (e) {
-        console.error('Failed to fetch events for search', e);
-        setError('Could not load events');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []);
+  const { data: events = [], isLoading: loading, error } = useQuery({
+    queryKey: ['events-search', ''], // Static key for pre-fetching
+    queryFn: () => geoService.getEvents()
+  });
 
   const filteredEvents = useMemo(() => {
     if (!query || query.trim() === '') {

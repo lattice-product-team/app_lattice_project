@@ -21,9 +21,9 @@ import { MapInteractionLayer } from './MapInteractionLayer';
 // Local Assets
 import styleLight from '../../../../assets/map/style-light.json';
 import styleDark from '../../../../assets/map/style-dark.json';
+import { startupMetrics } from '../../../utils/startupMetrics';
 
 // Constants & Utilities
-import { MAP_STYLES } from '../../../constants/mapConstants';
 import { useLocationStore } from '../../../store/useLocationStore';
 
 interface MapContentProps {
@@ -175,7 +175,7 @@ export const MapContent = function MapContent({
         hasInitialRendered.current = true;
         setInitialLoadComplete(true);
       }
-    }, 5000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [setInitialLoadComplete]);
 
@@ -188,19 +188,14 @@ export const MapContent = function MapContent({
       sources: {
         maptiler_planet: {
           type: "vector",
-          url: `https://api.maptiler.com/tiles/v3/tiles.json?key=iqk4irD5FCOr6M6VHVWZ`
+          url: "https://api.maptiler.com/tiles/v3/tiles.json?key=iqk4irD5FCOr6M6VHVWZ"
         }
       }
     };
 
-    // Ensure all layers use the working source
-    if (cleanStyle.layers) {
-      cleanStyle.layers = (cleanStyle.layers as any[]).map(layer => {
-        if (layer.source && layer.source !== 'maptiler_planet') {
-          return { ...layer, layout: { ...layer.layout, visibility: 'none' } };
-        }
-        return layer;
-      });
+    // Filter out potential conflicting sources (maptiler_attribution was found to be problematic)
+    if (cleanStyle.sources) {
+       delete (cleanStyle.sources as any).maptiler_attribution;
     }
 
     return cleanStyle;
@@ -218,10 +213,11 @@ export const MapContent = function MapContent({
         onPress={onDeselect || storeDeselect}
         onRegionIsChanging={handleRegionIsChanging}
         onRegionDidChange={handleRegionChange}
-        onMapIdle={() => {
+        onDidFinishLoadingStyle={() => {
           if (!hasInitialRendered.current) {
             hasInitialRendered.current = true;
             setInitialLoadComplete(true);
+            startupMetrics.markInteractive('Map');
           }
         }}
       >

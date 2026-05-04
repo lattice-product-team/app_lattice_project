@@ -10,8 +10,3 @@ export const FLY_ANIMATION_DURATION = 1000;
 export const SELECT_ANIMATION_DURATION = 350;
 
 export const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
-
-export const MAP_STYLES = {
-  light: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
-  dark: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`
-} as const;
