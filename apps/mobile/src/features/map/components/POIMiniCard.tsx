@@ -54,7 +54,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   // No unmount based on visibility.value to avoid render-time reads
 
   return (
-    <Animated.View style={[styles.container, animatedStyle]}>
+    <Animated.View style={[styles.container, theme.shadows.soft, animatedStyle]}>
       <AnimatedSafeBlurView 
         tint={theme.colors.glass.tint}
         intensity={90}

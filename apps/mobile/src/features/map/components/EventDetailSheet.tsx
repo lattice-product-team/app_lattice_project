@@ -123,7 +123,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.container, islandStyle]}>
+        <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint}
             intensity={90}
