@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -60,19 +60,11 @@ const ONBOARDING_DATA = [
   },
 ];
 
-// --- Background Visual Components ---
-
 const CardWall = () => (
   <View style={styles.wallGrid}>
     {FEATURE_CARDS.map((card, i) => (
       <View key={card.id} style={[styles.card, { opacity: 0.1 + (Math.random() * 0.3) }]}>
         <Feather name={card.icon as any} size={24} color="#000" style={{ opacity: 0.4 }} />
-        <Text style={styles.cardLabel}>{card.label}</Text>
-      </View>
-    ))}
-    {FEATURE_CARDS.map((card, i) => (
-      <View key={`r-${card.id}`} style={[styles.card, { opacity: 0.05 + (Math.random() * 0.2) }]}>
-        <Feather name={card.icon as any} size={24} color="#000" style={{ opacity: 0.3 }} />
         <Text style={styles.cardLabel}>{card.label}</Text>
       </View>
     ))}
@@ -132,7 +124,7 @@ export default function OnboardingScreen() {
 
   const handleGetStarted = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.push('/(auth)/register');
+    router.push('/(auth)/login');
   };
 
   const handleGuestMode = () => {
@@ -141,8 +133,6 @@ export default function OnboardingScreen() {
     router.replace('/(main)');
   };
 
-  // --- Background Interpolations ---
-  
   const bg1Style = useAnimatedStyle(() => ({
     opacity: interpolate(scrollX.value, [0, width], [1, 0], Extrapolate.CLAMP),
   }));
@@ -155,7 +145,6 @@ export default function OnboardingScreen() {
     opacity: interpolate(scrollX.value, [width, width * 2], [0, 1], Extrapolate.CLAMP),
   }));
 
-  // Logo opacity: only visible on slide 1
   const logoStyle = useAnimatedStyle(() => ({
     opacity: interpolate(scrollX.value, [0, width * 0.5], [1, 0], Extrapolate.CLAMP),
     transform: [
@@ -169,17 +158,13 @@ export default function OnboardingScreen() {
         entering={FadeInDown.delay(200).duration(1000).springify()}
         style={styles.textContainer}
       >
-        <Text style={[styles.slideSubtitle, { color: theme.colors.text.secondary }]}>
+        <Text style={styles.slideSubtitle}>
           {item.subtitle}
         </Text>
-        <Text 
-          style={[styles.slideTitle, { color: theme.colors.text.primary }]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
+        <Text style={styles.slideTitle} numberOfLines={1} adjustsFontSizeToFit>
           {item.title}
         </Text>
-        <Text style={[styles.slideDescription, { color: theme.colors.text.muted }]}>
+        <Text style={styles.slideDescription}>
           {item.description}
         </Text>
       </Animated.View>
@@ -188,7 +173,6 @@ export default function OnboardingScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: '#FFF' }]}>
-      {/* Dynamic Background Layer */}
       <View style={styles.backgroundLayer}>
         <Animated.View style={[StyleSheet.absoluteFill, bg1Style]}>
           <CardWall />
@@ -201,9 +185,8 @@ export default function OnboardingScreen() {
         </Animated.View>
       </View>
 
-      {/* Floating Logo - Positioned like Tripsy (Middle-ish) */}
       <Animated.View 
-        style={[styles.logoWrapper, logoStyle, { top: height * 0.42 }]}
+        style={[styles.logoWrapper, logoStyle, { top: height * 0.38 }]}
       >
          <View style={styles.centralLogoShadow}>
            <Image 
@@ -214,7 +197,6 @@ export default function OnboardingScreen() {
          </View>
       </Animated.View>
 
-      {/* Pager */}
       <FlatList
         data={ONBOARDING_DATA}
         renderItem={renderItem}
@@ -227,7 +209,6 @@ export default function OnboardingScreen() {
         style={styles.pager}
       />
 
-      {/* Footer */}
       <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
         <View style={styles.pagination}>
           {ONBOARDING_DATA.map((_, i) => (
@@ -247,15 +228,11 @@ export default function OnboardingScreen() {
 
         <View style={styles.buttonContainer}>
           <Pressable onPress={handleGetStarted} style={styles.getStartedButton}>
-            <Text style={styles.getStartedText} numberOfLines={1} adjustsFontSizeToFit>
-              Get started
-            </Text>
+            <Text style={styles.getStartedText}>Get started</Text>
           </Pressable>
 
           <Pressable onPress={handleGuestMode} style={styles.guestButton}>
-            <Text style={styles.guestText} numberOfLines={1} adjustsFontSizeToFit>
-              Entrar como invitado
-            </Text>
+            <Text style={styles.guestText}>Entrar como invitado</Text>
           </Pressable>
         </View>
       </View>
@@ -292,7 +269,7 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 10,
-    fontFamily: 'PlusJakartaSans-Bold',
+    fontFamily: 'Inter-Bold',
     color: '#000',
     opacity: 0.4,
   },
@@ -363,7 +340,7 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   logoImage: {
-    width: 140, // Logo más grande
+    width: 140,
     height: 140,
   },
   pager: {
@@ -375,36 +352,40 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 40,
-    paddingBottom: height * 0.25, // Un poco más de aire con el logo
+    paddingBottom: height * 0.24,
   },
   textContainer: {
     gap: 12,
     alignItems: 'center',
   },
   slideSubtitle: {
-    fontSize: 16,
-    fontFamily: 'Outfit-Medium',
-    letterSpacing: 2,
+    fontSize: 18,
+    fontFamily: 'Inter-Medium',
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
-    opacity: 0.5,
+    opacity: 0.6,
+    color: '#000',
   },
   slideTitle: {
-    fontSize: 44,
-    fontFamily: 'Outfit-Bold',
-    lineHeight: 48,
-    letterSpacing: -1.5,
+    fontSize: 56,
+    fontFamily: 'CormorantGaramond-Medium',
+    lineHeight: 60,
+    letterSpacing: -1,
     textAlign: 'center',
+    color: '#000',
   },
   slideDescription: {
-    fontSize: 16,
-    fontFamily: 'PlusJakartaSans-Medium',
-    lineHeight: 22,
+    fontSize: 18,
+    fontFamily: 'Inter-Regular',
+    lineHeight: 24,
     textAlign: 'center',
-    opacity: 0.6,
+    opacity: 0.5,
+    marginTop: 8,
+    color: '#000',
   },
   footer: {
     paddingHorizontal: 24,
-    gap: 32, // Espacio más fiel a Roi entre puntos y botones
+    gap: 32,
     alignItems: 'center',
     width: '100%',
     position: 'absolute',
@@ -437,7 +418,7 @@ const styles = StyleSheet.create({
   getStartedText: {
     color: '#fff',
     fontSize: 17,
-    fontFamily: 'PlusJakartaSans-Bold',
+    fontFamily: 'Inter-Bold',
   },
   guestButton: {
     flex: 1,
@@ -452,7 +433,7 @@ const styles = StyleSheet.create({
   guestText: {
     color: '#000',
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans-Bold',
+    fontFamily: 'Inter-Bold',
     textAlign: 'center',
   },
 });

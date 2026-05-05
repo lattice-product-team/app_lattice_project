@@ -18,8 +18,8 @@ export const AuthDivider = ({ label = "OR", className = "" }: AuthDividerProps) 
       />
       {label && (
         <Text 
-          className="mx-5 text-[10px] font-bold tracking-[2px]" 
-          style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Bold' }}
+          className="mx-5 text-[10px] tracking-[2px]" 
+          style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Bold' }}
         >
           {label}
         </Text>

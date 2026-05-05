@@ -38,7 +38,7 @@ export default function RegisterScreen() {
     <AuthLayout transparent>
       <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
         
-        {/* Header Section - Left Aligned (Like reference) */}
+        {/* Header Section */}
         <Animated.View 
           entering={FadeInDown.duration(1000).springify()}
           style={styles.header}
@@ -51,10 +51,10 @@ export default function RegisterScreen() {
             />
           </View>
           
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+          <Text style={styles.title}>
             Your new{'\n'}experience is here.
           </Text>
-          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+          <Text style={styles.subtitle}>
             Join the Lattice community today.
           </Text>
         </Animated.View>
@@ -74,7 +74,7 @@ export default function RegisterScreen() {
               variant="outline" 
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/(auth)/email-register');
+                router.push('/(auth)/login');
               }}
               style={styles.socialButton}
             />
@@ -86,6 +86,19 @@ export default function RegisterScreen() {
           entering={FadeIn.delay(800).duration(1200)}
           style={styles.footer}
         >
+          <View style={styles.switchLink}>
+            <Text style={styles.footerText}>
+              Already have an account?{' '}
+            </Text>
+            <Link href="/(auth)/login" asChild>
+              <Pressable hitSlop={10}>
+                <Text style={styles.footerLink}>
+                  Sign in
+                </Text>
+              </Pressable>
+            </Link>
+          </View>
+
           <Text style={styles.legalText}>
             By continuing, you agree to our{' '}
             <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
@@ -93,8 +106,6 @@ export default function RegisterScreen() {
           </Text>
         </Animated.View>
       </View>
-
-      {/* No more orange glow */}
     </AuthLayout>
   );
 }
@@ -113,18 +124,18 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   title: {
-    fontSize: 40,
-    fontFamily: 'Outfit-Bold',
-    letterSpacing: -1.5,
-    lineHeight: 46,
+    fontSize: 56,
+    fontFamily: 'CormorantGaramond-Medium',
+    lineHeight: 60,
+    letterSpacing: -1,
     textAlign: 'center',
     color: '#000',
   },
   subtitle: {
-    fontSize: 17,
-    fontFamily: 'PlusJakartaSans-Medium',
+    fontSize: 18,
+    fontFamily: 'Inter-Medium',
     marginTop: 8,
-    opacity: 0.4,
+    opacity: 0.5,
     textAlign: 'center',
     color: '#000',
   },
@@ -144,24 +155,27 @@ const styles = StyleSheet.create({
     gap: 16,
     marginTop: 40,
   },
-  registerLink: {
+  switchLink: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
   },
   footerText: {
-    fontFamily: 'PlusJakartaSans-Medium',
+    fontFamily: 'Inter-Medium',
     fontSize: 15,
+    color: 'rgba(0,0,0,0.4)',
   },
   footerLink: {
-    fontFamily: 'PlusJakartaSans-Bold',
+    fontFamily: 'Inter-Bold',
     fontSize: 15,
+    color: '#E2B042', // Lattice Orange
   },
   legalText: {
     fontSize: 12,
     color: 'rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
     lineHeight: 18,
-    fontFamily: 'PlusJakartaSans-Medium',
+    fontFamily: 'Inter-Regular',
     maxWidth: 280,
   },
   legalLink: {
