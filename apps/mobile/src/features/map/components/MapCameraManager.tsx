@@ -14,6 +14,7 @@ interface MapCameraManagerProps {
   poisGeoJSON: any;
   is3DActive: boolean;
   recenterCount: number;
+  forceCenterCount: number;
   lastCameraPosition: any;
   isNavigating: boolean;
 }
@@ -30,6 +31,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   poisGeoJSON,
   is3DActive,
   recenterCount,
+  forceCenterCount,
   lastCameraPosition,
   isNavigating,
 }, ref) => {
@@ -73,7 +75,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         },
       });
     }
-  }, [selectedCoords, isNavigating, insets.top]);
+  }, [selectedCoords, isNavigating, insets.top, forceCenterCount]);
 
   // Focus on selected event or its children
   useEffect(() => {
@@ -113,7 +115,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         });
       }
     }
-  }, [selectedEvent, poisGeoJSON, isNavigating, insets.top]);
+  }, [selectedEvent, poisGeoJSON, isNavigating, insets.top, forceCenterCount]);
 
   // Sync pitch
   useEffect(() => {

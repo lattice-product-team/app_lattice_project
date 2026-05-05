@@ -1,175 +1,127 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, Platform } from 'react-native';
-import MapLibreGL from '@maplibre/maplibre-react-native';
-import Animated, { 
-  withSpring, 
-  withTiming,
-  withDelay,
-  useSharedValue,
-  useAnimatedStyle,
-  interpolate,
-  Extrapolation
-} from 'react-native-reanimated';
-import { Image } from 'expo-image';
-import { useAppTheme } from '../../../hooks/useAppTheme';
-import { usePOIStore } from '../../poi/store/usePOIStore';
+import React from 'react';
+import { StyleSheet, View, Image, TouchableOpacity, Text } from 'react-native';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 interface EventPinProps {
   id: string | number;
   name: string;
   imageUrl?: string;
-  coordinates: number[];
-  isSelected: boolean;
-  onPress: () => void;
-  zoom: SharedValue<number>;
+  isSelected?: boolean;
+  onPress?: () => void;
+  color?: string;
 }
 
-export const EventPin = React.memo(({ 
+export const EventPin = ({
   id,
-  name, 
-  imageUrl, 
-  coordinates, 
-  isSelected, 
+  name,
+  imageUrl,
+  isSelected,
   onPress,
-  zoom
+  color = '#FF3B30',
 }: EventPinProps) => {
-  const theme = useAppTheme();
-  const activeFilters = usePOIStore(s => s.activeCategoryFilters);
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(0);
-
-  const isDimmed = activeFilters.length > 0 && !isSelected;
-
-  useEffect(() => {
-    // Small delay to allow MapLibre to sync projection before showing the marker
-    opacity.value = withDelay(50, withTiming(1, { duration: 200 }));
-  }, []);
-
-  React.useEffect(() => {
-    scale.value = withSpring(isSelected ? 1.25 : 1, {
-      damping: 12,
-      stiffness: 100,
-    });
-  }, [isSelected]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    // Zoom-based opacity (Fade out between 12.5 and 13.0) - broader for events
-    const zoomOpacity = interpolate(
-      zoom.value,
-      [12.5, 13.0],
-      [0, 1],
-      Extrapolation.CLAMP
-    );
-
+  
+  const animatedPinStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value * zoomOpacity * (isDimmed ? 0.4 : 1),
-      zIndex: isSelected ? 1000 : 1,
+      transform: [
+        { scale: withSpring(isSelected ? 1.15 : 1, { damping: 15, stiffness: 150 }) }
+      ],
     };
   });
 
   return (
-    <MapLibreGL.MarkerView coordinate={coordinates}>
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <View style={styles.touchTarget} onTouchEnd={onPress}>
-          {/* Main Pin Body */}
-          <View style={[
-            styles.pinWrapper, 
-            { backgroundColor: theme.colors.bg.main, borderColor: '#FFFFFF' },
-            isSelected && styles.selectedShadow
-          ]}>
+    <TouchableOpacity 
+      onPress={onPress} 
+      activeOpacity={0.8}
+      style={styles.touchArea}
+    >
+      <Animated.View style={[styles.container, animatedPinStyle]}>
+        {/* Main Circular Body */}
+        <View style={[styles.circle, { borderColor: color }]}>
+          {imageUrl ? (
             <Image 
               source={{ uri: imageUrl }} 
               style={styles.image}
-              contentFit="cover"
-              transition={200}
+              resizeMode="cover"
             />
-          </View>
-
-          {/* Pin Tail (Apple Style) */}
-          {isSelected && (
-            <View style={[styles.tail, { borderTopColor: '#FFFFFF' }]} />
+          ) : (
+            <View style={[styles.placeholder, { backgroundColor: color }]}>
+              <Text style={styles.placeholderText}>{name.charAt(0)}</Text>
+            </View>
           )}
-
-          {/* Label */}
-          <View style={styles.labelContainer}>
-            <Text 
-              style={[
-                styles.label, 
-                { 
-                  color: theme.colors.text.primary,
-                  textShadowColor: theme.colors.bg.main 
-                }
-              ]}
-              numberOfLines={2}
-            >
-              {name.toUpperCase()}
-            </Text>
-          </View>
         </View>
+
+        {/* Small pointer tail (optional for aesthetic) */}
+        <View style={[styles.tail, { borderTopColor: color }]} />
+
+        {/* Label */}
+        {isSelected && (
+          <View style={styles.labelContainer}>
+            <Text style={styles.labelText} numberOfLines={1}>{name}</Text>
+          </View>
+        )}
       </Animated.View>
-    </MapLibreGL.MarkerView>
+    </TouchableOpacity>
   );
-});
+};
 
 const styles = StyleSheet.create({
-  container: {
+  touchArea: {
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 120, // Wide enough for labels
   },
-  touchTarget: {
+  container: {
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 8,
   },
-  pinWrapper: {
+  circle: {
     width: 44,
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
-  },
-  selectedShadow: {
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 8,
   },
   image: {
-    flex: 1,
     width: '100%',
     height: '100%',
+  },
+  placeholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   tail: {
     width: 0,
     height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
     borderLeftWidth: 6,
     borderRightWidth: 6,
     borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    marginTop: -1, // Overlap slightly with circle
+    marginTop: -2,
   },
   labelContainer: {
-    marginTop: 4,
-    maxWidth: 100,
+    position: 'absolute',
+    top: 50,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    maxWidth: 150,
   },
-  label: {
-    fontSize: 11,
-    fontWeight: '700',
-    textAlign: 'center',
-    textShadowRadius: 3,
-    letterSpacing: 0.5,
+  labelText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

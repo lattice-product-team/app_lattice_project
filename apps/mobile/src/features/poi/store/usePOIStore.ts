@@ -79,45 +79,25 @@ export const usePOIStore = create<POIState>((set) => ({
 
   clearFilters: () => set({ activeCategoryFilters: [] }),
   getFilteredPOIs: (allPOIs, zoom = 0) => {
-    const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
+    const { selectedEventId, userInsideEventId } = usePOIStore.getState();
     
     const activeEventId = selectedEventId || userInsideEventId;
     
-    // 1. Selection-based logic (Highest Priority)
-    // If an event is selected, we show its children NO MATTER the zoom.
-    // This solves the "they only appear if I zoom in" issue.
+    // 1. If an event is selected or we are inside one, show its children immediately
+    // This allows the SymbolLayer to start fading them in as the camera moves.
     if (activeEventId) {
-      let children = allPOIs.filter(poi => 
+      return allPOIs.filter(poi => 
         poi.parentId !== undefined && 
         poi.parentId !== null && 
         String(poi.parentId) === String(activeEventId)
       );
-
-      // If we are zoomed in very close (>17), we also show other POIs for context
-      if (zoom >= 17.0) {
-        const others = allPOIs.filter(poi => String(poi.parentId) !== String(activeEventId));
-        children = [...children, ...others];
-      }
-
-      // Filter by category if active
-      if (activeCategoryFilters.length > 0) {
-        children = children.filter(poi => activeCategoryFilters.includes(poi.category));
-      }
-
-      return children;
     }
 
     // 2. Global zoom-based logic (When NO event is selected)
-    // We use a slightly more lenient threshold (15.5 instead of 16.0) to allow for fade-in animations
-    if (zoom < 15.5) return [];
+    // We lower the threshold to 14.5 to allow for a very early and subtle fade-in
+    if (zoom < 14.5) return [];
 
-    let filtered = allPOIs;
-    
-    // Filter by category if active
-    if (activeCategoryFilters.length > 0) {
-      filtered = filtered.filter(poi => activeCategoryFilters.includes(poi.category));
-    }
-
-    return filtered;
+    // Filter out events from the POI collection (they are handled by MarkerViews)
+    return allPOIs.filter(p => p.category !== 'event');
   },
 }));
