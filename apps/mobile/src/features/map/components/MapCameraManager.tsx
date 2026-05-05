@@ -44,7 +44,21 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       cameraRef.current?.fitBounds(ne, sw, padding, duration),
   }));
 
-  // Recenter on user
+  // Initial fix on user location
+  const hasFixedOnUser = React.useRef(false);
+  useEffect(() => {
+    if (userCoords && !hasFixedOnUser.current && cameraRef.current && !lastCameraPosition) {
+      hasFixedOnUser.current = true;
+      cameraRef.current.setCamera({
+        centerCoordinate: userCoords,
+        zoomLevel: DEFAULT_ZOOM,
+        animationDuration: 0, // Salto instantáneo
+        animationMode: 'none',
+      });
+    }
+  }, [userCoords, lastCameraPosition]);
+
+  // Recenter on user (manual trigger)
   useEffect(() => {
     if (recenterCount > 0 && cameraRef.current && userCoords) {
       cameraRef.current.setCamera({

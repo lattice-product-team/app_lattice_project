@@ -143,9 +143,14 @@ export default function LoginScreen() {
           router.replace('/(main)');
         }}
         onConfirm={async () => {
-          await AuthService.registerPasskey();
-          setIsPasskeySheetVisible(false);
-          router.replace('/(main)');
+          try {
+            await AuthService.registerPasskey();
+          } catch (e) {
+            console.error('Error registering passkey:', e);
+          } finally {
+            setIsPasskeySheetVisible(false);
+            router.replace('/(main)');
+          }
         }}
       />
     </AuthLayout>

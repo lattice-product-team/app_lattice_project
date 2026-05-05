@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '../store/useAuthStore';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import { ReactNativePasskey } from 'react-native-passkey';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -42,11 +43,8 @@ export class AuthService {
       const options = await challengeRes.json();
 
       // 2. Create credential natively
-      // Note: react-native-passkey would be used here
       console.log('Passkey registration initiated with options:', options);
-      
-      // MOCK for now
-      const mockCredential = { id: 'mock_cred_id', rawId: '...', response: { clientDataJSON: '...', attestationObject: '...' } };
+      const result = await ReactNativePasskey.create(options);
 
       // 3. Send attestation to backend
       const verifyRes = await fetch(`${this.API_URL}/auth/passkey/register-verify`, {
@@ -55,11 +53,23 @@ export class AuthService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${useAuthStore.getState().token}`
         },
-        body: JSON.stringify(mockCredential),
+        body: JSON.stringify(result),
       });
 
-      return await verifyRes.json();
+      const data = await verifyRes.json();
+      if (data.success) {
+        // Update user state to reflect passkey is enabled
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser) {
+          useAuthStore.getState().setAuth(useAuthStore.getState().token!, {
+            ...currentUser,
+            isPasskeyEnabled: true
+          });
+        }
+      }
+      return data;
     } catch (e: any) {
+      console.error('Passkey registration error:', e);
       return { success: false, error: e.message };
     }
   }
@@ -72,13 +82,13 @@ export class AuthService {
 
       // 2. Get assertion natively
       console.log('Passkey login initiated with options:', options);
-      const mockAssertion = { id: 'mock_cred_id', response: { clientDataJSON: '...', authenticatorData: '...', signature: '...' } };
+      const result = await ReactNativePasskey.get(options);
 
       // 3. Verify with backend
       const verifyRes = await fetch(`${this.API_URL}/auth/passkey/login-verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockAssertion),
+        body: JSON.stringify(result),
       });
 
       const data = await verifyRes.json();
@@ -88,6 +98,7 @@ export class AuthService {
       }
       return { success: false, error: data.error };
     } catch (e: any) {
+      console.error('Passkey login error:', e);
       return { success: false, error: e.message };
     }
   }

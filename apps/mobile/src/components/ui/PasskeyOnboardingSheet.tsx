@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import Animated, { 
   useAnimatedStyle, 
   withSpring, 
@@ -11,7 +11,10 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { typography } from '../../styles/typography';
 import { PremiumButton } from './PremiumButton';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface PasskeyOnboardingSheetProps {
   isVisible: boolean;
@@ -31,7 +34,7 @@ export const PasskeyOnboardingSheet = ({ isVisible, onClose, onConfirm }: Passke
   }, [isVisible]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (1 - animState.value) * 600 }],
+    transform: [{ translateY: (1 - animState.value) * SCREEN_HEIGHT }],
   }));
 
   if (!isVisible && animState.value === 0) return null;
@@ -42,51 +45,57 @@ export const PasskeyOnboardingSheet = ({ isVisible, onClose, onConfirm }: Passke
         <Animated.View 
           entering={FadeIn} 
           exiting={FadeOut}
-          style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.8)' }]} 
+          style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.6)' }]} 
         >
           <Pressable style={{ flex: 1 }} onPress={onClose} />
         </Animated.View>
       )}
 
-      <Animated.View style={[styles.sheet, { backgroundColor: theme.colors.bg.surface }, animatedStyle]}>
+      <Animated.View style={[styles.sheet, { backgroundColor: '#FFF' }, animatedStyle]}>
         <View style={styles.handle} />
         
         <View style={styles.content}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary + '20' }]}>
-            <MaterialCommunityIcons name="face-recognition" size={48} color={theme.colors.brand.primary} />
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../../../assets/images/icon.png')} 
+              style={styles.logoImage}
+              contentFit="contain"
+            />
           </View>
 
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-            Login ultra-rápido
+          <Text style={styles.title}>
+            Secure your access.
           </Text>
-          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-            Activa tu Passkey para entrar en Lattice usando FaceID o tu huella dactilar. Sin contraseñas, 100% seguro.
+          <Text style={styles.subtitle}>
+            Enable FaceID or TouchID for instant, passwordless access to your city life.
           </Text>
 
           <View style={styles.benefits}>
             <BenefitItem 
               icon="zap" 
-              text="Entra en menos de 1 segundo" 
-              theme={theme} 
+              text="Instant login in under 1 second" 
             />
             <BenefitItem 
-              icon="shield-check" 
-              text="Seguridad biométrica de grado militar" 
-              theme={theme} 
+              icon="shield" 
+              text="Military-grade biometric security" 
+            />
+            <BenefitItem 
+              icon="key" 
+              text="No more passwords to remember" 
             />
           </View>
 
           <View style={styles.actions}>
             <PremiumButton 
-              label="Activar Passkey" 
+              label="Enable Passkey" 
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 onConfirm();
               }}
             />
             <Pressable onPress={onClose} style={styles.skipButton}>
-              <Text style={[styles.skipText, { color: theme.colors.text.muted }]}>
-                Quizás más tarde
+              <Text style={styles.skipText}>
+                Maybe later
               </Text>
             </Pressable>
           </View>
@@ -96,12 +105,12 @@ export const PasskeyOnboardingSheet = ({ isVisible, onClose, onConfirm }: Passke
   );
 };
 
-const BenefitItem = ({ icon, text, theme }: any) => (
+const BenefitItem = ({ icon, text }: { icon: any, text: string }) => (
   <View style={styles.benefitItem}>
-    <View style={[styles.benefitIcon, { backgroundColor: theme.colors.bg.main }]}>
-      <Feather name={icon} size={16} color={theme.colors.brand.primary} />
+    <View style={styles.benefitIcon}>
+      <Feather name={icon} size={18} color="#000" />
     </View>
-    <Text style={[styles.benefitText, { color: theme.colors.text.primary }]}>{text}</Text>
+    <Text style={styles.benefitText}>{text}</Text>
   </View>
 );
 
@@ -114,86 +123,94 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingBottom: 40,
-    paddingHorizontal: 24,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingBottom: 50,
+    paddingHorizontal: 32,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: -20 },
+    shadowOpacity: 0.1,
+    shadowRadius: 30,
     elevation: 20,
   },
   handle: {
     width: 40,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
+    height: 5,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 2.5,
     alignSelf: 'center',
     marginTop: 12,
   },
   content: {
     alignItems: 'center',
-    paddingTop: 32,
+    paddingTop: 40,
   },
-  iconContainer: {
+  logoContainer: {
+    marginBottom: 32,
+    shadowColor: '#E2B042',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+  },
+  logoImage: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
+    borderRadius: 22,
   },
   title: {
-    fontSize: 28,
-    fontFamily: typography.primary.bold,
+    fontSize: 36,
+    fontFamily: 'CormorantGaramond-Medium',
     textAlign: 'center',
-    marginBottom: 12,
+    color: '#000',
+    marginBottom: 16,
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    fontFamily: typography.primary.medium,
+    fontSize: 18,
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
-    lineHeight: 24,
-    opacity: 0.8,
-    marginBottom: 32,
-    paddingHorizontal: 20,
+    lineHeight: 26,
+    opacity: 0.5,
+    color: '#000',
+    marginBottom: 40,
+    paddingHorizontal: 10,
   },
   benefits: {
     width: '100%',
     gap: 16,
-    marginBottom: 40,
+    marginBottom: 48,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    gap: 16,
+    paddingVertical: 4,
   },
   benefitIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F9F9F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
   benefitText: {
-    fontSize: 15,
-    fontFamily: typography.primary.medium,
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#000',
+    opacity: 0.8,
   },
   actions: {
     width: '100%',
-    gap: 16,
+    gap: 12,
   },
   skipButton: {
     paddingVertical: 12,
     alignItems: 'center',
   },
   skipText: {
-    fontSize: 15,
-    fontFamily: typography.primary.bold,
+    fontSize: 16,
+    fontFamily: 'Inter-Bold',
+    color: '#E2B042', // Lattice Orange
   },
 });
