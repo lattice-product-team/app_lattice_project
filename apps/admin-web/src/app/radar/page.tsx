@@ -116,6 +116,7 @@ export default function CrowdRadarPage() {
           <div className="flex items-center gap-4 mt-2">
             <Select 
               className="w-64"
+              aria-label="Select venue"
               selectedKey={selectedVenueId}
               onSelectionChange={(key) => setSelectedVenueId(key as string)}
             >

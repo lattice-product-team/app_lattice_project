@@ -47,7 +47,7 @@ export default function EventsPage() {
             )}
           </div>
           <div className="w-64">
-             <Input placeholder="Search schedule..." variant="transparent" />
+             <Input placeholder="Search schedule..." variant="transparent" aria-label="Search schedule" />
           </div>
         </div>
 
@@ -69,20 +69,12 @@ export default function EventsPage() {
                   <Table.Cell className="py-6 text-center" colSpan={5}>
                     <Spinner color="current" size="sm" />
                   </Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
                 </Table.Row>
               ) : events.length === 0 ? (
                 <Table.Row key="empty">
                   <Table.Cell className="py-6 text-center text-gravel" colSpan={5}>
                     No events found.
                   </Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
-                  <Table.Cell className="hidden"><span/></Table.Cell>
                 </Table.Row>
               ) : (
                 events.map((event: any) => (

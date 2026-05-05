@@ -37,12 +37,7 @@ export default function RootLayout({
             {/* Sidebar - Editorial Style */}
             <aside className="w-64 bg-eggshell border-r border-chalk flex flex-col z-50">
               <div className="p-8 pt-12">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-8 h-8 rounded-full bg-gradient-voice-spectrum shadow-hairline" />
-                  <span className="waldenburg-display text-admin-xl tracking-pill uppercase font-bold text-obsidian">Lattice</span>
-                </div>
-
-                <div className="flex items-center gap-3 px-1 py-4 border-y border-chalk/50 mb-8">
+                <div className="flex items-center gap-3 px-1 pb-6 border-b border-chalk/50 mb-8">
                   <Avatar 
                     className="bg-powder text-obsidian font-bold rounded-full w-10 h-10 border border-chalk"
                   />
