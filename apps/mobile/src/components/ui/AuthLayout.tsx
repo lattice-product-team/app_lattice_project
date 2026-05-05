@@ -4,7 +4,8 @@ import {
   KeyboardAvoidingView, 
   Platform, 
   ScrollView, 
-  Pressable 
+  Pressable,
+  StyleSheet
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -41,50 +42,38 @@ export const AuthLayout = ({
   const theme = useAppTheme();
 
   const navigationRow = (
-    <View className="z-50 mb-2">
-      {/* Progress Bar at the top */}
+    <View style={[styles.navigationOverlay, { top: 10 }]}>
+      {/* Button Row */}
+      {showBack ? (
+        <Pressable 
+          onPress={() => {
+            Haptics.selectionAsync();
+            if (onBack) onBack();
+          }}
+          hitSlop={20}
+          style={styles.backButton}
+        >
+          <Feather name="arrow-left" size={24} color={theme.colors.text.primary} />
+        </Pressable>
+      ) : null}
+
+      {/* Progress Bar - Moved or kept if needed */}
       {step ? (
-        <View className="flex-row gap-x-2 mb-6 mt-2">
+        <View style={styles.progressContainer}>
           {Array.from({ length: totalSteps }).map((_, i) => (
             <View 
               key={i} 
               style={{
-                height: 6,
-                borderRadius: 3,
+                height: 4,
+                borderRadius: 2,
                 flex: 1,
                 backgroundColor: step >= i + 1 ? theme.colors.text.primary : theme.colors.border.subtle,
-                opacity: step >= i + 1 ? 1 : 0.3,
+                opacity: step >= i + 1 ? 0.8 : 0.2,
               }}
             />
           ))}
         </View>
       ) : null}
-
-      {/* Button Row below */}
-      <View className="h-12 justify-center">
-        {showBack ? (
-          <Pressable 
-            onPress={() => {
-              Haptics.selectionAsync();
-              if (onBack) onBack();
-            }}
-            hitSlop={20}
-            style={{
-              width: 48,
-              height: 48,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: 24,
-              backgroundColor: theme.colors.glass.background,
-              borderWidth: 1,
-              borderColor: theme.colors.glass.border,
-            }}
-            className="active:opacity-70 active:scale-90"
-          >
-            <Feather name="chevron-left" size={28} color={theme.colors.text.primary} />
-          </Pressable>
-        ) : null}
-      </View>
     </View>
   );
 
@@ -126,4 +115,31 @@ export const AuthLayout = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  navigationOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    height: 60,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+    marginLeft: 20,
+  }
+});
 

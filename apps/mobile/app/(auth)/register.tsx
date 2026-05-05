@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { Feather } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
@@ -35,7 +36,11 @@ export default function RegisterScreen() {
   }, [token, router]);
 
   return (
-    <AuthLayout transparent>
+    <AuthLayout 
+      transparent 
+      showBack 
+      onBack={() => router.replace('/(auth)/onboarding')}
+    >
       <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
         
         {/* Header Section */}
@@ -112,7 +117,7 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: height * 0.12,
+    marginTop: height * 0.16,
     alignItems: 'center',
   },
   logoContainer: {
