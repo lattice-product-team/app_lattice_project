@@ -1,15 +1,9 @@
-import { 
-  Button, 
-  Chip,
-  Table,
-  TableContent,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell
-} from "@heroui/react";
+"use client";
+
+import { Chip, Table } from "@heroui/react";
 import { Icons } from "@/components/icons";
+import { ElevenButton } from "@/components/ui/eleven-button";
+import { ElevenInput } from "@/components/ui/eleven-input";
 
 export default function EventsPage() {
   const events = [
@@ -20,90 +14,80 @@ export default function EventsPage() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col p-8 pt-12 gap-6 max-w-7xl mx-auto w-full">
-      <header className="flex justify-between items-center mb-4 px-2">
-        <div className="flex items-center gap-4">
-          <Button isIconOnly variant="ghost" className="text-white/70">
-            <Icons.Sidebar className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-[28px] font-semibold text-white tracking-tight">Events</h1>
-            <p className="text-white/30 text-xs font-medium mt-0.5">Manage and monitor live event operations.</p>
-          </div>
+    <div className="space-y-12 pb-24">
+      <header className="flex justify-between items-start">
+        <div className="flex flex-col max-w-xl">
+          <p className="text-gravel text-[14px] font-medium mb-2 uppercase tracking-widest">Event Operations</p>
+          <h1 className="waldenburg-display text-admin-display text-obsidian leading-[1.08] mb-4">
+            Monitoring global event lifecycles.
+          </h1>
+          <p className="text-gravel text-[16px] leading-relaxed">
+            Oversee planning, execution, and post-event analysis. High-fidelity telemetry integration for operational excellence.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button isIconOnly variant="ghost" className="bg-white/5 text-white/70 rounded-full">
-            <Icons.Search className="w-5 h-5" />
-          </Button>
-          <Button isIconOnly variant="ghost" className="bg-white/5 text-white/70 rounded-full">
-            <Icons.Bell className="w-5 h-5" />
-          </Button>
-          <Button variant="primary" className="rounded-full font-medium">
-            <Icons.UserPlus className="w-4 h-4" />
-            Create
-          </Button>
+        <div className="flex items-center gap-4">
+          <ElevenButton variant="ghost">Archive All</ElevenButton>
+          <ElevenButton variant="primary" startContent={<Icons.Plus className="w-4 h-4" />}>
+            Create New Event
+          </ElevenButton>
         </div>
       </header>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-[18px] font-semibold text-white">All Events</h2>
-          <Chip size="sm" className="bg-white/10 text-white border-none font-medium">4</Chip>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-chalk pb-4">
+          <div className="flex items-center gap-3">
+            <h2 className="waldenburg-display text-[24px] text-obsidian">Active Schedule</h2>
+            <span className="bg-powder px-2 py-0.5 rounded text-[10px] font-black border border-chalk text-obsidian uppercase tracking-widest">4 Events</span>
+          </div>
+          <div className="w-64">
+             <ElevenInput placeholder="Search schedule..." variant="transparent" startContent={<Icons.Search className="w-4 h-4 text-gravel" />} />
+          </div>
         </div>
 
         <Table
-          className="bg-surface border border-white/5 shadow-none p-0 overflow-hidden rounded-3xl"
+          aria-label="All Events List"
+          className="bg-transparent shadow-none"
         >
-          <TableContent>
-            <TableHeader className="bg-transparent text-white/50 font-medium border-b border-white/5 px-6 py-4">
-              <TableColumn key="id">Event ID</TableColumn>
-              <TableColumn key="name">Event Name</TableColumn>
-              <TableColumn key="venue">Venue</TableColumn>
-              <TableColumn key="status">Status</TableColumn>
-              <TableColumn key="actions" align="center">Actions</TableColumn>
-            </TableHeader>
-            <TableBody>
+          <Table.Content>
+            <Table.Header>
+              <Table.Column key="id" id="id" isRowHeader className="text-gravel uppercase text-[10px] tracking-widest font-black">ID</Table.Column>
+              <Table.Column key="name" id="name" className="text-gravel uppercase text-[10px] tracking-widest font-black">Event Name</Table.Column>
+              <Table.Column key="venue" id="venue" className="text-gravel uppercase text-[10px] tracking-widest font-black">Venue</Table.Column>
+              <Table.Column key="status" id="status" className="text-gravel uppercase text-[10px] tracking-widest font-black">Status</Table.Column>
+              <Table.Column key="actions" id="actions" className="text-gravel uppercase text-[10px] tracking-widest font-black text-right">Actions</Table.Column>
+            </Table.Header>
+            <Table.Body>
               {events.map((event) => (
-                <TableRow key={event.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                  <TableCell className="px-6 py-4">
-                    <span className="font-mono text-xs text-white/40">{event.id}</span>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <span className="font-semibold text-white">{event.name}</span>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Icons.MapPin className="w-3 h-3 text-white/30" />
-                      <span className="text-sm">{event.venue}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
+                <Table.Row key={event.id} id={event.id.toString()} className="border-b border-chalk hover:bg-powder/30 transition-colors">
+                  <Table.Cell className="py-6">
+                    <span className="font-mono text-[12px] text-slate">{event.id}</span>
+                  </Table.Cell>
+                  <Table.Cell className="py-6">
+                    <span className="font-bold text-obsidian text-[14px]">{event.name}</span>
+                  </Table.Cell>
+                  <Table.Cell className="py-6">
+                    <span className="text-[14px] text-gravel">{event.venue}</span>
+                  </Table.Cell>
+                  <Table.Cell className="py-6">
                     <Chip 
                       size="sm" 
                       variant="flat"
-                      color={event.status === "Active" ? "success" : event.status === "Upcoming" ? "primary" : event.status === "Planning" ? "warning" : "default"}
-                      className="font-medium h-5 text-[10px] uppercase tracking-wider"
+                      className={`font-black text-[10px] uppercase tracking-widest rounded-full
+                        ${event.status === "Active" ? "bg-obsidian text-eggshell" : "bg-powder text-gravel border border-chalk"}`}
                     >
                       {event.status}
                     </Chip>
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
+                  </Table.Cell>
+                  <Table.Cell className="py-6 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
-                        <Icons.Eye className="w-4 h-4" />
-                      </Button>
-                      <Button isIconOnly size="sm" variant="ghost" className="text-white/50 hover:text-white">
-                        <Icons.Edit className="w-4 h-4" />
-                      </Button>
-                      <Button isIconOnly size="sm" variant="ghost" className="text-danger/70 hover:text-danger">
-                        <Icons.Trash className="w-4 h-4" />
-                      </Button>
+                      <ElevenButton variant="compact">Manage</ElevenButton>
+                      <ElevenButton variant="compact">Archive</ElevenButton>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </TableBody>
-          </TableContent>
+            </Table.Body>
+          </Table.Content>
         </Table>
       </div>
     </div>

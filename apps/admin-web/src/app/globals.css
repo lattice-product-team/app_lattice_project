@@ -1,54 +1,105 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
-:root {
-  /* Brand Solar Gold #E2B042 */
-  --accent: oklch(0.77 0.14 82);
-  --accent-foreground: oklch(0.2 0.05 82);
+@theme {
+  /* ElevenLabs Typography Scale */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), serif;
   
-  /* Neutrals Dark Premium */
-  --background: oklch(0.12 0.01 82);
-  --foreground: oklch(0.98 0.01 82);
-  --surface: oklch(0.15 0.01 82);
-  --elevated: oklch(0.18 0.01 82);
-  --overlay: oklch(0.22 0.01 82);
+  --text-admin-xs: 0.75rem;     /* 12px */
+  --text-admin-sm: 0.8125rem;   /* 13px */
+  --text-admin-base: 0.875rem;  /* 14px */
+  --text-admin-md: 1rem;        /* 16px */
+  --text-admin-lg: 1.125rem;    /* 18px */
+  --text-admin-xl: 1.25rem;     /* 20px */
+  --text-admin-display: 3rem;   /* 48px */
 
-  /* Semantic Dark */
-  --success: oklch(0.75 0.18 155);
-  --warning: oklch(0.72 0.18 75);
-  --danger: oklch(0.62 0.22 25);
-  --info: oklch(0.7 0.15 250);
+  --tracking-waldenburg: -0.02em;
+  --tracking-pill: 0.05em;
 
-  --glass: rgba(20, 10, 10, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  /* ElevenLabs Color Palette (Achromatic Discipline) */
+  --color-eggshell: #fdfcfc;
+  --color-powder: #f5f3f1;
+  --color-chalk: #e5e5e5;
+  --color-fog: #b1b0b0;
+  --color-gravel: #777169;
+  --color-slate: #a59f97;
+  --color-cinder: #57534d;
+  --color-obsidian: #000000;
+
+  /* Product Dot Accents (Reserved) */
+  --color-signal-blue: #0447ff;
+  --color-ember: #ff4704;
+
+  /* Standard Semantic Tokens */
+  --color-success: oklch(0.75 0.18 155);
+  --color-warning: oklch(0.72 0.18 75);
+  --color-danger: oklch(0.62 0.22 25);
+  --color-info: oklch(0.7 0.15 250);
+
+  /* Elevation */
+  --shadow-hairline: rgba(0, 0, 0, 0.4) 0px 0px 1px 0px;
+  --shadow-subtle: rgba(0, 0, 0, 0.04) 0px 2px 4px 0px;
 }
 
-@theme {
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+:root {
+  /* ElevenLabs Light Theme (Default) */
+  --background: #fdfcfc;     /* Eggshell */
+  --foreground: #000000;     /* Obsidian */
+  
+  --surface: #ffffff;        /* Pure White for cards to pop */
+  --elevated: #f5f3f1;       /* Powder for section highlights */
+  --overlay: #e5e5e5;        /* Chalk for borders */
+  
+  --border: #e5e5e5;         /* Chalk */
+  --glass-border: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'], .dark {
+  /* Dark Variant (ElevenLabs Obsidian) */
+  --background: #000000;
+  --foreground: #fdfcfc;
+  
+  --surface: #141413;
+  --elevated: #1c1c1b;
+  --overlay: #262625;
+
+  --border: #262625;
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-elevated: var(--elevated);
   --color-overlay: var(--overlay);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-danger: var(--danger);
-  --color-info: var(--info);
-  
-  --color-glass: var(--glass);
-  --color-glass-border: var(--glass-border);
-  
-  --font-sans: var(--font-inter);
+  --color-border: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-.glass-card {
-  background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+.waldenburg-display {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  letter-spacing: var(--tracking-waldenburg);
+}
+
+.pill-label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: var(--tracking-pill);
+  text-transform: uppercase;
+}
+
+.hairline-card {
+  background: var(--surface);
+  box-shadow: var(--shadow-hairline), var(--shadow-subtle);
+  border: none;
 }
