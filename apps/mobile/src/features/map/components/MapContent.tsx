@@ -60,7 +60,6 @@ export const MapContent = function MapContent({
   const {
     selectPoi,
     setSelectedEvent,
-    setCurrentEvent,
     selectedPoiId,
     selectedCoords,
     selectedEventId
@@ -163,7 +162,7 @@ export const MapContent = function MapContent({
       if (properties.category === 'event') {
         // If it's an event, handle it via handleEventPress logic
         setSelectedEvent(properties.id);
-        setCurrentEvent(properties.raw || feature);
+        setGlobalCurrentEvent(properties.raw || feature);
         islandState.value = withSpring(0, SPRING_CONFIG);
       } else {
         // Normal POI selection
@@ -174,17 +173,17 @@ export const MapContent = function MapContent({
         }));
       }
     },
-    [selectPoi, setSelectedEvent, setCurrentEvent, islandState, triggerForceCenter]
+    [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]
   );
 
   const handleEventPress = useCallback((poi: any) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     triggerForceCenter();
     setSelectedEvent(poi.id);
-    setCurrentEvent(poi.raw);
+    setGlobalCurrentEvent(poi.raw);
     // selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
     islandState.value = withSpring(0, SPRING_CONFIG); // Use the same spring config as index.tsx
-  }, [setSelectedEvent, setCurrentEvent, islandState, triggerForceCenter]);
+  }, [setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]);
 
   const glPoisGeoJSON = useMemo(() => {
     if (!poisGeoJSON?.features) return poisGeoJSON;

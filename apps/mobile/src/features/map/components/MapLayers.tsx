@@ -42,24 +42,36 @@ export const MapLayers = ({
           >
             <View style={[
               styles.eventPinContainer,
-              { transform: [{ scale: isSelected ? 1.3 : 1 }] }
+              { transform: [{ scale: isSelected ? 1.2 : 1 }] }
             ]}>
-              {/* Shadow */}
-              <View style={styles.eventPinShadow} />
-              
               {/* Main Body */}
-              <View style={[styles.eventPinBody, { borderColor: color }]}>
-                {properties.imageKey && properties.imageKey !== 'placeholder-event' ? (
+              <View style={[
+                styles.eventPinBody, 
+                { borderColor: '#F0F0F0', borderWidth: 1.5 }
+              ]}>
+                {properties.imageUrl ? (
                   <Image 
-                    source={{ uri: properties.imageKey.startsWith('event-img-') ? eventsGeoJSON.features.find((f: any) => f.id === id).properties.imageUrl || '' : '' }} 
+                    source={{ uri: properties.imageUrl }} 
                     style={styles.eventPinImage}
-                    // Since we don't have imageUrl in properties directly yet, let's ensure it's there
                   />
                 ) : (
                   <View style={[styles.eventPinPlaceholder, { backgroundColor: color }]}>
                     <Text style={styles.eventPinPlaceholderText}>{properties.name?.charAt(0)}</Text>
                   </View>
                 )}
+              </View>
+
+              {/* Label below the pin */}
+              <View style={[
+                styles.labelBadge,
+                { backgroundColor: '#FFFFFF' }
+              ]}>
+                <Text style={[
+                  styles.labelText,
+                  { color: '#000' }
+                ]} numberOfLines={1}>
+                  {properties.name}
+                </Text>
               </View>
             </View>
 
@@ -190,19 +202,10 @@ MapLayers.displayName = 'MapLayers';
 
 const styles = StyleSheet.create({
   eventPinContainer: {
-    width: 60,
-    height: 60,
+    width: 160, // Increased to accommodate labels
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  eventPinShadow: {
-    position: 'absolute',
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#000',
-    opacity: 0.15,
-    transform: [{ translateY: 2 }],
   },
   eventPinBody: {
     width: 44,
@@ -228,5 +231,26 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  labelBadge: {
+    position: 'absolute',
+    top: 66,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(128,128,128,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    minWidth: 60,
+    maxWidth: 180,
+    alignItems: 'center',
+  },
+  labelText: {
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
