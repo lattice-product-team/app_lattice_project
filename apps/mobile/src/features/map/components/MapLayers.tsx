@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
@@ -7,7 +8,7 @@ interface MapLayersProps {
   theme: any;
   poisGeoJSON: any;
   eventsGeoJSON?: any;
-  eventImages?: Record<string, { uri: string }>;
+  selectedEventId?: string | number | null;
   pathNetwork: any;
   currentRoute: any;
   isNavigating: boolean;
@@ -18,7 +19,7 @@ export const MapLayers = ({
   theme,
   poisGeoJSON,
   eventsGeoJSON,
-  eventImages,
+  selectedEventId,
   pathNetwork,
   currentRoute,
   isNavigating,
@@ -26,98 +27,59 @@ export const MapLayers = ({
 }: MapLayersProps) => {
   return (
     <>
-      {/* 0. IMAGES REGISTRATION (GPU) */}
-      <MapLibreGL.Images images={eventImages || {}} />
+      {/* 1. EVENTS LAYER (NATIVE ANNOTATIONS FOR CIRCULAR CLIPPING) */}
+      {eventsGeoJSON?.features?.map((feature: any) => {
+        const { id, properties, geometry } = feature;
+        const isSelected = selectedEventId === id;
+        const color = properties.color || theme.colors.primary;
+        
+        return (
+          <MapLibreGL.PointAnnotation
+            key={id}
+            id={`event-ann-${id}`}
+            coordinate={geometry.coordinates}
+            onSelected={() => onPoiPress(feature)}
+          >
+            <View style={[
+              styles.eventPinContainer,
+              { transform: [{ scale: isSelected ? 1.2 : 1 }] }
+            ]}>
+              {/* Main Body */}
+              <View style={[
+                styles.eventPinBody, 
+                { borderColor: '#F0F0F0', borderWidth: 1.5 }
+              ]}>
+                {properties.imageUrl ? (
+                  <Image 
+                    source={{ uri: properties.imageUrl }} 
+                    style={styles.eventPinImage}
+                  />
+                ) : (
+                  <View style={[styles.eventPinPlaceholder, { backgroundColor: color }]}>
+                    <Text style={styles.eventPinPlaceholderText}>{properties.name?.charAt(0)}</Text>
+                  </View>
+                )}
+              </View>
 
-      {/* 1. EVENTS LAYER (GPU-RENDERED) */}
-      <MapLibreGL.ShapeSource
-        id="eventsSource"
-        shape={eventsGeoJSON || EMPTY_GEOJSON}
-        onPress={onPoiPress}
-      >
-        {/* Shadow Layer for depth */}
-        <MapLibreGL.CircleLayer
-          id="eventShadowLayer"
-          style={{
-            circleColor: '#000000',
-            circleOpacity: 0.2,
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, 12,
-              18, 26
-            ],
-            circleBlur: 1,
-            circleTranslate: [0, 2],
-          }}
-        />
+              {/* Label below the pin */}
+              <View style={[
+                styles.labelBadge,
+                { backgroundColor: '#FFFFFF' }
+              ]}>
+                <Text style={[
+                  styles.labelText,
+                  { color: '#000' }
+                ]} numberOfLines={1}>
+                  {properties.name}
+                </Text>
+              </View>
+            </View>
 
-        {/* Background white circle (The Pin Body) */}
-        <MapLibreGL.CircleLayer
-          id="eventCircleLayer"
-          style={{
-            circleColor: '#FFFFFF',
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, 10,
-              18, 24
-            ],
-            circleStrokeWidth: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, 1,
-              18, 2
-            ],
-            circleStrokeColor: ['get', 'color'],
-            circlePitchAlignment: 'map',
-          }}
-        />
-
-        {/* Event Image (GPU Symbol) - Sized to fit inside the circle */}
-        <MapLibreGL.SymbolLayer
-          id="eventImageLayer"
-          style={{
-            iconImage: ['get', 'imageKey'],
-            iconSize: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, 0.2,
-              18, 0.5
-            ],
-            iconAllowOverlap: true,
-            iconIgnorePlacement: true,
-            iconPadding: 0,
-          }}
-        />
-
-        {/* Event Label (GPU Text) */}
-        <MapLibreGL.SymbolLayer
-          id="eventLabelLayer"
-          minZoomLevel={13}
-          style={{
-            textField: ['get', 'name'],
-            textFont: ['Inter SemiBold', 'Arial Unicode MS Regular'],
-            textSize: 12,
-            textOffset: [0, 2.5],
-            textAnchor: 'top',
-            textColor: theme.dark ? '#FFFFFF' : '#1A1A1A',
-            textHaloColor: theme.dark ? '#000000' : '#FFFFFF',
-            textHaloWidth: 1,
-            textOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 0,
-              14, 1
-            ],
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+            {/* Label (Optional: only if selected or at high zoom) */}
+            <MapLibreGL.Callout title={properties.name} />
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
 
       {/* 2. VENUE BOUNDARY */}
       <MapLibreGL.ShapeSource 
@@ -185,19 +147,22 @@ export const MapLayers = ({
           }}
         />
         
-        {/* POI Icons (SDF style) */}
+        {/* POI Icons (Vector/Maki style) */}
         <MapLibreGL.SymbolLayer
           id="poisIconLayer"
-          minZoomLevel={15}
+          minZoomLevel={15.5}
           style={{
             ...mapLayerStyles.poiIcons,
+            iconImage: ['get', 'icon'], // Use the icon name from GeoJSON properties
+            iconSize: 0.8,
             iconOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              15.0, 0,
+              15.5, 0,
               16.5, 1
             ],
+            iconPitchAlignment: 'viewport',
           }}
         />
 
@@ -234,3 +199,58 @@ export const MapLayers = ({
 };
 
 MapLayers.displayName = 'MapLayers';
+
+const styles = StyleSheet.create({
+  eventPinContainer: {
+    width: 160, // Increased to accommodate labels
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventPinBody: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    backgroundColor: '#FFF',
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventPinImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventPinPlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventPinPlaceholderText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  labelBadge: {
+    position: 'absolute',
+    top: 66,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(128,128,128,0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    minWidth: 60,
+    maxWidth: 180,
+    alignItems: 'center',
+  },
+  labelText: {
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+});

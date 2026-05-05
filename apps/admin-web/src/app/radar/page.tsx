@@ -1,14 +1,16 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Button, Select, ListBox } from "@heroui/react";
+import { Chip, Select, ListBox } from "@heroui/react";
 import { Icons } from "@/components/icons";
+import { ElevenButton } from "@/components/ui/eleven-button";
+import { ElevenCard } from "@/components/ui/eleven-card";
 
 const API_BASE = "http://localhost:3000/api/v1";
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
-const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`;
+const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 
 // Dynamically import Map components with SSR disabled
 const Map = dynamic(() => import('react-map-gl/maplibre').then(mod => mod.Map), { ssr: false });
@@ -46,7 +48,6 @@ export default function CrowdRadarPage() {
   const [pois, setPois] = useState<any[]>([]);
   const [boundary, setBoundary] = useState<any>(null);
 
-  // Fetch initial venues
   useEffect(() => {
     fetch(`${API_BASE}/venues`)
       .then(res => res.json())
@@ -56,7 +57,6 @@ export default function CrowdRadarPage() {
       });
   }, []);
 
-  // Fetch spatial data for the selected venue
   useEffect(() => {
     if (!selectedVenueId) return;
 
@@ -82,12 +82,9 @@ export default function CrowdRadarPage() {
       });
   }, [selectedVenueId]);
 
-  // Simulation: Heatmap telemetry
   useEffect(() => {
     const fetchHeatmap = () => {
       if (!boundary) return;
-
-      // Mocking some data around the boundary
       const [lngBase, latBase] = boundary.geometry.coordinates[0][0];
       const features = Array.from({ length: 50 }).map((_, i) => ({
         type: 'Feature',
@@ -109,48 +106,42 @@ export default function CrowdRadarPage() {
   }, [boundary]);
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="glass-card p-6 pt-12 flex justify-between items-center z-10 border-b border-white/5">
-        <div className="flex items-center gap-4">
-          <Button isIconOnly variant="ghost" className="text-white/70">
-            <Icons.Sidebar className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-[28px] font-semibold text-white tracking-tight">Crowd Radar</h1>
-            <p className="text-white/30 text-xs font-medium mt-0.5">Real-time Density Analysis</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Live Feed</span>
-          </div>
-          
-          <div className="flex items-center gap-2 bg-white/5 rounded-full px-4 py-2 border border-white/10">
-            <Icons.MapPin className="w-4 h-4 text-accent" />
+    <div className="flex flex-col h-full bg-eggshell space-y-8">
+      <header className="flex justify-between items-start pt-4">
+        <div className="flex flex-col max-w-xl">
+          <p className="text-gravel text-[14px] font-medium mb-2 uppercase tracking-widest">Real-time Telemetry</p>
+          <h1 className="waldenburg-display text-[48px] text-obsidian leading-[1.08] mb-4">
+            Crowd Density Radar.
+          </h1>
+          <div className="flex items-center gap-4 mt-2">
             <Select 
-              className="w-48"
+              className="w-64"
               selectedKey={selectedVenueId}
               onSelectionChange={(key) => setSelectedVenueId(key as string)}
             >
-              <Select.Trigger className="bg-transparent border-none min-h-0 h-auto p-0 flex items-center gap-2 outline-none">
-                <Select.Value className="text-xs font-bold text-white uppercase tracking-wider" />
+              <Select.Trigger className="bg-white border-1 border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
+                <Select.Value className="text-[12px] font-bold text-obsidian uppercase tracking-wider" />
               </Select.Trigger>
               <Select.Popover>
-                <ListBox className="bg-surface border border-white/10 rounded-xl p-1 min-w-48">
-                  {venues.map((v: any) => (
-                    <ListBox.Item key={v.id} id={v.id.toString()} textValue={v.name} className="flex items-center px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:bg-white/5 cursor-pointer outline-none focus:bg-white/10">
+                <ListBox items={venues} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
+                  {(v: any) => (
+                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-[13px] font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
                       {v.name}
                     </ListBox.Item>
-                  ))}
+                  )}
                 </ListBox>
               </Select.Popover>
             </Select>
+            <div className="h-6 w-px bg-chalk mx-2" />
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-ember animate-pulse shadow-hairline" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-gravel">Live Stream Active</span>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative rounded-2xl overflow-hidden border border-chalk shadow-hairline bg-white">
         <Map
           {...viewState}
           onMove={evt => setViewState(evt.viewState)}
@@ -165,17 +156,9 @@ export default function CrowdRadarPage() {
                 id="boundary-line"
                 type="line"
                 paint={{
-                  'line-color': '#ff382e',
-                  'line-width': 2,
+                  'line-color': '#000000',
+                  'line-width': 1.5,
                   'line-dasharray': [2, 2]
-                }}
-              />
-              <Layer
-                id="boundary-fill"
-                type="fill"
-                paint={{
-                  'fill-color': '#ff382e',
-                  'fill-opacity': 0.05
                 }}
               />
             </Source>
@@ -193,26 +176,23 @@ export default function CrowdRadarPage() {
                   ['linear'],
                   ['heatmap-density'],
                   0, 'rgba(0,0,0,0)',
-                  0.2, 'rgba(65,105,225,0.5)',
-                  0.4, 'rgba(0,255,255,0.5)',
-                  0.6, 'rgba(0,255,0,0.5)',
-                  0.8, 'rgba(255,255,0,0.5)',
-                  1, 'rgba(255,56,46,0.8)'
+                  0.2, 'rgba(4, 71, 255, 0.2)', // Signal Blue
+                  0.4, 'rgba(4, 71, 255, 0.4)',
+                  0.6, 'rgba(255, 71, 4, 0.4)', // Ember
+                  0.8, 'rgba(255, 71, 4, 0.6)',
+                  1, 'rgba(255, 71, 4, 0.8)'
                 ],
-                'heatmap-radius': 30,
-                'heatmap-opacity': 0.8
+                'heatmap-radius': 35,
+                'heatmap-opacity': 0.7
               }}
             />
           </Source>
 
           {pois.map(poi => (
             <Marker key={poi.id} longitude={poi.lng} latitude={poi.lat} anchor="bottom">
-              <div className="flex flex-col items-center group cursor-pointer">
-                <div className="bg-surface/90 backdrop-blur-md border border-white/10 px-2 py-1 rounded-lg text-[10px] font-bold text-white mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {poi.name}
-                </div>
-                <div className="w-8 h-8 bg-surface border border-white/20 rounded-full flex items-center justify-center shadow-2xl text-lg">
-                  {POI_EMOJIS[poi.type] || '📍'}
+              <div className="group relative">
+                <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-125 cursor-pointer">
+                  <span className="text-[14px]">{POI_EMOJIS[poi.type] || '📍'}</span>
                 </div>
               </div>
             </Marker>
@@ -220,20 +200,19 @@ export default function CrowdRadarPage() {
         </Map>
 
         {/* Legend */}
-        <div className="absolute right-6 bottom-10 z-10 glass-card p-4 rounded-xl">
-           <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-3">Density Legend</h4>
-           <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                 <div className="w-12 h-2 rounded-full bg-gradient-to-r from-blue-500 to-[#ff382e]" />
-                 <span className="text-[10px] text-white/60 font-bold">Low → High</span>
+        <ElevenCard className="absolute right-6 bottom-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
+           <h4 className="text-[10px] font-black uppercase tracking-widest text-gravel mb-4 border-b border-chalk pb-2 text-center">Crowd Density</h4>
+           <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                 <span className="text-[10px] font-black text-slate uppercase tracking-tighter">Sparse</span>
+                 <div className="flex-1 mx-4 h-1.5 rounded-full bg-gradient-to-r from-signal-blue to-ember" />
+                 <span className="text-[10px] font-black text-slate uppercase tracking-tighter">Congested</span>
               </div>
-              <div className="pt-2 border-t border-white/5">
-                 <p className="text-[10px] text-white/40 leading-relaxed italic">
-                    Data updates every 5s based on active user pings.
-                 </p>
-              </div>
+              <p className="text-[11px] text-gravel leading-relaxed text-center italic border-t border-chalk/50 pt-3">
+                Architectural telemetry updated at 200ms intervals.
+              </p>
            </div>
-        </div>
+        </ElevenCard>
       </div>
     </div>
   );

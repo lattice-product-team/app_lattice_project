@@ -41,8 +41,9 @@ export const normalizePOI = (raw: POIGeoJSON): StandardUIPOI => {
  * Adapter to normalize LatticeEvent into StandardUIPOI.
  */
 export const normalizeEvent = (event: any): StandardUIPOI => {
+  const id = String(event.id);
   return {
-    id: String(event.id),
+    id,
     displayName: event.name,
     category: 'event',
     categoryLabel: 'Evento',
@@ -51,6 +52,7 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     mainColor: '#FF3B30',
     coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
     images: event.imageUrl ? [event.imageUrl] : [],
+    imageKey: event.imageUrl ? `event-img-${id}` : 'placeholder-event',
     raw: event
   };
 };

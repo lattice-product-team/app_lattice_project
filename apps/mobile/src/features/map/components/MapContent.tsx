@@ -4,8 +4,6 @@ import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
 const SPRING_CONFIG = {
   damping: 30,
   stiffness: 150,
@@ -28,8 +26,6 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 // Components
 import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
 import { MapLayers } from './MapLayers';
-import { MapInteractionLayer } from './MapInteractionLayer';
-import { MapVirtualOverlay } from './MapVirtualOverlay';
 
 // Constants & Utilities
 import { useLocationStore } from '../../../store/useLocationStore';
@@ -64,7 +60,6 @@ export const MapContent = function MapContent({
   const {
     selectPoi,
     setSelectedEvent,
-    setCurrentEvent,
     selectedPoiId,
     selectedCoords,
     selectedEventId
@@ -78,9 +73,6 @@ export const MapContent = function MapContent({
   const [currentZoom, setCurrentZoom] = React.useState(initialZoom);
   const { getFilteredPOIs } = usePOIStore();
 
-  const [mapLayout, setMapLayout] = React.useState({ width: SCREEN_WIDTH, height: SCREEN_HEIGHT });
-  const cameraCenter = useSharedValue([2.1734, 41.3851]);
-  const cameraZoom = useSharedValue(initialZoom);
   const zoomSharedValue = useSharedValue(initialZoom);
   const lastZoomUpdateRef = useRef(0);
   const ZOOM_THROTTLE_MS = 100;
@@ -91,11 +83,7 @@ export const MapContent = function MapContent({
 
   const handleCameraChange = useCallback((e: any) => {
     const { geometry, properties } = e;
-    if (geometry?.coordinates) {
-      cameraCenter.value = geometry.coordinates;
-    }
     if (properties?.zoomLevel) {
-      cameraZoom.value = properties.zoomLevel;
       zoomSharedValue.value = properties.zoomLevel;
       if (Math.abs(currentZoom - properties.zoomLevel) > 0.1) {
         setCurrentZoom(properties.zoomLevel);
@@ -109,12 +97,7 @@ export const MapContent = function MapContent({
     if (center && zoom) {
       setLastCameraPosition({ center, zoom, pitch });
     }
-  }, [currentZoom, setCurrentZoom, cameraCenter, cameraZoom, zoomSharedValue, setLastCameraPosition]);
-
-  const onMapLayout = useCallback((e: any) => {
-    const { width, height } = e.nativeEvent.layout;
-    setMapLayout({ width, height });
-  }, []);
+  }, [currentZoom, setCurrentZoom, zoomSharedValue, setLastCameraPosition]);
 
   // Combined POIs logic
   const allUIPois = useMemo(() => {
@@ -148,6 +131,23 @@ export const MapContent = function MapContent({
 
   const events = useMemo(() => normalizeEventList(allEvents || []), [allEvents]);
 
+  const eventsGeoJSON = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: events.map(poi => ({
+      type: 'Feature',
+      id: poi.id,
+      geometry: { type: 'Point', coordinates: poi.coordinates },
+      properties: {
+        id: poi.id,
+        name: poi.displayName,
+        category: poi.category,
+        color: poi.mainColor,
+        imageKey: poi.imageKey,
+        imageUrl: poi.images?.[0]
+      }
+    }))
+  }), [events]);
+
   const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
 
   const handlePoiPress = useCallback(
@@ -155,27 +155,35 @@ export const MapContent = function MapContent({
       const feature = data.features ? data.features[0] : data;
       if (!feature?.properties) return;
 
+      const { properties, geometry } = feature;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       triggerForceCenter();
       
-      // Select the POI
-      selectPoi(normalizePOI({
-        ...feature.properties,
-        coordinates: feature.geometry.coordinates,
-        raw: feature
-      }));
+      if (properties.category === 'event') {
+        // If it's an event, handle it via handleEventPress logic
+        setSelectedEvent(properties.id);
+        setGlobalCurrentEvent(properties.raw || feature);
+        islandState.value = withSpring(0, SPRING_CONFIG);
+      } else {
+        // Normal POI selection
+        selectPoi(normalizePOI({
+          ...properties,
+          coordinates: geometry.coordinates,
+          raw: feature
+        }));
+      }
     },
-    [selectPoi]
+    [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]
   );
 
   const handleEventPress = useCallback((poi: any) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     triggerForceCenter();
     setSelectedEvent(poi.id);
-    setCurrentEvent(poi.raw);
+    setGlobalCurrentEvent(poi.raw);
     // selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
     islandState.value = withSpring(0, SPRING_CONFIG); // Use the same spring config as index.tsx
-  }, [setSelectedEvent, setCurrentEvent, islandState, triggerForceCenter]);
+  }, [setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]);
 
   const glPoisGeoJSON = useMemo(() => {
     if (!poisGeoJSON?.features) return poisGeoJSON;
@@ -216,7 +224,7 @@ export const MapContent = function MapContent({
   }, [theme.dark]);
 
   return (
-    <View style={{ flex: 1 }} onLayout={onMapLayout}>
+    <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
         ref={mapRef}
         style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
@@ -253,30 +261,14 @@ export const MapContent = function MapContent({
         <MapLayers 
           theme={theme}
           poisGeoJSON={filteredPoisGeoJSON}
+          eventsGeoJSON={eventsGeoJSON}
+          selectedEventId={selectedEventId}
           pathNetwork={pathNetwork}
           currentRoute={currentRoute}
           isNavigating={isNavigating}
           onPoiPress={handlePoiPress}
         />
-
-        <MapInteractionLayer 
-          selectedEventId={selectedEventId}
-          selectedPoiId={selectedPoiId}
-          onEventPress={handleEventPress}
-          onPoiPress={handlePoiPress}
-          zoomSharedValue={zoomSharedValue}
-        />
-
       </MapLibreGL.MapView>
-
-      <MapVirtualOverlay
-        events={events}
-        selectedEventId={selectedEventId}
-        onEventPress={handleEventPress}
-        cameraCenter={cameraCenter}
-        cameraZoom={cameraZoom}
-        mapDimensions={mapLayout}
-      />
     </View>
   );
 };

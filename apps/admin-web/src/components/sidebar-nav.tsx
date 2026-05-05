@@ -8,36 +8,33 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex-1 px-3 py-4 space-y-2.5 mt-2">
-      <NavItem href="/" icon={<Icons.LayoutDashboard className="w-6 h-6" />} label="Dashboard" active={pathname === "/"} />
-      <NavItem href="/venues" icon={<Icons.MapPin className="w-6 h-6" />} label="Venues" active={pathname === "/venues"} />
-      <NavItem href="/events" icon={<Icons.Calendar className="w-6 h-6" />} label="Events" active={pathname === "/events"} />
-      <NavItem href="/map" icon={<Icons.Map className="w-6 h-6" />} label="Map Editor" active={pathname === "/map"} />
-      <NavItem href="/radar" icon={<Icons.Users className="w-6 h-6" />} label="Crowd Radar" active={pathname === "/radar"} />
+    <nav className="flex-1 px-4 py-6 space-y-1 mt-4">
+      <NavItem href="/" icon={<Icons.LayoutDashboard className="w-5 h-5" />} label="Dashboard" active={pathname === "/"} />
+      <NavItem href="/venues" icon={<Icons.MapPin className="w-5 h-5" />} label="Venues" active={pathname === "/venues"} />
+      <NavItem href="/events" icon={<Icons.Calendar className="w-5 h-5" />} label="Events" active={pathname === "/events"} />
+      <NavItem href="/map" icon={<Icons.Map className="w-5 h-5" />} label="Map Editor" active={pathname === "/map"} />
+      <NavItem href="/radar" icon={<Icons.Users className="w-5 h-5" />} label="Crowd Radar" active={pathname === "/radar"} />
     </nav>
   );
 }
 
-function NavItem({ href, icon, label, active = false, badge }: { href: string; icon: React.ReactNode; label: string; active?: boolean; badge?: React.ReactNode }) {
+function NavItem({ href, icon, label, active = false }: { href: string; icon: React.ReactNode; label: string; active?: boolean }) {
   return (
     <Link 
       href={href} 
       underline="none"
       className={`
-        flex items-center justify-between px-5 py-3.5 rounded-full transition-all group w-full no-underline
+        flex items-center gap-4 px-5 py-2.5 rounded-full transition-all group w-full no-underline text-[14px]
         ${active 
-          ? 'bg-surface text-white font-semibold shadow-lg shadow-black/20' 
-          : 'text-white/70 hover:bg-white/5 hover:text-white border border-transparent'
+          ? 'bg-powder text-obsidian font-semibold' 
+          : 'text-gravel hover:bg-powder/50 hover:text-obsidian font-medium'
         }
       `}
     >
-      <div className="flex items-center gap-5">
-        <span className={`transition-all ${active ? 'text-white' : 'text-white/50 group-hover:text-white'}`}>
-          {icon}
-        </span>
-        <span className="text-lg font-semibold tracking-tight">{label}</span>
-      </div>
-      {badge && badge}
+      <span className={`transition-all ${active ? 'text-obsidian' : 'text-slate group-hover:text-obsidian'}`}>
+        {icon}
+      </span>
+      <span className="tracking-tight">{label}</span>
     </Link>
   );
 }
