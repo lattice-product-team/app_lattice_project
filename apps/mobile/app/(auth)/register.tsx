@@ -4,11 +4,11 @@ import {
   Text,
   Pressable,
   Linking,
-  StyleSheet
+  StyleSheet,
+  Dimensions
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
@@ -17,6 +17,9 @@ import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { AuthDivider } from '../../src/components/ui/AuthDivider';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { Image } from 'expo-image';
+
+const { height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -33,14 +36,21 @@ export default function RegisterScreen() {
 
   return (
     <AuthLayout transparent>
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: insets.bottom + 20 }}>
+      <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
         
-        {/* Header Section - Minimalist */}
+        {/* Header Section - Left Aligned (Like reference) */}
         <Animated.View 
           entering={FadeInDown.duration(1000).springify()}
           style={styles.header}
         >
-          <View style={[styles.logoDot, { backgroundColor: theme.colors.brand.primary }]} />
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../../assets/images/icon.png')} 
+              style={styles.logoImage}
+              contentFit="contain"
+            />
+          </View>
+          
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>
             Your new{'\n'}experience is here.
           </Text>
@@ -51,30 +61,22 @@ export default function RegisterScreen() {
 
         {/* Action Section */}
         <View style={styles.actionsContainer}>
-          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 16 }}>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 12 }}>
             <PremiumButton 
-              label="Sign in with Apple" 
-              variant="apple" 
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-            />
-            <PremiumButton 
-              label="Sign in with Google" 
+              label="Continue with Google" 
               variant="google" 
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              style={styles.socialButton}
             />
             
-            <View style={styles.dividerWrapper}>
-              <AuthDivider label="or use email" />
-            </View>
-
             <PremiumButton 
-              label="Create Account" 
-              variant="primary" 
+              label="Continue with Email" 
+              variant="outline" 
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(auth)/email-register');
               }}
-              style={{ backgroundColor: '#000' }}
+              style={styles.socialButton}
             />
           </Animated.View>
         </View>
@@ -84,19 +86,6 @@ export default function RegisterScreen() {
           entering={FadeIn.delay(800).duration(1200)}
           style={styles.footer}
         >
-          <View style={styles.registerLink}>
-            <Text style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Medium', fontSize: 15 }}>
-              Already have an account?{' '}
-            </Text>
-            <Link href="/(auth)/login" asChild>
-              <Pressable hitSlop={10}>
-                <Text style={{ color: theme.colors.brand.primary, fontFamily: 'PlusJakartaSans-Bold', fontSize: 15 }}>
-                  Log in
-                </Text>
-              </Pressable>
-            </Link>
-          </View>
-
           <Text style={styles.legalText}>
             By continuing, you agree to our{' '}
             <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
@@ -105,62 +94,71 @@ export default function RegisterScreen() {
         </Animated.View>
       </View>
 
-      {/* Decorative Gradient Glow at bottom */}
-      <View style={styles.bottomGlowContainer}>
-        <LinearGradient
-          colors={['transparent', 'rgba(226, 176, 66, 0.08)', 'rgba(226, 176, 66, 0.15)']}
-          style={styles.bottomGlow}
-        />
-      </View>
+      {/* No more orange glow */}
     </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 80,
-    alignItems: 'flex-start',
-    paddingHorizontal: 8,
+    marginTop: height * 0.12,
+    alignItems: 'center',
   },
-  logoDot: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    marginBottom: 32,
+  logoContainer: {
+    marginBottom: 20,
+  },
+  logoImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
   },
   title: {
-    fontSize: 42,
+    fontSize: 40,
     fontFamily: 'Outfit-Bold',
-    letterSpacing: -1,
-    lineHeight: 48,
+    letterSpacing: -1.5,
+    lineHeight: 46,
+    textAlign: 'center',
+    color: '#000',
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: 'PlusJakartaSans-Medium',
-    marginTop: 12,
-    opacity: 0.6,
+    marginTop: 8,
+    opacity: 0.4,
+    textAlign: 'center',
+    color: '#000',
   },
   actionsContainer: {
-    paddingHorizontal: 0,
     width: '100%',
     marginTop: 40,
   },
-  dividerWrapper: {
-    paddingVertical: 12,
-    alignItems: 'center',
+  socialButton: {
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFF',
+    borderWidth: 1.2,
+    borderColor: '#F0F0F0',
   },
   footer: {
     alignItems: 'center',
-    gap: 32,
+    gap: 16,
     marginTop: 40,
   },
   registerLink: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  footerText: {
+    fontFamily: 'PlusJakartaSans-Medium',
+    fontSize: 15,
+  },
+  footerLink: {
+    fontFamily: 'PlusJakartaSans-Bold',
+    fontSize: 15,
+  },
   legalText: {
     fontSize: 12,
-    color: 'rgba(150, 150, 150, 0.6)',
+    color: 'rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
     lineHeight: 18,
     fontFamily: 'PlusJakartaSans-Medium',
@@ -168,17 +166,5 @@ const styles = StyleSheet.create({
   },
   legalLink: {
     textDecorationLine: 'underline',
-  },
-  bottomGlowContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 200,
-    zIndex: -1,
-    pointerEvents: 'none',
-  },
-  bottomGlow: {
-    flex: 1,
   },
 });
