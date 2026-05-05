@@ -7,7 +7,7 @@ interface MapLayersProps {
   theme: any;
   poisGeoJSON: any;
   eventsGeoJSON?: any;
-  eventImages?: Record<string, { uri: string }>;
+  selectedEventId?: string | number | null;
   pathNetwork: any;
   currentRoute: any;
   isNavigating: boolean;
@@ -18,7 +18,7 @@ export const MapLayers = ({
   theme,
   poisGeoJSON,
   eventsGeoJSON,
-  eventImages,
+  selectedEventId,
   pathNetwork,
   currentRoute,
   isNavigating,
@@ -26,34 +26,32 @@ export const MapLayers = ({
 }: MapLayersProps) => {
   return (
     <>
-      {/* 0. IMAGES REGISTRATION (GPU) */}
-      <MapLibreGL.Images images={eventImages || {}} />
-
-      {/* 1. EVENTS LAYER (GPU-RENDERED) */}
+      {/* 1. EVENTS LAYER (GPU-RENDERED STACK) */}
       <MapLibreGL.ShapeSource
         id="eventsSource"
         shape={eventsGeoJSON || EMPTY_GEOJSON}
         onPress={onPoiPress}
       >
-        {/* Shadow Layer for depth */}
+        {/* Layer 1: Shadow for depth */}
         <MapLibreGL.CircleLayer
           id="eventShadowLayer"
           style={{
             circleColor: '#000000',
-            circleOpacity: 0.2,
+            circleOpacity: 0.15,
             circleRadius: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              12, 12,
-              18, 26
+              12, 14,
+              18, 28
             ],
             circleBlur: 1,
             circleTranslate: [0, 2],
+            circlePitchAlignment: 'viewport',
           }}
         />
 
-        {/* Background white circle (The Pin Body) */}
+        {/* Layer 2: Main Body (White Circle with dynamic border) */}
         <MapLibreGL.CircleLayer
           id="eventCircleLayer"
           style={{
@@ -62,22 +60,16 @@ export const MapLayers = ({
               'interpolate',
               ['linear'],
               ['zoom'],
-              12, 10,
-              18, 24
+              12, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 12],
+              18, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 26]
             ],
-            circleStrokeWidth: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, 1,
-              18, 2
-            ],
+            circleStrokeWidth: 2,
             circleStrokeColor: ['get', 'color'],
-            circlePitchAlignment: 'map',
+            circlePitchAlignment: 'viewport',
           }}
         />
 
-        {/* Event Image (GPU Symbol) - Sized to fit inside the circle */}
+        {/* Layer 3: Event Image (Registered dynamically in MapImageManager) */}
         <MapLibreGL.SymbolLayer
           id="eventImageLayer"
           style={{
@@ -86,35 +78,29 @@ export const MapLayers = ({
               'interpolate',
               ['linear'],
               ['zoom'],
-              12, 0.2,
-              18, 0.5
+              12, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 0.25],
+              18, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 0.55]
             ],
             iconAllowOverlap: true,
             iconIgnorePlacement: true,
-            iconPadding: 0,
+            iconPitchAlignment: 'viewport',
           }}
         />
 
-        {/* Event Label (GPU Text) */}
+        {/* Layer 4: Label (Only visible at high zoom) */}
         <MapLibreGL.SymbolLayer
           id="eventLabelLayer"
-          minZoomLevel={13}
+          minZoomLevel={14}
           style={{
             textField: ['get', 'name'],
             textFont: ['Inter SemiBold', 'Arial Unicode MS Regular'],
-            textSize: 12,
-            textOffset: [0, 2.5],
+            textSize: 13,
+            textOffset: [0, 2.8],
             textAnchor: 'top',
             textColor: theme.dark ? '#FFFFFF' : '#1A1A1A',
-            textHaloColor: theme.dark ? '#000000' : '#FFFFFF',
-            textHaloWidth: 1,
-            textOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 0,
-              14, 1
-            ],
+            textHaloColor: theme.dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
+            textHaloWidth: 1.5,
+            textPitchAlignment: 'viewport',
           }}
         />
       </MapLibreGL.ShapeSource>
@@ -185,19 +171,22 @@ export const MapLayers = ({
           }}
         />
         
-        {/* POI Icons (SDF style) */}
+        {/* POI Icons (Vector/Maki style) */}
         <MapLibreGL.SymbolLayer
           id="poisIconLayer"
-          minZoomLevel={15}
+          minZoomLevel={15.5}
           style={{
             ...mapLayerStyles.poiIcons,
+            iconImage: ['get', 'icon'], // Use the icon name from GeoJSON properties
+            iconSize: 0.8,
             iconOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              15.0, 0,
+              15.5, 0,
               16.5, 1
             ],
+            iconPitchAlignment: 'viewport',
           }}
         />
 

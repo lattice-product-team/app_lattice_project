@@ -16,6 +16,7 @@ export interface StandardUIPOI {
   parentId?: string | number;
   description?: string;
   images?: string[];
+  imageKey?: string;
   distance?: string;
   duration?: string;
   raw: any; // Original GeoJSON properties for backward compatibility
