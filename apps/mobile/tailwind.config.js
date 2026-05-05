@@ -44,7 +44,7 @@ module.exports = {
         tiny: ["0.75rem", { lineHeight: "1rem" }],
       },
       fontFamily: {
-        // ElevenLabs Scalable Tokens
+        // Scalable Tokens
         sans: ["Inter-Regular"],
         "sans-medium": ["Inter-Medium"],
         "sans-semibold": ["Inter-SemiBold"],

@@ -1,6 +1,6 @@
 ## Why
 
-The current `admin-web` interface, while functional, lacks a cohesive and premium identity. By adopting the "ElevenLabs — Style Reference," we aim to transform the dashboard into a type-first, editorial experience that communicates authority through restraint. This "severe yet warm" aesthetic will elevate the platform's professional feel, using a sophisticated "Eggshell" light theme and a signature light-weight serif typography.
+The current `admin-web` interface, while functional, lacks a cohesive and premium identity. By adopting the "— Style Reference," we aim to transform the dashboard into a type-first, editorial experience that communicates authority through restraint. This "severe yet warm" aesthetic will elevate the platform's professional feel, using a sophisticated "Eggshell" light theme and a signature light-weight serif typography.
 
 ## What Changes
 
@@ -13,7 +13,7 @@ The current `admin-web` interface, while functional, lacks a cohesive and premiu
 ## Capabilities
 
 ### New Capabilities
-- `eleven-design-system`: Definition of the core tokens (Colors, Typography, Spacing, Shapes) based on the ElevenLabs architectural blueprint.
+- `eleven-design-system`: Definition of the core tokens (Colors, Typography, Spacing, Shapes) based on the architectural blueprint.
 - `eleven-ui-components`: Specification for the standardized component library (Pill Buttons, Demo Cards, Voice List Items, and Editorial Inputs).
 
 ### Modified Capabilities

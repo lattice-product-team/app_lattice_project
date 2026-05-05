@@ -2,7 +2,7 @@
 @import "@heroui/styles";
 
 @theme {
-  /* ElevenLabs Typography Scale */
+  /* Typography Scale */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-cormorant), serif;
   
@@ -17,7 +17,7 @@
   --tracking-waldenburg: -0.02em;
   --tracking-pill: 0.05em;
 
-  /* ElevenLabs Color Palette (Achromatic Discipline) */
+  /* Color Palette (Achromatic Discipline) */
   --color-eggshell: #fdfcfc;
   --color-powder: #f5f3f1;
   --color-chalk: #e5e5e5;
@@ -43,7 +43,7 @@
 }
 
 :root {
-  /* ElevenLabs Light Theme (Default) */
+  /* Light Theme (Default) */
   --background: #fdfcfc;     /* Eggshell */
   --foreground: #000000;     /* Obsidian */
   
@@ -56,7 +56,7 @@
 }
 
 [data-theme='dark'], .dark {
-  /* Dark Variant (ElevenLabs Obsidian) */
+  /* Dark Variant (Obsidian) */
   --background: #000000;
   --foreground: #fdfcfc;
   

@@ -57,10 +57,11 @@ export default function MapEditorPage() {
 
   useEffect(() => {
     fetch(`${API_BASE}/venues`)
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : [])
       .then(data => {
-        setVenues(data);
-        if (data.length > 0) setSelectedVenueId(data[0].id.toString());
+        const venuesList = Array.isArray(data) ? data : [];
+        setVenues(venuesList);
+        if (venuesList.length > 0) setSelectedVenueId(venuesList[0].id.toString());
       })
       .finally(() => setLoading(false));
   }, []);
@@ -189,7 +190,7 @@ export default function MapEditorPage() {
                 <Select.Value className="text-[12px] font-bold text-obsidian uppercase tracking-wider" />
               </Select.Trigger>
               <Select.Popover>
-                <ListBox items={venues} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
+                <ListBox items={Array.isArray(venues) ? venues : []} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
                   {(v: any) => (
                     <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-[13px] font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
                       {v.name}

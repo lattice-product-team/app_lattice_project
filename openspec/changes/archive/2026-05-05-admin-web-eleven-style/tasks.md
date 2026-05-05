@@ -1,6 +1,6 @@
 ## 1. Design System & Tokens Setup
 
-- [x] 1.1 Define Tailwind v4 `@theme` variables in `globals.css` for ElevenLabs color system (Eggshell, Powder, Chalk, Gravel, Obsidian).
+- [x] 1.1 Define Tailwind v4 `@theme` variables in `globals.css` for color system (Eggshell, Powder, Chalk, Gravel, Obsidian).
 - [x] 1.2 Implement the "Waldenburg" (Cormorant Garamond/Libre Baskerville) and "Inter" typography system with specific tracking/weight values.
 - [x] 1.3 Add custom utility classes for "subtle-shadow" (hairline elevation) and pill-radius.
 
@@ -14,7 +14,7 @@
 
 - [x] 3.1 Update `layout.tsx` to use the "Eggshell" (#fdfcfc) base ground and the new navigation bar style.
 - [x] 3.2 Refactor the main Dashboard (`page.tsx`) to use Waldenburg headlines and the "hover" card layout.
-- [x] 3.3 Apply the ElevenLabs achromatic discipline to the `Events`, `Venues`, `Map`, and `Radar` pages.
+- [x] 3.3 Apply the achromatic discipline to the `Events`, `Venues`, `Map`, and `Radar` pages.
 
 ## 4. Verification & Polish
 

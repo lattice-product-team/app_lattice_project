@@ -34,7 +34,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-eggshell`}>
         <Providers>
           <div className="flex h-screen overflow-hidden bg-eggshell">
-            {/* Sidebar - ElevenLabs Editorial Style */}
+            {/* Sidebar - Editorial Style */}
             <aside className="w-64 bg-eggshell border-r border-chalk flex flex-col z-50">
               <div className="p-8 pt-12">
                 <div className="flex items-center gap-4 mb-8">

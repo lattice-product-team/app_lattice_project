@@ -11,13 +11,13 @@ The `admin-web` dashboard is currently undergoing a style refactor to stabilize 
 - Ensure the system is fully theme-agnostic (focusing on the "Warm Light" mode first as per reference).
 
 **Non-Goals:**
-- Developing a full Dark Mode variant of the ElevenLabs style unless explicitly defined later (focus is on the "Eggshell" ground).
+- Developing a full Dark Mode variant of the style unless explicitly defined later (focus is on the "Eggshell" ground).
 - Modifying backend business logic or data structures.
 
 ## Decisions
 
 ### 1. Tailwind v4 Token Mapping
-We will use the `@theme` block in `globals.css` to define the ElevenLabs tokens.
+We will use the `@theme` block in `globals.css` to define the tokens.
 - **Colors**: Map `Eggshell`, `Powder`, `Chalk`, `Gravel`, and `Obsidian` to semantic Tailwind colors.
 - **Rationale**: Tailwind v4 variables are the most performant and scalable way to manage a unified theme.
 
@@ -28,7 +28,7 @@ Since "Waldenburg" is a custom font, we will use high-fidelity substitutes to ma
 - **Rationale**: Web-safe and Google Fonts alternatives provide immediate implementation while remaining visually close to the source.
 
 ### 3. Hairline Shadow Elevation
-Instead of standard elevation depth, we will use the specific ElevenLabs shadow logic: `rgba(0, 0, 0, 0.4) 0px 0px 1px 0px`.
+Instead of standard elevation depth, we will use the specific shadow logic: `rgba(0, 0, 0, 0.4) 0px 0px 1px 0px`.
 - **Rationale**: This keeps the UI in a single perceptual plane, reinforcing the editorial/architectural feel.
 
 ### 4. Pill-Shaped Component Architecture
