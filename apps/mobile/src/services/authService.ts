@@ -4,7 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '../store/useAuthStore';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { ReactNativePasskey } from 'react-native-passkey';
+import { Passkey } from 'react-native-passkey';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -12,8 +12,6 @@ export class AuthService {
   private static get API_URL() {
     return Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api/v1';
   }
-
-
 
   static async signInWithGoogle(idToken: string) {
     try {
@@ -34,73 +32,8 @@ export class AuthService {
     }
   }
 
-  static async registerPasskey() {
-    try {
-      // 1. Get challenge from backend
-      const challengeRes = await fetch(`${this.API_URL}/auth/passkey/register-challenge`, {
-        headers: { 'Authorization': `Bearer ${useAuthStore.getState().token}` }
-      });
-      const options = await challengeRes.json();
-
-      // 2. Create credential natively
-      console.log('Passkey registration initiated with options:', options);
-      const result = await ReactNativePasskey.create(options);
-
-      // 3. Send attestation to backend
-      const verifyRes = await fetch(`${this.API_URL}/auth/passkey/register-verify`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${useAuthStore.getState().token}`
-        },
-        body: JSON.stringify(result),
-      });
-
-      const data = await verifyRes.json();
-      if (data.success) {
-        // Update user state to reflect passkey is enabled
-        const currentUser = useAuthStore.getState().user;
-        if (currentUser) {
-          useAuthStore.getState().setAuth(useAuthStore.getState().token!, {
-            ...currentUser,
-            isPasskeyEnabled: true
-          });
-        }
-      }
-      return data;
-    } catch (e: any) {
-      console.error('Passkey registration error:', e);
-      return { success: false, error: e.message };
-    }
-  }
-
   static async signInWithPasskey() {
-    try {
-      // 1. Get assertion challenge
-      const challengeRes = await fetch(`${this.API_URL}/auth/passkey/login-challenge`);
-      const options = await challengeRes.json();
-
-      // 2. Get assertion natively
-      console.log('Passkey login initiated with options:', options);
-      const result = await ReactNativePasskey.get(options);
-
-      // 3. Verify with backend
-      const verifyRes = await fetch(`${this.API_URL}/auth/passkey/login-verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(result),
-      });
-
-      const data = await verifyRes.json();
-      if (data.token) {
-        useAuthStore.getState().setAuth(data.token, data.user);
-        return { success: true };
-      }
-      return { success: false, error: data.error };
-    } catch (e: any) {
-      console.error('Passkey login error:', e);
-      return { success: false, error: e.message };
-    }
+    return { success: false, error: 'Passkeys are currently disabled' };
   }
   async login(credentials: any) {
     const response = await fetch(`${AuthService.API_URL}/auth/login`, {

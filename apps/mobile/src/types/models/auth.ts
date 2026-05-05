@@ -4,7 +4,6 @@ export interface User {
   fullName: string;
   avatarUrl?: string;
   bio?: string;
-  isPasskeyEnabled?: boolean;
   stats?: {
     eventsAttended: number;
     savedEvents: number;

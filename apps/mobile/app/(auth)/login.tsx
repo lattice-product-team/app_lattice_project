@@ -17,7 +17,6 @@ import Constants from 'expo-constants';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
-import { PasskeyOnboardingSheet } from '../../src/components/ui/PasskeyOnboardingSheet';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { AuthService } from '../../src/services/authService';
 import * as Google from 'expo-auth-session/providers/google';
@@ -32,17 +31,11 @@ export default function LoginScreen() {
   const token = useAuthStore((state) => state.token);
   const isGuest = useAuthStore((state) => state.isGuest);
   const user = useAuthStore((state) => state.user);
-  const [isPasskeySheetVisible, setIsPasskeySheetVisible] = React.useState(false);
-  
   useEffect(() => {
     if (token || isGuest) {
-      if (token && user && !user.isPasskeyEnabled) {
-        setIsPasskeySheetVisible(true);
-      } else {
-        router.replace('/(main)');
-      }
+      router.replace('/(main)');
     }
-  }, [token, isGuest, user, router]);
+  }, [token, isGuest, router]);
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
@@ -140,24 +133,6 @@ export default function LoginScreen() {
           </Text>
         </Animated.View>
       </View>
-
-      <PasskeyOnboardingSheet 
-        isVisible={isPasskeySheetVisible}
-        onClose={() => {
-          setIsPasskeySheetVisible(false);
-          router.replace('/(main)');
-        }}
-        onConfirm={async () => {
-          try {
-            await AuthService.registerPasskey();
-          } catch (e) {
-            console.error('Error registering passkey:', e);
-          } finally {
-            setIsPasskeySheetVisible(false);
-            router.replace('/(main)');
-          }
-        }}
-      />
     </AuthLayout>
   );
 }

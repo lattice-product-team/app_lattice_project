@@ -37,7 +37,11 @@ export const PasskeyOnboardingSheet = ({ isVisible, onClose, onConfirm }: Passke
     transform: [{ translateY: (1 - animState.value) * SCREEN_HEIGHT }],
   }));
 
-  if (!isVisible && animState.value === 0) return null;
+  if (!isVisible) {
+    // Si no es visible, podemos ocultarlo después de que la animación termine
+    // Por simplicidad en este paso, usaremos solo isVisible
+    // Para un cierre suave total se podría usar un estado de 'render'
+  }
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents={isVisible ? "auto" : "none"}>
