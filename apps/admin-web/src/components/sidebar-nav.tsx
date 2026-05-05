@@ -24,7 +24,7 @@ function NavItem({ href, icon, label, active = false }: { href: string; icon: Re
       href={href} 
       underline="none"
       className={`
-        flex items-center gap-4 px-5 py-2.5 rounded-full transition-all group w-full no-underline text-[14px]
+        flex items-center gap-4 px-5 py-2.5 rounded-full transition-all group w-full no-underline text-admin-base
         ${active 
           ? 'bg-powder text-obsidian font-semibold' 
           : 'text-gravel hover:bg-powder/50 hover:text-obsidian font-medium'

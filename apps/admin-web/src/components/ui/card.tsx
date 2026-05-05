@@ -3,7 +3,7 @@
 import { Card as HeroCard, CardProps as HeroCardProps } from "@heroui/react";
 import { cn } from "@/lib/utils";
 
-export function ElevenCard({ 
+export function Card({ 
   className, 
   children, 
   ...props 
@@ -23,7 +23,7 @@ export function ElevenCard({
   );
 }
 
-export function ElevenCardHeader({ children, className }: { children: React.ReactNode, className?: string }) {
+export function CardHeader({ children, className }: { children: React.ReactNode, className?: string }) {
   return (
     <div className={cn("mb-6", className)}>
       {children}
@@ -31,7 +31,7 @@ export function ElevenCardHeader({ children, className }: { children: React.Reac
   );
 }
 
-export function ElevenCardBody({ children, className }: { children: React.ReactNode, className?: string }) {
+export function CardBody({ children, className }: { children: React.ReactNode, className?: string }) {
   return (
     <div className={cn("space-y-4", className)}>
       {children}

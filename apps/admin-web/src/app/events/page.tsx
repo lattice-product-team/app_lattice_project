@@ -1,46 +1,53 @@
 "use client";
 
-import { Chip, Table } from "@heroui/react";
+import { Chip, Table, Spinner } from "@heroui/react";
 import { Icons } from "@/components/icons";
-import { ElevenButton } from "@/components/ui/eleven-button";
-import { ElevenInput } from "@/components/ui/eleven-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useEvents } from "@/hooks/use-admin-data";
 
 export default function EventsPage() {
-  const events = [
-    { id: "EVT-001", name: "F1 Spanish Grand Prix", venue: "Circuit de Barcelona", date: "May 12-14, 2026", status: "Active" },
-    { id: "EVT-002", name: "Sonar Music Festival", venue: "Fira Gran Via", date: "June 18-20, 2026", status: "Upcoming" },
-    { id: "EVT-003", name: "Primavera Sound", venue: "Parc del Fòrum", date: "June 4-6, 2026", status: "Planning" },
-    { id: "EVT-004", name: "MWC Barcelona", venue: "Fira Barcelona", date: "March 2-5, 2026", status: "Completed" },
-  ];
+  const { events, loading, error } = useEvents();
 
   return (
     <div className="space-y-12 pb-24">
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-xl">
-          <p className="text-gravel text-[14px] font-medium mb-2 uppercase tracking-widest">Event Operations</p>
+          <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">Event Operations</p>
           <h1 className="waldenburg-display text-admin-display text-obsidian leading-[1.08] mb-4">
             Monitoring global event lifecycles.
           </h1>
-          <p className="text-gravel text-[16px] leading-relaxed">
+          <p className="text-gravel text-admin-md leading-relaxed">
             Oversee planning, execution, and post-event analysis. High-fidelity telemetry integration for operational excellence.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <ElevenButton variant="ghost">Archive All</ElevenButton>
-          <ElevenButton variant="primary" startContent={<Icons.Plus className="w-4 h-4" />}>
+          <Button variant="ghost">Archive All</Button>
+          <Button variant="primary">
+            <Icons.Plus className="w-4 h-4 mr-2" />
             Create New Event
-          </ElevenButton>
+          </Button>
         </div>
       </header>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-admin-base font-medium">
+          Failed to load events: {error}
+        </div>
+      )}
 
       <div className="space-y-6">
         <div className="flex items-center justify-between border-b border-chalk pb-4">
           <div className="flex items-center gap-3">
             <h2 className="waldenburg-display text-[24px] text-obsidian">Active Schedule</h2>
-            <span className="bg-powder px-2 py-0.5 rounded text-[10px] font-black border border-chalk text-obsidian uppercase tracking-widest">4 Events</span>
+            {!loading && (
+              <span className="bg-powder px-2 py-0.5 rounded text-[10px] font-black border border-chalk text-obsidian uppercase tracking-widest">
+                {events.length} Events
+              </span>
+            )}
           </div>
           <div className="w-64">
-             <ElevenInput placeholder="Search schedule..." variant="transparent" startContent={<Icons.Search className="w-4 h-4 text-gravel" />} />
+             <Input placeholder="Search schedule..." variant="transparent" />
           </div>
         </div>
 
@@ -57,35 +64,55 @@ export default function EventsPage() {
               <Table.Column key="actions" id="actions" className="text-gravel uppercase text-[10px] tracking-widest font-black text-right">Actions</Table.Column>
             </Table.Header>
             <Table.Body>
-              {events.map((event) => (
+              {loading ? (
+                <Table.Row key="loading">
+                  <Table.Cell className="py-6 text-center" colSpan={5}>
+                    <Spinner color="current" size="sm" />
+                  </Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                </Table.Row>
+              ) : events.length === 0 ? (
+                <Table.Row key="empty">
+                  <Table.Cell className="py-6 text-center text-gravel" colSpan={5}>
+                    No events found.
+                  </Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                  <Table.Cell className="hidden"><span/></Table.Cell>
+                </Table.Row>
+              ) : (
+                events.map((event: any) => (
                 <Table.Row key={event.id} id={event.id.toString()} className="border-b border-chalk hover:bg-powder/30 transition-colors">
                   <Table.Cell className="py-6">
-                    <span className="font-mono text-[12px] text-slate">{event.id}</span>
+                    <span className="font-mono text-admin-xs text-slate">EVT-{event.id.toString().padStart(3, '0')}</span>
                   </Table.Cell>
                   <Table.Cell className="py-6">
-                    <span className="font-bold text-obsidian text-[14px]">{event.name}</span>
+                    <span className="font-bold text-obsidian text-admin-base">{event.name}</span>
                   </Table.Cell>
                   <Table.Cell className="py-6">
-                    <span className="text-[14px] text-gravel">{event.venue}</span>
+                    <span className="text-admin-base text-gravel">{event.locationName || "Virtual"}</span>
                   </Table.Cell>
                   <Table.Cell className="py-6">
                     <Chip 
                       size="sm" 
-                      variant="flat"
-                      className={`font-black text-[10px] uppercase tracking-widest rounded-full
-                        ${event.status === "Active" ? "bg-obsidian text-eggshell" : "bg-powder text-gravel border border-chalk"}`}
+                      variant="soft"
+                      className="font-black text-[10px] uppercase tracking-widest rounded-full bg-obsidian text-eggshell"
                     >
-                      {event.status}
+                      {new Date(event.endDate) > new Date() ? 'Active' : 'Past'}
                     </Chip>
                   </Table.Cell>
                   <Table.Cell className="py-6 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <ElevenButton variant="compact">Manage</ElevenButton>
-                      <ElevenButton variant="compact">Archive</ElevenButton>
+                      <Button variant="compact">Manage</Button>
+                      <Button variant="compact">Archive</Button>
                     </div>
                   </Table.Cell>
                 </Table.Row>
-              ))}
+              )))}
             </Table.Body>
           </Table.Content>
         </Table>

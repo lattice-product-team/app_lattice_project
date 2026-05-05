@@ -35,7 +35,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   lastCameraPosition,
   isNavigating,
 }, ref) => {
-  const cameraRef = React.useRef<MapLibreGL.Camera>(null);
+  const cameraRef = React.useRef<any>(null);
   const insets = useSafeAreaInsets();
 
   useImperativeHandle(ref, () => ({

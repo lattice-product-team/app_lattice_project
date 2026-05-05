@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Chip, Select, ListBox } from "@heroui/react";
 import { Icons } from "@/components/icons";
-import { ElevenButton } from "@/components/ui/eleven-button";
-import { ElevenCard } from "@/components/ui/eleven-card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const API_BASE = "http://localhost:3000/api/v1";
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
@@ -109,8 +109,8 @@ export default function CrowdRadarPage() {
     <div className="flex flex-col h-full bg-eggshell space-y-8">
       <header className="flex justify-between items-start pt-4">
         <div className="flex flex-col max-w-xl">
-          <p className="text-gravel text-[14px] font-medium mb-2 uppercase tracking-widest">Real-time Telemetry</p>
-          <h1 className="waldenburg-display text-[48px] text-obsidian leading-[1.08] mb-4">
+          <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">Real-time Telemetry</p>
+          <h1 className="waldenburg-display text-admin-display text-obsidian leading-[1.08] mb-4">
             Crowd Density Radar.
           </h1>
           <div className="flex items-center gap-4 mt-2">
@@ -119,13 +119,13 @@ export default function CrowdRadarPage() {
               selectedKey={selectedVenueId}
               onSelectionChange={(key) => setSelectedVenueId(key as string)}
             >
-              <Select.Trigger className="bg-white border-1 border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
-                <Select.Value className="text-[12px] font-bold text-obsidian uppercase tracking-wider" />
+              <Select.Trigger className="bg-white border border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
+                <Select.Value className="text-admin-xs font-bold text-obsidian uppercase tracking-wider" />
               </Select.Trigger>
               <Select.Popover>
                 <ListBox items={venues} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
                   {(v: any) => (
-                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-[13px] font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
+                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-admin-sm font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
                       {v.name}
                     </ListBox.Item>
                   )}
@@ -192,7 +192,7 @@ export default function CrowdRadarPage() {
             <Marker key={poi.id} longitude={poi.lng} latitude={poi.lat} anchor="bottom">
               <div className="group relative">
                 <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-125 cursor-pointer">
-                  <span className="text-[14px]">{POI_EMOJIS[poi.type] || '📍'}</span>
+                  <span className="text-admin-base">{POI_EMOJIS[poi.type] || '📍'}</span>
                 </div>
               </div>
             </Marker>
@@ -200,19 +200,19 @@ export default function CrowdRadarPage() {
         </Map>
 
         {/* Legend */}
-        <ElevenCard className="absolute right-6 bottom-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
+        <Card className="absolute right-6 bottom-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
            <h4 className="text-[10px] font-black uppercase tracking-widest text-gravel mb-4 border-b border-chalk pb-2 text-center">Crowd Density</h4>
            <div className="space-y-4">
               <div className="flex items-center justify-between">
                  <span className="text-[10px] font-black text-slate uppercase tracking-tighter">Sparse</span>
-                 <div className="flex-1 mx-4 h-1.5 rounded-full bg-gradient-to-r from-signal-blue to-ember" />
+                 <div className="flex-1 mx-4 h-1.5 rounded-full bg-linear-to-r from-signal-blue to-ember" />
                  <span className="text-[10px] font-black text-slate uppercase tracking-tighter">Congested</span>
               </div>
               <p className="text-[11px] text-gravel leading-relaxed text-center italic border-t border-chalk/50 pt-3">
                 Architectural telemetry updated at 200ms intervals.
               </p>
            </div>
-        </ElevenCard>
+        </Card>
       </div>
     </div>
   );

@@ -5,9 +5,9 @@ import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Chip, Select, ListBox, Modal, ModalContainer, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { Icons } from "@/components/icons";
-import { ElevenButton } from "@/components/ui/eleven-button";
-import { ElevenInput } from "@/components/ui/eleven-input";
-import { ElevenCard } from "@/components/ui/eleven-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 const API_BASE = "http://localhost:3000/api/v1";
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
@@ -167,7 +167,7 @@ export default function MapEditorPage() {
     <div className="flex-1 flex items-center justify-center bg-eggshell">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-2 border-obsidian border-t-transparent rounded-full animate-spin" />
-        <p className="text-gravel font-medium animate-pulse uppercase tracking-widest text-[12px]">Initializing Spatial Engine...</p>
+        <p className="text-gravel font-medium animate-pulse uppercase tracking-widest text-admin-xs">Initializing Spatial Engine...</p>
       </div>
     </div>
   );
@@ -176,8 +176,8 @@ export default function MapEditorPage() {
     <div className="flex flex-col h-full bg-eggshell space-y-8">
       <header className="flex justify-between items-start pt-4">
         <div className="flex flex-col max-w-xl">
-          <p className="text-gravel text-[14px] font-medium mb-2 uppercase tracking-widest">Spatial Configuration</p>
-          <h1 className="waldenburg-display text-[48px] text-obsidian leading-[1.08] mb-4">
+          <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">Spatial Configuration</p>
+          <h1 className="waldenburg-display text-admin-display text-obsidian leading-[1.08] mb-4">
             Cartographic Editor.
           </h1>
           <div className="flex items-center gap-4 mt-2">
@@ -186,13 +186,13 @@ export default function MapEditorPage() {
               selectedKey={selectedVenueId}
               onSelectionChange={(key) => setSelectedVenueId(key as string)}
             >
-              <Select.Trigger className="bg-white border-1 border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
-                <Select.Value className="text-[12px] font-bold text-obsidian uppercase tracking-wider" />
+              <Select.Trigger className="bg-white border border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
+                <Select.Value className="text-admin-xs font-bold text-obsidian uppercase tracking-wider" />
               </Select.Trigger>
               <Select.Popover>
                 <ListBox items={Array.isArray(venues) ? venues : []} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
                   {(v: any) => (
-                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-[13px] font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
+                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-admin-sm font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
                       {v.name}
                     </ListBox.Item>
                   )}
@@ -200,10 +200,10 @@ export default function MapEditorPage() {
               </Select.Popover>
             </Select>
             <div className="h-6 w-px bg-chalk mx-2" />
-            <ElevenButton variant="ghost" size="sm" onPress={clearAll}>Reset Canvas</ElevenButton>
-            <ElevenButton variant="primary" size="sm" onPress={saveMap} isLoading={saving} startContent={!saving && <Icons.Save className="w-4 h-4" />}>
+            <Button variant="ghost" size="sm" onPress={clearAll}>Reset Canvas</Button>
+            <Button variant="primary" size="sm" onPress={saveMap} isLoading={saving} startContent={!saving && <Icons.Save className="w-4 h-4" />}>
               Commit Changes
-            </ElevenButton>
+            </Button>
           </div>
         </div>
       </header>
@@ -249,7 +249,7 @@ export default function MapEditorPage() {
             >
               <div className="group relative">
                 <div className="bg-obsidian text-eggshell p-2.5 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-125 cursor-pointer">
-                  <span className="text-[16px]">{POI_TYPES.find(t => t.value === marker.type)?.emoji || '📍'}</span>
+                  <span className="text-admin-md">{POI_TYPES.find(t => t.value === marker.type)?.emoji || '📍'}</span>
                 </div>
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-obsidian text-eggshell text-[10px] font-black uppercase tracking-widest py-1.5 px-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-subtle">
                   {marker.name}
@@ -266,48 +266,48 @@ export default function MapEditorPage() {
         </Map>
 
         {/* Floating Toolbar */}
-        <ElevenCard className="absolute left-6 top-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-gravel mb-4 border-b border-chalk pb-2">Cartographic Tools</h3>
+        <Card className="absolute left-6 top-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
+          <h3 className="text-admin-xs font-black uppercase tracking-widest text-gravel mb-4 border-b border-chalk pb-2">Cartographic Tools</h3>
           <div className="space-y-2">
-             <ElevenButton 
+             <Button 
               fullWidth
               variant={mode === 'poi' ? 'primary' : 'ghost'}
               onPress={() => setMode('poi')}
-              className="justify-start gap-3 h-12 text-[12px]"
+              className="justify-start gap-3 h-12 text-admin-xs"
              >
                 <Icons.MapPin className="w-4 h-4" /> Point of Interest
-             </ElevenButton>
-             <ElevenButton 
+             </Button>
+             <Button 
               fullWidth
               variant={mode === 'boundary' ? 'primary' : 'ghost'}
               onPress={() => setMode('boundary')}
-              className="justify-start gap-3 h-12 text-[12px]"
+              className="justify-start gap-3 h-12 text-admin-xs"
              >
                 <Icons.Maximize className="w-4 h-4" /> Perimeter Mode ({boundaryPoints.length})
-             </ElevenButton>
+             </Button>
           </div>
           
           {mode === 'boundary' && boundaryPoints.length > 0 && (
             <div className="mt-4 pt-4 border-t border-chalk grid grid-cols-2 gap-2">
-              <ElevenButton variant="compact" onPress={() => setBoundaryPoints(prev => prev.slice(0, -1))}>Undo</ElevenButton>
-              <ElevenButton variant="compact" className="text-ember" onPress={() => setBoundaryPoints([])}>Clear</ElevenButton>
+              <Button variant="compact" onPress={() => setBoundaryPoints(prev => prev.slice(0, -1))}>Undo</Button>
+              <Button variant="compact" className="text-ember" onPress={() => setBoundaryPoints([])}>Clear</Button>
             </div>
           )}
-        </ElevenCard>
+        </Card>
       </div>
 
       <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
         <ModalContainer className="bg-white border border-chalk rounded-2xl p-4 shadow-subtle">
-          <ModalHeader className="waldenburg-display text-[24px] text-obsidian">Define Point of Interest</ModalHeader>
+          <ModalHeader className="waldenburg-display text-admin-xl text-obsidian">Define Point of Interest</ModalHeader>
           <ModalBody className="space-y-6">
-            <ElevenInput 
+            <Input 
               label="Identifier"
               placeholder="e.g. South Gate, Medical tent A"
               value={poiName}
               onChange={(e) => setPoiName(e.target.value)}
             />
             <div className="space-y-2">
-              <p className="text-gravel text-[12px] font-bold uppercase tracking-widest">Category</p>
+              <p className="text-gravel text-admin-xs font-bold uppercase tracking-widest">Category</p>
               <div className="grid grid-cols-3 gap-2">
                 {POI_TYPES.map((t) => (
                   <button 
@@ -324,8 +324,8 @@ export default function MapEditorPage() {
             </div>
           </ModalBody>
           <ModalFooter className="mt-4">
-            <ElevenButton variant="ghost" onPress={onClose}>Discard</ElevenButton>
-            <ElevenButton variant="primary" onPress={addPoi}>Add to Canvas</ElevenButton>
+            <Button variant="ghost" onPress={onClose}>Discard</Button>
+            <Button variant="primary" onPress={addPoi}>Add to Canvas</Button>
           </ModalFooter>
         </ModalContainer>
       </Modal>

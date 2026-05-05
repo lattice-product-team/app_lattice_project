@@ -232,9 +232,9 @@ export const MapContent = function MapContent({
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
-        onPress={onDeselect || storeDeselect}
+        onPress={onDeselect}
         onRegionIsChanging={handleCameraChange}
-        onCameraChanged={handleCameraChange}
+        onRegionDidChange={handleCameraChange}
         onDidFinishLoadingStyle={() => {
           if (!hasInitialRendered.current) {
             hasInitialRendered.current = true;
