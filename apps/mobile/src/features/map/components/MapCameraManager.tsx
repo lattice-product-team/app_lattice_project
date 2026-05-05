@@ -17,6 +17,7 @@ interface MapCameraManagerProps {
   forceCenterCount: number;
   lastCameraPosition: any;
   isNavigating: boolean;
+  isFollowingUser: boolean;
 }
 
 export interface MapCameraHandle {
@@ -34,6 +35,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   forceCenterCount,
   lastCameraPosition,
   isNavigating,
+  isFollowingUser,
 }, ref) => {
   const cameraRef = React.useRef<MapLibreGL.Camera>(null);
   const insets = useSafeAreaInsets();
@@ -151,9 +153,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM, 
         pitch: lastCameraPosition?.pitch || 0 
       }}
-      followUserLocation={isNavigating} // Simplified
+      followUserLocation={isNavigating || isFollowingUser}
       followUserMode={(isNavigating ? 'compass' : 'normal') as any}
-      followZoomLevel={18}
+      followZoomLevel={17}
     />
   );
 });

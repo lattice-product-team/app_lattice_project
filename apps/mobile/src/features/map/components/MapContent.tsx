@@ -97,7 +97,12 @@ export const MapContent = function MapContent({
     if (center && zoom) {
       setLastCameraPosition({ center, zoom, pitch });
     }
-  }, [currentZoom, setCurrentZoom, zoomSharedValue, setLastCameraPosition]);
+
+    // If camera is changing due to user interaction, stop following
+    if (e.properties?.isUserInteraction && isFollowingUser) {
+      setIsFollowingUser(false);
+    }
+  }, [currentZoom, setCurrentZoom, zoomSharedValue, setLastCameraPosition, isFollowingUser, setIsFollowingUser]);
 
   // Combined POIs logic
   const allUIPois = useMemo(() => {
@@ -256,6 +261,7 @@ export const MapContent = function MapContent({
           forceCenterCount={forceCenterCount}
           lastCameraPosition={lastCameraPosition}
           isNavigating={isNavigating}
+          isFollowingUser={isFollowingUser}
         />
 
         <MapLayers 
