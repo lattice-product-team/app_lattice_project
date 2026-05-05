@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
@@ -26,84 +27,47 @@ export const MapLayers = ({
 }: MapLayersProps) => {
   return (
     <>
-      {/* 1. EVENTS LAYER (GPU-RENDERED STACK) */}
-      <MapLibreGL.ShapeSource
-        id="eventsSource"
-        shape={eventsGeoJSON || EMPTY_GEOJSON}
-        onPress={onPoiPress}
-      >
-        {/* Layer 1: Shadow for depth */}
-        <MapLibreGL.CircleLayer
-          id="eventShadowLayer"
-          style={{
-            circleColor: '#000000',
-            circleOpacity: 0.15,
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, 14,
-              18, 28
-            ],
-            circleBlur: 1,
-            circleTranslate: [0, 2],
-            circlePitchAlignment: 'viewport',
-          }}
-        />
+      {/* 1. EVENTS LAYER (NATIVE ANNOTATIONS FOR CIRCULAR CLIPPING) */}
+      {eventsGeoJSON?.features?.map((feature: any) => {
+        const { id, properties, geometry } = feature;
+        const isSelected = selectedEventId === id;
+        const color = properties.color || theme.colors.primary;
+        
+        return (
+          <MapLibreGL.PointAnnotation
+            key={id}
+            id={`event-ann-${id}`}
+            coordinate={geometry.coordinates}
+            onSelected={() => onPoiPress(feature)}
+          >
+            <View style={[
+              styles.eventPinContainer,
+              { transform: [{ scale: isSelected ? 1.3 : 1 }] }
+            ]}>
+              {/* Shadow */}
+              <View style={styles.eventPinShadow} />
+              
+              {/* Main Body */}
+              <View style={[styles.eventPinBody, { borderColor: color }]}>
+                {properties.imageKey && properties.imageKey !== 'placeholder-event' ? (
+                  <Image 
+                    source={{ uri: properties.imageKey.startsWith('event-img-') ? eventsGeoJSON.features.find((f: any) => f.id === id).properties.imageUrl || '' : '' }} 
+                    style={styles.eventPinImage}
+                    // Since we don't have imageUrl in properties directly yet, let's ensure it's there
+                  />
+                ) : (
+                  <View style={[styles.eventPinPlaceholder, { backgroundColor: color }]}>
+                    <Text style={styles.eventPinPlaceholderText}>{properties.name?.charAt(0)}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
 
-        {/* Layer 2: Main Body (White Circle with dynamic border) */}
-        <MapLibreGL.CircleLayer
-          id="eventCircleLayer"
-          style={{
-            circleColor: '#FFFFFF',
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 12],
-              18, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 26]
-            ],
-            circleStrokeWidth: 2,
-            circleStrokeColor: ['get', 'color'],
-            circlePitchAlignment: 'viewport',
-          }}
-        />
-
-        {/* Layer 3: Event Image (Registered dynamically in MapImageManager) */}
-        <MapLibreGL.SymbolLayer
-          id="eventImageLayer"
-          style={{
-            iconImage: ['get', 'imageKey'],
-            iconSize: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              12, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 0.25],
-              18, ['*', ['case', ['==', ['get', 'id'], selectedEventId || ''], 1.4, 1], 0.55]
-            ],
-            iconAllowOverlap: true,
-            iconIgnorePlacement: true,
-            iconPitchAlignment: 'viewport',
-          }}
-        />
-
-        {/* Layer 4: Label (Only visible at high zoom) */}
-        <MapLibreGL.SymbolLayer
-          id="eventLabelLayer"
-          minZoomLevel={14}
-          style={{
-            textField: ['get', 'name'],
-            textFont: ['Inter SemiBold', 'Arial Unicode MS Regular'],
-            textSize: 13,
-            textOffset: [0, 2.8],
-            textAnchor: 'top',
-            textColor: theme.dark ? '#FFFFFF' : '#1A1A1A',
-            textHaloColor: theme.dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
-            textHaloWidth: 1.5,
-            textPitchAlignment: 'viewport',
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+            {/* Label (Optional: only if selected or at high zoom) */}
+            <MapLibreGL.Callout title={properties.name} />
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
 
       {/* 2. VENUE BOUNDARY */}
       <MapLibreGL.ShapeSource 
@@ -223,3 +187,46 @@ export const MapLayers = ({
 };
 
 MapLayers.displayName = 'MapLayers';
+
+const styles = StyleSheet.create({
+  eventPinContainer: {
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventPinShadow: {
+    position: 'absolute',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#000',
+    opacity: 0.15,
+    transform: [{ translateY: 2 }],
+  },
+  eventPinBody: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    backgroundColor: '#FFF',
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventPinImage: {
+    width: '100%',
+    height: '100%',
+  },
+  eventPinPlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventPinPlaceholderText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});

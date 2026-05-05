@@ -26,7 +26,6 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 // Components
 import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
 import { MapLayers } from './MapLayers';
-import { MapImageManager } from './MapImageManager';
 
 // Constants & Utilities
 import { useLocationStore } from '../../../store/useLocationStore';
@@ -144,7 +143,8 @@ export const MapContent = function MapContent({
         name: poi.displayName,
         category: poi.category,
         color: poi.mainColor,
-        imageKey: poi.imageKey
+        imageKey: poi.imageKey,
+        imageUrl: poi.images?.[0]
       }
     }))
   }), [events]);
@@ -246,8 +246,6 @@ export const MapContent = function MapContent({
       >
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         
-        <MapImageManager events={events} />
-
         <MapCameraManager 
           ref={cameraRef}
           userCoords={userCoords}
