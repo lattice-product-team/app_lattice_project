@@ -32,8 +32,8 @@ const POI_EMOJIS: Record<string, string> = {
 };
 
 export default function CrowdRadarPage() {
-  const [venues, setVenues] = useState<any[]>([]);
-  const [selectedVenueId, setSelectedVenueId] = useState<string>("");
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [viewState, setViewState] = useState({
     longitude: 2.2575,
     latitude: 41.5641,
@@ -49,18 +49,18 @@ export default function CrowdRadarPage() {
   const [boundary, setBoundary] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/venues`)
+    fetch(`${API_BASE}/events`)
       .then(res => res.json())
       .then(data => {
-        setVenues(data);
-        if (data.length > 0) setSelectedVenueId(data[0].id.toString());
+        setEvents(data);
+        if (data.length > 0) setSelectedEventId(data[0].id.toString());
       });
   }, []);
 
   useEffect(() => {
-    if (!selectedVenueId) return;
+    if (!selectedEventId) return;
 
-    fetch(`${API_BASE}/venues/${selectedVenueId}/spatial`)
+    fetch(`${API_BASE}/events/${selectedEventId}/spatial`)
       .then(res => res.json())
       .then(data => {
         const boundaryFeature = data.features.find((f: any) => f.properties.type === 'boundary');
@@ -80,7 +80,7 @@ export default function CrowdRadarPage() {
           setViewState(prev => ({ ...prev, longitude: lng, latitude: lat }));
         }
       });
-  }, [selectedVenueId]);
+  }, [selectedEventId]);
 
   useEffect(() => {
     const fetchHeatmap = () => {
@@ -116,15 +116,15 @@ export default function CrowdRadarPage() {
           <div className="flex items-center gap-4 mt-2">
             <Select 
               className="w-64"
-              aria-label="Select venue"
-              selectedKey={selectedVenueId}
-              onSelectionChange={(key) => setSelectedVenueId(key as string)}
+              aria-label="Select event"
+              selectedKey={selectedEventId}
+              onSelectionChange={(key) => setSelectedEventId(key as string)}
             >
               <Select.Trigger className="bg-white border border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
                 <Select.Value className="text-admin-xs font-bold text-obsidian uppercase tracking-wider" />
               </Select.Trigger>
               <Select.Popover>
-                <ListBox items={venues} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
+                <ListBox items={events} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
                   {(v: any) => (
                     <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-admin-sm font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
                       {v.name}

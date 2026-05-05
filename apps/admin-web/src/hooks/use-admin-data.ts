@@ -69,5 +69,25 @@ export function useEvents() {
 
 export function useStats() {
   const { data, loading, error, refetch } = useAdminFetch<any>('/stats');
-  return { stats: data || { activeEvents: 0, liveUsers: 0, activeAlerts: 0, totalVenues: 0 }, loading, error, refetch };
+  return { stats: data || { activeEvents: 0, liveUsers: 0, activeAlerts: 0, totalCapacity: 0 }, loading, error, refetch };
+}
+
+export function useEventStats(eventId?: string) {
+  const { data, loading, error, refetch } = useAdminFetch<any>(eventId ? `/events/${eventId}/stats` : '/stats');
+  return { stats: data, loading, error, refetch };
+}
+
+export function usePOIs(eventId?: string) {
+  const endpoint = eventId ? `/pois?eventId=${eventId}` : '/pois';
+  const { data, loading, error, refetch } = useAdminFetch<any>(endpoint);
+  return { 
+    pois: data?.features?.map((f: any) => ({
+      id: f.properties.id,
+      ...f.properties,
+      geometry: f.geometry
+    })) || [], 
+    loading, 
+    error, 
+    refetch 
+  };
 }

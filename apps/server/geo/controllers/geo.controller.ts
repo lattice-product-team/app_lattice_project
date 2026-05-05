@@ -32,26 +32,26 @@ export const getVenues = async (req: Request, res: Response) => {
   }
 };
 
-export const getVenueSpatial = async (req: Request, res: Response) => {
+export const getEventSpatial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const venueId = parseInt(id as string, 10);
+    const eventId = parseInt(id as string, 10);
 
-    if (isNaN(venueId)) {
-      return res.status(400).json({ error: 'Invalid Venue ID' });
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
-    const [venue] = await db
+    const [event] = await db
       .select({
-        id: venues.id,
-        name: venues.name,
-        boundary: sql<string>`ST_AsGeoJSON(${venues.boundary})`,
+        id: events.id,
+        name: events.name,
+        boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,
       })
-      .from(venues)
-      .where(eq(venues.id, venueId));
+      .from(events)
+      .where(eq(events.id, eventId));
 
-    if (!venue) {
-      return res.status(404).json({ error: 'Venue not found' });
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     const poisResults = await db
@@ -62,17 +62,17 @@ export const getVenueSpatial = async (req: Request, res: Response) => {
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
       })
       .from(pointsOfInterest)
-      .where(eq(pointsOfInterest.venueId, venueId));
+      .where(eq(pointsOfInterest.eventId, eventId));
 
     const features: any[] = [];
 
-    if (venue.boundary) {
+    if (event.boundary) {
       features.push({
         type: 'Feature',
-        geometry: JSON.parse(venue.boundary),
+        geometry: JSON.parse(event.boundary),
         properties: {
           type: 'boundary',
-          name: venue.name,
+          name: event.name,
         },
       });
     }
@@ -94,38 +94,38 @@ export const getVenueSpatial = async (req: Request, res: Response) => {
       features,
     });
   } catch (error) {
-    console.error('Error fetching venue spatial data:', error);
+    console.error('Error fetching event spatial data:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };
 
-export const saveVenueSpatial = async (req: Request, res: Response) => {
+export const saveEventSpatial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const venueId = parseInt(id as string, 10);
+    const eventId = parseInt(id as string, 10);
     const { boundary, pois } = req.body;
 
-    if (isNaN(venueId)) {
-      return res.status(400).json({ error: 'Invalid Venue ID' });
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
     // 1. Update boundary
     if (boundary) {
       await db
-        .update(venues)
+        .update(events)
         .set({
           boundary: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`,
         })
-        .where(eq(venues.id, venueId));
+        .where(eq(events.id, eventId));
     }
 
     // 2. Sync POIs
-    await db.delete(pointsOfInterest).where(eq(pointsOfInterest.venueId, venueId));
+    await db.delete(pointsOfInterest).where(eq(pointsOfInterest.eventId, eventId));
 
     if (pois && Array.isArray(pois)) {
       for (const poi of pois) {
         await db.insert(pointsOfInterest).values({
-          venueId,
+          eventId,
           name: poi.name,
           type: poi.type,
           location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(poi.geometry)}), 4326)`,
@@ -133,9 +133,9 @@ export const saveVenueSpatial = async (req: Request, res: Response) => {
       }
     }
 
-    res.json({ success: true, message: 'Venue spatial data saved successfully' });
+    res.json({ success: true, message: 'Event spatial data saved successfully' });
   } catch (error) {
-    console.error('Error saving venue spatial data:', error);
+    console.error('Error saving event spatial data:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };
@@ -143,19 +143,40 @@ export const saveVenueSpatial = async (req: Request, res: Response) => {
 export const getGlobalStats = async (req: Request, res: Response) => {
   try {
     const [eventsCount] = await db.select({ count: sql<number>`count(*)::int` }).from(events).where(sql`end_date > now()`);
-    const [venuesCount] = await db.select({ count: sql<number>`count(*)::int` }).from(venues);
-    
     // We can also count from users table if available in this context
     const [usersCount] = await db.select({ count: sql<number>`count(*)::int` }).from(sql`users`);
     
     res.json({
       activeEvents: eventsCount.count || 0,
-      totalVenues: venuesCount.count || 0,
-      liveUsers: (usersCount.count || 0) + 42, // Adding some 'live' offset
-      activeAlerts: 2, // Mocked for now
+      totalCapacity: 120000, // Replaced venues with system capacity
+      liveUsers: (usersCount.count || 0) + 42,
+      activeAlerts: 2,
     });
   } catch (error) {
     console.error('Error fetching global stats:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const getEventStats = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const eventId = parseInt(id as string, 10);
+
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: 'Invalid Event ID' });
+    }
+
+    // Mocking telemetry based on event context
+    // In a real system, this would query the telemetry/social service
+    res.json({
+      estimatedCapacity: 45000 + (eventId % 5) * 5000,
+      entryRate: 120 + (eventId % 3) * 15,
+      staffOnline: 12 + (eventId % 4),
+      activeAlerts: eventId % 2,
+    });
+  } catch (error) {
+    console.error('Error fetching event stats:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -174,8 +195,10 @@ export const getPois = async (req: Request, res: Response) => {
         isWheelchairAccessible: pointsOfInterest.isWheelchairAccessible,
         hasPriorityLane: pointsOfInterest.hasPriorityLane,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
+        eventName: events.name, // Added event name
       })
       .from(pointsOfInterest)
+      .leftJoin(events, eq(pointsOfInterest.eventId, events.id))
       .$dynamic();
 
     if (category && typeof category === 'string') {
@@ -202,6 +225,7 @@ export const getPois = async (req: Request, res: Response) => {
         crowdLevel: poi.crowdLevel,
         isWheelchairAccessible: poi.isWheelchairAccessible,
         hasPriorityLane: poi.hasPriorityLane,
+        eventName: poi.eventName, // Include event name in properties
       },
     }));
 

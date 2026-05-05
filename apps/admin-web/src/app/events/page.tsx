@@ -59,7 +59,7 @@ export default function EventsPage() {
             <Table.Header>
               <Table.Column key="id" id="id" isRowHeader className="text-gravel uppercase text-[10px] tracking-widest font-black">ID</Table.Column>
               <Table.Column key="name" id="name" className="text-gravel uppercase text-[10px] tracking-widest font-black">Event Name</Table.Column>
-              <Table.Column key="venue" id="venue" className="text-gravel uppercase text-[10px] tracking-widest font-black">Venue</Table.Column>
+              <Table.Column key="location" id="location" className="text-gravel uppercase text-[10px] tracking-widest font-black">Location</Table.Column>
               <Table.Column key="status" id="status" className="text-gravel uppercase text-[10px] tracking-widest font-black">Status</Table.Column>
               <Table.Column key="actions" id="actions" className="text-gravel uppercase text-[10px] tracking-widest font-black text-right">Actions</Table.Column>
             </Table.Header>
@@ -67,7 +67,7 @@ export default function EventsPage() {
               {loading ? (
                 <Table.Row key="loading">
                   <Table.Cell className="py-6 text-center" colSpan={5}>
-                    <Spinner color="current" size="sm" />
+                    <Spinner color="current" size="sm" label="Loading events..." />
                   </Table.Cell>
                 </Table.Row>
               ) : events.length === 0 ? (

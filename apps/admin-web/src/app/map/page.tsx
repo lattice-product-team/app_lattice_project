@@ -33,8 +33,8 @@ const POI_TYPES = [
 ];
 
 export default function MapEditorPage() {
-  const [venues, setVenues] = useState<any[]>([]);
-  const [selectedVenueId, setSelectedVenueId] = useState<string>("");
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -56,20 +56,20 @@ export default function MapEditorPage() {
   const [poiType, setPoiType] = useState("wc");
 
   useEffect(() => {
-    fetch(`${API_BASE}/venues`)
+    fetch(`${API_BASE}/events`)
       .then(res => res.ok ? res.json() : [])
       .then(data => {
-        const venuesList = Array.isArray(data) ? data : [];
-        setVenues(venuesList);
-        if (venuesList.length > 0) setSelectedVenueId(venuesList[0].id.toString());
+        const eventsList = Array.isArray(data) ? data : [];
+        setEvents(eventsList);
+        if (eventsList.length > 0) setSelectedEventId(eventsList[0].id.toString());
       })
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    if (!selectedVenueId) return;
+    if (!selectedEventId) return;
 
-    fetch(`${API_BASE}/venues/${selectedVenueId}/spatial`)
+    fetch(`${API_BASE}/events/${selectedEventId}/spatial`)
       .then(res => res.json())
       .then(data => {
         const boundary = data.features.find((f: any) => f.properties.type === 'boundary');
@@ -91,7 +91,7 @@ export default function MapEditorPage() {
           type: p.properties.type
         })));
       });
-  }, [selectedVenueId]);
+  }, [selectedEventId]);
 
   const onMapClick = useCallback((e: any) => {
     const { lng, lat } = e.lngLat;
@@ -118,7 +118,7 @@ export default function MapEditorPage() {
   };
 
   const saveMap = async () => {
-    if (!selectedVenueId) return;
+    if (!selectedEventId) return;
     setSaving(true);
     try {
       const boundaryGeoJSON = boundaryPoints.length > 2 
@@ -134,14 +134,14 @@ export default function MapEditorPage() {
         }))
       };
 
-      const res = await fetch(`${API_BASE}/venues/${selectedVenueId}/spatial`, {
+      const res = await fetch(`${API_BASE}/events/${selectedEventId}/spatial`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        alert("Venue Map saved successfully!");
+        alert("Event Map saved successfully!");
       }
     } catch (error) {
       console.error("Error saving map:", error);
@@ -183,14 +183,15 @@ export default function MapEditorPage() {
           <div className="flex items-center gap-4 mt-2">
             <Select 
               className="w-64"
-              selectedKey={selectedVenueId}
-              onSelectionChange={(key) => setSelectedVenueId(key as string)}
+              aria-label="Select active event"
+              selectedKey={selectedEventId}
+              onSelectionChange={(key) => setSelectedEventId(key as string)}
             >
               <Select.Trigger className="bg-white border border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
                 <Select.Value className="text-admin-xs font-bold text-obsidian uppercase tracking-wider" />
               </Select.Trigger>
               <Select.Popover>
-                <ListBox items={Array.isArray(venues) ? venues : []} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
+                <ListBox items={Array.isArray(events) ? events : []} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
                   {(v: any) => (
                     <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-admin-sm font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
                       {v.name}
