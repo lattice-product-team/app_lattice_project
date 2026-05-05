@@ -32,7 +32,7 @@ export default function Index() {
       if (token || isGuest) {
         router.replace('/(main)');
       } else {
-        router.replace('/(auth)/login');
+        router.replace('/(auth)/onboarding');
       }
     }
   }, [isReady, token, isGuest, router]);
