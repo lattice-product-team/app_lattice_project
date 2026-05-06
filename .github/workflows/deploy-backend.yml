@@ -49,6 +49,11 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
+        run: pnpm db:migrate
+
       - name: Run All Tests
         env:
           DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
