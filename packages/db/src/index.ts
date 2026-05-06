@@ -7,26 +7,8 @@ import * as schema from './schema';
 const env = loadConfig();
 
 // Explicit exports to avoid resolution issues
-export {
-  users,
-  venues,
-  events,
-  tickets,
-  pointsOfInterest,
-  telemetryLogs,
-  nodes,
-  pathSegments,
-  groups,
-  groupMembers,
-  savedLocations,
-  offlinePackages,
-  passkeyCredentials,
-  mobilityModeEnum,
-  poiTypeEnum,
-  eventTypeEnum,
-  crowdLevelEnum,
-  surfaceTypeEnum,
-} from './schema';
+export * from './schema';
+export * from './test-utils';
 export { sql, eq, and, desc, asc } from 'drizzle-orm';
 
 const isProduction = env.NODE_ENV === 'production';

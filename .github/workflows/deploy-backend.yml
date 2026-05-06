@@ -2,6 +2,12 @@ name: Pipeline - CI/CD
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,7 +18,6 @@ jobs:
     name: Lint, TypeCheck & Test
     runs-on: ubuntu-latest
     
-    # Añadimos una base de datos con PostGIS para los tests
     services:
       postgres:
         image: postgis/postgis:15-3.3
@@ -46,13 +51,14 @@ jobs:
 
       - name: Run All Tests
         env:
-          # Configuramos la URL de la base de datos para los tests
           DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
+          NODE_ENV: test
         run: pnpm test
 
   deploy:
     name: Deploy to Production
     needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Checkout Code
@@ -63,7 +69,7 @@ jobs:
           docker system prune -af || true
           docker builder prune -af || true
 
-      - name: Build and Deploy Containers
+      - name: Build and Deploy Production
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
