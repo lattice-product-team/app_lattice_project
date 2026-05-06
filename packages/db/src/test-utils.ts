@@ -1,5 +1,6 @@
 import { db, sql } from './index';
 import * as schema from './schema';
+import { getTableConfig } from 'drizzle-orm/pg-core';
 
 /**
  * Utility to truncate all tables in the database.
@@ -7,10 +8,16 @@ import * as schema from './schema';
  * WARNING: This will delete all data in the connected database.
  */
 export async function truncateAllTables() {
-  // Get all table names from the schema
+  // Get all table names from the schema using getTableConfig
   const tableNames = Object.values(schema)
-    .filter((entity: any) => entity && entity.dbName)
-    .map((entity: any) => entity.dbName);
+    .map((entity: any) => {
+      try {
+        return getTableConfig(entity).name;
+      } catch {
+        return null;
+      }
+    })
+    .filter((name): name is string => !!name);
 
   if (tableNames.length === 0) return;
 
@@ -19,3 +26,4 @@ export async function truncateAllTables() {
   
   await db.execute(query);
 }
+
