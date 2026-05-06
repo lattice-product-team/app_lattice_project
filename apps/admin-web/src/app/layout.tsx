@@ -52,10 +52,11 @@ export default function RootLayout({
             </aside>
 
             <main className="flex-1 flex flex-col min-h-0 bg-eggshell">
-              <div className="flex-1 overflow-y-auto px-8 py-12 w-full">
+              <div className="flex-1 overflow-y-auto w-full">
                 {children}
               </div>
             </main>
+
 
           </div>
         </Providers>

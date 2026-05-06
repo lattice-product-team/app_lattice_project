@@ -188,43 +188,9 @@ export default function MapEditorPage() {
   );
 
   return (
-    <div className="flex flex-col h-full bg-eggshell space-y-8">
-      <header className="flex justify-between items-start pt-4">
-        <div className="flex flex-col max-w-xl">
-          <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">Spatial Configuration</p>
-          <h1 className="waldenburg-display text-admin-display text-obsidian leading-[1.08] mb-4">
-            Cartographic Editor.
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <Select 
-              className="w-64"
-              aria-label="Select active event"
-              selectedKey={selectedEventId}
-              onSelectionChange={(key) => setSelectedEventId(key as string)}
-            >
-              <Select.Trigger className="bg-white border border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
-                <Select.Value className="text-admin-xs font-bold text-obsidian uppercase tracking-wider" />
-              </Select.Trigger>
-              <Select.Popover>
-                <ListBox items={Array.isArray(events) ? events : []} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
-                  {(v: any) => (
-                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-admin-sm font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
-                      {v.name}
-                    </ListBox.Item>
-                  )}
-                </ListBox>
-              </Select.Popover>
-            </Select>
-            <div className="h-6 w-px bg-chalk mx-2" />
-            <Button variant="ghost" size="sm" onPress={clearAll}>Reset Canvas</Button>
-            <Button variant="primary" size="sm" onPress={saveMap} isLoading={saving} startContent={!saving && <Icons.Save className="w-4 h-4" />}>
-              Commit Changes
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex-1 relative rounded-2xl overflow-hidden border border-chalk shadow-hairline bg-white">
+    <div className="relative w-full h-screen bg-eggshell overflow-hidden">
+      {/* Full-screen Map Container */}
+      <div className="absolute inset-0 z-0">
         <Map
           {...viewState}
           onMove={evt => setViewState(evt.viewState)}
@@ -280,37 +246,79 @@ export default function MapEditorPage() {
             </Marker>
           ))}
         </Map>
-
-        {/* Floating Toolbar */}
-        <Card className="absolute left-6 top-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
-          <h3 className="text-admin-xs font-black uppercase tracking-widest text-gravel mb-4 border-b border-chalk pb-2">Cartographic Tools</h3>
-          <div className="space-y-2">
-             <Button 
-              fullWidth
-              variant={mode === 'poi' ? 'primary' : 'ghost'}
-              onPress={() => setMode('poi')}
-              className="justify-start gap-3 h-12 text-admin-xs"
-             >
-                <Icons.MapPin className="w-4 h-4" /> Point of Interest
-             </Button>
-             <Button 
-              fullWidth
-              variant={mode === 'boundary' ? 'primary' : 'ghost'}
-              onPress={() => setMode('boundary')}
-              className="justify-start gap-3 h-12 text-admin-xs"
-             >
-                <Icons.Maximize className="w-4 h-4" /> Perimeter Mode ({boundaryPoints.length})
-             </Button>
-          </div>
-          
-          {mode === 'boundary' && boundaryPoints.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-chalk grid grid-cols-2 gap-2">
-              <Button variant="compact" onPress={() => setBoundaryPoints(prev => prev.slice(0, -1))}>Undo</Button>
-              <Button variant="compact" className="text-ember" onPress={() => setBoundaryPoints([])}>Clear</Button>
-            </div>
-          )}
-        </Card>
       </div>
+
+      {/* Floating Header Overlay */}
+      <div className="absolute top-6 left-6 right-6 z-10 flex justify-between items-start pointer-events-none">
+        <Card className="p-4 bg-white/80 backdrop-blur-md border-chalk shadow-subtle pointer-events-auto max-w-sm">
+          <div className="flex flex-col">
+            <p className="text-gravel text-[9px] font-black uppercase tracking-[0.2em] mb-1">Spatial Configuration</p>
+            <h1 className="waldenburg-display text-[22px] text-obsidian leading-none mb-3">
+              Cartographic Editor.
+            </h1>
+            <div className="flex items-center gap-3">
+              <Select 
+                className="w-40"
+                aria-label="Select active event"
+                selectedKey={selectedEventId}
+                onSelectionChange={(key) => setSelectedEventId(key as string)}
+              >
+                <Select.Trigger className="bg-white border border-chalk rounded-full h-7 px-3 outline-none shadow-hairline">
+                  <Select.Value className="text-[9px] font-black text-obsidian uppercase tracking-wider" />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox items={Array.isArray(events) ? events : []} className="bg-white border border-chalk rounded-xl p-1 min-w-40 shadow-subtle">
+                    {(v: any) => (
+                      <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-3 py-1.5 rounded-lg text-admin-xs font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
+                        {v.name}
+                      </ListBox.Item>
+                    )}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+              <div className="h-3 w-px bg-chalk" />
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-[9px] font-black uppercase tracking-widest" onPress={clearAll}>Reset</Button>
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex gap-2 pointer-events-auto">
+          <Button variant="primary" className="h-10 px-6 shadow-subtle text-admin-xs" onPress={saveMap} isLoading={saving} startContent={!saving && <Icons.Save className="w-3.5 h-3.5" />}>
+            Commit Changes
+          </Button>
+        </div>
+      </div>
+
+      {/* Floating Toolbar (Left Side) */}
+      <Card className="absolute left-6 top-40 w-52 bg-white/80 backdrop-blur-md p-4 border-chalk shadow-subtle z-10">
+        <h3 className="text-[9px] font-black uppercase tracking-widest text-gravel mb-3 border-b border-chalk pb-2">Cartographic Tools</h3>
+        <div className="space-y-1.5">
+           <Button 
+            fullWidth
+            variant={mode === 'poi' ? 'primary' : 'ghost'}
+            onPress={() => setMode('poi')}
+            className="justify-start gap-2.5 h-10 text-[11px]"
+           >
+              <Icons.MapPin className="w-3.5 h-3.5" /> Point of Interest
+           </Button>
+           <Button 
+            fullWidth
+            variant={mode === 'boundary' ? 'primary' : 'ghost'}
+            onPress={() => setMode('boundary')}
+            className="justify-start gap-2.5 h-10 text-[11px]"
+           >
+              <Icons.Maximize className="w-3.5 h-3.5" /> Perimeter Mode ({boundaryPoints.length})
+           </Button>
+        </div>
+
+        
+        {mode === 'boundary' && boundaryPoints.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-chalk grid grid-cols-2 gap-2">
+            <Button variant="compact" onPress={() => setBoundaryPoints(prev => prev.slice(0, -1))}>Undo</Button>
+            <Button variant="compact" className="text-ember" onPress={() => setBoundaryPoints([])}>Clear</Button>
+          </div>
+        )}
+      </Card>
 
       <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
         <ModalContainer className="bg-white border border-chalk rounded-2xl p-4 shadow-subtle">
@@ -362,3 +370,4 @@ export default function MapEditorPage() {
     </div>
   );
 }
+

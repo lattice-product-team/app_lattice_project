@@ -33,7 +33,8 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="flex flex-col gap-16 pb-24">
+    <div className="flex flex-col gap-16 px-8 py-12 pb-24">
+
       {/* Header */}
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-3xl">
