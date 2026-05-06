@@ -9,7 +9,7 @@
 - [x] 2.1 Create a utility in `@app/db` or as a standalone script to handle database truncation for tests.
 - [x] 2.2 Implement a sample real database integration test in `apps/server/auth/__tests__/auth.real.integration.test.ts`.
 - [x] 2.3 Update `apps/server/auth/package.json` to ensure `vitest` runs without mocks for integration tests.
-- [ ] 2.4 Verify that real DB tests fail correctly when database constraints are violated.
+- [x] 2.4 Verify that real DB tests fail correctly when database constraints are violated.
 
 ## 3. Admin Web Testing Setup
 
