@@ -107,8 +107,8 @@ export const MapContent = function MapContent({
   // Combined POIs logic
   const allUIPois = useMemo(() => {
     const eventPois = normalizeEventList(allEvents || []);
-    const venuePois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
-    return [...venuePois, ...eventPois];
+    const spatialPois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
+    return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
   // Hierarchical visibility logic for POIs

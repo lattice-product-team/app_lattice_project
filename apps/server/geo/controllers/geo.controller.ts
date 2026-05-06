@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db, pointsOfInterest, sql, events, venues, eq } from '@app/db';
+import { db, pointsOfInterest, sql, events, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 import { socialService } from '../services/social.service';
@@ -60,30 +60,6 @@ export const healthCheck = (req: Request, res: Response) => {
   res.json({ status: 'geo_service_ok', timestamp: new Date() });
 };
 
-export const getVenues = async (req: Request, res: Response) => {
-  try {
-    const results = await db
-      .select({
-        id: venues.id,
-        name: venues.name,
-        primaryColor: venues.primaryColor,
-        center: sql<string>`ST_AsGeoJSON(${venues.center})`,
-        boundary: sql<string>`ST_AsGeoJSON(${venues.boundary})`,
-      })
-      .from(venues);
-
-    const formattedVenues = results.map(v => ({
-      ...v,
-      center: v.center ? JSON.parse(v.center) : null,
-      boundary: v.boundary ? JSON.parse(v.boundary) : null,
-    }));
-
-    res.json(formattedVenues);
-  } catch (error) {
-    console.error('Error fetching venues:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
 
 export const getEventSpatial = async (req: Request, res: Response) => {
   try {
@@ -152,73 +128,6 @@ export const getEventSpatial = async (req: Request, res: Response) => {
   }
 };
 
-export const getVenueSpatial = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const venueId = parseInt(id as string, 10);
-
-    if (isNaN(venueId)) {
-      return res.status(400).json({ error: 'Invalid Venue ID' });
-    }
-
-    const [venue] = await db
-      .select({
-        id: venues.id,
-        name: venues.name,
-        boundary: sql<string>`ST_AsGeoJSON(${venues.boundary})`,
-      })
-      .from(venues)
-      .where(eq(venues.id, venueId));
-
-    if (!venue) {
-      return res.status(404).json({ error: 'Venue not found' });
-    }
-
-    const features: any[] = [];
-
-    if (venue.boundary) {
-      features.push({
-        type: 'Feature',
-        geometry: JSON.parse(venue.boundary),
-        properties: {
-          type: 'boundary',
-          name: venue.name,
-        },
-      });
-    }
-
-    // Optionally include POIs that are "permanent" (no specific eventId)
-    const poisResults = await db
-      .select({
-        id: pointsOfInterest.id,
-        name: pointsOfInterest.name,
-        type: pointsOfInterest.type,
-        geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
-      })
-      .from(pointsOfInterest)
-      .where(sql`${pointsOfInterest.eventId} IS NULL`); // Global POIs for the venue
-
-    poisResults.forEach((poi) => {
-      features.push({
-        type: 'Feature',
-        geometry: JSON.parse(poi.geometry),
-        properties: {
-          id: poi.id,
-          type: poi.type,
-          name: poi.name,
-        },
-      });
-    });
-
-    res.json({
-      type: 'FeatureCollection',
-      features,
-    });
-  } catch (error) {
-    console.error('Error fetching venue spatial data:', error);
-    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
-  }
-};
 
 export const saveEventSpatial = async (req: Request, res: Response) => {
   try {
@@ -276,7 +185,7 @@ export const getGlobalStats = async (req: Request, res: Response) => {
     
     res.json({
       activeEvents: eventsCount.count || 0,
-      totalCapacity: 120000, // Replaced venues with system capacity
+      totalCapacity: 120000, // Aggregate capacity across all events
       liveUsers: (usersCount.count || 0) + 42,
       activeAlerts: 2,
     });
@@ -529,7 +438,6 @@ export const getEvents = async (req: Request, res: Response) => {
     const results = await db
       .select({
         id: events.id,
-        venueId: events.venueId,
         name: events.name,
         type: events.type,
         locationName: events.locationName,
@@ -537,6 +445,8 @@ export const getEvents = async (req: Request, res: Response) => {
         imageUrl: events.imageUrl,
         startDate: events.startDate,
         endDate: events.endDate,
+        isPermanent: events.isPermanent,
+        primaryColor: events.primaryColor,
         metadata: events.metadata,
         center: sql<string>`ST_AsGeoJSON(${events.location})`,
         boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,
@@ -570,7 +480,6 @@ export const getEvent = async (req: Request, res: Response) => {
     const result = await db
       .select({
         id: events.id,
-        venueId: events.venueId,
         name: events.name,
         description: events.description,
         type: events.type,
@@ -579,6 +488,8 @@ export const getEvent = async (req: Request, res: Response) => {
         imageUrl: events.imageUrl,
         startDate: events.startDate,
         endDate: events.endDate,
+        isPermanent: events.isPermanent,
+        primaryColor: events.primaryColor,
         metadata: events.metadata,
         center: sql<string>`ST_AsGeoJSON(${events.location})`,
         boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,

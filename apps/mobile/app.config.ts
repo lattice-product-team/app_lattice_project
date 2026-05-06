@@ -78,8 +78,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         NSAllowsArbitraryLoads: true,
       },
       NSCameraUsageDescription: 'Lattice uses the camera to display augmented reality navigation and points of interest.',
-      NSLocationWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through the venue.',
-      NSLocationAlwaysAndWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through the venue.',
+      NSLocationWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through events.',
+      NSLocationAlwaysAndWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through events.',
     },
   },
   android: {
@@ -125,8 +125,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-location',
       {
-        locationAlwaysAndWhenInUsePermission: 'Allow Lattice to use your location to guide you through the venue.',
-        locationWhenInUsePermission: 'Allow Lattice to use your location to guide you through the venue.',
+        locationAlwaysAndWhenInUsePermission: 'Allow Lattice to use your location to guide you through events.',
+        locationWhenInUsePermission: 'Allow Lattice to use your location to guide you through events.',
         isAndroidBackgroundLocationEnabled: false,
       },
     ],

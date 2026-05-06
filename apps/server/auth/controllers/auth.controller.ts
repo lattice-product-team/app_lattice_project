@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { db, users, tickets, venues, events, passkeyCredentials, eq, and, sql } from '@app/db';
+import { db, users, tickets, events, passkeyCredentials, eq, and, sql } from '@app/db';
 import { decodeJwt } from './auth.utils';
 
 /**
- * Get configuration for a specific event including venue branding
+ * Get configuration for a specific event including direct branding
  */
 export const getEventConfig = async (req: Request, res: Response) => {
   const { eventId } = req.params;
@@ -12,19 +12,15 @@ export const getEventConfig = async (req: Request, res: Response) => {
     const eventResult = await db.select()
       .from(events)
       .where(eq(events.id, Number(eventId)))
-      .innerJoin(venues, eq(events.venueId, venues.id))
       .limit(1);
 
     if (!eventResult.length) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    const { events: eventData, venues: venueData } = eventResult[0];
+    const eventData = eventResult[0];
 
-    res.json({
-      ...eventData,
-      venue: venueData
-    });
+    res.json(eventData);
   } catch (err) {
     console.error('Error fetching event config:', err);
     res.status(500).json({ error: 'Internal server error' });

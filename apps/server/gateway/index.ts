@@ -118,7 +118,6 @@ router.use(
     '/map',
     '/saved',
     '/events',
-    '/venues',
     '/stats',
     '/resolve-address',
     '/social',

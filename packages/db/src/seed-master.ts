@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { db, pool, eq, sql } from './index';
-import { users, events, pointsOfInterest, nodes, pathSegments, tickets, savedLocations, venues } from './schema';
+import { users, events, pointsOfInterest, nodes, pathSegments, tickets, savedLocations } from './schema';
 import { seedCommon } from './seed-common';
 
 async function seed() {
@@ -21,40 +21,41 @@ async function seed() {
   // Get the main test user for linking
   const [koreUser] = await db.select().from(users).where(eq(users.email, 'kore@example.com'));
 
-  // 2.5 Seed Venues
-  console.log('🏟️ Seeding venues...');
-  await db.insert(venues).values([
+  // 2.5 Seed Permanent Events (Base Locations)
+  console.log('🏟️ Seeding permanent events...');
+  await db.insert(events).values([
     {
       name: 'Circuit de Barcelona-Catalunya',
-      center: [2.2611, 41.5701],
+      location: [2.2611, 41.5701],
       boundary: [[[2.2530, 41.5750], [2.2650, 41.5750], [2.2650, 41.5650], [2.2530, 41.5650], [2.2530, 41.5750]]],
-      primaryColor: '#ff382e'
+      primaryColor: '#ff382e',
+      isPermanent: true,
+      type: 'generic',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2099-12-31'),
+      locationName: 'Montmeló',
+      address: 'Mas La Roca, s/n, 08160 Montmeló, Barcelona, Spain',
     },
     {
       name: 'Parc del Fòrum',
-      center: [2.2215, 41.4125],
+      location: [2.2215, 41.4125],
       boundary: [[[2.2150, 41.4180], [2.2300, 41.4180], [2.2300, 41.4050], [2.2150, 41.4050], [2.2150, 41.4180]]],
-      primaryColor: '#0447ff'
-    },
-    {
-      name: 'Fira Barcelona Gran Via',
-      center: [2.1315, 41.3545],
-      boundary: [[[2.1250, 41.3600], [2.1400, 41.3600], [2.1400, 41.3500], [2.1250, 41.3500], [2.1250, 41.3600]]],
-      primaryColor: '#ff4704'
+      primaryColor: '#0447ff',
+      isPermanent: true,
+      type: 'generic',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2099-12-31'),
+      locationName: 'Barcelona Front Marítim',
+      address: 'Carrer de la Pau, 12, 08930 Sant Adrià de Besòs, Barcelona, Spain',
     }
   ]);
 
-  const [circuitVenue] = await db.select().from(venues).where(eq(venues.name, 'Circuit de Barcelona-Catalunya'));
-  const [forumVenue] = await db.select().from(venues).where(eq(venues.name, 'Parc del Fòrum'));
-  const [firaVenue] = await db.select().from(venues).where(eq(venues.name, 'Fira Barcelona Gran Via'));
-
-  // 3. Seed Events
-  console.log('📅 Creating 3 diverse events in Barcelona...');
+  // 3. Seed Temporary Events
+  console.log('📅 Creating temporary events...');
   
   // 3.1 Nitro GP (Sports)
   await db.insert(events).values({
     name: 'Nitro GP Barcelona',
-    venueId: circuitVenue?.id,
     description: 'The ultimate high-speed racing experience at the Circuit de Barcelona-Catalunya.',
     type: 'sports',
     startDate: new Date('2026-05-15'),
@@ -64,6 +65,7 @@ async function seed() {
     location: [2.2611, 41.5701],
     boundary: [[[2.2530, 41.5750], [2.2650, 41.5750], [2.2650, 41.5650], [2.2530, 41.5650], [2.2530, 41.5750]]],
     imageUrl: 'https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#ff382e',
     metadata: JSON.stringify({ capacity: 140000, currentOccupancy: 85, category: 'Motorsport' }),
   }).onConflictDoNothing();
   const [nitroGP] = await db.select().from(events).where(eq(events.name, 'Nitro GP Barcelona'));
@@ -71,7 +73,6 @@ async function seed() {
   // 3.2 Neon Nights (Music)
   await db.insert(events).values({
     name: 'Neon Nights Festival',
-    venueId: forumVenue?.id,
     description: 'An immersive electronic music journey by the sea with world-class DJs.',
     type: 'music',
     startDate: new Date('2026-07-10'),
@@ -81,6 +82,7 @@ async function seed() {
     location: [2.2215, 41.4125],
     boundary: [[[2.2150, 41.4180], [2.2300, 41.4180], [2.2300, 41.4050], [2.2150, 41.4050], [2.2150, 41.4180]]],
     imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#0447ff',
     metadata: JSON.stringify({ capacity: 50000, currentOccupancy: 62, category: 'Electronic Music' }),
   }).onConflictDoNothing();
   const [neonNights] = await db.select().from(events).where(eq(events.name, 'Neon Nights Festival'));
@@ -88,7 +90,6 @@ async function seed() {
   // 3.3 Quantum Conf (Tech)
   await db.insert(events).values({
     name: 'Quantum Tech Summit',
-    venueId: firaVenue?.id,
     description: 'Exploring the future of quantum computing, AI, and decentralized systems.',
     type: 'tech',
     startDate: new Date('2026-11-05'),
@@ -98,6 +99,7 @@ async function seed() {
     location: [2.1315, 41.3545],
     boundary: [[[2.1250, 41.3600], [2.1400, 41.3600], [2.1400, 41.3500], [2.1250, 41.3500], [2.1250, 41.3600]]],
     imageUrl: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#ff4704',
     metadata: JSON.stringify({ capacity: 12000, currentOccupancy: 45, category: 'Technology' }),
   }).onConflictDoNothing();
   const [quantumConf] = await db.select().from(events).where(eq(events.name, 'Quantum Tech Summit'));
@@ -116,6 +118,7 @@ async function seed() {
         zoneName: 'VIP Paddock',
         seatRow: 'A',
         seatNumber: '12',
+        eventId: nitroGP.id, // Explicit link to event
         isActive: true,
       },
       {
@@ -124,6 +127,7 @@ async function seed() {
         ownerEmail: koreUser.email,
         gate: 'Sea Gate',
         zoneName: 'Main Floor',
+        eventId: neonNights.id, // Explicit link to event
         isActive: true,
       }
     ]).onConflictDoNothing();
@@ -187,7 +191,7 @@ async function seed() {
         eventId: config.event.id,
         description: `Experience the best of ${poi.name} at ${config.event.name}.`,
         locationName: `${poi.name} Area`,
-        address: config.event.address || 'Venue Address',
+        address: config.event.address || 'Event Location',
         capacity: Math.floor(1000 + Math.random() * 4000),
         currentOccupancy: Math.floor(Math.random() * 100),
         status: 'open',
@@ -246,4 +250,3 @@ seed().catch(err => {
   console.error('❌ Seeding failed:', err);
   process.exit(1);
 });
-

@@ -71,18 +71,8 @@ export const operationalStatusEnum = pgEnum('operational_status', [
 // TABLES
 // ---------------------------------------------------------
 
-export const venues = pgTable('venues', {
-  id: serial('id').primaryKey(),
-  name: varchar('name').notNull(),
-  boundary: polygon('boundary'), // Polygon for venue area
-  center: geometry('center'), // Default map center
-  primaryColor: varchar('primary_color', { length: 7 }).default('#ff382e'),
-  createdAt: timestamp('created_at').defaultNow(),
-});
-
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
-  venueId: integer('venue_id').references(() => venues.id),
   name: varchar('name').notNull(),
   description: text('description'),
   type: eventTypeEnum('type').default('generic'),
@@ -93,6 +83,8 @@ export const events = pgTable('events', {
   imageUrl: text('image_url'),
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date').notNull(),
+  isPermanent: boolean('is_permanent').default(false),
+  primaryColor: varchar('primary_color', { length: 7 }).default('#ff382e'),
   metadata: text('metadata'),
   createdAt: timestamp('created_at').defaultNow(),
 });
@@ -129,7 +121,6 @@ export const passkeyCredentials = pgTable('passkey_credentials', {
 export const tickets = pgTable('tickets', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').references(() => users.id),
-  venueId: integer('venue_id').references(() => venues.id),
   eventId: integer('event_id').references(() => events.id),
   code: varchar('code').unique(),
   ownerEmail: varchar('owner_email'),
@@ -144,7 +135,6 @@ export const tickets = pgTable('tickets', {
 
 export const pointsOfInterest = pgTable('points_of_interest', {
   id: serial('id').primaryKey(),
-  venueId: integer('venue_id').references(() => venues.id),
   eventId: integer('event_id').references(() => events.id),
   name: varchar('name').unique().notNull(),
   description: text('description'),
@@ -170,8 +160,7 @@ export const nodes = pgTable('nodes', {
 
 export const pathSegments = pgTable('path_segments', {
   id: serial('id').primaryKey(),
-  venueId: integer('venue_id')
-    .references(() => venues.id),
+  eventId: integer('event_id').references(() => events.id),
   sourceNodeId: integer('source_node_id')
     .notNull()
     .references(() => nodes.id),

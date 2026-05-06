@@ -32,7 +32,7 @@ import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
-import { useVenueSpatial } from '../../src/features/map/hooks/useVenueSpatial';
+import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
 import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 
 // Stores & Hooks
@@ -91,18 +91,17 @@ export default function MapIndexPage() {
   const [isSearching, setIsSearching] = useState(false);
   
   const { events } = useSearchEvents(searchQuery);
-  const venueId = selectedEvent?.venueId || (selectedEvent as any)?.venue_id;
-  const { spatialData: venueSpatial } = useVenueSpatial(venueId);
+  const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
   const { data: globalPois } = usePOIs(); // Load global POIs
   
-  // Merge global POIs with venue-specific spatial data
+  // Merge global POIs with event-specific spatial data
   const mergedPois = useMemo(() => {
     const features = [...(globalPois?.features || [])];
-    if (venueSpatial?.features) {
-      features.push(...venueSpatial.features);
+    if (eventSpatial?.features) {
+      features.push(...eventSpatial.features);
     }
     return { type: 'FeatureCollection', features };
-  }, [globalPois, venueSpatial]);
+  }, [globalPois, eventSpatial]);
   
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
