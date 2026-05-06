@@ -1,13 +1,26 @@
 "use client";
 
-import { Chip, Table, Spinner } from "@heroui/react";
+import { Chip, Spinner, Tooltip } from "@heroui/react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEvents } from "@/hooks/use-admin-data";
 
 export default function EventsPage() {
-  const { events, loading, error } = useEvents();
+  const { events, loading, error, refetch } = useEvents();
+
+  const syncSocial = async (id: number) => {
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/social/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "event", id })
+      });
+      if (res.ok) refetch();
+    } catch (err) {
+      console.error("Sync failed", err);
+    }
+  };
 
   return (
     <div className="space-y-12 pb-24">
@@ -18,7 +31,7 @@ export default function EventsPage() {
             Monitoring global event lifecycles.
           </h1>
           <p className="text-gravel text-admin-md leading-relaxed">
-            Oversee planning, execution, and post-event analysis. High-fidelity telemetry integration for operational excellence.
+            Oversee planning, execution, and post-event analysis. High-fidelity telemetry and DataForSEO social proof integration.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -52,12 +65,12 @@ export default function EventsPage() {
         </div>
 
         <div className="w-full overflow-x-auto scrollbar-hide border border-chalk rounded-2xl bg-white/50 backdrop-blur-sm">
-          <table className="w-full text-left border-collapse min-w-[1200px]">
+          <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/50">
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Event Details</th>
-                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Category</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Rating</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black whitespace-nowrap">Schedule</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Occupancy (Live)</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location / Address</th>
@@ -82,6 +95,7 @@ export default function EventsPage() {
               ) : (
                 events.map((event: any) => {
                   const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
+                  const social = metadata?.social;
                   const start = new Date(event.startDate);
                   const end = new Date(event.endDate);
                   const isActive = end > new Date();
@@ -95,9 +109,29 @@ export default function EventsPage() {
                         <span className="font-bold text-obsidian text-admin-base">{event.name}</span>
                       </td>
                       <td className="py-6 px-6">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate bg-chalk px-2 py-1 rounded border border-chalk/50">
-                          {event.type}
-                        </span>
+                        {social ? (
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <Icons.Star className="w-3 h-3 text-amber fill-amber" />
+                              <span className="text-admin-sm font-black text-obsidian">{social.rating}</span>
+                              <span className="text-[10px] text-gravel font-medium">({social.reviews_count})</span>
+                            </div>
+                            <Tooltip content="Source: Google Maps via DataForSEO">
+                              <span className="text-[9px] text-signal-blue font-bold uppercase tracking-tighter flex items-center gap-1 cursor-help">
+                                <Icons.CheckCircle className="w-2.5 h-2.5" /> Social Linked
+                              </span>
+                            </Tooltip>
+                          </div>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 px-3 text-[9px] font-black uppercase tracking-widest border-chalk hover:bg-powder"
+                            onClick={() => syncSocial(event.id)}
+                          >
+                            <Icons.RefreshCw className="w-3 h-3 mr-1.5" /> Sync Social
+                          </Button>
+                        )}
                       </td>
                       <td className="py-6 px-6">
                         <div className="flex flex-col text-admin-xs text-gravel">

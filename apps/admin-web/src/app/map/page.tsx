@@ -55,6 +55,7 @@ export default function MapEditorPage() {
   const [poiName, setPoiName] = useState("");
   const [poiType, setPoiType] = useState("wc");
   const [poiAddress, setPoiAddress] = useState("");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState("");
 
   useEffect(() => {
     fetch(`${API_BASE}/events`)
@@ -119,10 +120,12 @@ export default function MapEditorPage() {
         id: Date.now(), 
         name: poiName || "New Point", 
         type: poiType,
-        address: poiAddress
+        address: poiAddress,
+        googleMapsUrl: googleMapsUrl
       }]);
     }
     setPendingPoi(null);
+    setGoogleMapsUrl(""); // Reset
     onClose();
   };
 
@@ -141,6 +144,7 @@ export default function MapEditorPage() {
           type: m.type,
           address: m.address,
           locationName: m.locationName || `${m.name} Area`,
+          metadata: m.googleMapsUrl ? { source_url: m.googleMapsUrl } : null,
           geometry: { type: 'Point', coordinates: [m.lng, m.lat] }
         }))
       };
@@ -324,6 +328,13 @@ export default function MapEditorPage() {
               value={poiAddress}
               onChange={(e) => setPoiAddress(e.target.value)}
               startContent={<Icons.MapPin className="w-3 h-3 text-gravel" />}
+            />
+            <Input 
+              label="Google Maps CID / URL"
+              placeholder="Paste link to force match..."
+              value={googleMapsUrl}
+              onChange={(e) => setGoogleMapsUrl(e.target.value)}
+              startContent={<Icons.ExternalLink className="w-3 h-3 text-gravel" />}
             />
             <div className="space-y-2">
               <p className="text-gravel text-admin-xs font-bold uppercase tracking-widest">Category</p>

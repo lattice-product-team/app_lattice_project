@@ -148,27 +148,27 @@ async function seed() {
     {
       event: nitroGP,
       pois: [
-        { name: 'Main Grandstand', type: 'grandstand', coords: [2.2592, 41.5695] as [number, number] },
-        { name: 'Paddock VIP', type: 'restaurant', coords: [2.2615, 41.5698] as [number, number] },
-        { name: 'Medical Center', type: 'medical', coords: [2.2635, 41.5708] as [number, number] },
+        { name: 'Hard Rock Cafe Barcelona', type: 'restaurant', coords: [2.1705, 41.3851] as [number, number] },
+        { name: 'Sagrada Familia', type: 'grandstand', coords: [2.1744, 41.4036] as [number, number] },
+        { name: 'Hospital de la Santa Creu i Sant Pau', type: 'medical', coords: [2.1743, 41.4124] as [number, number] },
       ],
       nodeOffset: 100
     },
     {
       event: neonNights,
       pois: [
-        { name: 'Solar Stage', type: 'meetup_point', coords: [2.2235, 41.4135] as [number, number] },
-        { name: 'Ocean Stage', type: 'meetup_point', coords: [2.2255, 41.4115] as [number, number] },
-        { name: 'Chill Out Zone', type: 'restaurant', coords: [2.2215, 41.4125] as [number, number] },
+        { name: 'Pacha Barcelona', type: 'meetup_point', coords: [2.1972, 41.3859] as [number, number] },
+        { name: 'Opium Barcelona', type: 'meetup_point', coords: [2.1975, 41.3858] as [number, number] },
+        { name: 'Marina Bay by Moncho\'s', type: 'restaurant', coords: [2.1969, 41.3862] as [number, number] },
       ],
       nodeOffset: 200
     },
     {
       event: quantumConf,
       pois: [
-        { name: 'Main Auditorium', type: 'meetup_point', coords: [2.1315, 41.3545] as [number, number] },
-        { name: 'Innovation Hall', type: 'shop', coords: [2.1335, 41.3535] as [number, number] },
-        { name: 'Registration Desk', type: 'gate', coords: [2.1295, 41.3555] as [number, number] },
+        { name: 'Fira Barcelona - Recinte de Gran Via', type: 'meetup_point', coords: [2.1315, 41.3545] as [number, number] },
+        { name: 'IKEA Hospitalet', type: 'shop', coords: [2.1285, 41.3525] as [number, number] },
+        { name: 'Renfe Bellvitge', type: 'gate', coords: [2.1195, 41.3555] as [number, number] },
       ],
       nodeOffset: 300
     }

@@ -20,6 +20,7 @@ router.get('/locations', geoController.getLocations);
 router.get('/navigation/network', geoController.getPathNetwork);
 router.post('/navigation/route', geoController.getRoute);
 router.get('/resolve-address', geoController.resolveAddress);
+router.post('/social/sync', geoController.syncSocialData);
 
 // Saved locations routes - Protected
 router.use('/saved', authenticate, savedRoutes);

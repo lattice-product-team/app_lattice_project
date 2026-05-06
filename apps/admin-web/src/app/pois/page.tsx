@@ -1,13 +1,26 @@
 "use client";
 
 import React from "react";
-import { Chip, Spinner } from "@heroui/react";
+import { Chip, Spinner, Tooltip } from "@heroui/react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { usePOIs } from "@/hooks/use-admin-data";
 
 export default function POIsPage() {
-  const { pois, loading } = usePOIs();
+  const { pois, loading, refetch } = usePOIs();
+
+  const syncSocial = async (id: number) => {
+    try {
+      const res = await fetch("http://localhost:3000/api/v1/social/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "poi", id })
+      });
+      if (res.ok) refetch();
+    } catch (err) {
+      console.error("Sync failed", err);
+    }
+  };
 
   return (
     <div className="space-y-12 pb-24">
@@ -18,7 +31,7 @@ export default function POIsPage() {
             Monitoring infrastructure and amenities.
           </h1>
           <p className="text-gravel text-admin-md leading-relaxed">
-            Centralized management of stages, services, and amenities. Integrated telemetry for real-time operational oversight.
+            Centralized management of stages, services, and amenities. Integrated DataForSEO telemetry for real-world social proof.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -43,12 +56,12 @@ export default function POIsPage() {
         </div>
 
         <div className="w-full overflow-x-auto scrollbar-hide border border-chalk rounded-2xl bg-white/50 backdrop-blur-sm">
-          <table className="w-full text-left border-collapse min-w-[1200px]">
+          <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/50">
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Asset Details</th>
-                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Category</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Social Proof</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location / Address</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Occupancy (Live)</th>
                 <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Accessibility</th>
@@ -63,16 +76,11 @@ export default function POIsPage() {
                     <Spinner color="current" size="sm" label="Synchronizing infrastructure telemetry..." />
                   </td>
                 </tr>
-              ) : pois.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-gravel font-medium">
-                    No registered assets discovered.
-                  </td>
-                </tr>
               ) : (
                 pois.map((poi: any) => {
                   const occupancy = poi.capacity ? Math.round((poi.currentOccupancy / poi.capacity) * 100) : 0;
                   const status = poi.status || 'open';
+                  const social = poi.metadata?.social;
 
                   return (
                     <tr key={poi.id} className="border-b border-chalk hover:bg-powder/30 transition-colors group">
@@ -86,9 +94,29 @@ export default function POIsPage() {
                         </div>
                       </td>
                       <td className="py-6 px-6">
-                        <Chip size="sm" variant="flat" className="bg-powder text-gravel font-bold uppercase text-[9px] tracking-widest px-3 border border-chalk/50">
-                          {poi.category}
-                        </Chip>
+                        {social ? (
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <Icons.Star className="w-3 h-3 text-amber fill-amber" />
+                              <span className="text-admin-sm font-black text-obsidian">{social.rating}</span>
+                              <span className="text-[10px] text-gravel font-medium">({social.reviews_count})</span>
+                            </div>
+                            <Tooltip content="Source: Google Maps via DataForSEO">
+                              <span className="text-[9px] text-signal-blue font-bold uppercase tracking-tighter flex items-center gap-1 cursor-help">
+                                <Icons.CheckCircle className="w-2.5 h-2.5" /> Verified Social
+                              </span>
+                            </Tooltip>
+                          </div>
+                        ) : (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 px-3 text-[9px] font-black uppercase tracking-widest border-chalk hover:bg-powder"
+                            onClick={() => syncSocial(poi.id)}
+                          >
+                            <Icons.RefreshCw className="w-3 h-3 mr-1.5" /> Sync Social
+                          </Button>
+                        )}
                       </td>
                       <td className="py-6 px-6">
                         <div className="flex flex-col max-w-[250px]">
@@ -110,16 +138,13 @@ export default function POIsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-6 px-6">
+                      <td className="py-6 px-6 text-center">
                         <div className="flex items-center justify-center gap-2 text-gravel">
                           {poi.isWheelchairAccessible && (
                             <Icons.Accessibility className="w-4 h-4" title="Wheelchair Accessible" />
                           )}
                           {poi.hasPriorityLane && (
                             <Icons.UserCheck className="w-4 h-4 text-signal-blue" title="Priority Lane" />
-                          )}
-                          {!poi.isWheelchairAccessible && !poi.hasPriorityLane && (
-                            <span className="text-[10px] opacity-30 font-bold uppercase">—</span>
                           )}
                         </div>
                       </td>

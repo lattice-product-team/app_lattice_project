@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { db, pointsOfInterest, sql, events, venues, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
+import { socialService } from '../services/social.service';
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -37,6 +38,20 @@ export const resolveAddress = async (req: Request, res: Response) => {
     res.json({ address });
   } catch (error) {
     console.error('Error resolving address:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const syncSocialData = async (req: Request, res: Response) => {
+  try {
+    const { type, id } = req.body;
+    if (!type || !id) {
+      return res.status(400).json({ error: 'Type (event/poi) and ID are required' });
+    }
+    const result = await socialService.syncAssetSocialData(type as 'event' | 'poi', parseInt(id as string, 10));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error syncing social data:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -133,6 +148,74 @@ export const getEventSpatial = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Error fetching event spatial data:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const getVenueSpatial = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const venueId = parseInt(id as string, 10);
+
+    if (isNaN(venueId)) {
+      return res.status(400).json({ error: 'Invalid Venue ID' });
+    }
+
+    const [venue] = await db
+      .select({
+        id: venues.id,
+        name: venues.name,
+        boundary: sql<string>`ST_AsGeoJSON(${venues.boundary})`,
+      })
+      .from(venues)
+      .where(eq(venues.id, venueId));
+
+    if (!venue) {
+      return res.status(404).json({ error: 'Venue not found' });
+    }
+
+    const features: any[] = [];
+
+    if (venue.boundary) {
+      features.push({
+        type: 'Feature',
+        geometry: JSON.parse(venue.boundary),
+        properties: {
+          type: 'boundary',
+          name: venue.name,
+        },
+      });
+    }
+
+    // Optionally include POIs that are "permanent" (no specific eventId)
+    const poisResults = await db
+      .select({
+        id: pointsOfInterest.id,
+        name: pointsOfInterest.name,
+        type: pointsOfInterest.type,
+        geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
+      })
+      .from(pointsOfInterest)
+      .where(sql`${pointsOfInterest.eventId} IS NULL`); // Global POIs for the venue
+
+    poisResults.forEach((poi) => {
+      features.push({
+        type: 'Feature',
+        geometry: JSON.parse(poi.geometry),
+        properties: {
+          id: poi.id,
+          type: poi.type,
+          name: poi.name,
+        },
+      });
+    });
+
+    res.json({
+      type: 'FeatureCollection',
+      features,
+    });
+  } catch (error) {
+    console.error('Error fetching venue spatial data:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };
@@ -365,6 +448,15 @@ export const getPoi = async (req: Request, res: Response) => {
     }
 
     const poi = result[0];
+    
+    // Background sync if social data is missing
+    const metadata = poi.metadata ? JSON.parse(poi.metadata as string) : {};
+    if (!metadata.social) {
+      socialService.syncAssetSocialData('poi', poiId).catch(err => 
+        console.error('[Social] Background sync failed:', err)
+      );
+    }
+
     res.json({
       type: 'Feature',
       geometry: JSON.parse(poi.geometry as string),
@@ -500,6 +592,15 @@ export const getEvent = async (req: Request, res: Response) => {
     }
 
     const event = result[0];
+
+    // Background sync if social data is missing
+    const metadata = event.metadata ? JSON.parse(event.metadata as string) : {};
+    if (!metadata.social) {
+      socialService.syncAssetSocialData('event', eventId).catch(err => 
+        console.error('[Social] Background sync failed:', err)
+      );
+    }
+
     res.json({
       ...event,
       center: event.center ? JSON.parse(event.center) : null,
