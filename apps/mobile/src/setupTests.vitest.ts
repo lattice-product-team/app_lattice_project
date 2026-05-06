@@ -52,3 +52,17 @@ vi.mock('@maplibre/maplibre-react-native', () => ({
 vi.mock('@expo/vector-icons', () => ({
   MaterialCommunityIcons: 'MaterialCommunityIcons',
 }));
+
+vi.mock('react-native-mmkv', () => ({
+  createMMKV: vi.fn(() => ({
+    set: vi.fn(),
+    getString: vi.fn(),
+    getNumber: vi.fn(),
+    getBoolean: vi.fn(),
+    contains: vi.fn(),
+    delete: vi.fn(),
+    getAllKeys: vi.fn(),
+    clearAll: vi.fn(),
+  })),
+}));
+
