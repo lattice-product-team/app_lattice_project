@@ -48,17 +48,18 @@ export const PremiumButton = ({
 }: PremiumButtonProps) => {
   const theme = useAppTheme();
   const scale = useSharedValue(1);
+  const { responsive } = theme.motion.physics;
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }]
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.96, { damping: 10, stiffness: 200 });
+    scale.value = withSpring(0.96, responsive);
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 10, stiffness: 200 });
+    scale.value = withSpring(1, responsive);
   };
 
   const handlePress = () => {

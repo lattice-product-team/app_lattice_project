@@ -4,15 +4,6 @@ import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-const SPRING_CONFIG = {
-  damping: 30,
-  stiffness: 150,
-  mass: 1.0,
-  overshootClamping: true,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 2,
-};
-
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
@@ -148,7 +139,8 @@ export const MapContent = function MapContent({
         category: poi.category,
         color: poi.mainColor,
         imageKey: poi.imageKey,
-        imageUrl: poi.images?.[0]
+        imageUrl: poi.images?.[0],
+        raw: poi.raw
       }
     }))
   }), [events]);
@@ -168,7 +160,7 @@ export const MapContent = function MapContent({
         // If it's an event, handle it via handleEventPress logic
         setSelectedEvent(properties.id);
         setGlobalCurrentEvent(properties.raw || feature);
-        islandState.value = withSpring(0, SPRING_CONFIG);
+        islandState.value = withSpring(0, theme.motion.physics.snappy);
       } else {
         // Normal POI selection
         selectPoi(normalizePOI({
@@ -187,7 +179,7 @@ export const MapContent = function MapContent({
     setSelectedEvent(poi.id);
     setGlobalCurrentEvent(poi.raw);
     // selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
-    islandState.value = withSpring(0, SPRING_CONFIG); // Use the same spring config as index.tsx
+    islandState.value = withSpring(0, theme.motion.physics.snappy); // Use the same spring config as index.tsx
   }, [setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]);
 
   const glPoisGeoJSON = useMemo(() => {

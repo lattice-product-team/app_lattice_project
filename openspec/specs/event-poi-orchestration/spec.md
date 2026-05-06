@@ -1,11 +1,11 @@
 ## ADDED Requirements
 
 ### Requirement: Event-to-POI Parent Linking
-The system SHALL support a hierarchical relationship where an Event acts as a parent to multiple child Points of Interest (POIs).
+The system SHALL support a hierarchical relationship where an Event acts as the EXCLUSIVE parent to Points of Interest (POIs), bypassing the need for a global Venue context.
 
 #### Scenario: Linking child POIs to an Event
-- **WHEN** an Event is defined in the system
-- **THEN** it MUST be able to reference a collection of POI IDs that represent sub-locations (stages, gates, services) within that event.
+- **WHEN** a POI is defined in the system
+- **THEN** it MUST be directly referenced by an Event ID, without requiring an underlying Venue relationship.
 
 ### Requirement: Contextual POI Highlighting
 The map system SHALL prioritize the visibility of child POIs when their parent Event is actively selected or being explored.

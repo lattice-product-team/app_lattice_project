@@ -54,9 +54,9 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
 
   useEffect(() => {
     if (event) {
-      islandState.value = withSpring(SNAP_POINTS.MID, { damping: 28, stiffness: 90 });
+      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, { damping: 28, stiffness: 90 });
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
     }
   }, [event]);
 
@@ -65,20 +65,23 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       startState.value = islandState.value;
     })
     .onUpdate((e) => {
-      const delta = -e.translationY / 300; // Natural divisor for height changes
+      // Dynamic divisor for 1:1 tracking
+      const fullTravel = (SCREEN_HEIGHT * 0.80) - (insets.bottom + 5);
+      const delta = -e.translationY / fullTravel;
       const newValue = startState.value + delta;
-      // Clamp to minimum 0.5 (Nivel 2) during active drag
-      islandState.value = Math.max(0.5, Math.min(1.2, newValue));
+      // Clamp to minimum 0.5 (Nivel 2) during active drag, and 1.0 max
+      islandState.value = Math.max(0.5, Math.min(1.0, newValue));
     })
     .onEnd((e) => {
-      const velocity = -e.velocityY / SCREEN_HEIGHT;
-      const finalValue = islandState.value + velocity * 0.1;
+      const fullTravel = (SCREEN_HEIGHT * 0.80) - (insets.bottom + 5);
+      const velocity = -e.velocityY / fullTravel;
+      const predictedPos = islandState.value + velocity * 0.12;
 
       // Never hide via drag, only snap between MID and FULL
-      if (finalValue < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID, { damping: 28, stiffness: 90 });
+      if (predictedPos < 0.75) {
+        islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, { damping: 28, stiffness: 90 });
+        islandState.value = withSpring(SNAP_POINTS.FULL, theme.motion.physics.magnetic);
       }
     });
 

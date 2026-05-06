@@ -52,14 +52,6 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 const SNAP_POINTS = [0, 0.5, 1];
-const SPRING_CONFIG = {
-  damping: 30,
-  stiffness: 150,
-  mass: 1.0,
-  overshootClamping: true,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 2,
-};
 
 export default function MapIndexPage() {
   const theme = useAppTheme();
@@ -131,7 +123,7 @@ export default function MapIndexPage() {
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
     if (selectedPoiId) {
-      islandState.value = withSpring(1, SPRING_CONFIG);
+      islandState.value = withSpring(1, theme.motion.physics.magnetic);
     }
   }, [selectedPoiId, islandState]);
 
@@ -142,7 +134,7 @@ export default function MapIndexPage() {
     setSelectedEvent(event.id);
     setCurrentEvent(event);
     selectPoi(null); // Clear any active POI selection
-    islandState.value = withSpring(0, SPRING_CONFIG); // Collapse search island
+    islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
 
@@ -153,7 +145,7 @@ export default function MapIndexPage() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // Restore island if needed
     if (preSearchLevel.value > 0.1) {
-      islandState.value = withSpring(preSearchLevel.value, SPRING_CONFIG);
+      islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
     }
   }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState, preSearchLevel]);
 
@@ -198,16 +190,32 @@ export default function MapIndexPage() {
       const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
       
       if (canDragSheet) {
-        const stateDelta = -event.translationY / (450 - 60); 
+        // Dynamic divisor for 1:1 tracking
+        // The distance from Level 1 (60px) to Level 3 (SCREEN_HEIGHT * 0.8)
+        const fullTravel = (SCREEN_HEIGHT * 0.8) - 60;
+        const stateDelta = -event.translationY / fullTravel; 
         let newPos = startState.value + stateDelta;
         islandState.value = Math.max(0, Math.min(1, newPos));
       }
     })
     .onEnd((event) => {
       isPanning.value = false;
-      const velocity = -event.velocityY / (450 - 60);
-      const predictedPos = islandState.value + velocity * 0.1;
+      // Increased inertia factor for "toque suave" (Apple-style response)
+      const fullTravel = (SCREEN_HEIGHT * 0.8) - 60;
+      const velocity = -event.velocityY / fullTravel;
+      let predictedPos = islandState.value + velocity * 0.12;
       
+      // ANTI-SKIP PROTECTION:
+      // If we start at Level 1 (0), don't allow snapping directly to Level 3 (1.0).
+      // This forces the user to pass through Level 2 (0.5) first as requested.
+      if (startState.value === 0) {
+        predictedPos = Math.min(predictedPos, 0.7);
+      }
+      // If we start at Level 2 (0.5), we can go to 1 or 3, but not hide the sheet.
+      if (startState.value === 0.5) {
+        predictedPos = Math.max(0.2, Math.min(predictedPos, 1.2));
+      }
+
       let closest = SNAP_POINTS[0];
       let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
       
@@ -219,7 +227,7 @@ export default function MapIndexPage() {
         }
       });
 
-      islandState.value = withSpring(closest, SPRING_CONFIG, (finished) => {
+      islandState.value = withSpring(closest, theme.motion.physics.magnetic, (finished) => {
         if (finished && (closest === 0 || closest === 0.5)) {
           preSearchLevel.value = closest;
         }
@@ -313,7 +321,7 @@ export default function MapIndexPage() {
     deselect();
     setIsSearching(false);
     if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel.value, SPRING_CONFIG);
+      islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
@@ -324,7 +332,7 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
     
     // If we have coordinates, move map. For now just collapse.
-    islandState.value = withSpring(0.5, SPRING_CONFIG);
+    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
     
     if (coords) {
       console.log('Moving map to:', coords);
@@ -407,7 +415,7 @@ export default function MapIndexPage() {
                 onProfilePress={handleProfilePress}
                 onFocus={() => {
                   setIsSearching(true);
-                  islandState.value = withSpring(1, SPRING_CONFIG);
+                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
                 }}
                 onSubmit={() => {
                   saveSearch(searchQuery);

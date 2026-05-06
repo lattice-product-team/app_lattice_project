@@ -115,15 +115,16 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         }
       }
 
-      if (selectedEvent.center) {
+      const centerCoords = selectedEvent.center?.coordinates || selectedEvent.geometry?.coordinates || selectedEvent.coordinates;
+      if (centerCoords) {
         cameraRef.current.setCamera({
-          centerCoordinate: selectedEvent.center.coordinates,
+          centerCoordinate: centerCoords,
           zoomLevel: 16.5,
           animationDuration: 1200,
           animationMode: 'flyTo',
           pitch: is3DActive ? 60 : 0,
           padding: {
-            paddingBottom: SCREEN_HEIGHT * 0.4,
+            paddingBottom: SCREEN_HEIGHT * 0.45, // Adjusted to keep pin above sheet
             paddingTop: insets.top + 60,
             paddingLeft: 40,
             paddingRight: 40,

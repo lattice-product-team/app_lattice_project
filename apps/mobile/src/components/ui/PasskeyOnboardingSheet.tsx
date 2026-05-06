@@ -27,11 +27,8 @@ export const PasskeyOnboardingSheet = ({ isVisible, onClose, onConfirm }: Passke
   const animState = useSharedValue(0);
 
   React.useEffect(() => {
-    animState.value = withSpring(isVisible ? 1 : 0, {
-      damping: 20,
-      stiffness: 90
-    });
-  }, [isVisible]);
+    animState.value = withSpring(isVisible ? 1 : 0, theme.motion.physics.snappy);
+  }, [isVisible, theme.motion.physics.snappy]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: (1 - animState.value) * SCREEN_HEIGHT }],

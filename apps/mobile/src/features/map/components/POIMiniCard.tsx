@@ -31,9 +31,9 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
 
   useEffect(() => {
     if (poi) {
-      visibility.value = withSpring(1, { damping: 20, stiffness: 100 });
+      visibility.value = withSpring(1, theme.motion.physics.magnetic);
     } else {
-      visibility.value = withSpring(0, { damping: 20, stiffness: 100 });
+      visibility.value = withSpring(0, theme.motion.physics.magnetic);
     }
   }, [poi]);
 
