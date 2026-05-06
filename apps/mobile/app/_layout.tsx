@@ -7,7 +7,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppFonts } from '../src/hooks/useAppFonts';
 import { ThemeProvider, useAppTheme } from '../src/providers/ThemeProvider';
 import { AuthPromptOverlay } from '../src/components/ui/AuthPromptOverlay';
+import { startupMetrics } from '../src/utils/startupMetrics';
 import '../global.css';
+
+// Start tracking metrics immediately
+startupMetrics.start();
 
 const queryClient = new QueryClient();
 
@@ -33,6 +37,13 @@ export default function RootLayout() {
 
   useEffect(() => {
     console.log('[RootLayout] Mounted');
+    
+    // Pre-fetch global POIs
+    queryClient.prefetchQuery({
+      queryKey: ['pois', undefined, undefined],
+      queryFn: () => import('../src/services/geoService').then(m => m.geoService.getPOIs())
+    });
+
     return () => console.log('[RootLayout] Unmounted');
   }, []);
 

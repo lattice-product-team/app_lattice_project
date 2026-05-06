@@ -10,7 +10,9 @@ export enum MapUIState {
 interface MapUIStore {
   uiState: MapUIState;
   recenterCount: number;
+  forceCenterCount: number;
   isFollowingUser: boolean;
+  isInitialLoadComplete: boolean;
   lastCameraPosition: {
     center: [number, number];
     zoom: number;
@@ -20,7 +22,9 @@ interface MapUIStore {
   // Actions
   setUIState: (state: MapUIState) => void;
   triggerRecenter: () => void;
+  triggerForceCenter: () => void;
   setIsFollowingUser: (isFollowing: boolean) => void;
+  setInitialLoadComplete: (isComplete: boolean) => void;
   setLastCameraPosition: (pos: { center: [number, number]; zoom: number; pitch: number }) => void;
 }
 
@@ -30,7 +34,9 @@ interface MapUIStore {
 export const useMapUIStore = create<MapUIStore>((set) => ({
   uiState: MapUIState.EXPLORING,
   recenterCount: 0,
+  forceCenterCount: 0,
   isFollowingUser: true, // Por defecto seguimos al usuario al entrar
+  isInitialLoadComplete: false,
   lastCameraPosition: null,
 
   setUIState: (uiState) => set({ uiState }),
@@ -40,7 +46,13 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
     isFollowingUser: true 
   })),
 
+  triggerForceCenter: () => set((state) => ({ 
+    forceCenterCount: state.forceCenterCount + 1 
+  })),
+
   setIsFollowingUser: (isFollowingUser) => set({ isFollowingUser }),
+
+  setInitialLoadComplete: (isInitialLoadComplete) => set({ isInitialLoadComplete }),
 
   setLastCameraPosition: (lastCameraPosition) => set({ lastCameraPosition }),
 }));

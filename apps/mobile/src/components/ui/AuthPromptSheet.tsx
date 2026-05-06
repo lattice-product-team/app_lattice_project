@@ -102,9 +102,13 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
           intensity={100}
           style={[
             styles.blurBackground,
-            { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+            { 
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border 
+            }
           ]}
         >
+          <View style={styles.innerGlowBorder} />
           {/* Header Actions */}
           <View style={styles.headerActions}>
             <View style={{ flex: 1 }} />
@@ -148,6 +152,13 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     borderWidth: 1,
     overflow: 'hidden',
+  },
+  innerGlowBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 32,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    pointerEvents: 'none',
   },
   headerActions: {
     flexDirection: 'row',

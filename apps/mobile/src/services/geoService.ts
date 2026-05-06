@@ -34,6 +34,10 @@ export const geoService = {
     return apiClient.get<any>('/saved');
   },
 
+  getVenueSpatial: async (venueId: number): Promise<any> => {
+    return apiClient.get<any>(`/venues/${venueId}/spatial`);
+  },
+
   saveLocation: async (data: { label: string, latitude: number, longitude: number }): Promise<any> => {
     return apiClient.post<any>('/saved', data);
   },

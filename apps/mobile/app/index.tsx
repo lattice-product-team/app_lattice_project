@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useRootNavigationState } from 'expo-router';
 import { useAuthStore } from '../src/store/useAuthStore';
-import { View, ActivityIndicator } from 'react-native';
-import { colors as primitiveColors } from '@app/theme';
+
+import { startupMetrics } from '../src/utils/startupMetrics';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function Index() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const navigationState = useRootNavigationState();
   const token = useAuthStore((state) => state.token);
@@ -14,8 +16,15 @@ export default function Index() {
   useEffect(() => {
     if (navigationState?.key) {
       setIsReady(true);
+      startupMetrics.markInteractive('Index');
+      
+      // Pre-fetch events while determining route
+      queryClient.prefetchQuery({
+        queryKey: ['events-search', ''],
+        queryFn: () => import('../src/services/geoService').then(m => m.geoService.getEvents())
+      });
     }
-  }, [navigationState?.key]);
+  }, [navigationState?.key, queryClient]);
 
   useEffect(() => {
     if (isReady) {
@@ -28,9 +37,5 @@ export default function Index() {
     }
   }, [isReady, token, isGuest, router]);
 
-  return (
-    <View style={{ flex: 1, backgroundColor: 'black', alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color={primitiveColors.brand.primary} size="large" />
-    </View>
-  );
+  return null;
 }

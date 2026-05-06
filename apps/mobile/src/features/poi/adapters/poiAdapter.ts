@@ -3,6 +3,18 @@ import { StandardUIPOI } from '../../../types/models/poi';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 
 /**
+ * Validates that coordinates are present and not [0,0].
+ */
+export const isValidCoordinate = (coords?: number[] | null): boolean => {
+  if (!coords || coords.length !== 2) return false;
+  const [lng, lat] = coords;
+  // Basic [0,0] check and range check
+  return (lng !== 0 || lat !== 0) && 
+         Math.abs(lng) <= 180 && 
+         Math.abs(lat) <= 90;
+};
+
+/**
  * Adapter to normalize raw GeoJSON data into a consistent UI model.
  */
 export const normalizePOI = (raw: POIGeoJSON): StandardUIPOI => {
@@ -15,8 +27,10 @@ export const normalizePOI = (raw: POIGeoJSON): StandardUIPOI => {
     category: properties.category || 'generic',
     categoryLabel: metadata.label,
     categoryIcon: metadata.icon,
+    iconFamily: metadata.iconFamily,
     mainColor: metadata.color,
     coordinates: [geometry.coordinates[0], geometry.coordinates[1]],
+    parentId: (properties as any).parentId || (properties as any).event_id,
     description: properties.description,
     images: properties.images,
     raw: properties, // Preserve original properties
@@ -24,8 +38,39 @@ export const normalizePOI = (raw: POIGeoJSON): StandardUIPOI => {
 };
 
 /**
+ * Adapter to normalize LatticeEvent into StandardUIPOI.
+ */
+export const normalizeEvent = (event: any): StandardUIPOI => {
+  const id = String(event.id);
+  return {
+    id,
+    displayName: event.name,
+    category: 'event',
+    categoryLabel: 'Evento',
+    categoryIcon: 'calendar-star',
+    iconFamily: 'material' as const,
+    mainColor: '#FF3B30',
+    coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
+    images: event.imageUrl ? [event.imageUrl] : [],
+    imageKey: event.imageUrl ? `event-img-${id}` : 'placeholder-event',
+    raw: event
+  };
+};
+
+/**
  * Bulk normalization for lists of POIs.
  */
 export const normalizePOIList = (rawList: POIGeoJSON[]): StandardUIPOI[] => {
-  return rawList.map(normalizePOI);
+  return (rawList || [])
+    .map(normalizePOI)
+    .filter(poi => isValidCoordinate(poi.coordinates));
+};
+
+/**
+ * Bulk normalization for lists of Events.
+ */
+export const normalizeEventList = (events: any[]): StandardUIPOI[] => {
+  return (events || [])
+    .map(normalizeEvent)
+    .filter(poi => isValidCoordinate(poi.coordinates));
 };

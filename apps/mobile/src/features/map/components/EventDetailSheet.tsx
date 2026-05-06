@@ -7,7 +7,9 @@ import Animated, {
   interpolate, 
   Extrapolation,
   useAnimatedProps,
-  interpolateColor
+  interpolateColor,
+  useAnimatedReaction,
+  runOnJS
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -18,6 +20,8 @@ import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
 import { useEventDetails } from '../hooks/useEventDetails';
+import { usePOIStore } from '../../poi/store/usePOIStore';
+import { getCategoryMetadata } from '../../../utils/poiUtils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
@@ -31,8 +35,16 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
+  
+  const { 
+    activeCategoryFilters, 
+    toggleCategoryFilter, 
+    getFilteredPOIs 
+  } = usePOIStore();
+
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
+  const [scrollEnabled, setScrollEnabled] = React.useState(false);
   
   const SNAP_POINTS = {
     HIDDEN: 0,
@@ -90,35 +102,44 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
     const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
-    const bgColor = interpolateColor(
-      islandState.value,
-      [0.7, 1],
-      [theme.colors.glass.background, theme.colors.bg.surface]
-    );
-
     return {
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       borderBottomLeftRadius: radius,
       borderBottomRightRadius: radius,
-      backgroundColor: bgColor,
+      backgroundColor: interpolateColor(
+        islandState.value,
+        [0.7, 1],
+        ['transparent', theme.colors.bg.surface]
+      ),
     };
   });
 
   const blurProps = useAnimatedProps(() => {
     return {
-      intensity: interpolate(islandState.value, [0.5, 0.7, 1], [100, 100, 0], Extrapolation.CLAMP)
+      // intensity should be passed as a regular prop for SafeBlurView to handle it correctly
     };
   });
 
-  if (!event && islandState.value === 0) return null;
+  // Sync scroll enabled state to avoid render-time reads of islandState.value
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      const shouldEnable = curr > 0.9;
+      if (shouldEnable !== scrollEnabled) {
+        runOnJS(setScrollEnabled)(shouldEnable);
+      }
+    },
+    [scrollEnabled]
+  );
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.container, islandStyle]}>
+        <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint}
+            intensity={90}
             animatedProps={blurProps}
             style={[
               styles.background, 
@@ -126,6 +147,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
             ]}
           >
+            <Animated.View style={[styles.innerGlowBorder, islandBackgroundStyle, { backgroundColor: 'transparent' }]} />
             {/* Header / Drag Handle */}
             <View style={styles.header}>
               <View style={styles.handle} />
@@ -197,6 +219,41 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               </Pressable>
             </View>
 
+            {/* Quick Services Bar */}
+            <View style={styles.servicesContainer}>
+              <Text style={[styles.servicesTitle, { color: theme.colors.text.muted }]}>Services Available</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                contentContainerStyle={styles.servicesScroll}
+              >
+                {Array.from(new Set(getFilteredPOIs([]).map(p => p.category))).map(cat => {
+                  const metadata = getCategoryMetadata(cat);
+                  const isActive = activeCategoryFilters.includes(cat);
+                  return (
+                    <Pressable
+                      key={cat}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        toggleCategoryFilter(cat);
+                      }}
+                      style={[
+                        styles.serviceItem,
+                        { backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.glass.subtle },
+                        isActive && styles.activeService
+                      ]}
+                    >
+                      <MaterialCommunityIcons 
+                        name={metadata.icon as any} 
+                        size={20} 
+                        color={isActive ? 'white' : theme.colors.text.primary} 
+                      />
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
             {/* Info Grid */}
             <View style={styles.infoGrid}>
               <View style={styles.infoItem}>
@@ -219,7 +276,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               </View>
             </View>
 
-            <ScrollView style={{ flex: 1 }} scrollEnabled={islandState.value > 0.9}>
+            <ScrollView style={{ flex: 1 }} scrollEnabled={scrollEnabled}>
               <View style={styles.content}>
                 <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
                 <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
@@ -247,6 +304,12 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
     borderWidth: 1,
+  },
+  innerGlowBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    pointerEvents: 'none',
   },
   header: {
     paddingTop: 8,
@@ -351,5 +414,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontFamily: typography.primary.regular,
+  },
+  servicesContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  servicesTitle: {
+    fontSize: 12,
+    fontFamily: typography.primary.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  servicesScroll: {
+    gap: 12,
+  },
+  serviceItem: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  activeService: {
+    borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });

@@ -131,7 +131,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     '@maplibre/maplibre-react-native',
-    'expo-apple-authentication',
+
     'expo-web-browser',
   ],
   experiments: {
@@ -142,8 +142,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.extra,
     apiUrl: API_URL,
     nodeEnv: env.NODE_ENV,
-    googleIosClientId: env.GOOGLE_IOS_CLIENT_ID,
-    googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID,
+    googleIosClientId: env.GOOGLE_IOS_CLIENT_ID || 'missing-ios-client-id',
+    googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID || 'missing-android-client-id',
     eas: {
       projectId: '2fbc4e45-153f-443a-b152-c034ef3964b0',
     },

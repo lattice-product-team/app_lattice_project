@@ -10,11 +10,13 @@ export interface StandardUIPOI {
   category: string;
   categoryLabel: string;
   categoryIcon: string;
+  iconFamily: 'feather' | 'material';
   mainColor: string;
   coordinates: [number, number];
   parentId?: string | number;
   description?: string;
   images?: string[];
+  imageKey?: string;
   distance?: string;
   duration?: string;
   raw: any; // Original GeoJSON properties for backward compatibility

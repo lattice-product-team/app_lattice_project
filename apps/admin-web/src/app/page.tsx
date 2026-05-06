@@ -1,310 +1,170 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { Button, Table, Chip, Card, InputGroup, Select, ListBox } from "@heroui/react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Table, Chip, Spinner } from "@heroui/react";
 import { Icons } from "@/components/icons";
-
-// Mock Data
-const VENUES = [
-  { id: "V-01", name: "Circuit de Barcelona" },
-  { id: "V-02", name: "Fira Gran Via" },
-  { id: "V-03", name: "Parc del Fòrum" },
-];
-
-const EVENTS = [
-  { id: "E-01", venueId: "V-01", name: "Formula 1 Spanish GP", status: "Live", type: "sports", attendees: "84,215", alerts: 4, claimed: "92%" },
-  { id: "E-02", venueId: "V-02", name: "Sonar Music Festival", status: "Upcoming", type: "festival", attendees: "15,400", alerts: 0, claimed: "45%" },
-  { id: "E-03", venueId: "V-03", name: "Primavera Sound", status: "Planning", type: "festival", attendees: "0", alerts: 0, claimed: "0%" },
-  { id: "E-04", venueId: "V-02", name: "MWC Barcelona 2026", status: "Live", type: "conference", attendees: "42,800", alerts: 2, claimed: "88%" },
-];
-
-const GATES_DATA: Record<string, any[]> = {
-  "E-01": [
-    { id: "G-04", name: "North Entrance - Grandstand G", load: "High", wait: "22 min", status: "Open" },
-    { id: "G-01", name: "Main Entrance - Paddock", load: "Low", wait: "2 min", status: "Open" },
-    { id: "G-12", name: "West Gate - Pelouse Area", load: "Moderate", wait: "12 min", status: "Open" },
-  ],
-  "E-04": [
-    { id: "H-01", name: "Hall 1 - Main Registration", load: "Moderate", wait: "8 min", status: "Open" },
-    { id: "H-08", name: "Hall 8 - VIP Access", load: "Low", wait: "1 min", status: "Open" },
-    { id: "S-02", name: "South Entrance - Shuttle", load: "High", wait: "15 min", status: "Open" },
-  ],
-  "E-02": [
-    { id: "F-01", name: "Stage A - Main Access", load: "Low", wait: "2 min", status: "Open" },
-    { id: "F-05", name: "Food Court Entrance", load: "Moderate", wait: "5 min", status: "Open" },
-  ]
-};
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useStats, useEvents, useEventStats } from "@/hooks/use-admin-data";
+import { Sparkline } from "@/components/sparkline";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
-  const [selectedVenue, setSelectedVenue] = useState<string>("V-01");
-  const [selectedEvent, setSelectedEvent] = useState<string>("E-01");
+  const { stats, loading: statsLoading } = useStats();
+  const { events, loading: eventsLoading } = useEvents();
 
-  const filteredEvents = useMemo(() => 
-    EVENTS.filter(e => e.venueId === selectedVenue),
-    [selectedVenue]
-  );
+  const [selectedEvent, setSelectedEvent] = useState<string>("");
+  const { stats: eventStats, loading: eventStatsLoading } = useEventStats(selectedEvent);
+
+  const loading = statsLoading || eventsLoading;
 
   const activeEvent = useMemo(() => 
-    EVENTS.find(e => e.id === selectedEvent) || EVENTS[0],
-    [selectedEvent]
+    events.find((e: any) => e.id.toString() === selectedEvent) || events[0],
+    [selectedEvent, events]
   );
 
-  const activeGates = useMemo(() => 
-    GATES_DATA[selectedEvent] || [],
-    [selectedEvent]
+  if (loading) return (
+    <div className="flex-1 flex items-center justify-center bg-eggshell h-screen">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-2 border-obsidian border-t-transparent rounded-full animate-spin" />
+        <p className="text-gravel font-medium animate-pulse uppercase tracking-widest text-admin-xs">Initializing Operations Center…</p>
+      </div>
+    </div>
   );
-
-  const participantLabel = activeEvent.type === "conference" ? "Attendees" : 
-                         activeEvent.type === "festival" ? "Participants" : "Spectators";
 
   return (
-    <div className="flex-1 flex flex-col p-8 pt-12 gap-6 max-w-7xl mx-auto w-full">
+    <div className="flex flex-col gap-16 pb-24">
       {/* Header */}
-      <header className="flex justify-between items-center">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Select 
-              className="w-48"
-              selectedKey={selectedVenue}
-              onSelectionChange={(key) => {
-                const value = key as string;
-                setSelectedVenue(value);
-                const firstEvent = EVENTS.find(ev => ev.venueId === value);
-                if (firstEvent) setSelectedEvent(firstEvent.id);
-              }}
-            >
-              <Select.Trigger className="bg-white/5 border border-white/10 rounded-full h-8 min-h-unit-8 flex items-center justify-between px-3 outline-none">
-                <Select.Value className="text-[11px] font-bold text-white/50 uppercase tracking-wider" />
-                <Select.Indicator className="text-white/20" />
-              </Select.Trigger>
-              <Select.Popover>
-                <ListBox items={VENUES} className="bg-surface border border-white/10 rounded-xl p-1 min-w-48">
-                  {(v) => (
-                    <ListBox.Item id={v.id} textValue={v.name} className="flex items-center px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:bg-white/5 cursor-pointer outline-none focus:bg-white/10">
-                      {v.name}
-                    </ListBox.Item>
-                  )}
-                </ListBox>
-              </Select.Popover>
-            </Select>
-            <Icons.ChevronRight className="w-3 h-3 text-white/20" />
-            <Select 
-              className="w-48"
-              selectedKey={selectedEvent}
-              onSelectionChange={(key) => setSelectedEvent(key as string)}
-            >
-              <Select.Trigger className="bg-white/5 border border-white/10 rounded-full h-8 min-h-unit-8 flex items-center justify-between px-3 outline-none">
-                <Select.Value className="text-[11px] font-bold text-white/50 uppercase tracking-wider" />
-                <Select.Indicator className="text-white/20" />
-              </Select.Trigger>
-              <Select.Popover>
-                <ListBox items={filteredEvents} className="bg-surface border border-white/10 rounded-xl p-1 min-w-48">
-                  {(e) => (
-                    <ListBox.Item id={e.id} textValue={e.name} className="flex items-center px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:bg-white/5 cursor-pointer outline-none focus:bg-white/10">
-                      {e.name}
-                    </ListBox.Item>
-                  )}
-                </ListBox>
-              </Select.Popover>
-            </Select>
+      <header className="flex justify-between items-start">
+        <div className="flex flex-col max-w-3xl">
+          <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">Global Operations Center</p>
+          <h1 className="waldenburg-display text-[56px] text-obsidian leading-[1] mb-8 text-pretty">
+            Architecting real-time event operations with restraint.
+          </h1>
+          <div className="flex items-center gap-4">
+            <Button variant="primary" className="h-12 px-8">
+              <Icons.Plus className="w-4 h-4 mr-2" aria-hidden="true" />
+              Create New Event
+            </Button>
+            <Button variant="ghost" className="h-12 px-8">
+              System Logs
+            </Button>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <h1 className="text-[28px] font-semibold text-white tracking-tight">{activeEvent.name}</h1>
-            <Chip 
-              size="sm" 
-              variant="flat" 
-              color={activeEvent.status === "Live" ? "success" : activeEvent.status === "Upcoming" ? "primary" : "warning"}
-              className="font-bold text-[10px] uppercase tracking-wider h-5"
-            >
-              {activeEvent.status}
-            </Chip>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button isIconOnly variant="ghost" className="bg-white/5 text-white/70 rounded-full">
-            <Icons.Search className="w-5 h-5" />
-          </Button>
-          <Button variant="primary" className="rounded-full font-medium">
-            <Icons.Plus className="w-4 h-4" />
-            New Event
-          </Button>
         </div>
       </header>
 
-      {/* Operational Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-surface border border-white/5 shadow-none p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <Icons.Users className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs text-white/50 font-medium uppercase tracking-wider">Active {participantLabel}</p>
-              <h3 className="text-2xl font-bold text-white">{activeEvent.attendees}</h3>
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-surface border border-white/5 shadow-none p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center text-danger">
-              <Icons.Bell className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-xs text-white/50 font-medium uppercase tracking-wider">Incident Alerts</p>
-                  <h3 className="text-2xl font-bold text-white">{activeEvent.alerts} Active</h3>
-                </div>
-                {activeEvent.alerts > 0 && (
-                  <Chip size="sm" color="danger" variant="flat" className="font-bold text-[10px]">High</Chip>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-surface border border-white/5 shadow-none p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center text-success">
-              <Icons.List className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-white/50 font-medium uppercase tracking-wider">Tickets Claimed</p>
+      {/* Global Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: "Live Users*", value: stats?.liveUsers?.toLocaleString() ?? "0", trend: "+12%", data: [10, 45, 30, 70, 50, 90, 85] },
+          { label: "Active Events", value: stats?.activeEvents ?? "0", data: [2, 3, 2, 4, 3, 3, 3] },
+          { label: "System Capacity*", value: "120K", data: [120, 120, 120, 120, 120, 120, 120] },
+          { label: "Active Alerts*", value: stats?.activeAlerts ?? "0", dark: true, alert: true }
+        ].map((m, i) => (
+          <Card key={i} className={cn("relative overflow-hidden", m.dark && "bg-obsidian text-eggshell")}>
+            <p className={cn("text-admin-xs font-bold uppercase tracking-widest mb-6", m.dark ? "text-eggshell/50" : "text-gravel")}>
+              {m.label}
+            </p>
+            <div className="flex items-baseline justify-between gap-2">
               <div className="flex items-baseline gap-2">
-                <h3 className="text-2xl font-bold text-white">{activeEvent.claimed}</h3>
+                <h3 className="text-admin-xl font-bold tabular-nums">{m.value}</h3>
+                {m.trend && <span className="text-[10px] font-black tracking-tighter opacity-60">{m.trend}</span>}
               </div>
+              {!m.alert && <Sparkline data={m.data} color={m.dark ? "white" : "black"} />}
+              {m.alert && (
+                 <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-ember animate-ping" aria-hidden="true" />
+                    <span className="text-[10px] font-black uppercase text-ember">Critical</span>
+                 </div>
+              )}
             </div>
-          </div>
-        </Card>
+            {/* Background Texture Effect */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" aria-hidden="true" />
+          </Card>
+        ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bg-surface border border-white/5 shadow-none h-64">
-          <div className="p-6 flex flex-col h-full">
-            <h3 className="text-sm text-white/50 mb-6">{participantLabel} Inflow (Hourly)</h3>
-            <div className="flex-1 flex items-end justify-between gap-2">
-              {[15, 25, 45, 80, 65, 40, 30].map((val, i) => (
-                <div key={i} className="w-full flex flex-col items-center gap-2 h-full justify-end">
-                  <div className="w-full bg-primary rounded-t-sm" style={{ height: `${val}%` }} />
-                  <span className="text-[10px] text-white/30">{String(8 + i).padStart(2, '0')}:00</span>
-                </div>
-              ))}
+      {/* Active Event Showcase */}
+      {activeEvent && (
+        <Card className="p-0 overflow-hidden border border-chalk shadow-subtle-3">
+          <div className="grid grid-cols-1 lg:grid-cols-5 min-h-[500px]">
+            <div className="lg:col-span-3 p-16 flex flex-col justify-center bg-white relative overflow-hidden">
+               {/* Ambient Background Glow */}
+               <div className="absolute -top-24 -left-24 w-64 h-64 bg-signal-blue/5 rounded-full blur-3xl" aria-hidden="true" />
+               
+               <div className="flex items-center gap-3 mb-8 relative">
+                 <div className="relative">
+                   <div className="w-2 h-2 rounded-full bg-signal-blue" aria-hidden="true" />
+                   <div className="absolute inset-0 w-2 h-2 rounded-full bg-signal-blue animate-ping opacity-75" aria-hidden="true" />
+                 </div>
+                 <span className="pill-label text-admin-xs text-obsidian">Live Environment</span>
+               </div>
+               
+               <h2 className="waldenburg-display text-[48px] text-obsidian mb-6 leading-[1.1]">{activeEvent.name}</h2>
+               <p className="text-gravel text-admin-md leading-relaxed mb-10 max-w-lg">
+                 {activeEvent.description || "Comprehensive operational oversight for this event environment. Type-first monitoring and severe yet warm control systems."}
+               </p>
+               
+               <div className="flex gap-4">
+                 <Button variant="primary" className="h-12 px-8">View Map</Button>
+                 <Button variant="ghost" className="h-12 px-8">Event Settings</Button>
+               </div>
             </div>
-          </div>
-        </Card>
-        <Card className="bg-surface border border-white/5 shadow-none h-64">
-          <div className="p-6 flex flex-col h-full">
-            <div className="flex justify-between items-start mb-4">
-               <h3 className="text-sm text-white/50">Zone Density Trend</h3>
-               <span className="text-xs text-white/30">Saturation %</span>
-            </div>
-            {/* Density Trend Chart */}
-            <div className="flex-1 w-full h-full relative">
-               <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                 <polyline points="0,35 10,30 20,25 30,10 40,8 50,15 60,18 70,12 80,5 90,8 100,10" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary" />
-                 <polyline points="0,40 10,38 20,35 30,30 40,28 50,25 60,22 70,20 80,18 90,15 100,12" fill="none" stroke="currentColor" strokeWidth="0.8" className="text-white/20" />
-               </svg>
-               <div className="flex justify-between mt-4">
-                 <span className="text-[10px] text-white/20">08:00</span>
-                 <span className="text-[10px] text-white/20">11:00</span>
-                 <span className="text-[10px] text-white/20">14:00</span>
+            
+            <div className="lg:col-span-2 p-16 bg-powder/40 flex flex-col justify-between border-l border-chalk relative">
+               {/* Noise Overlay */}
+               <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]" aria-hidden="true" />
+               
+               <div className="space-y-12 relative">
+                 <div>
+                   <p className="text-gravel text-[10px] font-black uppercase tracking-widest mb-3 opacity-60">Estimated Capacity*</p>
+                   <div className="flex items-center gap-3">
+                     <h3 className="text-admin-xl font-bold text-obsidian tabular-nums">
+                       {eventStats?.estimatedCapacity?.toLocaleString() ?? "Synchronizing…"}
+                     </h3>
+                     {eventStatsLoading && <Spinner size="sm" color="current" className="opacity-20" />}
+                   </div>
+                 </div>
+                 
+                 <div>
+                   <p className="text-gravel text-[10px] font-black uppercase tracking-widest mb-3 opacity-60">Inflow Velocity*</p>
+                   <div className="flex items-center gap-3">
+                     <h3 className="text-admin-xl font-bold text-obsidian tabular-nums">
+                       {eventStats?.entryRate ?? "0"}<span className="text-admin-xs font-medium ml-1">/min</span>
+                     </h3>
+                   </div>
+                 </div>
+
+                 <div className="pt-8 border-t border-chalk/50">
+                    <p className="text-gravel text-admin-xs font-bold uppercase tracking-widest mb-6 opacity-40">Personnel Status*</p>
+                    <div className="space-y-5">
+                      {["Security Alpha", "Medical Unit B", "Operations Core"].map((staff, i) => (
+                        <div key={i} className="flex items-center justify-between group cursor-help">
+                          <span className="text-obsidian text-admin-base font-medium group-hover:translate-x-1 transition-transform">{staff}</span>
+                          <div className="flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-success shadow-hairline" aria-hidden="true" />
+                             <span className="text-[10px] font-black tracking-widest text-obsidian uppercase">Online</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                 </div>
+               </div>
+
+               <div className="mt-8">
+                 <p className="text-[9px] text-gravel uppercase font-black tracking-[0.2em] opacity-30">Lattice OS 2.1 — Signal Stable</p>
                </div>
             </div>
           </div>
         </Card>
-      </div>
+      )}
 
-      {/* Table Section */}
-      <div className="flex flex-col gap-4 mt-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-[18px] font-semibold text-white">
-            {activeEvent.type === "conference" ? "Check-in Point Status" : 
-             activeEvent.type === "festival" ? "Zone Access Status" : "Gate Status Monitor"}
-          </h2>
-          <Chip size="sm" className="bg-white/10 text-white border-none font-medium text-[10px]">LIVE</Chip>
-        </div>
-
-        <div className="flex justify-between items-center">
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" className="bg-white/5 text-white/70 rounded-full">
-              <Icons.Filter className="w-4 h-4" />
-              Filter
-            </Button>
-            <Button variant="ghost" size="sm" className="bg-white/5 text-white/70 rounded-full">
-              <Icons.SortDesc className="w-4 h-4" />
-              Sort
-            </Button>
-          </div>
-          <InputGroup className="w-64" size="sm" variant="secondary">
-            <InputGroup.Prefix>
-              <Icons.Search className="w-4 h-4 text-white/50" />
-            </InputGroup.Prefix>
-            <InputGroup.Input 
-              placeholder="Search points..." 
-              className="bg-transparent border-none"
-            />
-          </InputGroup>
-        </div>
-
-        <Table
-          classNames={{
-            wrapper: "bg-surface border border-white/5 shadow-none p-0",
-            th: "bg-transparent text-white/50 font-medium border-b border-white/5 px-6 py-4",
-            td: "px-6 py-4 border-b border-white/5",
-          }}
-        >
-          <TableHeader>
-            <TableColumn key="id">ID</TableColumn>
-            <TableColumn key="name">Location Name</TableColumn>
-            <TableColumn key="load">Current Load</TableColumn>
-            <TableColumn key="wait">Est. Wait</TableColumn>
-            <TableColumn key="status" align="center">Status</TableColumn>
-          </TableHeader>
-          <TableBody items={activeGates}>
-            {(gate: any) => (
-              <TableRow key={gate.id}>
-                <TableCell>
-                  <span className="font-mono text-xs font-bold text-white/40">{gate.id}</span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Icons.MapPin className="w-3 h-3 text-white/20" />
-                    <span className="text-sm font-medium">{gate.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Chip 
-                    size="sm" 
-                    variant="flat" 
-                    color={gate.load === "High" ? "danger" : gate.load === "Moderate" ? "warning" : "success"}
-                    className="font-bold text-[10px] uppercase tracking-wider"
-                  >
-                    {gate.load}
-                  </Chip>
-                </TableCell>
-                <TableCell>
-                  <span className={`text-sm ${gate.load === "High" ? "text-danger font-bold" : "text-white/60"}`}>
-                    {gate.wait}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-center">
-                    <Chip 
-                      size="sm" 
-                      variant="dot" 
-                      color={gate.status === "Open" ? "success" : "warning"}
-                      className="border-none bg-transparent text-[10px] font-bold uppercase"
-                    >
-                      {gate.status}
-                    </Chip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {/* Legend */}
+      <footer className="pt-8 border-t border-chalk/30">
+        <p className="text-gravel text-[10px] font-medium opacity-50 uppercase tracking-widest">
+          * Simulated telemetry for demonstration purposes. Real-time sensor integration pending.
+        </p>
+      </footer>
     </div>
   );
 }

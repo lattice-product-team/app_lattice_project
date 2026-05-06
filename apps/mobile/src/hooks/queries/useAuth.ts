@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/useAuthStore';
-import { authService } from '../../services/AuthService';
+import { authService } from '../../services/authService';
 
 export const useLogin = () => {
   const pendingTicketCode = useAuthStore((state) => state.pendingTicketCode);

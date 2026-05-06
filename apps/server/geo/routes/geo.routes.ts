@@ -6,8 +6,13 @@ import { authenticate } from '@app/core';
 const router = Router();
 
 router.get('/health', geoController.healthCheck);
+router.get('/stats', geoController.getGlobalStats);
+router.get('/venues', geoController.getVenues);
+router.get('/events/:id/spatial', geoController.getEventSpatial);
+router.post('/events/:id/spatial', geoController.saveEventSpatial);
 router.get('/events', geoController.getEvents);
 router.get('/events/:id', geoController.getEvent);
+router.get('/events/:id/stats', geoController.getEventStats);
 router.get('/pois', geoController.getPois);
 router.get('/pois/categories', geoController.getCategories);
 router.get('/pois/:id', geoController.getPoi);

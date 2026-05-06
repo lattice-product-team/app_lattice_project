@@ -1,384 +1,280 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { SharedValue } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+
+const SPRING_CONFIG = {
+  damping: 30,
+  stiffness: 150,
+  mass: 1.0,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.01,
+  restSpeedThreshold: 2,
+};
 
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore } from '../store/useMapUIStore';
 import { useEventStore } from '../../event/store/useEventStore';
-import { normalizePOI } from '../../poi/adapters/poiAdapter';
+import { normalizePOI, normalizeEventList, normalizePOIList } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
-import { useMapStyle } from '../hooks/useMapStyle';
+
+// Components
+import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
+import { MapLayers } from './MapLayers';
 
 // Constants & Utilities
-import { EMPTY_GEOJSON, MAP_CENTER, DEFAULT_ZOOM, MAPTILER_KEY } from '../../../constants/mapConstants';
-import { mapLayerStyles } from '../../../styles/mapLayerStyles';
-
 import { useLocationStore } from '../../../store/useLocationStore';
-import { calculateBBox } from '../../../utils/geoUtils';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-const MAP_STYLES = {
-  light: `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`,
-  dark: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`
-} as const;
+import styleLight from '../../../../assets/map/style-light.json';
+import styleDark from '../../../../assets/map/style-dark.json';
+import { startupMetrics } from '../../../utils/startupMetrics';
 
 interface MapContentProps {
   poisGeoJSON: any;
+  allEvents?: any[];
   savedLocations?: any;
   onDeselect?: () => void;
-  sheetPosition: SharedValue<number>;
+  onSelectEvent?: (event: any) => void;
+  sheetPosition: any;
+  islandState: any;
   is3DActive?: boolean;
 }
 
-export const MapContent = React.memo(function MapContent({
+export const MapContent = function MapContent({
   poisGeoJSON,
-  savedLocations,
+  allEvents = [],
   onDeselect,
-  sheetPosition,
+  onSelectEvent,
+  islandState,
   is3DActive = false,
 }: MapContentProps) {
-  const camera = useRef<MapLibreGL.CameraRef>(null);
+  const cameraRef = useRef<MapCameraHandle>(null);
   const mapRef = useRef<any>(null);
-  const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
-  const { style: patchedMapStyle, isLoading: isStyleLoading } = useMapStyle(theme.dark ? MAP_STYLES.dark : MAP_STYLES.light);
+  const hasInitialRendered = React.useRef(false);
 
-  const { selectedPoiId, selectedCoords, selectPoi, deselect: storeDeselect } = usePOIStore();
+  const {
+    selectPoi,
+    setSelectedEvent,
+    selectedPoiId,
+    selectedCoords,
+    selectedEventId
+  } = usePOIStore();
   const { currentRoute, isNavigating } = useNavigationStore();
-  const { recenterCount, isFollowingUser, setIsFollowingUser, lastCameraPosition, setLastCameraPosition } = useMapUIStore();
-  const { currentEventId, selectedEvent } = useEventStore();
+  const { recenterCount, forceCenterCount, isFollowingUser, setIsFollowingUser, lastCameraPosition, setLastCameraPosition, setInitialLoadComplete } = useMapUIStore();
+  const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
+  const initialZoom = 14;
+  const [currentZoom, setCurrentZoom] = React.useState(initialZoom);
+  const { getFilteredPOIs } = usePOIStore();
+
+  const zoomSharedValue = useSharedValue(initialZoom);
+  const lastZoomUpdateRef = useRef(0);
+  const ZOOM_THROTTLE_MS = 100;
 
   // --- Logic Extraction ---
   useRoutingLogic();
-
-  const selectionGeoJSON = useMemo(() => {
-    if (!selectedCoords) return EMPTY_GEOJSON;
-    return {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: selectedCoords },
-          properties: { id: selectedPoiId },
-        },
-      ],
-    };
-  }, [selectedCoords, selectedPoiId]);
-
   const { data: pathNetwork } = usePathNetwork(currentEventId);
 
-  useEffect(() => {
-    if (recenterCount > 0 && camera.current && userCoords) {
-      camera.current.setCamera({
-        centerCoordinate: userCoords,
-        zoomLevel: DEFAULT_ZOOM,
-        animationDuration: 800,
-        animationMode: 'flyTo',
-        pitch: is3DActive ? 60 : 0,
-        padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
-      });
-    }
-  }, [recenterCount, userCoords]);
-
-  useEffect(() => {
-    if (selectedCoords && camera.current && !isNavigating) {
-      camera.current.setCamera({
-        centerCoordinate: selectedCoords,
-        zoomLevel: 17.2,
-        animationDuration: 400,
-        animationMode: 'flyTo',
-        pitch: is3DActive ? 60 : 0,
-        padding: {
-          paddingBottom: SCREEN_HEIGHT * 0.45,
-          paddingTop: insets.top + 40,
-          paddingLeft: 20,
-          paddingRight: 20,
-        },
-      });
-    }
-  }, [selectedCoords, isNavigating, insets.top]);
-
-  useEffect(() => {
-    if (selectedEvent && poisGeoJSON?.features && camera.current && !isNavigating) {
-      // Find all POIs that belong to this event (parentId === eventId)
-      const childPoiCoords = poisGeoJSON.features
-        .filter((f: any) => f.properties.parentId === selectedEvent.id || f.properties.event_id === selectedEvent.id)
-        .map((f: any) => f.geometry.coordinates);
-
-      if (childPoiCoords.length > 0) {
-        const bbox = calculateBBox(childPoiCoords);
-        if (bbox) {
-          camera.current.fitBounds(
-            [bbox[2], bbox[3]], // maxLng, maxLat
-            [bbox[0], bbox[1]], // minLng, minLat
-            [
-              SCREEN_HEIGHT * 0.45, // bottom padding for sheet
-              40, // top
-              40, // left
-              40, // right
-            ],
-            1000 // duration
-          );
-          return;
-        }
-      }
-
-      // Fallback to center if no children found
-      if (selectedEvent.center) {
-        camera.current.setCamera({
-          centerCoordinate: selectedEvent.center.coordinates,
-          zoomLevel: 16.5,
-          animationDuration: 1200,
-          animationMode: 'flyTo',
-          pitch: is3DActive ? 60 : 0,
-          padding: {
-            paddingBottom: SCREEN_HEIGHT * 0.4,
-            paddingTop: insets.top + 60,
-            paddingLeft: 40,
-            paddingRight: 40,
-          },
-        });
+  const handleCameraChange = useCallback((e: any) => {
+    const { geometry, properties } = e;
+    if (properties?.zoomLevel) {
+      zoomSharedValue.value = properties.zoomLevel;
+      if (Math.abs(currentZoom - properties.zoomLevel) > 0.1) {
+        setCurrentZoom(properties.zoomLevel);
       }
     }
-  }, [selectedEvent, poisGeoJSON, isNavigating, insets.top]);
 
-  useEffect(() => {
-    if (camera.current) {
-      camera.current.setCamera({
-        pitch: is3DActive ? 60 : 0,
-        animationDuration: 1000,
-        animationMode: 'flyTo',
-      });
+    // Update global store for other components (throttled)
+    const center = geometry?.coordinates as [number, number];
+    const zoom = properties?.zoomLevel;
+    const pitch = properties?.pitch;
+    if (center && zoom) {
+      setLastCameraPosition({ center, zoom, pitch });
     }
-  }, [is3DActive]);
+  }, [currentZoom, setCurrentZoom, zoomSharedValue, setLastCameraPosition]);
+
+  // Combined POIs logic
+  const allUIPois = useMemo(() => {
+    const eventPois = normalizeEventList(allEvents || []);
+    const venuePois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
+    return [...venuePois, ...eventPois];
+  }, [poisGeoJSON, allEvents]);
+
+  // Hierarchical visibility logic for POIs
+  const filteredPoisGeoJSON = useMemo(() => {
+    const filteredList = getFilteredPOIs(allUIPois, currentZoom);
+    return {
+      type: 'FeatureCollection',
+      features: filteredList
+        .filter(poi => poi.category !== 'event')
+        .map(poi => ({
+          type: 'Feature',
+          id: poi.id,
+          geometry: { type: 'Point', coordinates: poi.coordinates },
+          properties: {
+            id: poi.id,
+            name: poi.displayName,
+            icon: poi.categoryIcon,
+            category: poi.category,
+            color: poi.mainColor,
+            parentId: poi.parentId
+          }
+        }))
+    };
+  }, [allUIPois, currentZoom, getFilteredPOIs]);
+
+  const events = useMemo(() => normalizeEventList(allEvents || []), [allEvents]);
+
+  const eventsGeoJSON = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: events.map(poi => ({
+      type: 'Feature',
+      id: poi.id,
+      geometry: { type: 'Point', coordinates: poi.coordinates },
+      properties: {
+        id: poi.id,
+        name: poi.displayName,
+        category: poi.category,
+        color: poi.mainColor,
+        imageKey: poi.imageKey,
+        imageUrl: poi.images?.[0]
+      }
+    }))
+  }), [events]);
+
+  const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
 
   const handlePoiPress = useCallback(
     (data: any) => {
       const feature = data.features ? data.features[0] : data;
       if (!feature?.properties) return;
 
-      if (feature.properties.cluster && feature.properties.cluster_id) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        camera.current?.setCamera({
-          centerCoordinate: feature.geometry.coordinates,
-          zoomLevel: (camera.current as any).getZoom() + 2,
-          animationDuration: 400,
-        });
-        return;
-      }
-
+      const { properties, geometry } = feature;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      selectPoi(normalizePOI({
-        type: 'Feature',
-        geometry: feature.geometry,
-        properties: {
-          id: feature.properties.id,
-          name: feature.properties.name,
-          category: feature.properties.category,
-          ...feature.properties
-        }
-      } as any));
+      triggerForceCenter();
+      
+      if (properties.category === 'event') {
+        // If it's an event, handle it via handleEventPress logic
+        setSelectedEvent(properties.id);
+        setGlobalCurrentEvent(properties.raw || feature);
+        islandState.value = withSpring(0, SPRING_CONFIG);
+      } else {
+        // Normal POI selection
+        selectPoi(normalizePOI({
+          ...properties,
+          coordinates: geometry.coordinates,
+          raw: feature
+        }));
+      }
     },
-    [selectPoi]
+    [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]
   );
 
-  const handleRegionChange = useCallback(async (feature: any) => {
-    const { geometry, properties } = feature;
-    const center = geometry.coordinates as [number, number];
-    const zoom = properties.zoomLevel;
-    const pitch = properties.pitch;
+  const handleEventPress = useCallback((poi: any) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerForceCenter();
+    setSelectedEvent(poi.id);
+    setGlobalCurrentEvent(poi.raw);
+    // selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
+    islandState.value = withSpring(0, SPRING_CONFIG); // Use the same spring config as index.tsx
+  }, [setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]);
 
-    // Guardar posición para persistencia
-    setLastCameraPosition({ center, zoom, pitch });
+  const glPoisGeoJSON = useMemo(() => {
+    if (!poisGeoJSON?.features) return poisGeoJSON;
+    
+    // Filter out the currently selected POI from the GL layer to avoid duplication with MarkerView
+    return {
+      ...poisGeoJSON,
+      features: poisGeoJSON.features.filter((f: any) => f.properties.id !== selectedPoiId)
+    };
+  }, [poisGeoJSON, selectedPoiId]);
 
-    // Si el movimiento fue manual (isUserInteraction), desactivamos el seguimiento
-    if (properties.isUserInteraction && isFollowingUser) {
-      setIsFollowingUser(false);
-    }
-  }, [isFollowingUser, setIsFollowingUser, setLastCameraPosition]);
+  // Safety timeout to ensure overlay is hidden even if map event fails
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!hasInitialRendered.current) {
+        console.log('⚠️ [MapContent] Safety timeout triggered: forcing map ready');
+        hasInitialRendered.current = true;
+        setInitialLoadComplete(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [setInitialLoadComplete]);
 
-  const poisAndSaved = useMemo(() => {
-    const pois = poisGeoJSON?.features || [];
-    const saved =
-      savedLocations?.features?.map((f: any) => ({
-        ...f,
-        properties: { ...f.properties, id: `saved_${f.properties.id}`, name: f.properties.label },
-      })) || [];
-    return { type: 'FeatureCollection' as const, features: [...pois, ...saved] };
-  }, [poisGeoJSON, savedLocations]);
+  const mapStyle = useMemo(() => {
+    const baseStyle = theme.dark ? styleDark : styleLight;
+    
+    // Merge sources to keep essential layers while ensuring the main planet source is correct
+    return {
+      ...baseStyle,
+      sources: {
+        ...(baseStyle.sources || {}),
+        maptiler_planet: {
+          type: "vector",
+          url: "https://api.maptiler.com/tiles/v3/tiles.json?key=iqk4irD5FCOr6M6VHVWZ"
+        }
+      }
+    };
+  }, [theme.dark]);
+
   return (
     <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
         ref={mapRef}
         style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
-        mapStyle={typeof patchedMapStyle === 'object' ? patchedMapStyle : undefined}
+        mapStyle={mapStyle as any}
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
-        onPress={onDeselect || storeDeselect}
-        onRegionDidChange={handleRegionChange}
+        onPress={onDeselect}
+        onRegionIsChanging={handleCameraChange}
+        onRegionDidChange={handleCameraChange}
+        onDidFinishLoadingStyle={() => {
+          if (!hasInitialRendered.current) {
+            hasInitialRendered.current = true;
+            setInitialLoadComplete(true);
+            startupMetrics.markInteractive('Map');
+          }
+        }}
       >
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
-        <MapLibreGL.Camera
-          ref={camera}
-          minZoomLevel={11}
-          defaultSettings={{ 
-            centerCoordinate: lastCameraPosition?.center || MAP_CENTER, 
-            zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM, 
-            pitch: lastCameraPosition?.pitch || 0 
-          }}
-          followUserLocation={isFollowingUser || isNavigating}
-          followUserMode={(isNavigating ? 'compass' : 'normal') as any}
-          followZoomLevel={18}
+        
+        <MapCameraManager 
+          ref={cameraRef}
+          userCoords={userCoords}
+          selectedCoords={selectedCoords}
+          selectedEvent={selectedEvent}
+          poisGeoJSON={poisGeoJSON}
+          is3DActive={is3DActive}
+          recenterCount={recenterCount}
+          forceCenterCount={forceCenterCount}
+          lastCameraPosition={lastCameraPosition}
+          isNavigating={isNavigating}
         />
-        {/* 1. PATH NETWORK */}
-        <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
-          <MapLibreGL.LineLayer
-            id="networkLines"
-            style={{ 
-              ...mapLayerStyles.networkLines, 
-              lineOpacity: 0.15,
-              lineColor: theme.colors.brand.primary
-            }}
-          />
-        </MapLibreGL.ShapeSource>
 
-        {/* 2. VISUAL POIS */}
-        <MapLibreGL.ShapeSource 
-          id="poisSource" 
-          shape={poisGeoJSON || EMPTY_GEOJSON}
-          cluster={true}
-          clusterRadius={50}
-        >
-          <MapLibreGL.CircleLayer
-            id="poiCircles"
-            style={mapLayerStyles.poiCircles}
-            minZoomLevel={12.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-          <MapLibreGL.SymbolLayer
-            id="poiIcons"
-            style={mapLayerStyles.poiIcons}
-            minZoomLevel={12}
-            filter={[
-              'all',
-              ['!', ['has', 'point_count']],
-              [
-                'any',
-                ['==', ['get', 'category'], 'event'], // Always show events
-                ['>', ['zoom'], 15], // Show others when zoomed in
-                ['==', ['get', 'id'], selectedPoiId || ''], // Always show selected
-                ['==', ['get', 'parentId'], currentEventId || ''], // Show children of active event
-                ['==', ['get', 'event_id'], currentEventId || ''] // Handle both ID formats
-              ]
-            ]}
-          />
-          <MapLibreGL.SymbolLayer
-            id="poiLabels"
-            style={{
-              ...mapLayerStyles.poiLabels,
-              textField: ['get', 'name'],
-              textColor: theme.colors.text.primary,
-              textHaloColor: theme.colors.bg.main,
-              textHaloWidth: 1.5,
-            }}
-            minZoomLevel={15.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-          
-          <MapLibreGL.CircleLayer
-            id="clusterCircles"
-            style={mapLayerStyles.clusterCircles}
-            filter={['has', 'point_count']}
-          />
-          <MapLibreGL.SymbolLayer
-            id="clusterLabels"
-            style={mapLayerStyles.clusterLabels}
-            filter={['has', 'point_count']}
-          />
-
-          {/* Selected POI Highlight */}
-          <MapLibreGL.CircleLayer
-            id="selectedPoiHighlight"
-            filter={['==', ['get', 'id'], selectedPoiId || '']}
-            style={{
-              circleRadius: 22,
-              circleColor: theme.colors.text.primary,
-              circleOpacity: 0.2,
-              circleStrokeWidth: 2,
-              circleStrokeColor: theme.colors.text.primary,
-            }}
-          />
-        </MapLibreGL.ShapeSource>
-
-        {/* 3. VISUAL POIS (Handled in previous blocks) */}
-
-
-        <MapLibreGL.ShapeSource 
-          id="savedSource" 
-          shape={savedLocations || EMPTY_GEOJSON}
-          cluster={true}
-          clusterRadius={40}
-        >
-          <MapLibreGL.CircleLayer
-            id="savedCircles"
-            style={mapLayerStyles.savedPoiCircles}
-            minZoomLevel={12.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-          <MapLibreGL.SymbolLayer
-            id="savedLabels"
-            style={{
-              ...mapLayerStyles.poiLabels,
-              textColor: theme.colors.text.primary,
-              textHaloColor: theme.colors.bg.main,
-            }}
-            minZoomLevel={15.8}
-            filter={['!', ['has', 'point_count']]}
-          />
-        </MapLibreGL.ShapeSource>
-
-        {/* 3. ROUTE & SELECTION VISUALS */}
-        {!!(isNavigating && currentRoute) && (
-          <MapLibreGL.ShapeSource id="routeSource" shape={currentRoute}>
-            <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
-            <MapLibreGL.LineLayer
-              id="routeGlow"
-              style={{ ...mapLayerStyles.routeGlow, lineBlur: 4 }}
-            />
-          </MapLibreGL.ShapeSource>
-        )}
-
-        {/* 4. UNIFIED INTERACTION LAYER */}
-        <MapLibreGL.ShapeSource
-          id="interactionSource"
-          shape={poisAndSaved}
-          onPress={handlePoiPress}
-          hitbox={{ width: 44, height: 44 }}
-        >
-          <MapLibreGL.CircleLayer
-            id="interactionLayer"
-            style={{ circleRadius: 24, circleOpacity: 0 }}
-          />
-        </MapLibreGL.ShapeSource>
+        <MapLayers 
+          theme={theme}
+          poisGeoJSON={filteredPoisGeoJSON}
+          eventsGeoJSON={eventsGeoJSON}
+          selectedEventId={selectedEventId}
+          pathNetwork={pathNetwork}
+          currentRoute={currentRoute}
+          isNavigating={isNavigating}
+          onPoiPress={handlePoiPress}
+        />
       </MapLibreGL.MapView>
     </View>
   );
-});
+};
 
 MapContent.displayName = 'MapContent';
 
 const styles = StyleSheet.create({
   map: { flex: 1 },
 });
-

@@ -44,14 +44,18 @@ module.exports = {
         tiny: ["0.75rem", { lineHeight: "1rem" }],
       },
       fontFamily: {
-        sans: ["Outfit-Regular"],
-        medium: ["Outfit-Medium"],
-        semibold: ["Outfit-SemiBold"],
-        bold: ["Outfit-Bold"],
+        // Scalable Tokens
+        sans: ["Inter-Regular"],
+        "sans-medium": ["Inter-Medium"],
+        "sans-semibold": ["Inter-SemiBold"],
+        "sans-bold": ["Inter-Bold"],
+        serif: ["CormorantGaramond-Regular"],
+        "serif-light": ["CormorantGaramond-Light"],
+        "serif-medium": ["CormorantGaramond-Medium"],
+        "serif-bold": ["CormorantGaramond-Bold"],
+        // Legacy Support
+        outfit: ["Outfit-Regular"],
         jakarta: ["PlusJakartaSans-Regular"],
-        "jakarta-medium": ["PlusJakartaSans-Medium"],
-        "jakarta-bold": ["PlusJakartaSans-Bold"],
-        "jakarta-extra": ["PlusJakartaSans-ExtraBold"],
       },
       backdropBlur: {
         xs: "2px",

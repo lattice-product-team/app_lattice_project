@@ -19,7 +19,7 @@ import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { AuthDivider } from '../../src/components/ui/AuthDivider';
 import { PasskeyOnboardingSheet } from '../../src/components/ui/PasskeyOnboardingSheet';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
-import { AuthService } from '../../src/services/AuthService';
+import { AuthService } from '../../src/services/authService';
 import * as Google from 'expo-auth-session/providers/google';
 
 export default function LoginScreen() {

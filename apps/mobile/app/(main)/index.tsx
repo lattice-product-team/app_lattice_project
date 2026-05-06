@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView, Keyboard } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
@@ -15,7 +15,8 @@ import Animated, {
   runOnJS,
   withTiming,
   Extrapolation,
-  useAnimatedReaction
+  useAnimatedReaction,
+  useAnimatedScrollHandler
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,8 +28,12 @@ import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
+import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
+import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
+import { useVenueSpatial } from '../../src/features/map/hooks/useVenueSpatial';
+import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 
 // Stores & Hooks
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -36,13 +41,24 @@ import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
+import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
+import { LatticeEvent } from '../../src/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
+const SNAP_POINTS = [0, 0.5, 1];
+const SPRING_CONFIG = {
+  damping: 30,
+  stiffness: 150,
+  mass: 1.0,
+  overshootClamping: true,
+  restDisplacementThreshold: 0.01,
+  restSpeedThreshold: 2,
+};
 
 export default function MapIndexPage() {
   const theme = useAppTheme();
@@ -52,14 +68,37 @@ export default function MapIndexPage() {
   const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
+  const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
 
   // Map & POI State
-  const { selectedPoiId, deselect } = usePOIStore();
+  const { 
+    selectedPoiId, 
+    selectedPoi,
+    selectPoi,
+    deselect, 
+    selectedEventId, 
+    setSelectedEvent 
+  } = usePOIStore();
+  
+  const selectedEvent = useEventStore((s) => s.selectedEvent);
+  const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<LatticeEvent | null>(null);
   
   const { events } = useSearchEvents(searchQuery);
+  const venueId = selectedEvent?.venueId || (selectedEvent as any)?.venue_id;
+  const { spatialData: venueSpatial } = useVenueSpatial(venueId);
+  const { data: globalPois } = usePOIs(); // Load global POIs
+  
+  // Merge global POIs with venue-specific spatial data
+  const mergedPois = useMemo(() => {
+    const features = [...(globalPois?.features || [])];
+    if (venueSpatial?.features) {
+      features.push(...venueSpatial.features);
+    }
+    return { type: 'FeatureCollection', features };
+  }, [globalPois, venueSpatial]);
   
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
@@ -76,10 +115,12 @@ export default function MapIndexPage() {
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
   const islandState = useSharedValue(0); 
   const startState = useSharedValue(0);
-  const SNAP_POINTS = [0, 0.5]; // Solo gestos manuales hasta Nivel 2
 
-  const [preSearchLevel, setPreSearchLevel] = useState(0);
+  const preSearchLevel = useSharedValue(0);
+  const isScrollAtTop = useSharedValue(true);
+  
   const isPanning = useSharedValue(false);
+  const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
     return withTiming(selectedEvent ? 0 : 1, { duration: 300 });
   });
@@ -87,19 +128,31 @@ export default function MapIndexPage() {
   // Effect to handle POI selection triggering Level 3
   useEffect(() => {
     if (selectedPoiId) {
-      islandState.value = withSpring(1, { damping: 28, stiffness: 90 });
+      islandState.value = withSpring(1, SPRING_CONFIG);
     }
   }, [selectedPoiId, islandState]);
 
   const handleEventSelect = useCallback((event: LatticeEvent) => {
-    setSelectedEvent(event);
+    // Save current level before collapsing
+    preSearchLevel.value = islandState.value;
+    
+    setSelectedEvent(event.id);
+    setCurrentEvent(event);
+    selectPoi(null); // Clear any active POI selection
+    islandState.value = withSpring(0, SPRING_CONFIG); // Collapse search island
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, []);
+  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
 
   const handleCloseDetails = useCallback(() => {
     setSelectedEvent(null);
+    setCurrentEvent(null);
+    selectPoi(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+    // Restore island if needed
+    if (preSearchLevel.value > 0.1) {
+      islandState.value = withSpring(preSearchLevel.value, SPRING_CONFIG);
+    }
+  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState, preSearchLevel]);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -114,16 +167,20 @@ export default function MapIndexPage() {
       if (val < 0.8 && isSearching && isPanning.value) {
         runOnJS(dismissSearch)();
       }
+      // Activamos búsqueda si subimos al Nivel 3
+      if (val > 0.8 && !isSearching && isPanning.value) {
+        runOnJS(setIsSearching)(true);
+      }
     },
     [isSearching, dismissSearch]
   );
 
   const islandHeight = useDerivedValue(() => {
-    const fullHeight = SCREEN_HEIGHT * 0.80; // Altura máxima al 80%
+    const fullHeight = SCREEN_HEIGHT * 0.80; 
     if (islandState.value <= 0.5) {
-      return interpolate(islandState.value, [0, 0.5], [60, 450]);
+      return interpolate(islandState.value, [0, 0.5], [60, 450], Extrapolation.CLAMP);
     }
-    return interpolate(islandState.value, [0.5, 1], [450, fullHeight]);
+    return interpolate(islandState.value, [0.5, 1], [450, fullHeight], Extrapolation.CLAMP);
   });
 
   const gesture = Gesture.Pan()
@@ -133,9 +190,15 @@ export default function MapIndexPage() {
       startState.value = islandState.value;
     })
     .onUpdate((event) => {
-      const stateDelta = -event.translationY / (450 - 60); // Basado en el recorrido Nivel 1 -> 2
-      let newPos = startState.value + stateDelta;
-      islandState.value = Math.max(0, Math.min(1, newPos));
+      // Allow dragging down if at Level 3 and scroll is at top
+      const isDraggingDown = event.translationY > 0;
+      const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
+      
+      if (canDragSheet) {
+        const stateDelta = -event.translationY / (450 - 60); 
+        let newPos = startState.value + stateDelta;
+        islandState.value = Math.max(0, Math.min(1, newPos));
+      }
     })
     .onEnd((event) => {
       isPanning.value = false;
@@ -143,26 +206,19 @@ export default function MapIndexPage() {
       const predictedPos = islandState.value + velocity * 0.1;
       
       let closest = SNAP_POINTS[0];
-      if (predictedPos > 0.5) {
-        closest = 0.5;
-      } else {
-        let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
-        SNAP_POINTS.forEach((point) => {
-          const diff = Math.abs(predictedPos - point);
-          if (diff < minDiff) {
-            minDiff = diff;
-            closest = point;
-          }
-        });
-      }
+      let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
+      
+      SNAP_POINTS.forEach((point) => {
+        const diff = Math.abs(predictedPos - point);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closest = point;
+        }
+      });
 
-      islandState.value = withSpring(closest, {
-        damping: 28,
-        stiffness: 90,
-        mass: 0.8,
-      }, (finished) => {
+      islandState.value = withSpring(closest, SPRING_CONFIG, (finished) => {
         if (finished && (closest === 0 || closest === 0.5)) {
-          runOnJS(setPreSearchLevel)(closest);
+          preSearchLevel.value = closest;
         }
       });
 
@@ -188,14 +244,15 @@ export default function MapIndexPage() {
   });
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
+    const radius = 32;
     return {
-      borderTopLeftRadius: 32,
-      borderTopRightRadius: 32,
-      borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
-      borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [32, 0], Extrapolation.CLAMP),
+      borderTopLeftRadius: radius,
+      borderTopRightRadius: radius,
+      borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
+      borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
       backgroundColor: interpolateColor(
         islandState.value,
-        [0.7, 1],
+        [0.7, 0.95],
         ['transparent', theme.colors.bg.surface]
       ),
     };
@@ -203,7 +260,7 @@ export default function MapIndexPage() {
 
   const blurProps = useAnimatedProps(() => {
     return {
-      intensity: interpolate(islandState.value, [0.7, 1], [90, 0], Extrapolation.CLAMP)
+      // intensity should be passed as a regular prop
     };
   });
 
@@ -214,15 +271,19 @@ export default function MapIndexPage() {
     };
   });
 
-  const level3ContentStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(islandState.value, [0.7, 0.9], [0, 1], Extrapolation.CLAMP);
+  const level2ContentStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.7, 0.85], [1, 0], Extrapolation.CLAMP);
     return {
       opacity,
-      pointerEvents: opacity > 0.5 ? 'auto' : 'none',
-      position: 'absolute',
-      top: 80, 
-      left: 0,
-      right: 0,
+      pointerEvents: islandState.value > 0.85 ? 'none' : 'auto',
+    };
+  });
+
+  const level3ContentStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.8, 0.95], [0, 1], Extrapolation.CLAMP);
+    return {
+      opacity,
+      pointerEvents: islandState.value > 0.8 ? 'auto' : 'none',
     };
   });
 
@@ -230,6 +291,12 @@ export default function MapIndexPage() {
     return {
       pointerEvents: islandState.value > 0.5 ? 'auto' : 'none' as any,
     };
+  });
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      isScrollAtTop.value = event.contentOffset.y <= 0;
+    },
   });
 
   const scrollProps = useAnimatedProps(() => {
@@ -243,7 +310,7 @@ export default function MapIndexPage() {
     deselect();
     setIsSearching(false);
     if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel, { damping: 28, stiffness: 90 });
+      islandState.value = withSpring(preSearchLevel.value, SPRING_CONFIG);
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
@@ -254,7 +321,7 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
     
     // If we have coordinates, move map. For now just collapse.
-    islandState.value = withSpring(0.5, { damping: 28, stiffness: 90 });
+    islandState.value = withSpring(0.5, SPRING_CONFIG);
     
     if (coords) {
       console.log('Moving map to:', coords);
@@ -272,9 +339,12 @@ export default function MapIndexPage() {
       
       <View style={StyleSheet.absoluteFill}>
         <MapContent 
-          poisGeoJSON={null} 
-          sheetPosition={useSharedValue(SCREEN_HEIGHT)} 
+          poisGeoJSON={mergedPois} 
+          allEvents={events}
+          sheetPosition={sheetPosition} 
+          islandState={islandState}
           onDeselect={handleMapPress}
+          onSelectEvent={handleEventSelect}
           is3DActive={manualAR}
         />
       </View>
@@ -302,13 +372,14 @@ export default function MapIndexPage() {
         is3DActive={manualAR}
       />
 
-      <GestureDetector gesture={gesture}>
+      <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
         <Animated.View 
           pointerEvents={selectedEvent ? 'none' : 'auto'}
           style={[styles.islandContainer, islandStyle]}
         >
           <AnimatedSafeBlurView 
             tint={theme.colors.glass.tint} 
+            intensity={90}
             animatedProps={blurProps}
             style={[
               styles.islandBackground, 
@@ -333,7 +404,7 @@ export default function MapIndexPage() {
                 onProfilePress={handleProfilePress}
                 onFocus={() => {
                   setIsSearching(true);
-                  islandState.value = withSpring(1, { damping: 28, stiffness: 90 });
+                  islandState.value = withSpring(1, SPRING_CONFIG);
                 }}
                 onSubmit={() => {
                   saveSearch(searchQuery);
@@ -351,8 +422,18 @@ export default function MapIndexPage() {
               bounces={true}
               keyboardShouldPersistTaps="handled"
               animatedProps={scrollProps}
+              onScroll={scrollHandler}
+              scrollEventThrottle={16}
             >
-              {isSearching ? (
+              <Animated.View style={level2ContentStyle}>
+                <DiscoveryDashboard 
+                  islandState={islandState}
+                  onSelectCategory={handleSelectCategory}
+                  onSelectEvent={handleEventSelect}
+                />
+              </Animated.View>
+
+              <Animated.View style={[StyleSheet.absoluteFill, level3ContentStyle, { top: 0 }]}>
                 <SearchExperience 
                   query={searchQuery}
                   onSelectResult={(q, coords) => {
@@ -361,35 +442,23 @@ export default function MapIndexPage() {
                     if (match) handleEventSelect(match);
                   }}
                 />
-              ) : (
-                <>
-                  <DiscoveryDashboard 
-                    islandState={islandState}
-                    onSelectCategory={handleSelectCategory}
-                    onSelectEvent={handleEventSelect}
-                  />
-                  
-                  {/* Contenido dinámico del Nivel 3 (Detalles de POI, etc.) */}
-                  {!selectedPoiId && (
-                    <Animated.View style={level3ContentStyle}>
-                      <View style={styles.placeholderContent}>
-                        <Text style={{ color: theme.colors.text.primary, opacity: 0.5 }}>
-                          Selecciona un punto en el mapa para ver detalles
-                        </Text>
-                      </View>
-                    </Animated.View>
-                  )}
-                </>
-              )}
+              </Animated.View>
             </Animated.ScrollView>
           </AnimatedSafeBlurView>
         </Animated.View>
       </GestureDetector>
 
       <EventDetailSheet 
-        event={selectedEvent} 
+        event={selectedPoi?.parentId ? null : selectedEvent} 
         onClose={handleCloseDetails} 
       />
+
+      <POIMiniCard 
+        poi={selectedPoi?.parentId ? selectedPoi : null}
+        onClose={deselect}
+      />
+      
+      <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );
 }
