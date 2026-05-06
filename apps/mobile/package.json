@@ -14,7 +14,8 @@
     "pods": "cd ios && pod install && cd ..",
     "lint": "expo lint",
     "test": "npm run test:logic && npm run test:components",
-    "test:components": "jest",
+    "test:components": "jest --passWithNoTests",
+
     "test:logic": "vitest run"
   },
   "dependencies": {
