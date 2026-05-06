@@ -27,6 +27,20 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
   }
 }
 
+export const resolveAddress = async (req: Request, res: Response) => {
+  try {
+    const { lat, lng } = req.query;
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'Latitude and longitude are required' });
+    }
+    const address = await reverseGeocode(parseFloat(lat as string), parseFloat(lng as string));
+    res.json({ address });
+  } catch (error) {
+    console.error('Error resolving address:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 export const healthCheck = (req: Request, res: Response) => {
   res.json({ status: 'geo_service_ok', timestamp: new Date() });
 };
@@ -152,6 +166,13 @@ export const saveEventSpatial = async (req: Request, res: Response) => {
           eventId,
           name: poi.name,
           type: poi.type,
+          description: poi.description,
+          locationName: poi.locationName,
+          address: poi.address,
+          capacity: poi.capacity,
+          currentOccupancy: poi.currentOccupancy,
+          status: poi.status || 'open',
+          metadata: poi.metadata ? JSON.stringify(poi.metadata) : null,
           location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(poi.geometry)}), 4326)`,
         });
       }
@@ -218,8 +239,14 @@ export const getPois = async (req: Request, res: Response) => {
         crowdLevel: pointsOfInterest.crowdLevel,
         isWheelchairAccessible: pointsOfInterest.isWheelchairAccessible,
         hasPriorityLane: pointsOfInterest.hasPriorityLane,
+        locationName: pointsOfInterest.locationName,
+        address: pointsOfInterest.address,
+        capacity: pointsOfInterest.capacity,
+        currentOccupancy: pointsOfInterest.currentOccupancy,
+        status: pointsOfInterest.status,
+        metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
-        eventName: events.name, // Added event name
+        eventName: events.name,
       })
       .from(pointsOfInterest)
       .leftJoin(events, eq(pointsOfInterest.eventId, events.id))
@@ -249,7 +276,13 @@ export const getPois = async (req: Request, res: Response) => {
         crowdLevel: poi.crowdLevel,
         isWheelchairAccessible: poi.isWheelchairAccessible,
         hasPriorityLane: poi.hasPriorityLane,
-        eventName: poi.eventName, // Include event name in properties
+        locationName: poi.locationName,
+        address: poi.address,
+        capacity: poi.capacity,
+        currentOccupancy: poi.currentOccupancy,
+        status: poi.status,
+        metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
+        eventName: poi.eventName,
       },
     }));
 
@@ -315,6 +348,12 @@ export const getPoi = async (req: Request, res: Response) => {
         crowdLevel: pointsOfInterest.crowdLevel,
         isWheelchairAccessible: pointsOfInterest.isWheelchairAccessible,
         hasPriorityLane: pointsOfInterest.hasPriorityLane,
+        locationName: pointsOfInterest.locationName,
+        address: pointsOfInterest.address,
+        capacity: pointsOfInterest.capacity,
+        currentOccupancy: pointsOfInterest.currentOccupancy,
+        status: pointsOfInterest.status,
+        metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
       })
       .from(pointsOfInterest)
@@ -337,6 +376,12 @@ export const getPoi = async (req: Request, res: Response) => {
         crowdLevel: poi.crowdLevel,
         isWheelchairAccessible: poi.isWheelchairAccessible,
         hasPriorityLane: poi.hasPriorityLane,
+        locationName: poi.locationName,
+        address: poi.address,
+        capacity: poi.capacity,
+        currentOccupancy: poi.currentOccupancy,
+        status: poi.status,
+        metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
       },
     });
   } catch (error) {

@@ -40,15 +40,7 @@ export interface UserTicketSyncResponse {
   };
 }
 
-export type POIType =
-  | 'restaurant'
-  | 'wc'
-  | 'grandstand'
-  | 'gate'
-  | 'medical'
-  | 'shop'
-  | 'parking'
-  | 'meetup_point';
+export type POIType = typeof schema.poiTypeEnum.enumValues[number];
 
 // Re-export enums and other useful bits from schema if needed
 export {

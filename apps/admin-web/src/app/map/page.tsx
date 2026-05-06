@@ -54,6 +54,7 @@ export default function MapEditorPage() {
   const [pendingPoi, setPendingPoi] = useState<{lng: number, lat: number} | null>(null);
   const [poiName, setPoiName] = useState("");
   const [poiType, setPoiType] = useState("wc");
+  const [poiAddress, setPoiAddress] = useState("");
 
   useEffect(() => {
     fetch(`${API_BASE}/events`)
@@ -88,7 +89,8 @@ export default function MapEditorPage() {
           lng: p.geometry.coordinates[0],
           lat: p.geometry.coordinates[1],
           name: p.properties.name,
-          type: p.properties.type
+          type: p.properties.type,
+          address: p.properties.address
         })));
       });
   }, [selectedEventId]);
@@ -98,7 +100,13 @@ export default function MapEditorPage() {
     if (mode === 'poi') {
       setPendingPoi({ lng, lat });
       setPoiName("");
+      setPoiAddress("Resolving address...");
       onOpen();
+
+      fetch(`${API_BASE}/resolve-address?lat=${lat}&lng=${lng}`)
+        .then(res => res.json())
+        .then(data => setPoiAddress(data.address))
+        .catch(() => setPoiAddress("Address unavailable"));
     } else {
       setBoundaryPoints(prev => [...prev, [lng, lat]]);
     }
@@ -110,7 +118,8 @@ export default function MapEditorPage() {
         ...pendingPoi, 
         id: Date.now(), 
         name: poiName || "New Point", 
-        type: poiType 
+        type: poiType,
+        address: poiAddress
       }]);
     }
     setPendingPoi(null);
@@ -130,6 +139,8 @@ export default function MapEditorPage() {
         pois: markers.map(m => ({
           name: m.name,
           type: m.type,
+          address: m.address,
+          locationName: m.locationName || `${m.name} Area`,
           geometry: { type: 'Point', coordinates: [m.lng, m.lat] }
         }))
       };
@@ -306,6 +317,13 @@ export default function MapEditorPage() {
               placeholder="e.g. South Gate, Medical tent A"
               value={poiName}
               onChange={(e) => setPoiName(e.target.value)}
+            />
+            <Input 
+              label="Resolved Address"
+              placeholder="Detecting location..."
+              value={poiAddress}
+              onChange={(e) => setPoiAddress(e.target.value)}
+              startContent={<Icons.MapPin className="w-3 h-3 text-gravel" />}
             />
             <div className="space-y-2">
               <p className="text-gravel text-admin-xs font-bold uppercase tracking-widest">Category</p>

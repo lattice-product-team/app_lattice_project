@@ -186,6 +186,16 @@ async function seed() {
         location: poi.coords,
         eventId: config.event.id,
         description: `Experience the best of ${poi.name} at ${config.event.name}.`,
+        locationName: `${poi.name} Area`,
+        address: config.event.address || 'Venue Address',
+        capacity: Math.floor(1000 + Math.random() * 4000),
+        currentOccupancy: Math.floor(Math.random() * 100),
+        status: 'open',
+        metadata: JSON.stringify({ 
+          website: 'https://lattice.app', 
+          rating: (4 + Math.random()).toFixed(1), 
+          openingHours: '09:00 - 23:00' 
+        }),
       }).onConflictDoNothing();
     }
 

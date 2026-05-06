@@ -14,15 +14,15 @@ interface FetchState<T> {
  * A centralized hook for fetching administrative data with 
  * built-in validation and error handling.
  */
-export function useAdminFetch<T>(endpoint: string) {
+export function useAdminFetch<T>(endpoint: string, interval = 5000) {
   const [state, setState] = useState<FetchState<T>>({
     data: null,
     loading: true,
     error: null,
   });
 
-  const fetchData = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+  const fetchData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setState(prev => ({ ...prev, loading: true, error: null }));
     try {
       const response = await fetch(`${API_BASE}${endpoint}`);
       
@@ -32,10 +32,7 @@ export function useAdminFetch<T>(endpoint: string) {
 
       const jsonData = await response.json();
       
-      // Defensive check: ensure lists are actually arrays
-      if (endpoint.endsWith('s') && !Array.isArray(jsonData) && !endpoint.includes('/')) {
-         // This is a heuristic for list endpoints like /venues or /events
-         // If it's a list but not an array, it's an error state
+      if (endpoint.endsWith('s') && !Array.isArray(jsonData) && !endpoint.includes('/') && !endpoint.includes('?')) {
          throw new Error("Invalid data format received from server.");
       }
 
@@ -52,9 +49,13 @@ export function useAdminFetch<T>(endpoint: string) {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    
+    // Polling for real-time updates
+    const timer = setInterval(() => fetchData(true), interval);
+    return () => clearInterval(timer);
+  }, [fetchData, interval]);
 
-  return { ...state, refetch: fetchData };
+  return { ...state, refetch: () => fetchData() };
 }
 
 export function useVenues() {

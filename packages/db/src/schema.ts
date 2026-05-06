@@ -61,6 +61,12 @@ export const eventTypeEnum = pgEnum('event_type', [
   'generic',
 ]);
 
+export const operationalStatusEnum = pgEnum('operational_status', [
+  'open',
+  'closed',
+  'maintenance',
+]);
+
 // ---------------------------------------------------------
 // TABLES
 // ---------------------------------------------------------
@@ -144,6 +150,12 @@ export const pointsOfInterest = pgTable('points_of_interest', {
   description: text('description'),
   type: poiTypeEnum('type').notNull(),
   location: geometry('location').notNull(),
+  locationName: varchar('location_name'),
+  address: text('address'),
+  capacity: integer('capacity'),
+  currentOccupancy: integer('current_occupancy'),
+  status: operationalStatusEnum('status').default('open'),
+  metadata: text('metadata'),
   crowdLevel: crowdLevelEnum('crowd_level').default('low'),
   isWheelchairAccessible: boolean('is_wheelchair_accessible').default(true),
   hasPriorityLane: boolean('has_priority_lane'),
