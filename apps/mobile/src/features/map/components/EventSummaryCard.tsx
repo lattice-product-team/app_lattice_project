@@ -43,11 +43,11 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.titleSection}>
-          <View style={[styles.iconContainer, { backgroundColor: `${metadata.color}20` }]}>
+          <View style={[styles.iconContainer, { backgroundColor: theme.colors.glass.subtle }]}>
             {metadata.iconFamily === 'material' ? (
-              <MaterialCommunityIcons name={metadata.icon as any} size={24} color={metadata.color} />
+              <MaterialCommunityIcons name={metadata.icon as any} size={24} color={theme.colors.brand.primary} />
             ) : (
-              <Feather name={metadata.icon as any} size={24} color={metadata.color} />
+              <Feather name={metadata.icon as any} size={24} color={theme.colors.brand.primary} />
             )}
           </View>
           <View>
