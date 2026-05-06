@@ -66,3 +66,29 @@ vi.mock('react-native-mmkv', () => ({
   })),
 }));
 
+vi.mock('expo-constants', () => ({
+  default: {
+    expoConfig: {
+      extra: {
+        apiUrl: 'http://test.com/api',
+        nodeEnv: 'test',
+      },
+    },
+  },
+}));
+
+vi.mock('expo-modules-core', () => ({
+  requireNativeModule: vi.fn(() => ({})),
+  NativeModulesProxy: {},
+  EventEmitter: class {
+    addListener = vi.fn();
+    removeListener = vi.fn();
+    removeAllListeners = vi.fn();
+    emit = vi.fn();
+  },
+  Platform: {
+    OS: 'ios',
+  },
+}));
+
+
