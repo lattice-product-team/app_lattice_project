@@ -7,6 +7,7 @@ Currently, the mobile app map initializes at a hardcoded Madrid coordinate befor
 - Add persistence to `useLocationStore` using MMKV to save the last known location.
 - Modify `MapCameraManager` to use the persisted location (if available) as the initial center of the map.
 - Ensure the map initializes at the user's last known location instead of a hardcoded default.
+- Refactor the blur implementation in `EventDetailSheet` and `POIMiniCard` to use a layered architecture for better visual fidelity.
 
 ## Capabilities
 

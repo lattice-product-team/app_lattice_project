@@ -55,10 +55,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
 
   return (
     <Animated.View style={[styles.container, theme.shadows.soft, animatedStyle]}>
-      <AnimatedSafeBlurView 
-        tint={theme.colors.glass.tint}
-        intensity={90}
-        animatedProps={blurProps}
+      <View 
         style={[
           styles.content,
           { 
@@ -67,7 +64,17 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
           }
         ]}
       >
+        {/* 1. Base Blur Layer */}
+        <SafeBlurView 
+          tint={theme.colors.glass.tint}
+          intensity={90}
+          style={StyleSheet.absoluteFill}
+        />
+
+        {/* 2. Inner Glow Border */}
         <View style={styles.innerGlowBorder} />
+
+        {/* 3. Content Layer */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
             <MaterialCommunityIcons name={poi?.categoryIcon || 'map-marker'} size={24} color="white" />
@@ -89,7 +96,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
             <Text style={styles.actionText}>Go Now</Text>
           </Pressable>
         </View>
-      </AnimatedSafeBlurView>
+      </View>
     </Animated.View>
   );
 };

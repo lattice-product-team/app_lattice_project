@@ -30,6 +30,13 @@ The mobile application's map component (`MapContent` and `MapCameraManager`) cur
 **Decision:** Keep `MAP_CENTER` (Madrid) only as a final fallback if no persisted location or current location is available.
 **Rationale:** Provides a safe default if the user has never opened the app or has denied location permissions.
 
+### 4. Layered Blur Architecture
+**Decision:** Refactor `EventDetailSheet` and `POIMiniCard` to use a dedicated `SafeBlurView` as an absolute sibling layer behind the content.
+**Rationale:** The current "wrapper" pattern often causes visual clipping and less intense blur effects when animating or scrolling. By moving the blur to a dedicated background layer (as seen in `AdaptiveControlOverlay`), we ensure maximum visual fidelity and prevent internal content from interfering with the frosted glass effect.
+**Alternatives:** 
+- Keep wrapper pattern: Easiest but results in inferior visual quality.
+- Use native `backdrop-filter` (CSS): Not available in React Native.
+
 ## Risks / Trade-offs
 
 - **[Risk] Stale Location**: The app might initialize at a location where the user was hours or days ago.
