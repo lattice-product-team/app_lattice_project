@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { db, users, tickets, venues, events, passkeyCredentials, eq, and, sql } from '@app/db';
+import { decodeJwt } from './auth.utils';
 
 /**
  * Get configuration for a specific event including venue branding
@@ -549,33 +550,58 @@ export const googleLogin = async (req: Request, res: Response) => {
     // const ticket = await client.verifyIdToken({ idToken: token, audience: CLIENT_ID });
     // const payload = ticket.getPayload();
     
-    // MOCK Verification for now
-    const mockEmail = `google_${token.substring(0, 8)}@example.com`;
-    const mockGoogleId = `g_${token.substring(0, 10)}`;
-    const mockName = 'Google User';
+    // MOCK Verification for now - extraction from real token
+    const decoded = decodeJwt(token);
+    if (!decoded) {
+      return res.status(400).json({ error: 'Invalid Google token' });
+    }
 
-    let userResult = await db.select().from(users).where(eq(users.googleId, mockGoogleId)).limit(1);
+    const email = decoded.email;
+    const googleId = decoded.sub;
+    const name = decoded.name || 'Google User';
+    const avatarUrl = decoded.picture;
+
+    if (!email || !googleId) {
+      return res.status(400).json({ error: 'Google token missing required fields' });
+    }
+
+    let userResult = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
     let user = userResult[0];
 
     if (!user) {
       // Check if user exists with same email but different provider
-      const emailUserResult = await db.select().from(users).where(eq(users.email, mockEmail)).limit(1);
+      const emailUserResult = await db.select().from(users).where(eq(users.email, email)).limit(1);
       const emailUser = emailUserResult[0];
 
       if (emailUser) {
         // Link Google ID to existing email account
-        const updatedUser = await db.update(users).set({ googleId: mockGoogleId }).where(eq(users.id, emailUser.id)).returning();
+        const updatedUser = await db.update(users)
+          .set({ 
+            googleId: googleId,
+            fullName: emailUser.fullName || name,
+            avatarUrl: emailUser.avatarUrl || avatarUrl
+          })
+          .where(eq(users.id, emailUser.id))
+          .returning();
         user = updatedUser[0];
       } else {
         // Create new user
         const newUser = await db.insert(users).values({
-          email: mockEmail,
-          googleId: mockGoogleId,
-          fullName: mockName,
+          email: email,
+          googleId: googleId,
+          fullName: name,
+          avatarUrl: avatarUrl,
           passwordHash: 'social_login_no_password',
         }).returning();
         user = newUser[0];
       }
+    }
+
+    // Associate ticket if provided
+    if (ticket_code) {
+      await db.update(tickets).set({ userId: user.id }).where(eq(tickets.code, ticket_code));
+      const updatedUser = await db.update(users).set({ hasTicket: true }).where(eq(users.id, user.id)).returning();
+      user = updatedUser[0];
     }
 
     res.json({
@@ -607,21 +633,29 @@ export const appleLogin = async (req: Request, res: Response) => {
   try {
     // TODO: Verify token with apple-signin-verify
     
-    // MOCK Verification for now
-    const mockAppleId = `apple_${token.substring(0, 10)}`;
-    const mockEmail = `apple_${token.substring(0, 8)}@example.com`;
+    // MOCK Verification for now - try to extract from token if it's a JWT
+    const decoded = decodeJwt(token);
+    const appleId = decoded?.sub || `apple_${token.substring(0, 10)}`;
+    const email = decoded?.email || `apple_${token.substring(0, 8)}@example.com`;
 
-    let userResult = await db.select().from(users).where(eq(users.appleId, mockAppleId)).limit(1);
+    let userResult = await db.select().from(users).where(eq(users.appleId, appleId)).limit(1);
     let user = userResult[0];
 
     if (!user) {
       const newUser = await db.insert(users).values({
-        email: mockEmail,
-        appleId: mockAppleId,
-        fullName: fullName ? `${fullName.firstName} ${fullName.lastName}` : 'Apple User',
+        email: email,
+        appleId: appleId,
+        fullName: fullName ? `${fullName.firstName} ${fullName.lastName}` : (decoded?.name || 'Apple User'),
         passwordHash: 'social_login_no_password',
       }).returning();
       user = newUser[0];
+    }
+
+    // Associate ticket if provided
+    if (ticket_code) {
+      await db.update(tickets).set({ userId: user.id }).where(eq(tickets.code, ticket_code));
+      const updatedUser = await db.update(users).set({ hasTicket: true }).where(eq(users.id, user.id)).returning();
+      user = updatedUser[0];
     }
 
     res.json({

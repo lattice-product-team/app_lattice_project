@@ -17,6 +17,7 @@ interface MapCameraManagerProps {
   forceCenterCount: number;
   lastCameraPosition: any;
   isNavigating: boolean;
+  isFollowingUser: boolean;
 }
 
 export interface MapCameraHandle {
@@ -34,6 +35,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   forceCenterCount,
   lastCameraPosition,
   isNavigating,
+  isFollowingUser,
 }, ref) => {
   const cameraRef = React.useRef<any>(null);
   const insets = useSafeAreaInsets();
@@ -44,7 +46,21 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       cameraRef.current?.fitBounds(ne, sw, padding, duration),
   }));
 
-  // Recenter on user
+  // Initial fix on user location
+  const hasFixedOnUser = React.useRef(false);
+  useEffect(() => {
+    if (userCoords && !hasFixedOnUser.current && cameraRef.current && !lastCameraPosition) {
+      hasFixedOnUser.current = true;
+      cameraRef.current.setCamera({
+        centerCoordinate: userCoords,
+        zoomLevel: DEFAULT_ZOOM,
+        animationDuration: 0, // Salto instantáneo
+        animationMode: 'none',
+      });
+    }
+  }, [userCoords, lastCameraPosition]);
+
+  // Recenter on user (manual trigger)
   useEffect(() => {
     if (recenterCount > 0 && cameraRef.current && userCoords) {
       cameraRef.current.setCamera({
@@ -137,9 +153,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM, 
         pitch: lastCameraPosition?.pitch || 0 
       }}
-      followUserLocation={isNavigating} // Simplified
+      followUserLocation={isNavigating || isFollowingUser}
       followUserMode={(isNavigating ? 'compass' : 'normal') as any}
-      followZoomLevel={18}
+      followZoomLevel={17}
     />
   );
 });

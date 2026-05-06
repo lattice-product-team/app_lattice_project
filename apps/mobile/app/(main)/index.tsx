@@ -46,6 +46,7 @@ import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
 import { LatticeEvent } from '../../src/types';
+import { useLocationService } from '../../src/hooks/useLocationService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -64,6 +65,9 @@ export default function MapIndexPage() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  
+  // Start location tracking
+  useLocationService();
   const isGuest = useAuthStore((state) => state.isGuest);
   const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);

@@ -4,25 +4,30 @@ import {
   Text,
   Pressable,
   Linking,
-  StyleSheet
+  StyleSheet,
+  Dimensions
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { Feather } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
 import { PremiumButton } from '../../src/components/ui/PremiumButton';
 import { AuthDivider } from '../../src/components/ui/AuthDivider';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
+import { Image } from 'expo-image';
+
+const { height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   
-  const { token, setGuestMode } = useAuthStore();
+  const { token } = useAuthStore();
 
   useEffect(() => {
     if (token) {
@@ -30,83 +35,54 @@ export default function RegisterScreen() {
     }
   }, [token, router]);
 
-  const handleGuestMode = () => {
-    Haptics.selectionAsync();
-    setGuestMode(true);
-    router.replace('/(main)');
-  };
-
   return (
-    <AuthLayout midnight>
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingBottom: insets.bottom + 40 }}>
+    <AuthLayout 
+      transparent 
+      showBack 
+      onBack={() => router.replace('/(auth)/onboarding')}
+    >
+      <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
         
         {/* Header Section */}
         <Animated.View 
           entering={FadeInDown.duration(1000).springify()}
           style={styles.header}
         >
-          <View style={styles.logoSpacing} />
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-            Join In
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../../assets/images/icon.png')} 
+              style={styles.logoImage}
+              contentFit="contain"
+            />
+          </View>
+          
+          <Text style={styles.title}>
+            Your new{'\n'}experience is here.
           </Text>
-          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-            Start your urban adventure.
+          <Text style={styles.subtitle}>
+            Join the Lattice community today.
           </Text>
         </Animated.View>
 
         {/* Action Section */}
         <View style={styles.actionsContainer}>
-          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 14 }}>
+          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 12 }}>
             <PremiumButton 
-              label="Sign up with Apple" 
-              variant="apple" 
-              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-            />
-            <PremiumButton 
-              label="Sign up with Google" 
+              label="Continue with Google" 
               variant="google" 
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+              style={styles.socialButton}
             />
             
-            <View style={styles.dividerWrapper}>
-              <AuthDivider label="OR" />
-            </View>
-
             <PremiumButton 
-              label="Sign up with Email" 
+              label="Continue with Email" 
               variant="outline" 
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/(auth)/email-auth');
+                router.push('/(auth)/login');
               }}
+              style={styles.socialButton}
             />
-          </Animated.View>
-
-          {/* Elevated Guest Button */}
-          <Animated.View 
-            entering={FadeInDown.delay(400).duration(1000).springify()}
-            style={styles.skipSection}
-          >
-            <Pressable 
-              onPress={handleGuestMode}
-              style={({ pressed }) => [
-                styles.skipButton,
-                { 
-                  backgroundColor: theme.colors.glass.subtle,
-                  borderColor: 'rgba(255,255,255,0.08)'
-                },
-                pressed && { opacity: 0.8, transform: [{ scale: 0.97 }] }
-              ]}
-            >
-              <View style={styles.skipButtonContent}>
-                <Text style={[styles.skipButtonText, { color: theme.colors.text.primary }]}>
-                  Explore as Guest
-                </Text>
-                <View style={[styles.arrowCircle, { backgroundColor: '#000' }]}>
-                  <Feather name="arrow-right" size={14} color="#fff" />
-                </View>
-              </View>
-            </Pressable>
           </Animated.View>
         </View>
 
@@ -115,23 +91,23 @@ export default function RegisterScreen() {
           entering={FadeIn.delay(800).duration(1200)}
           style={styles.footer}
         >
-          <View style={styles.registerLink}>
-            <Text style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Medium', fontSize: 14 }}>
-              Already a member?{' '}
+          <View style={styles.switchLink}>
+            <Text style={styles.footerText}>
+              Already have an account?{' '}
             </Text>
             <Link href="/(auth)/login" asChild>
               <Pressable hitSlop={10}>
-                <Text style={{ color: theme.colors.brand.primary, fontFamily: 'PlusJakartaSans-Bold', fontSize: 14 }}>
-                  Sign In
+                <Text style={styles.footerLink}>
+                  Sign in
                 </Text>
               </Pressable>
             </Link>
           </View>
 
           <Text style={styles.legalText}>
-            By joining, you confirm that you've read and agreed to our{' '}
+            By continuing, you agree to our{' '}
             <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
-            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Privacy</Text>.
+            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
           </Text>
         </Animated.View>
       </View>
@@ -141,79 +117,71 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: 60,
+    marginTop: height * 0.16,
     alignItems: 'center',
   },
-  logoSpacing: {
-    height: 40,
+  logoContainer: {
+    marginBottom: 20,
+  },
+  logoImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
   },
   title: {
     fontSize: 56,
-    fontFamily: 'Outfit-Bold',
-    letterSpacing: -2.5,
+    fontFamily: 'CormorantGaramond-Medium',
     lineHeight: 60,
+    letterSpacing: -1,
+    textAlign: 'center',
+    color: '#000',
   },
   subtitle: {
     fontSize: 18,
-    fontFamily: 'Outfit-Medium',
-    marginTop: 6,
-    opacity: 0.8,
+    fontFamily: 'Inter-Medium',
+    marginTop: 8,
+    opacity: 0.5,
+    textAlign: 'center',
+    color: '#000',
   },
   actionsContainer: {
-    paddingHorizontal: 28,
     width: '100%',
-    gap: 32,
+    marginTop: 40,
   },
-  dividerWrapper: {
-    paddingVertical: 8,
-  },
-  skipSection: {
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  skipButton: {
-    borderRadius: 40,
-    borderWidth: 1,
-    minWidth: 220,
-    overflow: 'hidden',
-  },
-  skipButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: 24,
-    paddingRight: 8,
-    paddingVertical: 8,
-    gap: 12,
-  },
-  skipButtonText: {
-    fontSize: 15,
-    fontFamily: 'PlusJakartaSans-Bold',
-    letterSpacing: 0.2,
-  },
-  arrowCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+  socialButton: {
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFF',
+    borderWidth: 1.2,
+    borderColor: '#F0F0F0',
   },
   footer: {
     alignItems: 'center',
-    paddingHorizontal: 40,
-    gap: 24,
+    gap: 16,
+    marginTop: 40,
   },
-  registerLink: {
+  switchLink: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 4,
+  },
+  footerText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 15,
+    color: 'rgba(0,0,0,0.4)',
+  },
+  footerLink: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 15,
+    color: '#E2B042', // Lattice Orange
   },
   legalText: {
-    fontSize: 11,
-    color: 'rgba(150, 150, 150, 0.5)',
+    fontSize: 12,
+    color: 'rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
-    lineHeight: 16,
-    fontFamily: 'PlusJakartaSans-Medium',
-    maxWidth: 240,
+    lineHeight: 18,
+    fontFamily: 'Inter-Regular',
+    maxWidth: 280,
   },
   legalLink: {
     textDecorationLine: 'underline',

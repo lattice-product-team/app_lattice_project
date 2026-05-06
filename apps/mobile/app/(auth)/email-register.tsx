@@ -49,15 +49,8 @@ export default function EmailRegisterScreen() {
   };
 
   return (
-    <AuthLayout midnight>
+    <AuthLayout midnight showBack onBack={() => router.back()}>
       <View style={styles.container}>
-        {/* Back Button */}
-        <Pressable 
-          onPress={() => router.back()} 
-          style={styles.backButton}
-        >
-          <Feather name="arrow-left" size={24} color={theme.colors.text.primary} />
-        </Pressable>
 
         <Animated.View entering={FadeInDown.duration(600).springify()}>
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>Create Account</Text>
@@ -118,11 +111,11 @@ export default function EmailRegisterScreen() {
           />
 
           <View style={styles.registerLink}>
-            <Text style={{ color: theme.colors.text.muted, fontFamily: 'PlusJakartaSans-Medium', fontSize: 14 }}>
+            <Text style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Medium', fontSize: 14 }}>
               Already have an account?{' '}
             </Text>
             <Pressable onPress={() => router.back()} hitSlop={10}>
-              <Text style={{ color: theme.colors.brand.primary, fontFamily: 'PlusJakartaSans-Bold', fontSize: 14 }}>
+              <Text style={{ color: theme.colors.brand.primary, fontFamily: 'Inter-Bold', fontSize: 14 }}>
                 Sign In
               </Text>
             </Pressable>
@@ -136,7 +129,7 @@ export default function EmailRegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 80,
     paddingHorizontal: 24,
   },
   backButton: {
@@ -149,13 +142,14 @@ const styles = StyleSheet.create({
     marginLeft: -10,
   },
   title: {
-    fontSize: 28,
-    fontFamily: 'Outfit-Bold',
+    fontSize: 32,
+    fontFamily: 'CormorantGaramond-Bold',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    fontFamily: 'Outfit-Medium',
+    fontFamily: 'Inter-Medium',
+    opacity: 0.6,
     marginBottom: 40,
   },
   form: {
@@ -174,7 +168,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans-Medium',
+    fontFamily: 'Inter-Medium',
   },
   registerLink: {
     flexDirection: 'row',

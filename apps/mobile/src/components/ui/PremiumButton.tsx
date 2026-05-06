@@ -111,7 +111,7 @@ export const PremiumButton = ({
   const getTextStyle = () => {
     const base = { 
       fontSize: 15, 
-      fontFamily: typography.primary.bold,
+      fontFamily: typography.sans.semibold,
       letterSpacing: -0.2
     };
 

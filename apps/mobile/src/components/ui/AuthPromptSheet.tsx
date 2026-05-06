@@ -99,12 +99,12 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
       <Animated.View style={[styles.floatingCard, containerStyle]}>
         <SafeBlurView 
           tint={theme.colors.glass.tint} 
-          intensity={100}
+          intensity={90}
           style={[
             styles.blurBackground,
             { 
-              backgroundColor: theme.colors.glass.background,
-              borderColor: theme.colors.glass.border 
+              backgroundColor: 'transparent',
+              borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'
             }
           ]}
         >
