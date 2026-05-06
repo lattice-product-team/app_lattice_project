@@ -43,6 +43,13 @@
       "when": 1778054730391,
       "tag": "0005_lovely_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778056057461,
+      "tag": "0006_panoramic_exodus",
+      "breakpoints": true
     }
   ]
 }
