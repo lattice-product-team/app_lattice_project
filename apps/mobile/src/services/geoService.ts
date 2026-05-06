@@ -34,8 +34,8 @@ export const geoService = {
     return apiClient.get<any>('/saved');
   },
 
-  getVenueSpatial: async (venueId: number): Promise<any> => {
-    return apiClient.get<any>(`/venues/${venueId}/spatial`);
+  getEventSpatial: async (eventId: number): Promise<any> => {
+    return apiClient.get<any>(`/events/${eventId}/spatial`);
   },
 
   saveLocation: async (data: { label: string, latitude: number, longitude: number }): Promise<any> => {

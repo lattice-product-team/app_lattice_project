@@ -6,18 +6,18 @@ This spec defines the synchronization engine for spatial data between Admin Web 
 ## Requirements
 
 ### Requirement: Spatial Data Persistence
-The system SHALL provide a mechanism to save and retrieve venue-level spatial configurations (Boundaries and Points of Interest) created via the Admin Web.
+The system SHALL provide a mechanism to save and retrieve event-level spatial configurations (Boundaries and Points of Interest) created via the Admin Web.
 
-#### Scenario: Saving a Venue Map
-- **WHEN** the user clicks "Save Venue Map" in the Map Editor after drawing a boundary and adding pins
-- **THEN** the system MUST persist the GeoJSON boundary to the `venues` table and the individual markers to the `points_of_interest` table via the `geo` service.
+#### Scenario: Saving an Event Map
+- **WHEN** the user clicks "Save Event Map" in the Map Editor after drawing a boundary and adding pins
+- **THEN** the system MUST persist the GeoJSON boundary to the `events` table and the individual markers to the `points_of_interest` table via the `geo` service.
 
 ### Requirement: Persistent Layer Rendering
-The Map Editor SHALL automatically load and render any existing boundaries and POIs for a selected venue upon initialization.
+The Map Editor SHALL automatically load and render any existing boundaries and POIs for a selected event upon initialization.
 
 #### Scenario: Loading Existing Map
-- **WHEN** a user enters the Map Editor and selects a venue
-- **THEN** the system SHALL fetch existing spatial data from the `geo` service and render them as static layers on the map.
+- **WHEN** a user enters the Map Editor and selects an event
+- **THEN** the system MUST fetch the GeoJSON data from `/api/v1/events/:id/spatial` and populate the canvas.
 
 ### Requirement: Rich POI Configuration
 The system SHALL allow users to specify semantic metadata for each Point of Interest, including Name and Type (e.g., WC, Restaurant, Entrance).

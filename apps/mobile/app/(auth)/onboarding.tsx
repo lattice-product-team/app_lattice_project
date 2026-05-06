@@ -32,7 +32,7 @@ const FEATURE_CARDS = [
   { id: '2', label: 'Map', icon: 'map-pin' },
   { id: '3', label: 'Social', icon: 'users' },
   { id: '4', label: 'Tickets', icon: 'tag' },
-  { id: '5', label: 'Venues', icon: 'home' },
+  { id: '5', label: 'Locations', icon: 'home' },
   { id: '6', label: 'Verified', icon: 'shield' },
   { id: '7', label: 'City', icon: 'target' },
   { id: '8', label: 'Exclusive', icon: 'star' },
@@ -50,7 +50,7 @@ const ONBOARDING_DATA = [
     id: '2',
     title: 'Explore the unseen.',
     subtitle: 'Exclusive Map',
-    description: 'Discover underground events and secret venues around you.',
+    description: 'Discover underground events and secret locations around you.',
   },
   {
     id: '3',

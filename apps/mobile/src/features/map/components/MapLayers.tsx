@@ -81,7 +81,7 @@ export const MapLayers = ({
         );
       })}
 
-      {/* 2. VENUE BOUNDARY */}
+      {/* 2. EVENT PERIMETER */}
       <MapLibreGL.ShapeSource 
         id="boundarySource" 
         shape={poisGeoJSON || EMPTY_GEOJSON}

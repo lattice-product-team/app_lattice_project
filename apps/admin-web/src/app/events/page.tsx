@@ -152,7 +152,7 @@ export default function EventsPage() {
                       </td>
                       <td className="py-6 px-6">
                         <div className="flex flex-col max-w-[200px]">
-                          <span className="text-admin-base font-bold text-obsidian">{event.locationName || "Venue"}</span>
+                          <span className="text-admin-base font-bold text-obsidian">{event.locationName || "Location"}</span>
                           <span className="text-[11px] text-gravel leading-tight truncate" title={event.address}>{event.address || "Coordinates pending..."}</span>
                         </div>
                       </td>

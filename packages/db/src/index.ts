@@ -9,7 +9,6 @@ const env = loadConfig();
 // Explicit exports to avoid resolution issues
 export {
   users,
-  venues,
   events,
   tickets,
   pointsOfInterest,

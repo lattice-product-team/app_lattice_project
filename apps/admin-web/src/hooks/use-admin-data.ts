@@ -58,10 +58,6 @@ export function useAdminFetch<T>(endpoint: string, interval = 5000) {
   return { ...state, refetch: () => fetchData() };
 }
 
-export function useVenues() {
-  const { data, loading, error, refetch } = useAdminFetch<any[]>('/venues');
-  return { venues: data || [], loading, error, refetch };
-}
 
 export function useEvents() {
   const { data, loading, error, refetch } = useAdminFetch<any[]>('/events');

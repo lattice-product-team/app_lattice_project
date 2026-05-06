@@ -1,12 +1,12 @@
 # global-ops-center Specification
 
 ## Purpose
-This spec defines the centralized Operations Center for real-time monitoring of events and venues.
+This spec defines the centralized Operations Center for real-time monitoring of events and locations.
 
 ## Requirements
 
 ### Requirement: Global Operations Dashboard
-The system SHALL provide a centralized "Operations Center" as the root page of the Admin Web application, displaying real-time metrics across all managed venues and events.
+The system SHALL provide a centralized "Operations Center" as the root page of the Admin Web application, displaying real-time metrics across all managed events.
 
 #### Scenario: Aggregated Metrics Visualization
 - **WHEN** the user visits the root path `/`
