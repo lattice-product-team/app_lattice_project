@@ -8,6 +8,7 @@ const router = Router();
 router.get('/health', geoController.healthCheck);
 router.get('/stats', geoController.getGlobalStats);
 router.get('/venues', geoController.getVenues);
+router.get('/venues/:id/spatial', geoController.getVenueSpatial);
 router.get('/events/:id/spatial', geoController.getEventSpatial);
 router.post('/events/:id/spatial', geoController.saveEventSpatial);
 router.get('/events', geoController.getEvents);
