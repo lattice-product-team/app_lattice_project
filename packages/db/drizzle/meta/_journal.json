@@ -22,6 +22,13 @@
       "when": 1777966960169,
       "tag": "0002_big_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778047823147,
+      "tag": "0003_worried_lady_ursula",
+      "breakpoints": true
     }
   ]
 }

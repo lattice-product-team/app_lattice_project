@@ -51,63 +51,104 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <Table
-          aria-label="All Events List"
-          className="bg-transparent shadow-none"
-        >
-          <Table.Content>
-            <Table.Header>
-              <Table.Column key="id" id="id" isRowHeader className="text-gravel uppercase text-[10px] tracking-widest font-black">ID</Table.Column>
-              <Table.Column key="name" id="name" className="text-gravel uppercase text-[10px] tracking-widest font-black">Event Name</Table.Column>
-              <Table.Column key="location" id="location" className="text-gravel uppercase text-[10px] tracking-widest font-black">Location</Table.Column>
-              <Table.Column key="status" id="status" className="text-gravel uppercase text-[10px] tracking-widest font-black">Status</Table.Column>
-              <Table.Column key="actions" id="actions" className="text-gravel uppercase text-[10px] tracking-widest font-black text-right">Actions</Table.Column>
-            </Table.Header>
-            <Table.Body>
+        <div className="w-full overflow-x-auto scrollbar-hide border border-chalk rounded-2xl bg-white/50 backdrop-blur-sm">
+          <table className="w-full text-left border-collapse min-w-[1200px]">
+            <thead>
+              <tr className="border-b border-chalk bg-powder/50">
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Event Details</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Category</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black whitespace-nowrap">Schedule</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Occupancy (Live)</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location / Address</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Capacity</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Status</th>
+                <th className="py-4 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
               {loading ? (
-                <Table.Row key="loading">
-                  <Table.Cell className="py-6 text-center" colSpan={5}>
-                    <Spinner color="current" size="sm" label="Loading events..." />
-                  </Table.Cell>
-                </Table.Row>
+                <tr>
+                  <td colSpan={9} className="py-12 text-center">
+                    <Spinner color="current" size="sm" label="Loading operational telemetry..." />
+                  </td>
+                </tr>
               ) : events.length === 0 ? (
-                <Table.Row key="empty">
-                  <Table.Cell className="py-6 text-center text-gravel" colSpan={5}>
-                    No events found.
-                  </Table.Cell>
-                </Table.Row>
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-gravel font-medium">
+                    No operational events discovered.
+                  </td>
+                </tr>
               ) : (
-                events.map((event: any) => (
-                <Table.Row key={event.id} id={event.id.toString()} className="border-b border-chalk hover:bg-powder/30 transition-colors">
-                  <Table.Cell className="py-6">
-                    <span className="font-mono text-admin-xs text-slate">EVT-{event.id.toString().padStart(3, '0')}</span>
-                  </Table.Cell>
-                  <Table.Cell className="py-6">
-                    <span className="font-bold text-obsidian text-admin-base">{event.name}</span>
-                  </Table.Cell>
-                  <Table.Cell className="py-6">
-                    <span className="text-admin-base text-gravel">{event.locationName || "Virtual"}</span>
-                  </Table.Cell>
-                  <Table.Cell className="py-6">
-                    <Chip 
-                      size="sm" 
-                      variant="soft"
-                      className="font-black text-[10px] uppercase tracking-widest rounded-full bg-obsidian text-eggshell"
-                    >
-                      {new Date(event.endDate) > new Date() ? 'Active' : 'Past'}
-                    </Chip>
-                  </Table.Cell>
-                  <Table.Cell className="py-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="compact">Manage</Button>
-                      <Button variant="compact">Archive</Button>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              )))}
-            </Table.Body>
-          </Table.Content>
-        </Table>
+                events.map((event: any) => {
+                  const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
+                  const start = new Date(event.startDate);
+                  const end = new Date(event.endDate);
+                  const isActive = end > new Date();
+
+                  return (
+                    <tr key={event.id} className="border-b border-chalk hover:bg-powder/30 transition-colors group">
+                      <td className="py-6 px-6">
+                        <span className="font-mono text-admin-xs text-slate">EVT-{event.id.toString().padStart(3, '0')}</span>
+                      </td>
+                      <td className="py-6 px-6">
+                        <span className="font-bold text-obsidian text-admin-base">{event.name}</span>
+                      </td>
+                      <td className="py-6 px-6">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate bg-chalk px-2 py-1 rounded border border-chalk/50">
+                          {event.type}
+                        </span>
+                      </td>
+                      <td className="py-6 px-6">
+                        <div className="flex flex-col text-admin-xs text-gravel">
+                          <span className="font-medium text-obsidian">{start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          <span className="opacity-70">{start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </td>
+                      <td className="py-6 px-6">
+                        <div className="flex flex-col gap-2 w-32">
+                           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-tighter text-obsidian">
+                              <span>Live</span>
+                              <span>{metadata?.currentOccupancy || 0}%</span>
+                           </div>
+                           <div className="w-full h-1.5 bg-chalk rounded-full overflow-hidden">
+                              <div className="h-full bg-obsidian transition-all duration-1000" style={{ width: `${metadata?.currentOccupancy || 0}%` }}></div>
+                           </div>
+                        </div>
+                      </td>
+                      <td className="py-6 px-6">
+                        <div className="flex flex-col max-w-[200px]">
+                          <span className="text-admin-base font-bold text-obsidian">{event.locationName || "Venue"}</span>
+                          <span className="text-[11px] text-gravel leading-tight truncate" title={event.address}>{event.address || "Coordinates pending..."}</span>
+                        </div>
+                      </td>
+                      <td className="py-6 px-6">
+                        <span className="font-mono text-admin-sm text-obsidian font-bold">
+                          {metadata?.capacity?.toLocaleString() || "N/A"}
+                        </span>
+                      </td>
+                      <td className="py-6 px-6">
+                        <Chip 
+                          size="sm" 
+                          variant="soft"
+                          className={`font-black text-[10px] uppercase tracking-widest rounded-full ${isActive ? 'bg-obsidian text-eggshell' : 'bg-powder text-gravel opacity-50'}`}
+                        >
+                          {isActive ? 'Active' : 'Past'}
+                        </Chip>
+                      </td>
+                      <td className="py-6 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="compact">View</Button>
+                          <Button variant="compact">Manage</Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

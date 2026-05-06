@@ -82,6 +82,7 @@ export const events = pgTable('events', {
   type: eventTypeEnum('type').default('generic'),
   location: geometry('location'),
   locationName: varchar('location_name'),
+  address: text('address'),
   boundary: polygon('boundary'),
   imageUrl: text('image_url'),
   startDate: timestamp('start_date').notNull(),

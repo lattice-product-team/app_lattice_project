@@ -3,6 +3,30 @@ import { db, pointsOfInterest, sql, events, venues, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 
+/**
+ * Resolves coordinates to a human-readable address using Nominatim.
+ */
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+      {
+        headers: {
+          'User-Agent': 'Lattice-Admin-Dashboard/1.0',
+        },
+      }
+    );
+    const data: any = await response.json();
+    if (data && data.display_name) {
+      return data.display_name;
+    }
+    return `${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E`;
+  } catch (error) {
+    console.error('[Geocoding] Error resolving address:', error);
+    return `${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E`;
+  }
+}
+
 export const healthCheck = (req: Request, res: Response) => {
   res.json({ status: 'geo_service_ok', timestamp: new Date() });
 };
@@ -368,8 +392,11 @@ export const getEvents = async (req: Request, res: Response) => {
     const results = await db
       .select({
         id: events.id,
+        venueId: events.venueId,
         name: events.name,
         type: events.type,
+        locationName: events.locationName,
+        address: events.address,
         imageUrl: events.imageUrl,
         startDate: events.startDate,
         endDate: events.endDate,
@@ -377,7 +404,8 @@ export const getEvents = async (req: Request, res: Response) => {
         center: sql<string>`ST_AsGeoJSON(${events.location})`,
         boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,
       })
-      .from(events);
+      .from(events)
+      .orderBy(events.startDate);
 
     const formattedEvents = results.map(event => ({
       ...event,
@@ -405,9 +433,12 @@ export const getEvent = async (req: Request, res: Response) => {
     const result = await db
       .select({
         id: events.id,
+        venueId: events.venueId,
         name: events.name,
         description: events.description,
         type: events.type,
+        locationName: events.locationName,
+        address: events.address,
         imageUrl: events.imageUrl,
         startDate: events.startDate,
         endDate: events.endDate,
