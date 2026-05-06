@@ -49,12 +49,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   // Initial fix on user location
   const hasFixedOnUser = React.useRef(false);
   useEffect(() => {
+    // Si ya tenemos userCoords (vía persistencia o señal rápida) y no hemos fijado,
+    // y no hay una posición de cámara previa (que ganaría por ser más específica del usuario),
+    // forzamos el salto inmediato.
     if (userCoords && !hasFixedOnUser.current && cameraRef.current && !lastCameraPosition) {
       hasFixedOnUser.current = true;
       cameraRef.current.setCamera({
         centerCoordinate: userCoords,
         zoomLevel: DEFAULT_ZOOM,
-        animationDuration: 0, // Salto instantáneo
+        animationDuration: 0,
         animationMode: 'none',
       });
     }
