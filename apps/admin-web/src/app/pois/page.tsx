@@ -1,13 +1,18 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Chip, Spinner, Tooltip, Modal, ModalContainer, ModalHeader, ModalBody, ModalFooter, Select, ListBox } from "@heroui/react";
+import { Chip, Spinner, Tooltip, Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalBody, ModalFooter, Select, ListBox } from "@heroui/react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePOIs, useEvents } from "@/hooks/use-admin-data";
-import { AdminMap } from "@/components/map/admin-map";
+import dynamic from "next/dynamic";
 import { useMapInteractions } from "@/components/map/use-map-interactions";
+
+const AdminMap = dynamic(() => import("@/components/map/admin-map").then(mod => mod.AdminMap), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-powder/20 animate-pulse flex items-center justify-center text-gravel uppercase text-[10px] font-black tracking-widest">Initializing Map...</div>
+});
 
 const POI_TYPES = [
   { value: 'wc', label: 'Toilets', emoji: '🚽' },
@@ -113,94 +118,107 @@ export default function POIsPage() {
       </header>
 
       <Modal isOpen={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
-        <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
-          <div className="flex h-[600px]">
-            {/* Form Side */}
-            <div className="w-1/2 p-8 overflow-y-auto space-y-6">
-              <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Register Infrastructure</ModalHeader>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Operational Context</p>
-                  <Select 
-                    className="w-full"
-                    aria-label="Select parent event"
-                    selectedKey={selectedEventId}
-                    onSelectionChange={(key) => setSelectedEventId(key as string)}
-                  >
-                    <Select.Trigger className="bg-white border border-chalk rounded-xl h-10 px-4 outline-none shadow-hairline flex items-center justify-between">
-                      <Select.Value className="text-admin-xs font-medium text-obsidian">
-                        {selectedEvent?.name || "Choose event..."}
-                      </Select.Value>
-                    </Select.Trigger>
-                    <Select.Popover>
-                      <ListBox items={events} className="bg-white border border-chalk rounded-xl p-1 min-w-[300px] shadow-subtle max-h-60 overflow-y-auto">
-                        {(e: any) => (
-                          <ListBox.Item id={e.id.toString()} textValue={e.name} className="flex items-center px-3 py-2 rounded-lg text-admin-xs font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
-                            {e.name}
-                          </ListBox.Item>
-                        )}
-                      </ListBox>
-                    </Select.Popover>
-                  </Select>
+        <ModalBackdrop>
+          <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
+            <ModalDialog className="outline-none h-full">
+              <div className="flex h-[600px]">
+              {/* Form Side */}
+              <div className="w-1/2 p-8 overflow-y-auto space-y-6">
+                <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Register Infrastructure</ModalHeader>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Operational Context</p>
+                    <Select 
+                      className="w-full"
+                      aria-label="Select parent event"
+                      selectedKey={selectedEventId}
+                      onSelectionChange={(key) => {
+                        // Extract key from Selection object if necessary
+                        const newKey = (key && typeof key === 'object' && 'anchorKey' in key) 
+                          ? (key as any).anchorKey 
+                          : key as string;
+                          
+                        if (newKey && newKey !== selectedEventId) {
+                          setSelectedEventId(newKey);
+                        }
+                      }}
+                    >
+                      <Select.Trigger className="bg-white border border-chalk rounded-xl h-10 px-4 outline-none shadow-hairline flex items-center justify-between">
+                        <Select.Value className="text-admin-xs font-medium text-obsidian">
+                          {selectedEvent?.name || "Choose event..."}
+                        </Select.Value>
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox items={events} className="bg-white border border-chalk rounded-xl p-1 min-w-[300px] shadow-subtle max-h-60 overflow-y-auto">
+                          {(e: any) => (
+                            <ListBox.Item id={e.id.toString()} textValue={e.name} className="flex items-center px-3 py-2 rounded-lg text-admin-xs font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
+                              {e.name}
+                            </ListBox.Item>
+                          )}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Asset Details</p>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Asset Name</p>
+                      <Input placeholder="e.g. South Gate, Medical tent A" value={name} onChange={e => setName(e.target.value)} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {POI_TYPES.map((t) => (
+                        <button 
+                          key={t.value}
+                          onClick={() => setType(t.value)}
+                          className={`px-3 py-2 rounded-lg border transition-all flex items-center gap-3
+                            ${type === t.value ? 'bg-obsidian border-obsidian text-eggshell' : 'bg-powder/30 border-chalk text-gravel hover:bg-powder'}`}
+                        >
+                          <span className="text-lg">{t.emoji}</span>
+                          <span className="text-[10px] font-black uppercase tracking-tighter truncate">{t.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Asset Details</p>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Asset Name</p>
-                    <Input placeholder="e.g. South Gate, Medical tent A" value={name} onChange={e => setName(e.target.value)} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {POI_TYPES.map((t) => (
-                      <button 
-                        key={t.value}
-                        onClick={() => setType(t.value)}
-                        className={`px-3 py-2 rounded-lg border transition-all flex items-center gap-3
-                          ${type === t.value ? 'bg-obsidian border-obsidian text-eggshell' : 'bg-powder/30 border-chalk text-gravel hover:bg-powder'}`}
-                      >
-                        <span className="text-lg">{t.emoji}</span>
-                        <span className="text-[10px] font-black uppercase tracking-tighter truncate">{t.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                <div className="pt-4 flex gap-3">
+                  <Button variant="ghost" className="flex-1" onClick={() => setIsRegisterModalOpen(false)}>Cancel</Button>
+                  <Button variant="primary" className="flex-1" onClick={handleRegisterAsset}>
+                    {isSubmitting ? <Spinner size="sm" color="current" /> : "Confirm Asset"}
+                  </Button>
                 </div>
               </div>
 
-              <div className="pt-4 flex gap-3">
-                <Button variant="ghost" className="flex-1" onClick={() => setIsRegisterModalOpen(false)}>Cancel</Button>
-                <Button variant="primary" className="flex-1" onClick={handleRegisterAsset}>
-                  {isSubmitting ? <Spinner size="sm" color="current" /> : "Confirm Asset"}
-                </Button>
+              {/* Map Side */}
+              <div className="w-1/2 bg-powder/30 relative">
+                <div className="absolute inset-0">
+                  <AdminMap 
+                    mode="PICK_COORDINATE" 
+                    selectedPoi={selectedPoi} 
+                    onPoiSelect={selectPoi}
+                    activeEventBoundary={selectedEvent?.boundary ? { type: 'Feature', geometry: selectedEvent.boundary, properties: {} } : null}
+                    initialViewState={selectedEvent?.center ? { 
+                      longitude: selectedEvent.center.coordinates[0], 
+                      latitude: selectedEvent.center.coordinates[1], 
+                      zoom: 16 
+                    } : undefined}
+                  />
+                </div>
+                <div className="absolute top-4 left-4 z-10">
+                  <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm max-w-[200px]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Location Picker</p>
+                    <p className="text-[9px] text-gravel leading-tight">
+                      {selectedEventId ? `Place the pin within the boundary of ${selectedEvent?.name}.` : "Select an event first to see its boundary."}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Map Side */}
-            <div className="w-1/2 bg-powder/30 relative">
-              <div className="absolute inset-0">
-                <AdminMap 
-                  mode="PICK_COORDINATE" 
-                  selectedPoi={selectedPoi} 
-                  onPoiSelect={selectPoi}
-                  activeEventBoundary={selectedEvent?.boundary ? { type: 'Feature', geometry: selectedEvent.boundary, properties: {} } : null}
-                  initialViewState={selectedEvent?.center ? { 
-                    longitude: selectedEvent.center.coordinates[0], 
-                    latitude: selectedEvent.center.coordinates[1], 
-                    zoom: 16 
-                  } : undefined}
-                />
-              </div>
-              <div className="absolute top-4 left-4 z-10">
-                <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm max-w-[200px]">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Location Picker</p>
-                  <p className="text-[9px] text-gravel leading-tight">
-                    {selectedEventId ? `Place the pin within the boundary of ${selectedEvent?.name}.` : "Select an event first to see its boundary."}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ModalContainer>
+          </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
 
       <div className="space-y-6">

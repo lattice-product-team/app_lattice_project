@@ -1,13 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Chip, Spinner, Tooltip, Modal, ModalContainer, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
+import { Chip, Spinner, Tooltip, Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEvents } from "@/hooks/use-admin-data";
-import { AdminMap } from "@/components/map/admin-map";
+import dynamic from "next/dynamic";
 import { useMapInteractions } from "@/components/map/use-map-interactions";
+
+const AdminMap = dynamic(() => import("@/components/map/admin-map").then(mod => mod.AdminMap), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-powder/20 animate-pulse flex items-center justify-center text-gravel uppercase text-[10px] font-black tracking-widest">Initializing Map...</div>
+});
 
 export default function EventsPage() {
   const { events, loading, error, refetch } = useEvents();
@@ -98,67 +103,71 @@ export default function EventsPage() {
       </header>
 
       <Modal isOpen={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
-          <div className="flex h-[600px]">
-            {/* Form Side */}
-            <div className="w-1/2 p-8 overflow-y-auto space-y-6">
-              <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Initialize Event</ModalHeader>
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Event Name</p>
-                  <Input placeholder="e.g. Primavera Sound 2026" value={name} onChange={e => setName(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+        <ModalBackdrop>
+          <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
+            <ModalDialog className="outline-none h-full">
+              <div className="flex h-[600px]">
+              {/* Form Side */}
+              <div className="w-1/2 p-8 overflow-y-auto space-y-6">
+                <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Initialize Event</ModalHeader>
+                <div className="space-y-4">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Start Date</p>
-                    <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Event Name</p>
+                    <Input placeholder="e.g. Primavera Sound 2026" value={name} onChange={e => setName(e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Start Date</p>
+                      <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gravel">End Date</p>
+                      <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">End Date</p>
-                    <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Location Name</p>
+                    <Input placeholder="e.g. Parc del Fòrum" value={locationName} onChange={e => setLocationName(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Address</p>
+                    <Input placeholder="Street address..." value={address} onChange={e => setAddress(e.target.value)} />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Location Name</p>
-                  <Input placeholder="e.g. Parc del Fòrum" value={locationName} onChange={e => setLocationName(e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Address</p>
-                  <Input placeholder="Street address..." value={address} onChange={e => setAddress(e.target.value)} />
+                <div className="pt-4 flex gap-3">
+                  <Button variant="ghost" className="flex-1" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                  <Button variant="primary" className="flex-1" onClick={handleCreateEvent}>
+                    {isSubmitting ? <Spinner size="sm" color="current" /> : "Register Event"}
+                  </Button>
                 </div>
               </div>
-              <div className="pt-4 flex gap-3">
-                <Button variant="ghost" className="flex-1" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
-                <Button variant="primary" className="flex-1" onClick={handleCreateEvent}>
-                  {isSubmitting ? <Spinner size="sm" color="current" /> : "Register Event"}
-                </Button>
-              </div>
-            </div>
 
-            {/* Map Side */}
-            <div className="w-1/2 bg-powder/30 relative">
-              <div className="absolute inset-0">
-                <AdminMap 
-                  mode="DRAW_BOUNDARY" 
-                  boundaryPoints={boundaryPoints} 
-                  onBoundaryChange={setBoundaryPoints}
-                />
-              </div>
-              <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Boundary Editor</p>
-                  <p className="text-[9px] text-gravel">Click map to define the event perimeter.</p>
+              {/* Map Side */}
+              <div className="w-1/2 bg-powder/30 relative">
+                <div className="absolute inset-0">
+                  <AdminMap 
+                    mode="DRAW_BOUNDARY" 
+                    boundaryPoints={boundaryPoints} 
+                    onBoundaryChange={setBoundaryPoints}
+                  />
                 </div>
-                {boundaryPoints.length > 0 && (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="compact" className="bg-white/90" onClick={undoLastPoint}>Undo</Button>
-                    <Button size="sm" variant="compact" className="bg-white/90 text-ember" onClick={clearBoundary}>Clear</Button>
+                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                  <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Boundary Editor</p>
+                    <p className="text-[9px] text-gravel">Click map to define the event perimeter.</p>
                   </div>
-                )}
+                  {boundaryPoints.length > 0 && (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="compact" className="bg-white/90" onClick={undoLastPoint}>Undo</Button>
+                      <Button size="sm" variant="compact" className="bg-white/90 text-ember" onClick={clearBoundary}>Clear</Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </ModalContainer>
+          </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
 
       {error && (

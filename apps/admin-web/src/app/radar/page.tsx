@@ -181,7 +181,15 @@ export default function CrowdRadarPage() {
                 className="w-40"
                 aria-label="Select event"
                 selectedKey={selectedEventId}
-                onSelectionChange={(key) => setSelectedEventId(key as string)}
+                onSelectionChange={(key) => {
+                  const newKey = (key && typeof key === 'object' && 'anchorKey' in key) 
+                    ? (key as any).anchorKey 
+                    : key as string;
+                    
+                  if (newKey && newKey !== selectedEventId) {
+                    setSelectedEventId(newKey);
+                  }
+                }}
               >
                 <Select.Trigger className="bg-white border border-chalk rounded-full h-7 px-3 outline-none shadow-hairline">
                   <Select.Value className="text-[9px] font-black text-obsidian uppercase tracking-wider" />
