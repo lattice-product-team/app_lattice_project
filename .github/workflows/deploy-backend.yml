@@ -44,12 +44,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
       - name: Setup Environment
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
-          echo "GATEWAY_BASE_PATH=/lattice/api" >> .env
+          echo "GATEWAY_BASE_PATH=/" >> .env
           echo "NEXT_PUBLIC_API_URL=https://projects.kore29.com/lattice/api/v1" >> .env
           echo "NODE_ENV=production" >> .env
           echo "DB_SSL=false" >> .env
