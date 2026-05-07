@@ -75,11 +75,11 @@ const healthHandler = (req: Request, res: Response) => {
 
 router.get('/status', healthHandler);
 router.get('/health', healthHandler);
-router.get('/api/v1/status', healthHandler);
-router.get('/api/v1/health', healthHandler);
+router.get('/v1/status', healthHandler);
+router.get('/v1/health', healthHandler);
 
 // --- API ROUTING ---
-const API_PREFIX = '/api/v1';
+const API_PREFIX = '/v1';
 
 // Helper to create proxy with robust path rewrite and logging
 const createServiceProxy = (target: string, label: string, paths: string[]) => {
