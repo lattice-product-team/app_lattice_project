@@ -49,7 +49,7 @@ const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyC
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
             <View 
-              style={[styles.categoryBadge, { backgroundColor: `${metadata.color}EE` }]}
+              style={[styles.categoryBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}
             >
               {metadata.iconFamily === 'material' ? (
                 <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />

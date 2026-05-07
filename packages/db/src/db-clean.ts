@@ -13,7 +13,9 @@ async function clean() {
     'tickets',
     'saved_locations',
     'points_of_interest',
+    'events',
     'users',
+
   ];
 
   try {

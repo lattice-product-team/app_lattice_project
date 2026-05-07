@@ -49,12 +49,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   // Initial fix on user location
   const hasFixedOnUser = React.useRef(false);
   useEffect(() => {
+    // Si ya tenemos userCoords (vía persistencia o señal rápida) y no hemos fijado,
+    // y no hay una posición de cámara previa (que ganaría por ser más específica del usuario),
+    // forzamos el salto inmediato.
     if (userCoords && !hasFixedOnUser.current && cameraRef.current && !lastCameraPosition) {
       hasFixedOnUser.current = true;
       cameraRef.current.setCamera({
         centerCoordinate: userCoords,
         zoomLevel: DEFAULT_ZOOM,
-        animationDuration: 0, // Salto instantáneo
+        animationDuration: 0,
         animationMode: 'none',
       });
     }
@@ -115,15 +118,16 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         }
       }
 
-      if (selectedEvent.center) {
+      const centerCoords = selectedEvent.center?.coordinates || selectedEvent.geometry?.coordinates || selectedEvent.coordinates;
+      if (centerCoords) {
         cameraRef.current.setCamera({
-          centerCoordinate: selectedEvent.center.coordinates,
+          centerCoordinate: centerCoords,
           zoomLevel: 16.5,
           animationDuration: 1200,
           animationMode: 'flyTo',
           pitch: is3DActive ? 60 : 0,
           padding: {
-            paddingBottom: SCREEN_HEIGHT * 0.4,
+            paddingBottom: SCREEN_HEIGHT * 0.45, // Adjusted to keep pin above sheet
             paddingTop: insets.top + 60,
             paddingLeft: 40,
             paddingRight: 40,

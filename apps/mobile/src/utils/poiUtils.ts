@@ -37,10 +37,10 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
 };
 
 const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
-  music: { icon: 'music-note', iconFamily: 'material', color: colors.category.music, label: 'Música' },
-  food: { icon: 'food-fork-drink', iconFamily: 'material', color: colors.category.food, label: 'Comida' },
-  tech: { icon: 'laptop', iconFamily: 'material', color: colors.category.tech, label: 'Tecnología' },
-  sports: { icon: 'trophy', iconFamily: 'material', color: colors.semantic.dark.error, label: 'Deportes' },
+  music: { icon: 'music-note', iconFamily: 'material', color: colors.brand.primary, label: 'Música' },
+  food: { icon: 'food-fork-drink', iconFamily: 'material', color: colors.brand.primary, label: 'Comida' },
+  tech: { icon: 'laptop', iconFamily: 'material', color: colors.brand.primary, label: 'Tecnología' },
+  sports: { icon: 'trophy', iconFamily: 'material', color: colors.brand.primary, label: 'Deportes' },
   generic: { icon: 'calendar-star', iconFamily: 'material', color: colors.brand.primary, label: 'Evento' },
 };
 

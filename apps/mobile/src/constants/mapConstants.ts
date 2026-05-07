@@ -1,3 +1,5 @@
+import Constants from 'expo-constants';
+
 export const EMPTY_GEOJSON: any = {
   type: 'FeatureCollection',
   features: [],
@@ -9,4 +11,4 @@ export const SELECTION_ZOOM = 17;
 export const FLY_ANIMATION_DURATION = 1000;
 export const SELECT_ANIMATION_DURATION = 350;
 
-export const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
+export const MAPTILER_KEY = Constants.expoConfig?.extra?.mapTilerKey || 'iqk4irD5FCOr6M6VHVWZ';

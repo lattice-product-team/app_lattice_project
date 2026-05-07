@@ -83,6 +83,7 @@
   "dependencies": {
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
+    "@shopify/react-native-skia": "2.2.12",
     "expo": "~54.0.34",
     "react": "19.1.0",
     "react-native": "0.81.5"

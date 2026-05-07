@@ -37,8 +37,8 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
   const animState = useSharedValue(0);
 
-  // High performance spring config
-  const springConfig = { damping: 20, stiffness: 150, mass: 0.5 };
+  // Unified Motion Token
+  const springConfig = theme.motion.physics.snappy;
 
   useEffect(() => {
     if (isAuthPromptOpen) {

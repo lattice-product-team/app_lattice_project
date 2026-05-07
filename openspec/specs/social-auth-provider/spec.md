@@ -19,6 +19,7 @@ This specification defines the implementation of Google and Apple authentication
     2. Open Google Auth UI.
     3. Receive `idToken`.
     4. Send `idToken` to Backend `/auth/google`.
+    5. After success, redirect to `/(main)` or `intendedDestination`.
 
 ## 2. Backend Implementation
 
@@ -46,9 +47,9 @@ This specification defines the implementation of Google and Apple authentication
 #### Scenario: First time Social Login
 - GIVEN a user with no Lattice account
 - WHEN they sign in with Google
-- THEN a new account is created AND they are redirected to the map AND the Passkey onboarding is triggered.
+- THEN a new account is created AND they are redirected to the map (`/(main)`).
 
 #### Scenario: Existing Social Login
-- GIVEN a user who previously registered with Apple
-- WHEN they sign in with Apple again
-- THEN they are logged into their existing account AND no Passkey prompt is shown (if already set up).
+- GIVEN a user who previously registered with Apple or Google
+- WHEN they sign in with that provider again
+- THEN they are logged into their existing account AND redirected to the map (`/(main)`).
