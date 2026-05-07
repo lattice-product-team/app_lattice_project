@@ -3,7 +3,7 @@ import MapLibreGL from '@maplibre/maplibre-react-native';
 import { Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
-import { calculateBBox } from '../../../utils/geoUtils';
+import { calculateBBox, calculateCentroid } from '../../../utils/geoUtils';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -117,35 +117,38 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       lastTargetRef.current = `event-${eventId}`;
       lastActionTimestamp.current = now;
 
-      if (poisGeoJSON?.features) {
+      let targetCenter: [number, number] | null = null;
+
+      // 1. Try to use event boundary centroid
+      if (selectedEvent.boundary?.coordinates?.[0]) {
+        targetCenter = calculateCentroid(selectedEvent.boundary.coordinates[0]);
+      }
+
+      // 2. Fallback to child POIs centroid if no boundary
+      if (!targetCenter && poisGeoJSON?.features) {
         const childPoiCoords = poisGeoJSON.features
           .filter((f: any) => f.properties.parentId === selectedEvent.id || f.properties.event_id === selectedEvent.id)
           .map((f: any) => f.geometry.coordinates);
 
         if (childPoiCoords.length > 0) {
-          const bbox = calculateBBox(childPoiCoords);
-          if (bbox) {
-            cameraRef.current.fitBounds(
-              [bbox[2], bbox[3]], 
-              [bbox[0], bbox[1]], 
-              [SCREEN_HEIGHT * 0.48, 60, 40, 40],
-              800
-            );
-            return;
-          }
+          targetCenter = calculateCentroid(childPoiCoords);
         }
       }
 
-      const centerCoords = selectedEvent.center?.coordinates || selectedEvent.geometry?.coordinates || selectedEvent.coordinates;
-      if (centerCoords) {
+      // 3. Last fallback to primary coordinate
+      if (!targetCenter) {
+        targetCenter = selectedEvent.center?.coordinates || selectedEvent.geometry?.coordinates || selectedEvent.coordinates;
+      }
+
+      if (targetCenter) {
         cameraRef.current.setCamera({
-          centerCoordinate: centerCoords,
-          zoomLevel: 16.5,
+          centerCoordinate: targetCenter,
+          zoomLevel: 17.2, // Standard Gold Zoom for perfect legibility
           animationDuration: 1200,
           animationMode: 'flyTo',
-          pitch: is3DActive ? 60 : 0,
+          pitch: 0, // Stay 2D as requested
           padding: {
-            paddingBottom: SCREEN_HEIGHT * 0.45, // Adjusted to keep pin above sheet
+            paddingBottom: SCREEN_HEIGHT * 0.45,
             paddingTop: insets.top + 60,
             paddingLeft: 40,
             paddingRight: 40,

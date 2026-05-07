@@ -81,3 +81,21 @@ export const decodePolyline = (str: string, precision: number = 6): [number, num
 
   return coordinates;
 };
+
+/**
+ * Calculates the centroid of a set of coordinates.
+ * Useful for finding the center of a polygon or a cluster of POIs.
+ */
+export const calculateCentroid = (coords: [number, number][]): [number, number] | null => {
+  if (!coords || coords.length === 0) return null;
+
+  let sumLng = 0;
+  let sumLat = 0;
+
+  for (const [lng, lat] of coords) {
+    sumLng += lng;
+    sumLat += lat;
+  }
+
+  return [sumLng / coords.length, sumLat / coords.length];
+};

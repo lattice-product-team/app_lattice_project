@@ -59,7 +59,7 @@ export const MapLayers = ({
         {/* POI Background Circle */}
         <MapLibreGL.CircleLayer
           id="poisCircle"
-          minZoomLevel={15.5}
+          minZoomLevel={14.0}
           style={{
             circleRadius: [
               'interpolate',
@@ -75,8 +75,8 @@ export const MapLayers = ({
               'interpolate',
               ['linear'],
               ['zoom'],
-              15.5, 0,
-              16.0, 1
+              14.0, 0,
+              15.0, 1
             ],
             circlePitchAlignment: 'map',
           }}
@@ -85,7 +85,7 @@ export const MapLayers = ({
         {/* POI Category Icon */}
         <MapLibreGL.SymbolLayer
           id="poisIcon"
-          minZoomLevel={15.5}
+          minZoomLevel={14.0}
           style={{
             iconImage: [
               'coalesce',
@@ -103,18 +103,19 @@ export const MapLayers = ({
               'interpolate',
               ['linear'],
               ['zoom'],
-              15.5, 0,
-              16.0, 1
+              14.0, 0,
+              15.0, 1
             ],
             iconPitchAlignment: 'viewport',
             iconAllowOverlap: true,
+            iconIgnorePlacement: true,
           }}
         />
 
         {/* POI Label */}
         <MapLibreGL.SymbolLayer
           id="poisLabel"
-          minZoomLevel={17.5}
+          minZoomLevel={15.0}
           style={{
             textFont: ['Roboto Regular', 'Noto Sans Regular'],
             textField: ['get', 'name'],
@@ -128,9 +129,11 @@ export const MapLayers = ({
               'interpolate',
               ['linear'],
               ['zoom'],
-              16.5, 0,
-              17.5, 1
+              15.0, 0,
+              16.0, 1
             ],
+            textAllowOverlap: true,
+            textIgnorePlacement: true,
           }}
         />
       </MapLibreGL.ShapeSource>
