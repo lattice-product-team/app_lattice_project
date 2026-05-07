@@ -1,9 +1,0 @@
-{
-  "android": {
-    "package": "com.kore29.appmonorepo"
-  },
-  "ios": {
-    "bundleIdentifier": "com.kore29.appmonorepo",
-    "appleTeamId": "69V4W2WQHG"
-  }
-}

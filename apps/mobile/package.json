@@ -11,14 +11,12 @@
     "ios:device": "expo run:ios --device",
     "android": "expo run:android",
     "android:device": "expo run:android --device",
-    "android:build:dev": "eas build --platform android --profile development",
-    "android:build:preview": "eas build --platform android --profile preview",
-    "android:build:prod": "eas build --platform android --profile production",
     "pods": "cd ios && pod install && cd ..",
     "lint": "expo lint",
     "test": "npm run test:logic && npm run test:components",
     "test:components": "jest",
-    "test:logic": "vitest run"
+    "test:logic": "vitest run",
+    "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.0.0 --activate"
   },
   "dependencies": {
     "@app/theme": "workspace:*",
