@@ -1,13 +1,76 @@
 "use client";
 
-import { Chip, Spinner, Tooltip } from "@heroui/react";
+import { useState } from "react";
+import { Chip, Spinner, Tooltip, Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEvents } from "@/hooks/use-admin-data";
+import dynamic from "next/dynamic";
+import { useMapInteractions } from "@/components/map/use-map-interactions";
+
+const AdminMap = dynamic(() => import("@/components/map/admin-map").then(mod => mod.AdminMap), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-powder/20 animate-pulse flex items-center justify-center text-gravel uppercase text-[10px] font-black tracking-widest">Initializing Map...</div>
+});
 
 export default function EventsPage() {
   const { events, loading, error, refetch } = useEvents();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+  
+  // Form State
+  const [name, setName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [locationName, setLocationName] = useState("");
+  const [address, setAddress] = useState("");
+
+  const { boundaryPoints, setBoundaryPoints, undoLastPoint, clearBoundary } = useMapInteractions('DRAW_BOUNDARY');
+
+  const handleCreateEvent = async () => {
+    setFormError("");
+    if (!name || !startDate || !endDate) {
+      setFormError("Please fill in all required fields (Name, Start Date, End Date).");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const boundary = boundaryPoints.length > 2 
+        ? { type: 'Polygon', coordinates: [[...boundaryPoints, boundaryPoints[0]]] }
+        : null;
+
+      const res = await fetch("http://localhost:3000/api/v1/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          startDate,
+          endDate,
+          locationName,
+          address,
+          boundary
+        })
+      });
+
+      if (res.ok) {
+        setIsCreateModalOpen(false);
+        refetch();
+        // Reset form
+        setName("");
+        setStartDate("");
+        setEndDate("");
+        setLocationName("");
+        setAddress("");
+        clearBoundary();
+      }
+    } catch (err) {
+      console.error("Failed to create event", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const syncSocial = async (id: number) => {
     try {
@@ -23,7 +86,8 @@ export default function EventsPage() {
   };
 
   return (
-    <div className="space-y-12 pb-24">
+    <div className="space-y-12 px-8 py-12 pb-24">
+
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-xl">
           <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">Event Operations</p>
@@ -36,12 +100,84 @@ export default function EventsPage() {
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost">Archive All</Button>
-          <Button variant="primary">
+          <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
             <Icons.Plus className="w-4 h-4 mr-2" />
             Create New Event
           </Button>
         </div>
       </header>
+
+      <Modal isOpen={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <ModalBackdrop>
+          <ModalContainer size="lg" className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle overflow-hidden">
+            <ModalDialog className="outline-none">
+              <div className="flex flex-col h-[700px] max-h-[90vh]">
+              
+              {/* Map Side (Top) */}
+              <div className="w-full h-[250px] bg-powder/30 relative shrink-0 border-b border-chalk">
+                <div className="absolute inset-0">
+                  <AdminMap 
+                    mode="DRAW_BOUNDARY" 
+                    boundaryPoints={boundaryPoints} 
+                    onBoundaryChange={setBoundaryPoints}
+                  />
+                </div>
+                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                  <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-chalk shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-0.5">Boundary Editor</p>
+                    <p className="text-[9px] text-gravel leading-tight">Click map to define perimeter.</p>
+                  </div>
+                  {boundaryPoints.length > 0 && (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="compact" className="bg-white/90 shadow-sm" onClick={undoLastPoint}>Undo</Button>
+                      <Button size="sm" variant="compact" className="bg-white/90 text-ember shadow-sm" onClick={clearBoundary}>Clear</Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Form Side (Bottom) */}
+              <div className="w-full flex-1 p-6 overflow-y-auto space-y-6 bg-white">
+                <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Initialize Event</ModalHeader>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Event Name</p>
+                    <Input placeholder="e.g. Primavera Sound 2026" value={name} onChange={e => setName(e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Start Date</p>
+                      <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gravel">End Date</p>
+                      <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Location Name</p>
+                    <Input placeholder="e.g. Parc del Fòrum" value={locationName} onChange={e => setLocationName(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Address</p>
+                    <Input placeholder="Street address..." value={address} onChange={e => setAddress(e.target.value)} />
+                  </div>
+                </div>
+                <div className="pt-4 flex flex-col gap-3 mt-auto">
+                  {formError && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">{formError}</p>}
+                  <div className="flex gap-3">
+                    <Button variant="ghost" className="flex-1" onClick={() => { setIsCreateModalOpen(false); setFormError(""); }}>Cancel</Button>
+                    <Button variant="primary" className="flex-1" onClick={handleCreateEvent}>
+                      {isSubmitting ? <Spinner size="sm" color="current" /> : "Register Event"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
+      </Modal>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-admin-base font-medium">
@@ -83,7 +219,7 @@ export default function EventsPage() {
               {loading ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center">
-                    <Spinner color="current" size="sm" label="Loading operational telemetry..." />
+                    <Spinner color="current" size="sm" />
                   </td>
                 </tr>
               ) : events.length === 0 ? (
@@ -116,11 +252,9 @@ export default function EventsPage() {
                               <span className="text-admin-sm font-black text-obsidian">{social.rating}</span>
                               <span className="text-[10px] text-gravel font-medium">({social.reviews_count})</span>
                             </div>
-                            <Tooltip content="Source: Google Maps via DataForSEO">
-                              <span className="text-[9px] text-signal-blue font-bold uppercase tracking-tighter flex items-center gap-1 cursor-help">
-                                <Icons.CheckCircle className="w-2.5 h-2.5" /> Social Linked
-                              </span>
-                            </Tooltip>
+                            <span className="text-[9px] text-signal-blue font-bold uppercase tracking-tighter flex items-center gap-1 cursor-help">
+                              <Icons.CheckCircle className="w-2.5 h-2.5" /> Social Linked
+                            </span>
                           </div>
                         ) : (
                           <Button 

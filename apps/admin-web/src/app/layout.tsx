@@ -51,12 +51,13 @@ export default function RootLayout({
               <SidebarNav />
             </aside>
 
-            {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-0 bg-eggshell">
-              <div className="flex-1 overflow-y-auto px-8 py-12 max-w-300 mx-auto w-full">
+              <div className="flex-1 overflow-y-auto w-full">
                 {children}
               </div>
             </main>
+
+
           </div>
         </Providers>
       </body>

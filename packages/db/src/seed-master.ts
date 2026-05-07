@@ -82,9 +82,9 @@ async function seed() {
   if (koreUser) {
     console.log('🎫 Seeding tickets for test user...');
     await db.insert(tickets).values([
-      { userId: koreUser.id, eventId: nitroGP.id, type: 'general' },
-      { userId: koreUser.id, eventId: neonNights.id, type: 'vip' },
-      { userId: koreUser.id, eventId: quantumConf.id, type: 'staff' },
+      { userId: koreUser.id, eventId: nitroGP.id, zoneName: 'general' },
+      { userId: koreUser.id, eventId: neonNights.id, zoneName: 'vip' },
+      { userId: koreUser.id, eventId: quantumConf.id, zoneName: 'staff' },
     ]);
 
     console.log('📍 Seeding saved locations for test user...');
