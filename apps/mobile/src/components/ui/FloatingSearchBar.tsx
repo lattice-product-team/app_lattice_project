@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, Pressable } from 'react-native';
+import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { UserAvatar } from './UserAvatar';
@@ -10,10 +10,12 @@ interface FloatingSearchBarProps {
   onChangeText: (text: string) => void;
   onFocus?: () => void;
   onProfilePress?: () => void;
+  onPress?: () => void;
   onSubmit?: () => void;
   placeholder?: string;
   avatarUrl?: string | null;
   isGuest?: boolean;
+  editable?: boolean;
 }
 
 export const FloatingSearchBar = ({
@@ -21,10 +23,12 @@ export const FloatingSearchBar = ({
   onChangeText,
   onFocus,
   onProfilePress,
+  onPress,
   onSubmit,
   placeholder = "Search events, stages, food...",
   avatarUrl,
-  isGuest
+  isGuest,
+  editable = true,
 }: FloatingSearchBarProps) => {
   const theme = useAppTheme();
 
@@ -37,17 +41,26 @@ export const FloatingSearchBar = ({
         style={styles.icon} 
       />
       
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={onFocus}
-        placeholder={placeholder}
-        placeholderTextColor={theme.colors.text.muted}
-        style={[styles.input, { color: theme.colors.text.primary }]}
-        selectionColor={theme.colors.brand.primary}
-        returnKeyType="search"
-        onSubmitEditing={onSubmit}
-      />
+      <View style={{ flex: 1 }}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={onFocus}
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.text.muted}
+          style={[styles.input, { color: theme.colors.text.primary }]}
+          selectionColor={theme.colors.brand.primary}
+          returnKeyType="search"
+          onSubmitEditing={onSubmit}
+          editable={editable}
+        />
+        {Platform.OS === 'android' && !editable && (
+          <Pressable 
+            style={StyleSheet.absoluteFill} 
+            onPress={onPress}
+          />
+        )}
+      </View>
 
       {value.length > 0 && (
         <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>

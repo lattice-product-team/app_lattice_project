@@ -53,12 +53,12 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   };
 
   useEffect(() => {
-    if (event) {
+    if (event?.id) {
       islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
     } else {
       islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
     }
-  }, [event]);
+  }, [event?.id]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
@@ -163,11 +163,30 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               <View style={styles.header}>
                 <View style={styles.handle} />
                 <View style={styles.headerActions}>
-                  <Pressable style={styles.actionCircle}>
+                  <Pressable 
+                    style={[
+                      styles.actionCircle,
+                      { 
+                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.6)' : 'rgba(255, 255, 255, 0.6)',
+                        borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        ...theme.shadows.soft
+                      }
+                    ]}
+                  >
                     <Feather name="share" size={20} color={theme.colors.text.primary} />
                   </Pressable>
                   <View style={{ flex: 1 }} />
-                  <Pressable onPress={onClose} style={styles.actionCircle}>
+                  <Pressable 
+                    onPress={onClose} 
+                    style={[
+                      styles.actionCircle,
+                      { 
+                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.6)' : 'rgba(255, 255, 255, 0.6)',
+                        borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        ...theme.shadows.soft
+                      }
+                    ]}
+                  >
                     <Feather name="x" size={20} color={theme.colors.text.primary} />
                   </Pressable>
                 </View>
@@ -203,7 +222,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                       </View>
                       <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Directions</Text>
                     </Pressable>
-
+ 
                     <Pressable 
                       onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
                       style={({ pressed }) => [
@@ -211,13 +230,13 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                         pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
                       ]}
                     >
-                      <View style={[styles.actionIcon, { backgroundColor: theme.colors.glass.subtle }]}>
+                      <View style={[styles.actionIcon, { backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)' }]}>
                         <Feather name="phone" size={22} color={theme.colors.brand.primary} />
                         <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder, { borderColor: theme.colors.glass.border }]} />
                       </View>
                       <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Call</Text>
                     </Pressable>
-
+ 
                     <Pressable 
                       onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
                       style={({ pressed }) => [
@@ -225,14 +244,14 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                         pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
                       ]}
                     >
-                      <View style={[styles.actionIcon, { backgroundColor: theme.colors.glass.subtle }]}>
+                      <View style={[styles.actionIcon, { backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)' }]}>
                         <Feather name="globe" size={22} color={theme.colors.brand.primary} />
                         <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder, { borderColor: theme.colors.glass.border }]} />
                       </View>
                       <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Website</Text>
                     </Pressable>
                   </View>
-
+ 
                   {/* Quick Services Bar */}
                   <View style={styles.servicesContainer}>
                     <Text style={[styles.servicesTitle, { color: theme.colors.text.muted }]}>Services Available</Text>
@@ -253,7 +272,7 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                             }}
                             style={[
                               styles.serviceItem,
-                              { backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.glass.subtle },
+                              { backgroundColor: isActive ? theme.colors.brand.primary : (theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)') },
                               isActive && styles.activeService
                             ]}
                           >
@@ -347,9 +366,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   titleSection: {
     alignItems: 'center',
@@ -382,6 +401,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+  },
+  actionIconInnerGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 28,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    pointerEvents: 'none',
   },
   actionBorder: {
     borderRadius: 28,
@@ -452,6 +478,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+  },
+  serviceItemInnerGlow: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 22,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    pointerEvents: 'none',
   },
   activeService: {
     borderColor: 'transparent',

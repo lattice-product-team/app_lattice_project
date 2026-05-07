@@ -114,8 +114,9 @@ export const MapLayers = ({
         {/* POI Label */}
         <MapLibreGL.SymbolLayer
           id="poisLabel"
-          minZoomLevel={16.5}
+          minZoomLevel={17.5}
           style={{
+            textFont: ['Roboto Regular', 'Noto Sans Regular'],
             textField: ['get', 'name'],
             textSize: 10,
             textOffset: [0, 2.5],

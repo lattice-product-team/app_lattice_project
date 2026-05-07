@@ -32,12 +32,12 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   const setNavigating = useNavigationStore((s) => s.setNavigating);
 
   useEffect(() => {
-    if (poi) {
+    if (poi?.id) {
       visibility.value = withSpring(1, theme.motion.physics.magnetic);
     } else {
       visibility.value = withSpring(0, theme.motion.physics.magnetic);
     }
-  }, [poi]);
+  }, [poi?.id]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const bottom = interpolate(visibility.value, [0, 1], [-200, insets.bottom + 12], Extrapolation.CLAMP);
@@ -87,7 +87,17 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
             <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>{poi?.categoryLabel}</Text>
           </View>
 
-          <Pressable onPress={onClose} style={styles.closeButton}>
+          <Pressable 
+            onPress={onClose} 
+            style={[
+              styles.closeButton, 
+              { 
+                backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                ...theme.shadows.soft
+              }
+            ]}
+          >
             <Feather name="x" size={20} color={theme.colors.text.muted} />
           </Pressable>
         </View>
@@ -157,9 +167,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   footer: {
     flexDirection: 'row',

@@ -126,7 +126,17 @@ export default function MapIndexPage() {
     return withTiming(isSomethingSelected ? 0 : 1, { duration: 300 });
   });
 
-  // Effect removed to prevent auto-expanding search on POI click
+  const [isHeaderEditable, setIsHeaderEditable] = useState(false);
+ 
+   // Effect removed to prevent auto-expanding search on POI click
+   useAnimatedReaction(
+     () => islandState.value > 0.1,
+     (isReady, prev) => {
+       if (isReady !== prev) {
+         runOnJS(setIsHeaderEditable)(isReady);
+       }
+     }
+   );
 
   const handleEventSelect = useCallback((event: LatticeEvent) => {
     // Save current level before collapsing
@@ -181,6 +191,7 @@ export default function MapIndexPage() {
 
   const gesture = Gesture.Pan()
     .activeOffsetY([-10, 10])
+    .failOffsetX([-20, 20])
     .onStart(() => {
       isPanning.value = true;
       startState.value = islandState.value;
@@ -424,8 +435,15 @@ export default function MapIndexPage() {
                   saveSearch(searchQuery);
                   Keyboard.dismiss();
                 }}
+                onPress={() => {
+                  if (islandState.value < 0.1) {
+                    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                }}
                 avatarUrl={user?.avatarUrl}
                 isGuest={isGuest}
+                editable={isHeaderEditable}
               />
             </View>
 
