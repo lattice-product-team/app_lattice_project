@@ -38,11 +38,16 @@ export const navigationService = {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch route from Valhalla');
+      const errorText = await response.text();
+      console.error('[Valhalla Error]', errorText);
+      throw new Error('Failed to fetch route');
     }
 
     const data = await response.json();
+    if (!data.trip || !data.trip.legs) {
+      throw new Error('Invalid Valhalla response structure');
+    }
+    
     const leg = data.trip.legs[0];
     const coords = decodePolyline(leg.shape, 6);
 

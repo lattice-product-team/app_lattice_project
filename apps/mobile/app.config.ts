@@ -62,8 +62,8 @@ const resolveApiUrl = () => {
 };
 
 const resolveValhallaUrl = () => {
-  if (env.LAN_IP) return `http://${env.LAN_IP}:${env.VALHALLA_PORT}`;
-  return `http://localhost:${env.VALHALLA_PORT}`;
+  // Temporary public instance for testing until local is ready
+  return 'https://valhalla1.openstreetmap.de';
 };
 
 const API_URL = resolveApiUrl();

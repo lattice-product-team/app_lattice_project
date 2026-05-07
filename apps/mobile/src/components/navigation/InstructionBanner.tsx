@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeBlurView } from '../ui/SafeBlurView';
-import { ArrowUp, ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight, CornerUpLeft, CornerUpRight, RotateCcw } from 'lucide-react-native';
+import { ArrowUp, ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight, CornerUpLeft, CornerUpRight, RotateCcw, Loader2 } from 'lucide-react-native';
 import { useNavigationStore } from '../../features/navigation/store/useNavigationStore';
+import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 
 /**
  * InstructionBanner: Top-mounted banner for turn-by-turn navigation instructions.
@@ -12,9 +13,9 @@ export const InstructionBanner = () => {
   const nextInstruction = useNavigationStore((state) => state.nextInstruction);
   const isNavigating = useNavigationStore((state) => state.isNavigating);
 
-  if (!isNavigating || !nextInstruction) return null;
+  if (!isNavigating) return null;
 
-  const { instruction, distance, maneuverType } = nextInstruction;
+  const { instruction = '', distance = 0, maneuverType = '' } = nextInstruction || {};
 
   // Helper to get the correct icon based on maneuver type
   const renderIcon = () => {
@@ -37,19 +38,32 @@ export const InstructionBanner = () => {
   };
 
   return (
-    <View style={styles.outerContainer}>
+    <Animated.View 
+      entering={FadeInUp} 
+      exiting={FadeOutUp}
+      style={styles.outerContainer}
+    >
       <SafeBlurView tint="dark" intensity={95} style={styles.container}>
-        <View style={styles.iconContainer}>
-          {renderIcon()}
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
-          <Text style={styles.instructionText} numberOfLines={2}>
-            {instruction}
-          </Text>
-        </View>
+        {nextInstruction ? (
+          <>
+            <View style={styles.iconContainer}>
+              {renderIcon()}
+            </View>
+            <View style={styles.textContainer}>
+              <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
+              <Text style={styles.instructionText} numberOfLines={2}>
+                {instruction}
+              </Text>
+            </View>
+          </>
+        ) : (
+          <View style={styles.loadingContainer}>
+            <Loader2 size={24} color="#FFFFFF" style={styles.loader} />
+            <Text style={styles.loadingText}>Calculating premium route...</Text>
+          </View>
+        )}
       </SafeBlurView>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -90,5 +104,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginTop: 4,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    paddingVertical: 10,
+  },
+  loader: {
+    marginRight: 12,
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: -0.3,
   },
 });

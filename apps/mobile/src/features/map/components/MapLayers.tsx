@@ -82,40 +82,44 @@ export const MapLayers = ({
       })}
 
       {/* 2. EVENT PERIMETER */}
-      <MapLibreGL.ShapeSource 
-        id="boundarySource" 
-        shape={poisGeoJSON || EMPTY_GEOJSON}
-      >
-        <MapLibreGL.FillLayer
-          id="boundaryFill"
-          filter={['==', ['get', 'type'], 'boundary']}
-          style={{
-            fillColor: theme.colors.brand.primary,
-            fillOpacity: 0.1,
-          }}
-        />
-        <MapLibreGL.LineLayer
-          id="boundaryOutline"
-          filter={['==', ['get', 'type'], 'boundary']}
-          style={{
-            lineColor: theme.colors.brand.primary,
-            lineWidth: 2,
-            lineDasharray: [2, 1],
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+      {!isNavigating && (
+        <MapLibreGL.ShapeSource 
+          id="boundarySource" 
+          shape={poisGeoJSON || EMPTY_GEOJSON}
+        >
+          <MapLibreGL.FillLayer
+            id="boundaryFill"
+            filter={['==', ['get', 'type'], 'boundary']}
+            style={{
+              fillColor: theme.colors.brand.primary,
+              fillOpacity: 0.1,
+            }}
+          />
+          <MapLibreGL.LineLayer
+            id="boundaryOutline"
+            filter={['==', ['get', 'type'], 'boundary']}
+            style={{
+              lineColor: theme.colors.brand.primary,
+              lineWidth: 2,
+              lineDasharray: [2, 1],
+            }}
+          />
+        </MapLibreGL.ShapeSource>
+      )}
 
       {/* 1. PATH NETWORK */}
-      <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
-        <MapLibreGL.LineLayer
-          id="networkLines"
-          style={{ 
-            ...mapLayerStyles.networkLines, 
-            lineOpacity: 0.15,
-            lineColor: theme.colors.brand.primary
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+      {!isNavigating && (
+        <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
+          <MapLibreGL.LineLayer
+            id="networkLines"
+            style={{ 
+              ...mapLayerStyles.networkLines, 
+              lineOpacity: 0.15,
+              lineColor: theme.colors.brand.primary
+            }}
+          />
+        </MapLibreGL.ShapeSource>
+      )}
 
       {/* 2. GL-BASED POI LAYER (Scalable & Fluid) */}
       <MapLibreGL.ShapeSource 

@@ -125,11 +125,11 @@ services:
     restart: "no"
 
   valhalla:
-    image: ghcr.io/gis-ops/docker-valhalla:latest
+    image: gisops/valhalla:latest
     ports:
       - "${VALHALLA_PORT:-8002}:8002"
     volumes:
-      - valhalla_data:/custom_files
+      - ./.docker/valhalla:/custom_files
     environment:
       # Descargamos Cataluña para cubrir Barcelona y alrededores
       - tile_urls=https://download.geofabrik.de/europe/spain/catalonia-latest.osm.pbf
