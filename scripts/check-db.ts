@@ -1,15 +1,27 @@
-import { db, sql } from '@app/db';
-import { loadConfig } from '@app/core';
+import pkg from 'pg';
+const { Client } = pkg;
 
 async function checkConnectivity() {
-  const env = loadConfig();
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) {
+    console.error('❌ DATABASE_URL environment variable is missing');
+    process.exit(1);
+  }
+
   console.log(
-    `[DB Check] Attempting to connect to: ${env.DATABASE_URL.replace(/:[^:@]+@/, ':***@')}`
+    `[DB Check] Attempting to connect to: ${dbUrl.replace(/:[^:@]+@/, ':***@')}`
   );
 
+  const client = new Client({
+    connectionString: dbUrl,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  });
+
   try {
-    const result = await db.execute(sql`SELECT 1 as connected`);
+    await client.connect();
+    await client.query('SELECT 1 as connected');
     console.log('✅ Database connectivity verified!');
+    await client.end();
     process.exit(0);
   } catch (error) {
     console.error('❌ Database connectivity FAILED:', error);
