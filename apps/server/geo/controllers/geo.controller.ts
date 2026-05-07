@@ -222,7 +222,7 @@ export const getPois = async (req: Request, res: Response) => {
   try {
     const { category, eventId } = req.query;
 
-    let query = db
+    const query = db
       .select({
         id: pointsOfInterest.id,
         name: pointsOfInterest.name,
@@ -238,20 +238,22 @@ export const getPois = async (req: Request, res: Response) => {
         status: pointsOfInterest.status,
         metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
+        eventId: pointsOfInterest.eventId,
         eventName: events.name,
+        eventPrimaryColor: events.primaryColor,
       })
       .from(pointsOfInterest)
       .leftJoin(events, eq(pointsOfInterest.eventId, events.id))
       .$dynamic();
 
     if (category && typeof category === 'string') {
-      query = query.where(sql`${pointsOfInterest.type}::text = ${category}`);
+      query.where(sql`${pointsOfInterest.type}::text = ${category}`);
     }
 
     if (eventId) {
       const eid = parseInt(eventId as string, 10);
       if (!isNaN(eid)) {
-        query = query.where(eq(pointsOfInterest.eventId, eid));
+        query.where(eq(pointsOfInterest.eventId, eid));
       }
     }
 
@@ -274,7 +276,9 @@ export const getPois = async (req: Request, res: Response) => {
         currentOccupancy: poi.currentOccupancy,
         status: poi.status,
         metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
+        eventId: poi.eventId,
         eventName: poi.eventName,
+        eventColor: poi.eventPrimaryColor,
       },
     }));
 
@@ -464,6 +468,107 @@ export const getEvents = async (req: Request, res: Response) => {
     res.json(formattedEvents);
   } catch (error) {
     console.error('Error fetching events:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const createEvent = async (req: Request, res: Response) => {
+  try {
+    const { 
+      name, 
+      description, 
+      type, 
+      startDate, 
+      endDate, 
+      locationName, 
+      address, 
+      boundary,
+      primaryColor,
+      isPermanent,
+      center
+    } = req.body;
+
+    if (!name || !startDate || !endDate) {
+      return res.status(400).json({ error: 'Name, startDate and endDate are required' });
+    }
+
+    const [newEvent] = await db.insert(events).values({
+      name,
+      description,
+      type: type || 'generic',
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      locationName,
+      address,
+      primaryColor,
+      isPermanent: isPermanent ?? false,
+      location: center ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(center)}), 4326)` : null,
+      boundary: boundary ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)` : null,
+    }).returning();
+
+    res.status(201).json(newEvent);
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const createPoi = async (req: Request, res: Response) => {
+  try {
+    const { 
+      eventId, 
+      name, 
+      description, 
+      type, 
+      geometry, 
+      locationName, 
+      address,
+      capacity,
+      isWheelchairAccessible,
+      hasPriorityLane
+    } = req.body;
+
+    if (!name || !type || !geometry) {
+      return res.status(400).json({ error: 'Name, type and geometry are required' });
+    }
+
+    const parsedEventId = eventId ? parseInt(eventId as string, 10) : null;
+
+    // Optional Spatial Validation: Ensure POI is within event boundary
+    if (parsedEventId) {
+      const [event] = await db.select({ boundary: events.boundary }).from(events).where(eq(events.id, parsedEventId));
+      if (event?.boundary) {
+        const [isValid] = await db.execute(sql`
+          SELECT ST_Contains(
+            ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(event.boundary)}), 4326),
+            ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)
+          ) as is_valid
+        `);
+        if (!(isValid as any).is_valid) {
+          console.warn(`[Geo] POI "${name}" is outside the boundary of event ${parsedEventId}`);
+          // We allow it but log a warning for now, or could return 400
+        }
+      }
+    }
+
+    const [newPoi] = await db.insert(pointsOfInterest).values({
+      eventId: parsedEventId,
+      name,
+      description,
+      type: type as any,
+      locationName,
+      address,
+      capacity: capacity ? parseInt(capacity as string, 10) : null,
+      currentOccupancy: 0,
+      status: 'open',
+      isWheelchairAccessible: isWheelchairAccessible ?? true,
+      hasPriorityLane: hasPriorityLane ?? false,
+      location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`,
+    }).returning();
+
+    res.status(201).json(newPoi);
+  } catch (error) {
+    console.error('Error creating POI:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };
