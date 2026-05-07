@@ -30,10 +30,11 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(({
         activeOpacity={0.8}
         style={{ 
           alignItems: 'center',
+          justifyContent: 'flex-end',
           // Correct for scale-from-center with bottom anchor
           transform: [
             { scale: isSelected ? 1.2 : 1 },
-            { translateY: isSelected ? -mapPinStyles.poiPinSize.height * 0.1 : 0 }
+            { translateY: isSelected ? -4 : 0 } // Fine-tuned offset
           ]
         }}
       >

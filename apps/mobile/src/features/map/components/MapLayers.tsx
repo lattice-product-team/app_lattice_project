@@ -11,6 +11,7 @@ interface MapLayersProps {
   poisGeoJSON: any;
   eventsGeoJSON?: any;
   selectedEventId?: string | number | null;
+  selectedPoiId?: string | number | null;
   pathNetwork: any;
   currentRoute: any;
   isNavigating: boolean;
@@ -22,6 +23,7 @@ export const MapLayers = ({
   poisGeoJSON,
   eventsGeoJSON,
   selectedEventId,
+  selectedPoiId,
   pathNetwork,
   currentRoute,
   isNavigating,
@@ -31,9 +33,9 @@ export const MapLayers = ({
 
   return (
     <>
-      {/* 1. EVENTS LAYER (Unified MarkerView) */}
+      {/* 1. EVENTS LAYER (PointAnnotation for better Android sync) */}
       {eventsGeoJSON?.features?.map((feature: any) => (
-        <MapLibreGL.MarkerView
+        <MapLibreGL.PointAnnotation
           key={feature.id}
           id={`event-marker-${feature.id}`}
           coordinate={feature.geometry.coordinates}
@@ -45,27 +47,92 @@ export const MapLayers = ({
             isSelected={selectedEventId === feature.id}
             onPress={onPoiPress}
           />
-        </MapLibreGL.MarkerView>
+        </MapLibreGL.PointAnnotation>
       ))}
 
-      {/* 2. POI LAYER (Unified MarkerView) - Only visible at high zoom */}
-      {currentZoom > 15.5 && poisGeoJSON?.features
-        ?.filter((f: any) => f.properties.type !== 'boundary')
-        .map((feature: any) => (
-          <MapLibreGL.MarkerView
-            key={feature.id}
-            id={`poi-marker-${feature.id}`}
-            coordinate={feature.geometry.coordinates}
-            anchor={{ x: 0.5, y: 1.0 }}
-          >
-            <POIMarker 
-              poi={feature}
-              theme={theme}
-              onPress={onPoiPress}
-            />
-          </MapLibreGL.MarkerView>
-        ))
-      }
+      {/* 2. POI LAYER (GL-BASED FOR PERFECT SYNC) */}
+      <MapLibreGL.ShapeSource 
+        id="poisSource" 
+        shape={poisGeoJSON || EMPTY_GEOJSON}
+        onPress={onPoiPress}
+      >
+        {/* POI Background Circle */}
+        <MapLibreGL.CircleLayer
+          id="poisCircle"
+          minZoomLevel={15.5}
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              16, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 18, 12],
+              18, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 24, 16]
+            ],
+            circleColor: ['get', 'color'],
+            circleStrokeWidth: 2,
+            circleStrokeColor: '#FFFFFF',
+            circleOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15.5, 0,
+              16.0, 1
+            ],
+            circlePitchAlignment: 'map',
+          }}
+        />
+
+        {/* POI Category Icon */}
+        <MapLibreGL.SymbolLayer
+          id="poisIcon"
+          minZoomLevel={15.5}
+          style={{
+            iconImage: [
+              'coalesce',
+              ['concat', 'icon-', ['get', 'category']],
+              'icon-default'
+            ],
+            iconSize: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              16, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 0.6, 0.4],
+              18, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 0.8, 0.6]
+            ],
+            iconOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15.5, 0,
+              16.0, 1
+            ],
+            iconPitchAlignment: 'viewport',
+            iconAllowOverlap: true,
+          }}
+        />
+
+        {/* POI Label */}
+        <MapLibreGL.SymbolLayer
+          id="poisLabel"
+          minZoomLevel={16.5}
+          style={{
+            textField: ['get', 'name'],
+            textSize: 10,
+            textOffset: [0, 2.5],
+            textAnchor: 'top',
+            textColor: theme.colors.text.primary || '#000000',
+            textHaloColor: theme.colors.bg.main || '#FFFFFF',
+            textHaloWidth: 2,
+            textOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              16.5, 0,
+              17.5, 1
+            ],
+          }}
+        />
+      </MapLibreGL.ShapeSource>
 
       {/* 3. EVENT PERIMETER (Stays in GL for performance) */}
       {!isNavigating && (

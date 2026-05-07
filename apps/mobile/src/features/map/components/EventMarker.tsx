@@ -26,11 +26,13 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(({
         activeOpacity={0.9}
         style={{ 
           alignItems: 'center',
+          justifyContent: 'flex-end',
           // Correct for scale-from-center with bottom anchor
-          // A scale of 1.15 shifts the center visually. We pull it up by half that visual expansion
+          // We need to shift the whole component down so its bottom stays at the anchor point
+          // Visual expansion is (scale - 1) * height. We shift by half of that.
           transform: [
             { scale: isSelected ? 1.15 : 1 },
-            { translateY: isSelected ? -mapPinStyles.eventPinSize.height * 0.075 : 0 }
+            { translateY: isSelected ? -5 : 0 } // Fine-tuned offset
           ]
         }}
       >

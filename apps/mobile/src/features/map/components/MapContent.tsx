@@ -282,6 +282,7 @@ export const MapContent = function MapContent({
           poisGeoJSON={filteredPoisGeoJSON}
           eventsGeoJSON={eventsGeoJSON}
           selectedEventId={selectedEventId}
+          selectedPoiId={selectedPoiId}
           pathNetwork={pathNetwork}
           currentRoute={currentRoute}
           isNavigating={isNavigating}

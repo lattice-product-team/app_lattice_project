@@ -3,11 +3,9 @@ import { StyleSheet } from 'react-native';
 export const mapPinStyles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
-    // We use a fixed width/height for the container to avoid layout shifts,
-    // but the actual visible pin is smaller.
-    width: 120,
-    height: 100,
+    justifyContent: 'flex-end',
+    // Remove fixed height/width to prevent 'floating' effect
+    paddingBottom: 0,
   },
   pinFrame: {
     backgroundColor: '#FFFFFF',
