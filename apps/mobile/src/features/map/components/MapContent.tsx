@@ -209,7 +209,7 @@ export const MapContent = function MapContent({
         setInitialLoadComplete(true);
         setMapReady(true);
       }
-    }, 2000);
+    }, 8000);
     return () => clearTimeout(timer);
   }, [setInitialLoadComplete, setMapReady]);
 

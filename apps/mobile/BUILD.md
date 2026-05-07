@@ -43,24 +43,25 @@ If you want to build the IPA/APK on your own machine without using Expo's cloud:
 npx eas build --platform ios --local --profile development
 ```
 
-## 4. Android Cloud Builds (No Local Setup Required)
-If you don't want to install Android Studio, use EAS Cloud:
+## 4. Android Cloud Builds (Recomendado)
+Ya no necesitas Android Studio instalado localmente. Usamos **EAS Build** para generar los APKs en la nube.
+
+Desde la **raíz del proyecto**:
 ```bash
-# 1. Install EAS CLI
-npm install -g eas-cli
+# Build de Desarrollo (con expo-dev-client) - Genera APK
+pnpm mobile:android:build:dev
 
-# 2. Login to Expo
-eas login
+# Build de Preview (Release APK) - Genera APK instalable
+pnpm mobile:android:build:preview
 
-# 3. Trigger build (will give you an APK link)
-pnpm android:build:dev
+# Build de Producción (Google Play) - Genera AAB
+pnpm mobile:android:build:prod
 ```
 
-## 5. Environment Variables & Secrets
-For services like MapTiler to work in cloud builds, you MUST add secrets to EAS:
+### Configuración de Secretos (EAS)
+Para que el mapa y el login funcionen en los builds de la nube, asegúrate de tener los secretos configurados en EAS:
 ```bash
-# Add MapTiler key for remote builds
-eas secret:create --name MAPTILER_KEY --value your_key_here --scope project --type string
+eas secret:create --name MAPTILER_KEY --value TU_CLAVE --scope project --type string
 ```
 The app will automatically map these secrets via `app.config.ts`.
 

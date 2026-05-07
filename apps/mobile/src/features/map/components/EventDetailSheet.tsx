@@ -22,6 +22,7 @@ import { LatticeEvent } from '../../../types';
 import { useEventDetails } from '../hooks/useEventDetails';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
@@ -37,10 +38,9 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
   
   const { 
-    activeCategoryFilters, 
-    toggleCategoryFilter, 
     getFilteredPOIs 
   } = usePOIStore();
+  const setNavigating = useNavigationStore((s) => s.setNavigating);
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
@@ -187,7 +187,11 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                   {/* Quick Actions */}
                   <View style={styles.quickActions}>
                     <Pressable 
-                      onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        setNavigating(true);
+                        onClose();
+                      }}
                       style={({ pressed }) => [
                         styles.actionButton,
                         pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }

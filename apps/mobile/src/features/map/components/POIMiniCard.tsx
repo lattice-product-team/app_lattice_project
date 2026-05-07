@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { StandardUIPOI } from '../../poi/types';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
@@ -28,6 +29,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const visibility = useSharedValue(0);
+  const setNavigating = useNavigationStore((s) => s.setNavigating);
 
   useEffect(() => {
     if (poi) {
@@ -91,7 +93,13 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
         </View>
 
         <View style={styles.footer}>
-          <Pressable style={[styles.mainAction, { backgroundColor: theme.colors.brand.primary }]}>
+          <Pressable 
+            onPress={() => {
+              setNavigating(true);
+              onClose();
+            }}
+            style={[styles.mainAction, { backgroundColor: theme.colors.brand.primary }]}
+          >
             <MaterialCommunityIcons name="directions" size={20} color="white" />
             <Text style={styles.actionText}>Go Now</Text>
           </Pressable>

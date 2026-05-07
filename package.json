@@ -22,6 +22,9 @@
     "mobile:ios": "pnpm --filter @app/mobile ios:device",
     "mobile:sim": "pnpm --filter @app/mobile ios",
     "mobile:android": "pnpm --filter @app/mobile android:device",
+    "mobile:android:build:dev": "cd apps/mobile && eas build --platform android --profile development",
+    "mobile:android:build:preview": "cd apps/mobile && eas build --platform android --profile preview",
+    "mobile:android:build:prod": "cd apps/mobile && eas build --platform android --profile production",
     "mobile:pods": "pnpm --filter @app/mobile pods",
     "mobile:lan": "pnpm --filter @app/mobile dev:lan",
     "mobile:tunnel": "pnpm --filter @app/mobile dev:tunnel",
@@ -83,7 +86,6 @@
   "dependencies": {
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
-    "@shopify/react-native-skia": "2.2.12",
     "expo": "~54.0.34",
     "react": "19.1.0",
     "react-native": "0.81.5"

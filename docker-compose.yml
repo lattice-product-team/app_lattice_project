@@ -35,6 +35,8 @@ services:
       - GEO_PORT=3002
       - SOCIAL_HOST=social
       - SOCIAL_PORT=3003
+      - VALHALLA_HOST=valhalla
+      - VALHALLA_PORT=8002
     depends_on:
       - auth
       - geo
@@ -122,6 +124,22 @@ services:
       - redis_data:/data
     restart: "no"
 
+  valhalla:
+    image: gisops/valhalla:latest
+    ports:
+      - "${VALHALLA_PORT:-8002}:8002"
+    volumes:
+      - ./.docker/valhalla:/custom_files
+    environment:
+      # Descargamos Cataluña para cubrir Barcelona y alrededores
+      - tile_urls=https://download.geofabrik.de/europe/spain/catalonia-latest.osm.pbf
+      - build_tiles=True
+      - build_admins=True
+      - build_timezones=True
+      - force_rebuild=False
+    restart: always
+
 volumes:
   postgres_data:
   redis_data:
+  valhalla_data:
