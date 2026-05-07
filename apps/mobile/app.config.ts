@@ -83,7 +83,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   android: {
-    package: 'com.cdc.lattice.dev',
+    package: 'com.lattice.app',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -93,6 +93,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     permissions: [
+      'INTERNET',
       'CAMERA',
       'RECORD_AUDIO',
       'android.permission.ACCESS_COARSE_LOCATION',
@@ -142,6 +143,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config.extra,
     apiUrl: API_URL,
     nodeEnv: env.NODE_ENV,
+    mapTilerKey: process.env.MAPTILER_KEY || 'iqk4irD5FCOr6M6VHVWZ',
     googleIosClientId: env.GOOGLE_IOS_CLIENT_ID || 'missing-ios-client-id',
     googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID || 'missing-android-client-id',
     eas: {

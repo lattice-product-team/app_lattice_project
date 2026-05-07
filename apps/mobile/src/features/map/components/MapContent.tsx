@@ -20,8 +20,10 @@ import { MapLayers } from './MapLayers';
 
 // Constants & Utilities
 import { useLocationStore } from '../../../store/useLocationStore';
+import { useStartupStore } from '../../../store/useStartupStore';
 import styleLight from '../../../../assets/map/style-light.json';
 import styleDark from '../../../../assets/map/style-dark.json';
+import { MAPTILER_KEY } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
 
 interface MapContentProps {
@@ -192,6 +194,8 @@ export const MapContent = function MapContent({
     };
   }, [poisGeoJSON, selectedPoiId]);
 
+  const setMapReady = useStartupStore((s) => s.setMapReady);
+
   // Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -199,10 +203,11 @@ export const MapContent = function MapContent({
         console.log('⚠️ [MapContent] Safety timeout triggered: forcing map ready');
         hasInitialRendered.current = true;
         setInitialLoadComplete(true);
+        setMapReady(true);
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, [setInitialLoadComplete]);
+  }, [setInitialLoadComplete, setMapReady]);
 
   const mapStyle = useMemo(() => {
     const baseStyle = theme.dark ? styleDark : styleLight;
@@ -214,7 +219,7 @@ export const MapContent = function MapContent({
         ...(baseStyle.sources || {}),
         maptiler_planet: {
           type: "vector",
-          url: "https://api.maptiler.com/tiles/v3/tiles.json?key=iqk4irD5FCOr6M6VHVWZ"
+          url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`
         }
       }
     };
@@ -236,10 +241,12 @@ export const MapContent = function MapContent({
           if (!hasInitialRendered.current) {
             hasInitialRendered.current = true;
             setInitialLoadComplete(true);
+            setMapReady(true);
             startupMetrics.markInteractive('Map');
           }
         }}
       >
+
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         
         <MapCameraManager 

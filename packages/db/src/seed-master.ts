@@ -21,59 +21,30 @@ async function seed() {
   // Get the main test user for linking
   const [koreUser] = await db.select().from(users).where(eq(users.email, 'kore@example.com'));
 
-  // 2.5 Seed Permanent Events (Base Locations)
-  console.log('🏟️ Seeding permanent events...');
-  await db.insert(events).values([
-    {
-      name: 'Circuit de Barcelona-Catalunya',
-      location: [2.2611, 41.5701],
-      boundary: [[[2.2530, 41.5750], [2.2650, 41.5750], [2.2650, 41.5650], [2.2530, 41.5650], [2.2530, 41.5750]]],
-      primaryColor: '#ff382e',
-      isPermanent: true,
-      type: 'generic',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2099-12-31'),
-      locationName: 'Montmeló',
-      address: 'Mas La Roca, s/n, 08160 Montmeló, Barcelona, Spain',
-    },
-    {
-      name: 'Parc del Fòrum',
-      location: [2.2215, 41.4125],
-      boundary: [[[2.2150, 41.4180], [2.2300, 41.4180], [2.2300, 41.4050], [2.2150, 41.4050], [2.2150, 41.4180]]],
-      primaryColor: '#0447ff',
-      isPermanent: true,
-      type: 'generic',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2099-12-31'),
-      locationName: 'Barcelona Front Marítim',
-      address: 'Carrer de la Pau, 12, 08930 Sant Adrià de Besòs, Barcelona, Spain',
-    }
-  ]);
-
-  // 3. Seed Temporary Events
-  console.log('📅 Creating temporary events...');
+  // 3. Seed Events
+  console.log('📅 Creating 3 diverse events in Barcelona...');
   
   // 3.1 Nitro GP (Sports)
   await db.insert(events).values({
     name: 'Nitro GP Barcelona',
-    description: 'The ultimate high-speed racing experience at the Circuit de Barcelona-Catalunya.',
+    description: 'The ultimate high-speed racing experience.',
     type: 'sports',
     startDate: new Date('2026-05-15'),
     endDate: new Date('2026-05-17'),
     locationName: 'Circuit de Barcelona-Catalunya',
-    address: 'Mas La Roca, s/n, 08160 Montmeló, Barcelona, Spain',
+    address: 'Mas La Conca, s/n, 08160 Montmeló, Barcelona, Spain',
     location: [2.2611, 41.5701],
     boundary: [[[2.2530, 41.5750], [2.2650, 41.5750], [2.2650, 41.5650], [2.2530, 41.5650], [2.2530, 41.5750]]],
-    imageUrl: 'https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800',
-    primaryColor: '#ff382e',
-    metadata: JSON.stringify({ capacity: 140000, currentOccupancy: 85, category: 'Motorsport' }),
+    imageUrl: 'https://images.unsplash.com/photo-1532906623266-0bb7ca053177?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#e10600',
+    metadata: JSON.stringify({ capacity: 140000, category: 'Sports' }),
   }).onConflictDoNothing();
   const [nitroGP] = await db.select().from(events).where(eq(events.name, 'Nitro GP Barcelona'));
 
   // 3.2 Neon Nights (Music)
   await db.insert(events).values({
     name: 'Neon Nights Festival',
-    description: 'An immersive electronic music journey by the sea with world-class DJs.',
+    description: 'An immersive electronic music journey by the sea.',
     type: 'music',
     startDate: new Date('2026-07-10'),
     endDate: new Date('2026-07-12'),
@@ -82,18 +53,19 @@ async function seed() {
     location: [2.2215, 41.4125],
     boundary: [[[2.2150, 41.4180], [2.2300, 41.4180], [2.2300, 41.4050], [2.2150, 41.4050], [2.2150, 41.4180]]],
     imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800',
-    primaryColor: '#0447ff',
-    metadata: JSON.stringify({ capacity: 50000, currentOccupancy: 62, category: 'Electronic Music' }),
+    primaryColor: '#bc00ff',
+    metadata: JSON.stringify({ capacity: 50000, category: 'Music' }),
   }).onConflictDoNothing();
   const [neonNights] = await db.select().from(events).where(eq(events.name, 'Neon Nights Festival'));
 
-  // 3.3 Quantum Conf (Tech)
+  // 3.3 Quantum Conf (Tech) - PERMANENT
   await db.insert(events).values({
     name: 'Quantum Tech Summit',
     description: 'Exploring the future of quantum computing, AI, and decentralized systems.',
     type: 'tech',
-    startDate: new Date('2026-11-05'),
-    endDate: new Date('2026-11-07'),
+    startDate: new Date('2024-01-01'),
+    endDate: new Date('2099-12-31'),
+    isPermanent: true,
     locationName: 'Fira Barcelona Gran Via',
     address: 'Av. Joan Carles I, 64, 08908 L\'Hospitalet de Llobregat, Barcelona, Spain',
     location: [2.1315, 41.3545],
@@ -110,39 +82,17 @@ async function seed() {
   if (koreUser) {
     console.log('🎫 Seeding tickets for test user...');
     await db.insert(tickets).values([
-      {
-        userId: koreUser.id,
-        code: 'NITRO-GP-2026-VIP',
-        ownerEmail: koreUser.email,
-        gate: 'Gate 1 (Main)',
-        zoneName: 'VIP Paddock',
-        seatRow: 'A',
-        seatNumber: '12',
-        eventId: nitroGP.id, // Explicit link to event
-        isActive: true,
-      },
-      {
-        userId: koreUser.id,
-        code: 'NEON-2026-GA',
-        ownerEmail: koreUser.email,
-        gate: 'Sea Gate',
-        zoneName: 'Main Floor',
-        eventId: neonNights.id, // Explicit link to event
-        isActive: true,
-      }
-    ]).onConflictDoNothing();
+      { userId: koreUser.id, eventId: nitroGP.id, type: 'general' },
+      { userId: koreUser.id, eventId: neonNights.id, type: 'vip' },
+      { userId: koreUser.id, eventId: quantumConf.id, type: 'staff' },
+    ]);
 
     console.log('📍 Seeding saved locations for test user...');
     await db.insert(savedLocations).values([
       {
         userId: koreUser.id,
-        label: 'My Car (Nitro GP)',
-        location: [2.2580, 41.5710],
-      },
-      {
-        userId: koreUser.id,
-        label: 'Meeting Point (Neon)',
-        location: [2.2220, 41.4130],
+        label: 'Main Entrance (Quantum)',
+        location: [2.1310, 41.3540],
       }
     ]);
   }
@@ -152,31 +102,32 @@ async function seed() {
     {
       event: nitroGP,
       pois: [
-        { name: 'Hard Rock Cafe Barcelona', type: 'restaurant', coords: [2.1705, 41.3851] as [number, number] },
-        { name: 'Sagrada Familia', type: 'grandstand', coords: [2.1744, 41.4036] as [number, number] },
-        { name: 'Hospital de la Santa Creu i Sant Pau', type: 'medical', coords: [2.1743, 41.4124] as [number, number] },
+        { name: 'Main Grandstand', type: 'meetup_point', coords: [2.2592, 41.5695] as [number, number] },
+        { name: 'Paddock VIP', type: 'restaurant', coords: [2.2615, 41.5698] as [number, number] },
+        { name: 'Medical Center', type: 'gate', coords: [2.2635, 41.5708] as [number, number] },
       ],
       nodeOffset: 100
     },
     {
       event: neonNights,
       pois: [
-        { name: 'Pacha Barcelona', type: 'meetup_point', coords: [2.1972, 41.3859] as [number, number] },
-        { name: 'Opium Barcelona', type: 'meetup_point', coords: [2.1975, 41.3858] as [number, number] },
-        { name: 'Marina Bay by Moncho\'s', type: 'restaurant', coords: [2.1969, 41.3862] as [number, number] },
+        { name: 'Solar Stage', type: 'meetup_point', coords: [2.2235, 41.4135] as [number, number] },
+        { name: 'Ocean Stage', type: 'meetup_point', coords: [2.2255, 41.4115] as [number, number] },
+        { name: 'Chill Out Zone', type: 'restaurant', coords: [2.2215, 41.4125] as [number, number] },
       ],
       nodeOffset: 200
     },
     {
       event: quantumConf,
       pois: [
-        { name: 'Fira Barcelona - Recinte de Gran Via', type: 'meetup_point', coords: [2.1315, 41.3545] as [number, number] },
-        { name: 'IKEA Hospitalet', type: 'shop', coords: [2.1285, 41.3525] as [number, number] },
-        { name: 'Renfe Bellvitge', type: 'gate', coords: [2.1195, 41.3555] as [number, number] },
+        { name: 'Main Auditorium', type: 'meetup_point', coords: [2.1315, 41.3545] as [number, number] },
+        { name: 'Innovation Hall', type: 'shop', coords: [2.1335, 41.3535] as [number, number] },
+        { name: 'Registration Desk', type: 'gate', coords: [2.1295, 41.3555] as [number, number] },
       ],
       nodeOffset: 300
     }
   ];
+
 
   for (const config of eventConfigs) {
     if (!config.event) continue;

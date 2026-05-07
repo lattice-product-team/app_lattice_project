@@ -10,11 +10,9 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import Animated, { 
   FadeInDown, 
-  FadeInUp, 
   useSharedValue,
   useAnimatedStyle,
   interpolate,
@@ -24,89 +22,36 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
-
-const FEATURE_CARDS = [
-  { id: '1', label: 'Events', icon: 'calendar' },
-  { id: '2', label: 'Map', icon: 'map-pin' },
-  { id: '3', label: 'Social', icon: 'users' },
-  { id: '4', label: 'Tickets', icon: 'tag' },
-  { id: '5', label: 'Locations', icon: 'home' },
-  { id: '6', label: 'Verified', icon: 'shield' },
-  { id: '7', label: 'City', icon: 'target' },
-  { id: '8', label: 'Exclusive', icon: 'star' },
-  { id: '9', label: 'Real-time', icon: 'zap' },
-];
 
 const ONBOARDING_DATA = [
   {
     id: '1',
     title: 'Welcome to Lattice.',
-    subtitle: 'Your City Grid',
+    subtitle: '', // Vacío porque usaremos el logo aquí
     description: 'Simplify your city life. Find everything you need in one place.',
+    image: require('../../assets/images/onboarding/Barcelona_hero_shutterstock_2156289499_ipmhcw.avif'),
+    showLogo: true,
   },
   {
     id: '2',
     title: 'Explore the unseen.',
     subtitle: 'Exclusive Map',
     description: 'Discover underground events and secret locations around you.',
+    image: require('../../assets/images/onboarding/Picasso-barcelona-2048x1366.webp'),
+    showLogo: false,
   },
   {
     id: '3',
     title: 'Connect with community.',
     subtitle: 'Social Hub',
     description: 'Join verified groups and connect with people who share your vibe.',
+    image: require('../../assets/images/onboarding/16296368889498.jpg'),
+    showLogo: false,
   },
 ];
-
-const CardWall = () => (
-  <View style={styles.wallGrid}>
-    {FEATURE_CARDS.map((card, i) => (
-      <View key={card.id} style={[styles.card, { opacity: 0.1 + (Math.random() * 0.3) }]}>
-        <Feather name={card.icon as any} size={24} color="#000" style={{ opacity: 0.4 }} />
-        <Text style={styles.cardLabel}>{card.label}</Text>
-      </View>
-    ))}
-  </View>
-);
-
-const MapVisual = () => (
-  <View style={styles.mapContainer}>
-    {Array.from({ length: 16 }).map((_, i) => (
-      <View key={i} style={styles.mapGridItem}>
-        {Math.random() > 0.7 && (
-          <View style={styles.mapPin}>
-            <View style={styles.mapPinInner} />
-          </View>
-        )}
-      </View>
-    ))}
-    <View style={styles.mapCircle} />
-  </View>
-);
-
-const SocialVisual = () => (
-  <View style={styles.socialContainer}>
-    {Array.from({ length: 8 }).map((_, i) => (
-      <View 
-        key={i} 
-        style={[
-          styles.socialCircle, 
-          { 
-            top: 100 + (Math.random() * 200), 
-            left: 50 + (Math.random() * 200),
-            width: 40 + (Math.random() * 40),
-            height: 40 + (Math.random() * 40),
-            opacity: 0.1 + (Math.random() * 0.2)
-          }
-        ]} 
-      >
-        <Feather name="user" size={20} color="#000" />
-      </View>
-    ))}
-  </View>
-);
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -133,24 +78,45 @@ export default function OnboardingScreen() {
     router.replace('/(main)');
   };
 
-  const bg1Style = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollX.value, [0, width], [1, 0], Extrapolate.CLAMP),
-  }));
+  const renderBackground = (index: number) => {
+    const animatedStyle = useAnimatedStyle(() => {
+      const inputSize = width;
+      const opacity = interpolate(
+        scrollX.value,
+        [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
+        [0, 1, 0],
+        Extrapolate.CLAMP
+      );
+      
+      return {
+        opacity,
+      };
+    });
 
-  const bg2Style = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollX.value, [0, width, width * 2], [0, 1, 0], Extrapolate.CLAMP),
-  }));
-
-  const bg3Style = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollX.value, [width, width * 2], [0, 1], Extrapolate.CLAMP),
-  }));
-
-  const logoStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollX.value, [0, width * 0.5], [1, 0], Extrapolate.CLAMP),
-    transform: [
-      { scale: interpolate(scrollX.value, [0, width * 0.5], [1, 0.8], Extrapolate.CLAMP) }
-    ]
-  }));
+    return (
+      <Animated.View 
+        key={`bg-${index}`} 
+        style={[StyleSheet.absoluteFill, animatedStyle]}
+      >
+        <Image 
+          source={ONBOARDING_DATA[index].image}
+          style={styles.backgroundImage}
+          contentFit="cover"
+        />
+        <LinearGradient
+          colors={[
+            'transparent', 
+            theme.dark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', 
+            theme.dark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', 
+            theme.dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)', 
+            theme.colors.bg.main
+          ]}
+          locations={[0, 0.4, 0.6, 0.8, 1]}
+          style={styles.gradient}
+        />
+      </Animated.View>
+    );
+  };
 
   const renderItem = ({ item }: { item: typeof ONBOARDING_DATA[0] }) => (
     <View style={styles.slide}>
@@ -158,13 +124,31 @@ export default function OnboardingScreen() {
         entering={FadeInDown.delay(200).duration(1000).springify()}
         style={styles.textContainer}
       >
-        <Text style={styles.slideSubtitle}>
-          {item.subtitle}
-        </Text>
-        <Text style={styles.slideTitle} numberOfLines={1} adjustsFontSizeToFit>
+        {item.showLogo ? (
+          <View style={styles.centralLogoShadow}>
+            <Image 
+              source={require('../../assets/images/icon.png')} 
+              style={styles.logoImage}
+              contentFit="contain"
+            />
+          </View>
+        ) : (
+          <Text style={[styles.slideSubtitle, { color: theme.colors.text.primary }]}>
+            {item.subtitle}
+          </Text>
+        )}
+        <Text 
+          style={[
+            styles.slideTitle, 
+            { color: theme.colors.text.primary },
+            item.showLogo && { fontSize: 64, lineHeight: 68 } // Larger title for first slide
+          ]} 
+          numberOfLines={2} 
+          adjustsFontSizeToFit
+        >
           {item.title}
         </Text>
-        <Text style={styles.slideDescription}>
+        <Text style={[styles.slideDescription, { color: theme.colors.text.secondary }]}>
           {item.description}
         </Text>
       </Animated.View>
@@ -172,30 +156,10 @@ export default function OnboardingScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: '#FFF' }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
       <View style={styles.backgroundLayer}>
-        <Animated.View style={[StyleSheet.absoluteFill, bg1Style]}>
-          <CardWall />
-        </Animated.View>
-        <Animated.View style={[StyleSheet.absoluteFill, bg2Style]}>
-          <MapVisual />
-        </Animated.View>
-        <Animated.View style={[StyleSheet.absoluteFill, bg3Style]}>
-          <SocialVisual />
-        </Animated.View>
+        {ONBOARDING_DATA.map((_, index) => renderBackground(index))}
       </View>
-
-      <Animated.View 
-        style={[styles.logoWrapper, logoStyle, { top: height * 0.38 }]}
-      >
-         <View style={styles.centralLogoShadow}>
-           <Image 
-             source={require('../../assets/images/icon.png')} 
-             style={styles.logoImage}
-             contentFit="contain"
-           />
-         </View>
-      </Animated.View>
 
       <FlatList
         data={ONBOARDING_DATA}
@@ -218,8 +182,8 @@ export default function OnboardingScreen() {
                 styles.dot,
                 { 
                   width: activeIndex === i ? 16 : 4,
-                  backgroundColor: activeIndex === i ? '#000' : '#E5E5E5',
-                  opacity: activeIndex === i ? 1 : 0.5
+                  backgroundColor: activeIndex === i ? theme.colors.text.primary : theme.colors.border.strong,
+                  opacity: activeIndex === i ? 1 : 0.3
                 },
               ]}
             />
@@ -227,12 +191,18 @@ export default function OnboardingScreen() {
         </View>
 
         <View style={styles.buttonContainer}>
-          <Pressable onPress={handleGetStarted} style={styles.getStartedButton}>
-            <Text style={styles.getStartedText}>Get started</Text>
+          <Pressable 
+            onPress={handleGetStarted} 
+            style={[styles.getStartedButton, { backgroundColor: theme.colors.text.primary }]}
+          >
+            <Text style={[styles.getStartedText, { color: theme.colors.bg.main }]}>Get started</Text>
           </Pressable>
 
-          <Pressable onPress={handleGuestMode} style={styles.guestButton}>
-            <Text style={styles.guestText}>Entrar como invitado</Text>
+          <Pressable 
+            onPress={handleGuestMode} 
+            style={[styles.guestButton, { backgroundColor: 'transparent', borderColor: theme.colors.border.strong }]}
+          >
+            <Text style={[styles.guestText, { color: theme.colors.text.primary }]}>Entrar como invitado</Text>
           </Pressable>
         </View>
       </View>
@@ -246,91 +216,21 @@ const styles = StyleSheet.create({
   },
   backgroundLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#FFF',
   },
-  wallGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    paddingTop: 80,
-    gap: 16,
-    opacity: 0.6,
+  backgroundImage: {
+    width: '100%',
+    height: height * 0.7,
   },
-  card: {
-    width: (width - 80) / 3,
-    aspectRatio: 1,
-    backgroundColor: '#FFF',
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    gap: 6,
-  },
-  cardLabel: {
-    fontSize: 10,
-    fontFamily: 'Inter-Bold',
-    color: '#000',
-    opacity: 0.4,
-  },
-  mapContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingTop: 140,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-    gap: 2,
-  },
-  mapGridItem: {
-    width: (width - 60) / 4,
-    height: (width - 60) / 4,
-    borderWidth: 0.5,
-    borderColor: '#F5F5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mapPin: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#FFE5B4',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mapPinInner: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#E2B042',
-  },
-  mapCircle: {
+  gradient: {
     position: 'absolute',
-    width: width * 0.8,
-    height: width * 0.8,
-    borderRadius: width * 0.4,
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    top: height * 0.2,
-    opacity: 0.5,
+    left: 0,
+    right: 0,
+    bottom: height * 0.3,
+    height: height * 0.5,
   },
-  socialContainer: {
-    flex: 1,
-    paddingTop: 150,
-  },
-  socialCircle: {
-    position: 'absolute',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#EFEFEF',
-  },
-  logoWrapper: {
-    position: 'absolute',
-    alignSelf: 'center',
-    zIndex: 100,
+  logoImage: {
+    width: 120,
+    height: 120,
   },
   centralLogoShadow: {
     shadowColor: '#E2B042',
@@ -338,10 +238,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 25,
     elevation: 15,
-  },
-  logoImage: {
-    width: 140,
-    height: 140,
   },
   pager: {
     flex: 1,
@@ -364,7 +260,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     opacity: 0.6,
-    color: '#000',
   },
   slideTitle: {
     fontSize: 56,
@@ -372,16 +267,14 @@ const styles = StyleSheet.create({
     lineHeight: 60,
     letterSpacing: -1,
     textAlign: 'center',
-    color: '#000',
   },
   slideDescription: {
     fontSize: 18,
     fontFamily: 'Inter-Regular',
     lineHeight: 24,
     textAlign: 'center',
-    opacity: 0.5,
+    opacity: 0.7,
     marginTop: 8,
-    color: '#000',
   },
   footer: {
     paddingHorizontal: 24,
@@ -411,12 +304,10 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
   getStartedText: {
-    color: '#fff',
     fontSize: 17,
     fontFamily: 'Inter-Bold',
   },
@@ -424,14 +315,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FFF',
     borderWidth: 1.5,
-    borderColor: '#F0F0F0',
     alignItems: 'center',
     justifyContent: 'center',
   },
   guestText: {
-    color: '#000',
     fontSize: 16,
     fontFamily: 'Inter-Bold',
     textAlign: 'center',

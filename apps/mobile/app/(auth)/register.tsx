@@ -56,10 +56,10 @@ export default function RegisterScreen() {
             />
           </View>
           
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
             Your new{'\n'}experience is here.
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Join the Lattice community today.
           </Text>
         </Animated.View>
@@ -71,7 +71,7 @@ export default function RegisterScreen() {
               label="Continue with Google" 
               variant="google" 
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-              style={styles.socialButton}
+              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
             />
             
             <PremiumButton 
@@ -79,9 +79,9 @@ export default function RegisterScreen() {
               variant="outline" 
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/(auth)/login');
+                router.push('/(auth)/email-register');
               }}
-              style={styles.socialButton}
+              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
             />
           </Animated.View>
         </View>
@@ -92,22 +92,22 @@ export default function RegisterScreen() {
           style={styles.footer}
         >
           <View style={styles.switchLink}>
-            <Text style={styles.footerText}>
+            <Text style={[styles.footerText, { color: theme.colors.text.muted }]}>
               Already have an account?{' '}
             </Text>
             <Link href="/(auth)/login" asChild>
               <Pressable hitSlop={10}>
-                <Text style={styles.footerLink}>
+                <Text style={[styles.footerLink, { color: theme.colors.brand.primary }]}>
                   Sign in
                 </Text>
               </Pressable>
             </Link>
           </View>
 
-          <Text style={styles.legalText}>
+          <Text style={[styles.legalText, { color: theme.colors.text.muted }]}>
             By continuing, you agree to our{' '}
-            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
-            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
+            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
+            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
           </Text>
         </Animated.View>
       </View>
@@ -124,25 +124,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
+    width: 80,
+    height: 80,
+    borderRadius: 22,
   },
   title: {
-    fontSize: 56,
+    fontSize: 64,
     fontFamily: 'CormorantGaramond-Medium',
-    lineHeight: 60,
+    lineHeight: 68,
     letterSpacing: -1,
     textAlign: 'center',
-    color: '#000',
   },
   subtitle: {
     fontSize: 18,
     fontFamily: 'Inter-Medium',
-    marginTop: 8,
-    opacity: 0.5,
+    marginTop: 12,
+    opacity: 0.6,
     textAlign: 'center',
-    color: '#000',
   },
   actionsContainer: {
     width: '100%',
@@ -151,14 +149,12 @@ const styles = StyleSheet.create({
   socialButton: {
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FFF',
     borderWidth: 1.2,
-    borderColor: '#F0F0F0',
   },
   footer: {
     alignItems: 'center',
     gap: 16,
-    marginTop: 40,
+    marginTop: 60,
   },
   switchLink: {
     flexDirection: 'row',
@@ -168,16 +164,13 @@ const styles = StyleSheet.create({
   footerText: {
     fontFamily: 'Inter-Medium',
     fontSize: 15,
-    color: 'rgba(0,0,0,0.4)',
   },
   footerLink: {
     fontFamily: 'Inter-Bold',
     fontSize: 15,
-    color: '#E2B042', // Lattice Orange
   },
   legalText: {
     fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
     lineHeight: 18,
     fontFamily: 'Inter-Regular',
