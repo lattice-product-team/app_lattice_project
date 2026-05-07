@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, ViewStyle, StyleProp, StyleSheet } from 'react-native';
+import { View, ViewStyle, StyleProp, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 
 interface SafeBlurViewProps {
@@ -19,10 +19,23 @@ export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
   style,
   children
 }, ref) => {
+  const safeIntensity = useMemo(() => {
+    // Android optimization: High intensity blur is extremely expensive on Android
+    if (Platform.OS === 'android') {
+      return Math.min(intensity, 30); // Cap at 30 for performance
+    }
+    return intensity;
+  }, [intensity]);
+
   const overlayColor = useMemo(() => {
     if (tint === 'dark') return 'rgba(15, 15, 18, 0.45)';
     return 'rgba(255, 255, 255, 0.35)';
   }, [tint]);
+
+  const fallbackOpacity = useMemo(() => {
+    // Increase opacity on Android to compensate for lower blur intensity
+    return Platform.OS === 'android' ? 0.7 : 0.2;
+  }, []);
 
   const expoBlurTint = useMemo(() => {
     if (tint === 'dark') return 'dark';
@@ -34,13 +47,13 @@ export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
     <View ref={ref} style={[style, styles.container]}>
       {/* Background layer: Expo Blur */}
       <BlurView 
-        intensity={intensity} 
+        intensity={safeIntensity} 
         tint={expoBlurTint} 
         style={StyleSheet.absoluteFill} 
       />
       
       {/* Fallback overlay for extra depth */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor, opacity: 0.2 }]} pointerEvents="none" />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor, opacity: fallbackOpacity }]} pointerEvents="none" />
       
       {/* Specular shine (CSS-like) */}
       <View style={[StyleSheet.absoluteFill, styles.shineLayer]} pointerEvents="none" />
