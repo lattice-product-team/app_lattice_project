@@ -13,9 +13,11 @@ The current `admin-web` styling is built on a fragmented Tailwind CSS implementa
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-ui-modernization`: Implementation of HeroUI v3 and refined design standards within the Admin Web application.
 
 ### Modified Capabilities
+
 - `design-tokens`: Update requirements to include HeroUI-specific mappings (OKLCH) for all brand and semantic colors.
 
 ## Impact

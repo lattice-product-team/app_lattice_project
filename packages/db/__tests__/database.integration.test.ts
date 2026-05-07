@@ -54,7 +54,7 @@ describe('Database Integration Tests', () => {
 
   it('should insert and retrieve a user', async () => {
     if (!hasDocker) return;
-    
+
     const newUser = {
       email: 'test@example.com',
       passwordHash: 'hashed_password',

@@ -10,12 +10,8 @@ export const useRoutingLogic = () => {
   const { selectedPoiId, selectedPoi, setRemote } = usePOIStore();
   const { selectedEvent } = useEventStore();
   const { setRoute, setNextInstruction } = useNavigationStore();
-  
-  const { 
-    logicalCoords: userCoords, 
-    avoidStairs, 
-    wheelchairAccess 
-  } = useLocationStore();
+
+  const { logicalCoords: userCoords, avoidStairs, wheelchairAccess } = useLocationStore();
 
   const routeRequest = useMemo(() => {
     // We calculate route IF we have user coords AND a selected POI
@@ -32,11 +28,11 @@ export const useRoutingLogic = () => {
       const lat = Math.round(userCoords[1] * 10000) / 10000;
       const lng = Math.round(userCoords[0] * 10000) / 10000;
 
-      return { 
-        origin: { lat, lng }, 
+      return {
+        origin: { lat, lng },
         destination,
         avoidStairs,
-        wheelchairAccess
+        wheelchairAccess,
       };
     }
     return null;
@@ -45,8 +41,10 @@ export const useRoutingLogic = () => {
   const isRemote = useMemo(() => {
     if (!userCoords || !selectedEvent?.center) return false;
     const dist = calculateDistance(
-      userCoords[1], userCoords[0],
-      selectedEvent.center.coordinates[1], selectedEvent.center.coordinates[0]
+      userCoords[1],
+      userCoords[0],
+      selectedEvent.center.coordinates[1],
+      selectedEvent.center.coordinates[0]
     );
     return dist > 2000; // 2km boundary
   }, [userCoords, selectedEvent]);
@@ -71,7 +69,7 @@ export const useRoutingLogic = () => {
         setNextInstruction({
           instruction: firstManeuver.instruction,
           distance: firstManeuver.distance,
-          maneuverType: firstManeuver.type.toString()
+          maneuverType: firstManeuver.type.toString(),
         });
       }
     }

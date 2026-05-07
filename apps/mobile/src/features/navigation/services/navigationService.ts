@@ -11,22 +11,22 @@ export interface RouteRequest {
 export const navigationService = {
   getRoute: async (request: RouteRequest): Promise<RouteGeoJSON> => {
     const costing = request.mode === 'driving' ? 'auto' : 'pedestrian';
-    
+
     const body = {
       locations: [
         { lat: request.origin.lat, lon: request.origin.lng },
-        { lat: request.destination.lat, lon: request.destination.lng }
+        { lat: request.destination.lat, lon: request.destination.lng },
       ],
       costing,
       costing_options: {
         [costing]: {
           use_living_streets: 0.5,
-        }
+        },
       },
       directions_options: {
         units: 'kilometers',
-        language: 'en-US'
-      }
+        language: 'en-US',
+      },
     };
 
     const response = await fetch(`${Env.valhallaUrl}/route`, {
@@ -47,7 +47,7 @@ export const navigationService = {
     if (!data.trip || !data.trip.legs) {
       throw new Error('Invalid Valhalla response structure');
     }
-    
+
     const leg = data.trip.legs[0];
     const coords = decodePolyline(leg.shape, 6);
 
@@ -65,8 +65,8 @@ export const navigationService = {
       maneuvers: leg.maneuvers.map((m: any) => ({
         instruction: m.instruction,
         distance: m.length * 1000,
-        type: m.type
-      }))
+        type: m.type,
+      })),
     } as any;
   },
 };

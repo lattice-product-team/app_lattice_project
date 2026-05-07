@@ -19,32 +19,21 @@ export const EventPin = ({
   onPress,
   color = '#FF3B30',
 }: EventPinProps) => {
-  
   const theme = useAppTheme();
   const style = useAnimatedStyle(() => {
     const { snappy } = theme.motion.physics;
     return {
-      transform: [
-        { scale: withSpring(isSelected ? 1.15 : 1, snappy) }
-      ],
+      transform: [{ scale: withSpring(isSelected ? 1.15 : 1, snappy) }],
     };
   });
 
   return (
-    <TouchableOpacity 
-      onPress={onPress} 
-      activeOpacity={0.8}
-      style={styles.touchArea}
-    >
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.touchArea}>
       <Animated.View style={[styles.container, animatedPinStyle]}>
         {/* Main Circular Body */}
         <View style={[styles.circle, { borderColor: color }]}>
           {imageUrl ? (
-            <Image 
-              source={{ uri: imageUrl }} 
-              style={styles.image}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
           ) : (
             <View style={[styles.placeholder, { backgroundColor: color }]}>
               <Text style={styles.placeholderText}>{name.charAt(0)}</Text>
@@ -58,7 +47,9 @@ export const EventPin = ({
         {/* Label */}
         {isSelected && (
           <View style={styles.labelContainer}>
-            <Text style={styles.labelText} numberOfLines={1}>{name}</Text>
+            <Text style={styles.labelText} numberOfLines={1}>
+              {name}
+            </Text>
           </View>
         )}
       </Animated.View>

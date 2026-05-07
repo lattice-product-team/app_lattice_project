@@ -12,9 +12,11 @@ The recent migration to a theme-aware architecture has introduced visual regress
 ## Capabilities
 
 ### New Capabilities
+
 - `premium-glass-styling`: A standardized set of design tokens and components for the "thin glass" aesthetic, ensuring consistency across the app.
 
 ### Modified Capabilities
+
 - `map-exploration-interface`: The requirements for rendering category filters and POI discovery content are being refined to ensure proper spacing and aspect ratios.
 
 ## Impact

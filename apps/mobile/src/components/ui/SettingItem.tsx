@@ -15,30 +15,35 @@ interface SettingItemProps {
   iconBgColor?: string;
 }
 
-export const SettingItem = React.memo(function SettingItem({ 
-  label, 
-  icon, 
-  value, 
-  onValueChange, 
-  onPress, 
+export const SettingItem = React.memo(function SettingItem({
+  label,
+  icon,
+  value,
+  onValueChange,
+  onPress,
   type = 'link',
   destructive = false,
   secondaryText,
-  iconBgColor
+  iconBgColor,
 }: SettingItemProps) {
   const theme = useAppTheme();
-  
-  const iconColor = destructive 
-    ? theme.colors.status.error 
-    : (iconBgColor ? (theme.dark ? theme.colors.text.inverse : theme.colors.brand.primary) : theme.colors.brand.primary);
-    
-  const bgColor = iconBgColor || (destructive ? theme.colors.status.errorSurface : theme.colors.bg.elevation);
+
+  const iconColor = destructive
+    ? theme.colors.status.error
+    : iconBgColor
+      ? theme.dark
+        ? theme.colors.text.inverse
+        : theme.colors.brand.primary
+      : theme.colors.brand.primary;
+
+  const bgColor =
+    iconBgColor || (destructive ? theme.colors.status.errorSurface : theme.colors.bg.elevation);
 
   return (
-    <Pressable 
+    <Pressable
       onPress={type === 'link' ? onPress : undefined}
       style={({ pressed }) => [
-        { 
+        {
           flexDirection: 'row',
           justifyContent: 'space-between',
           itemsCenter: 'center',
@@ -46,31 +51,31 @@ export const SettingItem = React.memo(function SettingItem({
           paddingHorizontal: 20,
           borderBottomWidth: 1,
           borderBottomColor: theme.colors.border.subtle,
-          backgroundColor: pressed && type === 'link' ? theme.colors.bg.elevation : 'transparent'
-        }
+          backgroundColor: pressed && type === 'link' ? theme.colors.bg.elevation : 'transparent',
+        },
       ]}
       accessibilityRole={type === 'link' ? 'button' : 'none'}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-        <View 
-          style={{ 
-            width: 40, 
-            height: 40, 
-            borderRadius: 12, 
-            alignItems: 'center', 
-            justifyContent: 'center', 
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
             marginRight: 16,
-            backgroundColor: bgColor 
+            backgroundColor: bgColor,
           }}
         >
           <Feather name={icon} size={20} color={iconColor} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text 
-            style={{ 
-              fontSize: 16, 
+          <Text
+            style={{
+              fontSize: 16,
               fontWeight: destructive ? 'bold' : '500',
-            color: destructive ? theme.colors.status.error : theme.colors.text.primary 
+              color: destructive ? theme.colors.status.error : theme.colors.text.primary,
             }}
           >
             {label}
@@ -84,17 +89,17 @@ export const SettingItem = React.memo(function SettingItem({
       </View>
 
       {type === 'toggle' ? (
-        <Switch 
-          value={value} 
-          onValueChange={onValueChange} 
+        <Switch
+          value={value}
+          onValueChange={onValueChange}
           trackColor={{ false: theme.colors.border.strong, true: theme.colors.brand.primary }}
           thumbColor={theme.colors.text.inverse}
         />
       ) : (
-        <Feather 
-          name="chevron-right" 
-          size={24} 
-          color={destructive ? theme.colors.status.error : theme.colors.text.muted} 
+        <Feather
+          name="chevron-right"
+          size={24}
+          color={destructive ? theme.colors.status.error : theme.colors.text.muted}
         />
       )}
     </Pressable>
@@ -102,4 +107,3 @@ export const SettingItem = React.memo(function SettingItem({
 });
 
 SettingItem.displayName = 'SettingItem';
-

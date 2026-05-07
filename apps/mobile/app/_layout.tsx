@@ -12,11 +12,11 @@ import { SplashScreen as AppSplashScreen } from '../src/components/ui/SplashScre
 import * as SplashScreen from 'expo-splash-screen';
 import { startupMetrics } from '../src/utils/startupMetrics';
 import { useStartupStore } from '../src/store/useStartupStore';
-import Animated, { 
-  useAnimatedStyle, 
-  withTiming, 
-  useSharedValue, 
-  runOnJS 
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+  useSharedValue,
+  runOnJS,
 } from 'react-native-reanimated';
 import '../global.css';
 
@@ -37,7 +37,7 @@ export default function RootLayout() {
   const { loaded: fontsLoaded, error: fontsError } = useAppFonts();
   const isDataReady = useStartupStore((s) => s.isDataReady);
   const isMapReady = useStartupStore((s) => s.isMapReady);
-  
+
   const [showSplashOverlay, setShowSplashOverlay] = useState(true);
   const splashOpacity = useSharedValue(1);
 
@@ -60,8 +60,10 @@ export default function RootLayout() {
         }
       });
     } else {
-      console.log(`⏳ [RootLayout] Waiting for: ${!fontsLoaded ? 'Fonts ' : ''}${!isDataReady ? 'Data ' : ''}${!isMapReady ? 'Map' : ''}`);
-      
+      console.log(
+        `⏳ [RootLayout] Waiting for: ${!fontsLoaded ? 'Fonts ' : ''}${!isDataReady ? 'Data ' : ''}${!isMapReady ? 'Map' : ''}`
+      );
+
       // Master Safety Timeout: If not ready in 6 seconds, force it.
       const timer = setTimeout(() => {
         if (showSplashOverlay) {
@@ -79,7 +81,7 @@ export default function RootLayout() {
 
   const animatedSplashStyle = useAnimatedStyle(() => ({
     opacity: splashOpacity.value,
-    pointerEvents: splashOpacity.value < 0.1 ? 'none' : 'auto' as any,
+    pointerEvents: splashOpacity.value < 0.1 ? 'none' : ('auto' as any),
   }));
 
   return (
@@ -94,12 +96,14 @@ export default function RootLayout() {
                 <Stack.Screen name="(auth)" />
                 <Stack.Screen name="+not-found" />
               </Stack>
-              
+
               <AuthPromptOverlay />
               <AppStatusBar />
 
               {showSplashOverlay && (
-                <Animated.View style={[StyleSheet.absoluteFill, animatedSplashStyle, { zIndex: 99999 }]}>
+                <Animated.View
+                  style={[StyleSheet.absoluteFill, animatedSplashStyle, { zIndex: 99999 }]}
+                >
                   <AppSplashScreen />
                 </Animated.View>
               )}
@@ -110,4 +114,3 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
-

@@ -1,18 +1,18 @@
-@import "tailwindcss";
-@import "@heroui/styles";
+@import 'tailwindcss';
+@import '@heroui/styles';
 
 @theme {
   /* Typography Scale */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-cormorant), serif;
-  
-  --text-admin-xs: 0.75rem;     /* 12px */
-  --text-admin-sm: 0.8125rem;   /* 13px */
-  --text-admin-base: 0.875rem;  /* 14px */
-  --text-admin-md: 1rem;        /* 16px */
-  --text-admin-lg: 1.125rem;    /* 18px */
-  --text-admin-xl: 1.25rem;     /* 20px */
-  --text-admin-display: 3rem;   /* 48px */
+
+  --text-admin-xs: 0.75rem; /* 12px */
+  --text-admin-sm: 0.8125rem; /* 13px */
+  --text-admin-base: 0.875rem; /* 14px */
+  --text-admin-md: 1rem; /* 16px */
+  --text-admin-lg: 1.125rem; /* 18px */
+  --text-admin-xl: 1.25rem; /* 20px */
+  --text-admin-display: 3rem; /* 48px */
 
   --tracking-waldenburg: -0.02em;
   --tracking-pill: 0.05em;
@@ -44,22 +44,23 @@
 
 :root {
   /* Light Theme (Default) */
-  --background: #fdfcfc;     /* Eggshell */
-  --foreground: #000000;     /* Obsidian */
-  
-  --surface: #ffffff;        /* Pure White for cards to pop */
-  --elevated: #f5f3f1;       /* Powder for section highlights */
-  --overlay: #e5e5e5;        /* Chalk for borders */
-  
-  --border: #e5e5e5;         /* Chalk */
+  --background: #fdfcfc; /* Eggshell */
+  --foreground: #000000; /* Obsidian */
+
+  --surface: #ffffff; /* Pure White for cards to pop */
+  --elevated: #f5f3f1; /* Powder for section highlights */
+  --overlay: #e5e5e5; /* Chalk for borders */
+
+  --border: #e5e5e5; /* Chalk */
   --glass-border: rgba(0, 0, 0, 0.06);
 }
 
-[data-theme='dark'], .dark {
+[data-theme='dark'],
+.dark {
   /* Dark Variant (Obsidian) */
   --background: #000000;
   --foreground: #fdfcfc;
-  
+
   --surface: #141413;
   --elevated: #1c1c1b;
   --overlay: #262625;

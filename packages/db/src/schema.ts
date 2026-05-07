@@ -53,13 +53,7 @@ export const surfaceTypeEnum = pgEnum('surface_type', [
   'ramp',
 ]);
 
-export const eventTypeEnum = pgEnum('event_type', [
-  'music',
-  'food',
-  'tech',
-  'sports',
-  'generic',
-]);
+export const eventTypeEnum = pgEnum('event_type', ['music', 'food', 'tech', 'sports', 'generic']);
 
 export const operationalStatusEnum = pgEnum('operational_status', [
   'open',
@@ -110,7 +104,9 @@ export const users = pgTable('users', {
 
 export const passkeyCredentials = pgTable('passkey_credentials', {
   id: varchar('id').primaryKey(), // Credential ID
-  userId: integer('user_id').references(() => users.id).notNull(),
+  userId: integer('user_id')
+    .references(() => users.id)
+    .notNull(),
   publicKey: text('public_key').notNull(),
   counter: integer('counter').default(0),
   deviceType: varchar('device_type'),

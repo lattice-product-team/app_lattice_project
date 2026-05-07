@@ -5,34 +5,44 @@ The `admin-web` dashboard is currently undergoing a style refactor to stabilize 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Implement the "Eggshell" (#fdfcfc) based color system with near-zero saturation.
 - Map the "Waldenburg" (serif) and "Inter" (sans) typography system to Tailwind tokens.
 - Standardize UI components (Pills, Cards, Inputs) with specific border-radius and shadow logic.
 - Ensure the system is fully theme-agnostic (focusing on the "Warm Light" mode first as per reference).
 
 **Non-Goals:**
+
 - Developing a full Dark Mode variant of the style unless explicitly defined later (focus is on the "Eggshell" ground).
 - Modifying backend business logic or data structures.
 
 ## Decisions
 
 ### 1. Tailwind v4 Token Mapping
+
 We will use the `@theme` block in `globals.css` to define the tokens.
+
 - **Colors**: Map `Eggshell`, `Powder`, `Chalk`, `Gravel`, and `Obsidian` to semantic Tailwind colors.
 - **Rationale**: Tailwind v4 variables are the most performant and scalable way to manage a unified theme.
 
 ### 2. Typography Substitution Strategy
+
 Since "Waldenburg" is a custom font, we will use high-fidelity substitutes to maintain the aesthetic without requiring premium licenses immediately.
+
 - **Headlines**: Use `Cormorant Garamond` (weight 300, tracking -0.02em) or `Libre Baskerville`.
 - **Labels**: Use `Inter` (weight 700, tracking 0.05em) as a substitute for `WaldenburgFH`.
 - **Rationale**: Web-safe and Google Fonts alternatives provide immediate implementation while remaining visually close to the source.
 
 ### 3. Hairline Shadow Elevation
+
 Instead of standard elevation depth, we will use the specific shadow logic: `rgba(0, 0, 0, 0.4) 0px 0px 1px 0px`.
+
 - **Rationale**: This keeps the UI in a single perceptual plane, reinforcing the editorial/architectural feel.
 
 ### 4. Pill-Shaped Component Architecture
+
 All buttons and tags will be forced to `9999px` border-radius.
+
 - **Rationale**: This creates a strong contrast against the sharp `0px` radius of input fields, defining a clear interaction language.
 
 ## Risks / Trade-offs

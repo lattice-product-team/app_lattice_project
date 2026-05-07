@@ -13,9 +13,11 @@ Lattice is evolving from a single-event tool (F1-focused) into a comprehensive e
 ## Capabilities
 
 ### New Capabilities
+
 - `multi-event-orchestration`: Defines the logic for selecting and maintaining a "primary context" (Venue/Event) across the admin application.
 
 ### Modified Capabilities
+
 - `event-operations-dashboard`: Update requirements to move from static event display to a dynamic, multi-context operational view.
 
 ## Impact

@@ -11,17 +11,19 @@ interface LocationState {
   avoidGrandstands: boolean;
   avoidSlopes: boolean;
   status: PermissionStatus;
-  
+
   // Actions
   setLocation: (coords: number[] | null) => void;
   setLogicalLocation: (coords: number[] | null) => void;
   setStatus: (status: PermissionStatus) => void;
-  updatePreferences: (prefs: Partial<{ 
-    avoidStairs: boolean, 
-    wheelchairAccess: boolean,
-    avoidGrandstands: boolean,
-    avoidSlopes: boolean
-  }>) => void;
+  updatePreferences: (
+    prefs: Partial<{
+      avoidStairs: boolean;
+      wheelchairAccess: boolean;
+      avoidGrandstands: boolean;
+      avoidSlopes: boolean;
+    }>
+  ) => void;
 }
 
 // Pre-hydrate from MMKV to ensure first render has coordinates
@@ -61,9 +63,9 @@ export const useLocationStore = create<LocationState>()(
     {
       name: 'location-storage',
       storage: createJSONStorage(() => mmkvStorage),
-      partialize: (state) => ({ 
-        coords: state.coords, 
-        logicalCoords: state.logicalCoords 
+      partialize: (state) => ({
+        coords: state.coords,
+        logicalCoords: state.logicalCoords,
       }),
     }
   )

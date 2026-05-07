@@ -13,11 +13,13 @@ The current testing infrastructure relies on mocks that don't validate real data
 ## Capabilities
 
 ### New Capabilities
+
 - `real-db-integration-testing`: Establishes a standard and infrastructure for backend tests to use live database instances.
 - `admin-web-testing-suite`: Initial testing framework and baseline tests for the web administration dashboard.
 - `staging-environment-setup`: Configuration and deployment flow for a pre-production staging environment.
 
 ### Modified Capabilities
+
 - `ci-cd-standards`: Expanding CI/CD requirements to include automated branch-based triggers and environment-specific deployment flows.
 
 ## Impact

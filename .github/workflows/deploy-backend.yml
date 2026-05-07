@@ -17,7 +17,7 @@ jobs:
   quality:
     name: Lint, TypeCheck & Test
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgis/postgis:15-3.3
@@ -49,44 +49,44 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Run Database Migrations
-        env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379
-          NODE_ENV: test
-        run: pnpm db:migrate
+      - name: Run Build (Dry Run)
+        run: pnpm build
 
       - name: Run All Tests
         env:
           DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379
           JWT_SECRET: test_secret_placeholder
           NODE_ENV: test
         run: pnpm test
 
   deploy:
-    name: Deploy to Production
+    name: Build & Deploy Production
     needs: quality
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: [self-hosted, Linux, X64]
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Pre-build Cleanup
+      - name: Setup Environment
         run: |
-          docker system prune -af || true
-          docker builder prune -af || true
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
+          echo "GATEWAY_BASE_PATH=/lattice/api" >> .env
+          echo "NEXT_PUBLIC_API_URL=https://projects.kore29.com/lattice/api/v1" >> .env
+          echo "NODE_ENV=production" >> .env
+          cp .env apps/admin-web/.env
 
       - name: Build and Deploy Production
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          REDIS_URL: ${{ secrets.REDIS_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          NODE_ENV: production
         run: |
           pnpm install --no-frozen-lockfile
+          # Run migrations on the host before containers restart
+          export DATABASE_URL=${{ secrets.DATABASE_URL }}
           pnpm db:migrate
+          pnpm db:check
+
           docker compose -f docker-compose.prod.yml down --remove-orphans
           docker compose -f docker-compose.prod.yml up -d --build
 

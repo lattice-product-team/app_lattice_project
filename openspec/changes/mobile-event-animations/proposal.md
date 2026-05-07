@@ -11,11 +11,13 @@ Para conseguir una sensación verdaderamente "premium" y nativa, la interacción
 ## Capabilities
 
 ### New Capabilities
+
 - `fluid-map-camera-flyto`: Capacidad para gestionar las transiciones de cámara fluidas e interpoladas del mapa al seleccionar coordenadas de puntos de interés y eventos, controlando offsets de la interfaz.
 
 ### Modified Capabilities
+
 - `map-discovery-platform`: Se debe actualizar para que la selección de un evento invoque imperativamente o reactivamente el nuevo vuelo de la cámara hacia el destino.
-- `map-pin-components`: Asegurar que el evento *onPress* de los pines del mapa dispare el mismo evento de selección centralizado.
+- `map-pin-components`: Asegurar que el evento _onPress_ de los pines del mapa dispare el mismo evento de selección centralizado.
 
 ## Impact
 

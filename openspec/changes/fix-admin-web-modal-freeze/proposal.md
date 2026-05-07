@@ -12,9 +12,11 @@ The current implementation of event and asset creation in the `admin-web` causes
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-ui-stability`: Requirements for ensuring UI stability and preventing main-thread locks during complex component transitions (modals, maps).
 
 ### Modified Capabilities
+
 - `event-poi-orchestration`: Update requirements for event and POI creation flows to ensure reliable modal-based interactions.
 - `eleven-ui-components`: Refine standards for using HeroUI components to ensure alignment with v3 patterns.
 

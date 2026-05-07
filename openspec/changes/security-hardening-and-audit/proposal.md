@@ -13,11 +13,13 @@ The current authentication system is using plaintext password storage and insecu
 ## Capabilities
 
 ### New Capabilities
+
 - `backend-security-hardening`: Technical requirements for password hashing, JWT signing, and secure session management.
 - `api-gateway-hardening`: Infrastructure requirements for CORS, security headers, and rate limiting.
 - `security-verification-suite`: Test requirements to ensure no security regressions occur during future development.
 
 ### Modified Capabilities
+
 - `email-auth-flow`: Update requirements to explicitly state that credentials must be handled securely and tokens must be signed.
 
 ## Impact

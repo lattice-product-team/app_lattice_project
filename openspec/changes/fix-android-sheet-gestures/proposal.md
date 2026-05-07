@@ -13,6 +13,7 @@ On Android, the `TextInput` component within the `FloatingSearchBar` aggressivel
 ## Capabilities
 
 ### Modified Capabilities
+
 - `premium-sheet-interaction`: Added requirement for platform-specific gesture priority and conditional input interactivity for the Discovery Sheet.
 - `search-results-ui`: Added requirement for search bar activation states based on sheet height.
 

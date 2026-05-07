@@ -12,6 +12,7 @@ Los controles actuales del mapa (HUD derecho) presentan problemas de usabilidad:
 ## Capabilities
 
 ### Modified Capabilities
+
 - `map-aesthetic-control`: Se actualizan los requisitos visuales y de interacción para los controles superpuestos del mapa.
 
 ## Impact

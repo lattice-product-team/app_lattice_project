@@ -13,9 +13,11 @@ The recent migration to HeroUI v3 and Tailwind CSS v4 has introduced breaking ch
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-design-system`: A standardized set of Tailwind v4 theme variables and components specifically for the administrative interface.
 
 ### Modified Capabilities
+
 - `event-operations-dashboard`: Updating the requirement for the dashboard to use the new professional typography and HeroUI v3 table standards.
 - `design-tokens`: Syncing admin-web specific tokens with the global design token system.
 

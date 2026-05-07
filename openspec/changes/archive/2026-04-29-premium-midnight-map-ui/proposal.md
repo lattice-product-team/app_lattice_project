@@ -11,9 +11,11 @@ The current map UI uses solid white backgrounds for bottom sheets and a basic se
 ## Capabilities
 
 ### New Capabilities
+
 - `midnight-glass-system`: A consistent set of styles for translucent dark UI elements across the map interface.
 
 ### Modified Capabilities
+
 - `map-search`: Enhanced search UX with a more modern, integrated input.
 
 ## Impact

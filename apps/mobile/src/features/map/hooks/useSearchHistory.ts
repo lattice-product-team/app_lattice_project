@@ -22,14 +22,14 @@ export const useSearchHistory = () => {
 
   const saveSearch = useCallback((query: string) => {
     if (!query || query.trim() === '') return;
-    
+
     const trimmed = query.trim();
-    
+
     setHistory((prev) => {
       // Remove if already exists to move it to the top
       const filtered = prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase());
       const newHistory = [trimmed, ...filtered].slice(0, MAX_HISTORY_ITEMS);
-      
+
       // Persist
       storage.set(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
       return newHistory;

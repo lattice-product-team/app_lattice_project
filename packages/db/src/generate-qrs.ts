@@ -60,15 +60,20 @@ async function generateTestTickets() {
     },
   ];
 
-    for (const ticket of (testTickets as any[])) {
-      // Create JSON Payload
-      const payload = JSON.stringify({
-        code: ticket.code,
-        email: ticket.ownerEmail || ticket.email || `tester_${ticket.code.toLowerCase().replace(/[^a-z0-9]/g, '')}@example.com`
-      });
+  for (const ticket of testTickets as any[]) {
+    // Create JSON Payload
+    const payload = JSON.stringify({
+      code: ticket.code,
+      email:
+        ticket.ownerEmail ||
+        ticket.email ||
+        `tester_${ticket.code.toLowerCase().replace(/[^a-z0-9]/g, '')}@example.com`,
+    });
 
-      // Insert ticket into DB if it doesn't exist
-      await db.insert(tickets).values({
+    // Insert ticket into DB if it doesn't exist
+    await db
+      .insert(tickets)
+      .values({
         userId: null,
         code: ticket.code,
         ownerEmail: ticket.ownerEmail,
@@ -78,25 +83,26 @@ async function generateTestTickets() {
         seatNumber: ticket.seatNumber,
         isActive: ticket.isActive,
         createdAt: ticket.createdAt,
-      }).onConflictDoUpdate({
+      })
+      .onConflictDoUpdate({
         target: tickets.code,
-        set: { 
+        set: {
           userId: null,
           ownerEmail: ticket.ownerEmail,
-          gate: ticket.gate
-        }
+          gate: ticket.gate,
+        },
       });
-      
-      console.log(`\n================================`);
-      console.log(`🎟️  ${ticket.zoneName} - ${ticket.code}`);
-      console.log(`Payload: ${payload}`);
-      console.log(`================================`);
-      
-      // Generate QR in terminal
-      QRCode.toString(payload, { type: 'terminal', small: true }, function (err, url) {
-        console.log(url);
-      });
-    }
+
+    console.log(`\n================================`);
+    console.log(`🎟️  ${ticket.zoneName} - ${ticket.code}`);
+    console.log(`Payload: ${payload}`);
+    console.log(`================================`);
+
+    // Generate QR in terminal
+    QRCode.toString(payload, { type: 'terminal', small: true }, function (err, url) {
+      console.log(url);
+    });
+  }
 
   console.log(`\n✅ Test tickets generated successfully! Scan these with your Expo app.`);
   await pool.end();

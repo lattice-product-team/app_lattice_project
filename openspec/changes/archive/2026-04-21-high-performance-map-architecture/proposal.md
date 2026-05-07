@@ -12,10 +12,12 @@ Formalize and optimize the mobile map architecture to ensure high performance, s
 ## Capabilities
 
 ### New Capabilities
+
 - `native-marker-clustering`: Provides GPU-accelerated marker aggregation for high-density point data.
 - `high-performance-map-hud`: A framework for overlaying interactive UI components (HUD) over a map without degrading gesture performance.
 
 ### Modified Capabilities
+
 - `decoupled-location-management`: Refine high-frequency updates to synchronize smoothly with camera movement without JS bridge saturation.
 
 ## Impact

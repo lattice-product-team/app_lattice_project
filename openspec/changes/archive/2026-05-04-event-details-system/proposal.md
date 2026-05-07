@@ -7,7 +7,7 @@ Users need a comprehensive and high-fidelity way to view details of a specific e
 - **Event Detail Architecture**: Introduction of a secondary floating sheet system that activates when an event is selected.
 - **Visual Consistency**: The detail sheet will mirror the "Island" behavior: floating with rounded corners at Level 2 and edge-to-edge at Level 3.
 - **State Persistence**: The main discovery/search island will preserve its state (search query, results) while the detail sheet is active.
-- **Detail UI Components**: 
+- **Detail UI Components**:
   - Symmetrical header with "Share" and "Close (X)" buttons.
   - Quick Action row (Directions, Call, Website) with themed button styles.
   - Information grid (Hours, Ratings, Distance).
@@ -16,6 +16,7 @@ Users need a comprehensive and high-fidelity way to view details of a specific e
 ## Capabilities
 
 ### New Capabilities
+
 - `event-detail-sheet`: A dedicated component and state logic for displaying POI details over the main interface.
 - `quick-action-system`: A set of interactive buttons for common POI tasks (navigation, contact).
 

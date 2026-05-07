@@ -8,18 +8,18 @@ export const useCameraTilt = () => {
   const setIsLandscape = useOrientationStore((s) => s.setIsLandscape);
   const heading = useOrientationStore((s) => s.heading);
   const isLandscape = useOrientationStore((s) => s.isLandscape);
-  
+
   // AR is active when in landscape
   const isVisible = isLandscape;
 
   useEffect(() => {
     // 1. Compass Heading Observer
     let locationSub: Location.LocationSubscription | null = null;
-    
+
     const watchHeading = async () => {
       const { status } = await Location.getForegroundPermissionsAsync();
       if (status !== 'granted') return;
-      
+
       locationSub = await Location.watchHeadingAsync((data) => {
         setHeading(data.trueHeading !== -1 ? data.trueHeading : data.magHeading);
       });
@@ -42,7 +42,7 @@ export const useCameraTilt = () => {
     const accelSub = Accelerometer.addListener(({ x, y, z }) => {
       const isLayingFlat = Math.abs(z) > 0.8;
       const isHorizontal = Math.abs(x) > 0.65;
-      
+
       setIsLandscape(!isLayingFlat && isHorizontal);
     });
 

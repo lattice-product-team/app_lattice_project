@@ -51,7 +51,7 @@ export const useLocationService = (): LocationState => {
 
   useEffect(() => {
     setStoreStatus(status);
-    
+
     // Proactively request permission if we are in 'idle' state (first load)
     if (status === 'idle') {
       requestPermission();

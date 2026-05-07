@@ -15,17 +15,18 @@ async function clean() {
     'points_of_interest',
     'events',
     'users',
-
   ];
 
   try {
     for (const table of tables) {
-      const exists = await db.execute(sql.raw(`
+      const exists = await db.execute(
+        sql.raw(`
         SELECT EXISTS (
           SELECT FROM information_schema.tables 
           WHERE table_name = '${table}'
         )
-      `));
+      `)
+      );
 
       if (exists.rows[0].exists) {
         console.log(`Truncating ${table}...`);

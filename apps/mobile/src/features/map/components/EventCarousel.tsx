@@ -20,37 +20,37 @@ interface EventCarouselLegacyCardProps {
 
 const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyCardProps) => {
   const metadata = getEventMetadata(event.type);
-  const imageUrl = event.imageUrl || 'https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=800&auto=format&fit=crop';
+  const imageUrl =
+    event.imageUrl ||
+    'https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=800&auto=format&fit=crop';
 
   return (
-    <Animated.View 
+    <Animated.View
       entering={FadeInRight.delay(index * 100).duration(600)}
       style={styles.cardWrapper}
     >
-      <Pressable 
+      <Pressable
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           onPress();
         }}
         style={({ pressed }) => [
           styles.card,
-          pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }
+          pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
         ]}
       >
-        <Image 
-          source={{ uri: imageUrl }} 
-          style={styles.cardImage} 
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.cardImage}
           contentFit="cover"
           transition={300}
         />
-        
+
         <View style={styles.overlay} />
 
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
-            <View 
-              style={[styles.categoryBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}
-            >
+            <View style={[styles.categoryBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
               {metadata.iconFamily === 'material' ? (
                 <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
               ) : (
@@ -61,7 +61,9 @@ const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyC
           </View>
 
           <View style={styles.bottomInfo}>
-            <Text style={styles.eventName} numberOfLines={1}>{event.name}</Text>
+            <Text style={styles.eventName} numberOfLines={1}>
+              {event.name}
+            </Text>
             <Text style={styles.dateText}>{event.startDate || 'Próximamente'}</Text>
           </View>
         </View>
@@ -86,19 +88,19 @@ export const EventCarousel = ({ events, onSelectEvent, title }: EventCarouselPro
           <Text style={styles.title}>{title}</Text>
         </View>
       )}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={CARD_WIDTH + 16}
         decelerationRate="fast"
         contentContainerStyle={styles.scrollContent}
       >
         {events.map((event, index) => (
-          <EventCarouselLegacyCard 
-            key={event.id} 
-            event={event} 
+          <EventCarouselLegacyCard
+            key={event.id}
+            event={event}
             index={index}
-            onPress={() => onSelectEvent(event)} 
+            onPress={() => onSelectEvent(event)}
           />
         ))}
       </ScrollView>

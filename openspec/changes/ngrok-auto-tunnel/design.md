@@ -5,11 +5,13 @@ The Lattice application requires real-time mobile development testing on physica
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Provide a single command (`pnpm dev:ngrok`) to expose both Metro and API.
 - Automatically detect the generated ngrok URLs and inject them into the Expo environment.
 - Eliminate the need to manually copy-paste ngrok URLs.
 
 **Non-Goals:**
+
 - Setting up permanent domain names (this is strictly for local dev).
 - Managing tunnels for individual microservices (Gateway handles routing).
 

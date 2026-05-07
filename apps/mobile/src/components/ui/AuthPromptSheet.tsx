@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  interpolate, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
@@ -23,9 +23,9 @@ interface AuthPromptSheetProps {
   subtitle?: string;
 }
 
-export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({ 
-  title = "Unlock the full experience",
-  subtitle = "Sign in to Lattice to access this feature and personalize your urban discovery."
+export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
+  title = 'Unlock the full experience',
+  subtitle = 'Sign in to Lattice to access this feature and personalize your urban discovery.',
 }) => {
   const theme = useAppTheme();
   const router = useRouter();
@@ -61,8 +61,8 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
   const containerStyle = useAnimatedStyle(() => {
     const bottom = interpolate(
-      animState.value, 
-      [0, 1], 
+      animState.value,
+      [0, 1],
       [-SCREEN_HEIGHT, insets.bottom + 5], // Identical to EventDetailSheet MID position
       Extrapolation.CLAMP
     );
@@ -82,27 +82,21 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
   // Critical: Only block touches if the prompt is explicitly open
   return (
-    <View 
-      style={StyleSheet.absoluteFill} 
-      pointerEvents={isAuthPromptOpen ? "auto" : "none"}
-    >
+    <View style={StyleSheet.absoluteFill} pointerEvents={isAuthPromptOpen ? 'auto' : 'none'}>
       {/* Dimmer Backdrop */}
-      <Pressable 
-        onPress={handleClose}
-        style={StyleSheet.absoluteFill}
-      >
+      <Pressable onPress={handleClose} style={StyleSheet.absoluteFill}>
         <Animated.View style={[styles.backdrop, backdropStyle]} />
       </Pressable>
 
       {/* Floating Card */}
       <Animated.View style={[styles.floatingCard, containerStyle]}>
-        <View 
+        <View
           style={[
             styles.blurBackground,
-            { 
+            {
               backgroundColor: theme.colors.glass.background,
-              borderColor: theme.colors.glass.border
-            }
+              borderColor: theme.colors.glass.border,
+            },
           ]}
         >
           {/* Header Actions */}
@@ -116,15 +110,13 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
           <View style={styles.content}>
             <View style={styles.textContainer}>
               <Text style={[styles.title, { color: theme.colors.text.primary }]}>{title}</Text>
-              <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>{subtitle}</Text>
+              <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+                {subtitle}
+              </Text>
             </View>
 
             <View style={styles.actions}>
-              <PremiumButton 
-                label="GET STARTED" 
-                variant="primary" 
-                onPress={handleAction}
-              />
+              <PremiumButton label="GET STARTED" variant="primary" onPress={handleAction} />
             </View>
           </View>
         </View>
@@ -188,5 +180,5 @@ const styles = StyleSheet.create({
   actions: {
     width: '100%',
     marginTop: 12,
-  }
+  },
 });

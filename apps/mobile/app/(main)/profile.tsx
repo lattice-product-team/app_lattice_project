@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedScrollHandler, 
-  useAnimatedStyle, 
-  interpolate, 
-  Extrapolation 
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -58,15 +58,27 @@ export default function ProfileScreen() {
   // Guest UI State
   if (isGuest) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.bg.main, justifyContent: 'center', alignItems: 'center', padding: 40 }]}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: theme.colors.bg.main,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 40,
+          },
+        ]}
+      >
         <View style={styles.guestContent}>
-          <Text style={[styles.guestTitle, { color: theme.colors.text.primary }]}>Guest Explorer</Text>
+          <Text style={[styles.guestTitle, { color: theme.colors.text.primary }]}>
+            Guest Explorer
+          </Text>
           <Text style={[styles.guestSubtitle, { color: theme.colors.text.secondary }]}>
             Join the community to track your events, earn medals, and personalize your experience.
           </Text>
-          <PremiumButton 
-            label="JOIN LATTICE" 
-            variant="primary" 
+          <PremiumButton
+            label="JOIN LATTICE"
+            variant="primary"
             onPress={() => openAuthPrompt('/(main)/profile')}
           />
         </View>
@@ -81,9 +93,9 @@ export default function ProfileScreen() {
       <Animated.ScrollView
         onScroll={scrollHandler}
         scrollEventThrottle={16}
-        contentContainerStyle={{ 
+        contentContainerStyle={{
           paddingTop: insets.top + 20,
-          paddingBottom: insets.bottom + 40
+          paddingBottom: insets.bottom + 40,
         }}
         showsVerticalScrollIndicator={false}
       >

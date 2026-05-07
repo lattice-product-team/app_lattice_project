@@ -23,34 +23,39 @@ export class DataForSEOClient {
   /**
    * Searches for a business listing on Google Maps.
    */
-  async searchBusiness(keyword: string, location?: { lat: number, lng: number }) {
+  async searchBusiness(keyword: string, location?: { lat: number; lng: number }) {
     if (!this.authHeader) return null;
 
     try {
-      const payload = [{
-        keyword,
-        location_name: "Barcelona,Catalonia,Spain",
-        language_name: "Spanish",
-        limit: 1
-      }];
+      const payload = [
+        {
+          keyword,
+          location_name: 'Barcelona,Catalonia,Spain',
+          language_name: 'Spanish',
+          limit: 1,
+        },
+      ];
 
       const response = await fetch(`${DataForSEOClient.BASE_URL}/serp/google/maps/live/advanced`, {
         method: 'POST',
         headers: {
-          'Authorization': this.authHeader,
-          'Content-Type': 'application/json'
+          Authorization: this.authHeader,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
-      const data = await response.json() as any;
-      
+      const data = (await response.json()) as any;
+
       // SERP API structure is slightly different
       if (data?.tasks?.[0]?.result?.[0]?.items?.[0]) {
         return data.tasks[0].result[0].items[0];
       }
 
-      console.warn('[DataForSEO] No items found in result:', JSON.stringify(data?.tasks?.[0]?.status_message));
+      console.warn(
+        '[DataForSEO] No items found in result:',
+        JSON.stringify(data?.tasks?.[0]?.status_message)
+      );
       return null;
     } catch (error) {
       console.error('[DataForSEO] Search Error:', error);
@@ -65,23 +70,28 @@ export class DataForSEOClient {
     if (!this.authHeader) return null;
 
     try {
-      const payload = [{
-        place_id: placeId,
-        depth: 1,
-        limit: 5,
-        sort_by: 'newest'
-      }];
-
-      const response = await fetch(`${DataForSEOClient.BASE_URL}/business_data/google/reviews/live`, {
-        method: 'POST',
-        headers: {
-          'Authorization': this.authHeader,
-          'Content-Type': 'application/json'
+      const payload = [
+        {
+          place_id: placeId,
+          depth: 1,
+          limit: 5,
+          sort_by: 'newest',
         },
-        body: JSON.stringify(payload)
-      });
+      ];
 
-      const data = await response.json() as any;
+      const response = await fetch(
+        `${DataForSEOClient.BASE_URL}/business_data/google/reviews/live`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: this.authHeader,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = (await response.json()) as any;
       return data?.tasks?.[0]?.result?.[0]?.items || [];
     } catch (error) {
       console.error('[DataForSEO] Reviews Error:', error);

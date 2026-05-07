@@ -25,7 +25,13 @@ export interface POICollection {
   features: POIGeoJSON[];
 }
 
-export type PermissionStatus = 'granted' | 'denied' | 'undetermined' | 'idle' | 'loading' | 'blocked';
+export type PermissionStatus =
+  | 'granted'
+  | 'denied'
+  | 'undetermined'
+  | 'idle'
+  | 'loading'
+  | 'blocked';
 
 export interface RouteGeoJSON {
   type: 'Feature';

@@ -12,9 +12,11 @@ Currently, the profile screen and the search bar avatar use hardcoded "mock" dat
 ## Capabilities
 
 ### New Capabilities
+
 - `profile-data-sync`: Logic to bridge the gap between `AuthStore` (identity) and `ProfileStore` (extended data).
 
 ### Modified Capabilities
+
 - `user-profile-ui`: Update the profile screen components to be fully data-driven.
 - `navigation-context`: Ensure the search bar correctly reflects the user state across different map contexts.
 

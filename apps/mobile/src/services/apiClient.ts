@@ -15,10 +15,10 @@ export async function handleResponse<T>(response: Response): Promise<T> {
 
   if (!response.ok) {
     const errorData = data as any;
-    
+
     // Robust error message extraction
     let message = 'Unexpected server error';
-    
+
     if (errorData.error) {
       if (typeof errorData.error === 'string') {
         message = errorData.error;
@@ -32,15 +32,15 @@ export async function handleResponse<T>(response: Response): Promise<T> {
     console.error(`[API Error] ${response.status}: ${message}`, {
       status: response.status,
       url: response.url,
-      data
+      data,
     });
-    
+
     // 1.3 Update handleResponse to include basic 401 handling
     if (response.status === 401) {
       // Logic for 401 can be handled here or via a callback/event
       console.warn('[API] 401 Unauthorized detected');
     }
-    
+
     throw new Error(message);
   }
 
@@ -51,7 +51,7 @@ const getHeaders = () => {
   const token = getToken();
   return {
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
 

@@ -90,6 +90,8 @@ ENV NODE_ENV=development
 CMD ["pnpm", "dev", "--filter=admin-web"]
 
 FROM builder AS admin-web-builder
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm build --filter=admin-web
 FROM node:20-alpine AS admin-web-prod
 WORKDIR /app

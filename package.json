@@ -30,6 +30,7 @@
     "mobile:tunnel": "pnpm --filter @app/mobile dev:tunnel",
     "clean": "rm -rf node_modules && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.turbo' -type d -prune -exec rm -rf '{}' + && find . -name 'build' -type d -prune -exec rm -rf '{}' + && pnpm install",
     "db:migrate": "turbo run db:migrate",
+    "db:check": "npx tsx scripts/check-db.ts",
     "db:generate": "turbo run db:generate",
     "db:seed": "turbo run db:seed",
     "db:studio": "turbo run db:studio",

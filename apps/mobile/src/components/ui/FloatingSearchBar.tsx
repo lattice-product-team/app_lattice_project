@@ -18,73 +18,70 @@ interface FloatingSearchBarProps {
   editable?: boolean;
 }
 
-export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarProps>(({
-  value,
-  onChangeText,
-  onFocus,
-  onProfilePress,
-  onPress,
-  onSubmit,
-  placeholder = "Search events, stages, food...",
-  avatarUrl,
-  isGuest,
-  editable = true,
-}, ref) => {
-  const theme = useAppTheme();
+export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarProps>(
+  (
+    {
+      value,
+      onChangeText,
+      onFocus,
+      onProfilePress,
+      onPress,
+      onSubmit,
+      placeholder = 'Search events, stages, food...',
+      avatarUrl,
+      isGuest,
+      editable = true,
+    },
+    ref
+  ) => {
+    const theme = useAppTheme();
 
-  return (
-    <View style={styles.innerContainer}>
-      <Feather 
-        name="search" 
-        size={22} 
-        color={theme.colors.text.primary} 
-        style={styles.icon} 
-      />
-      
-      <Pressable 
-        style={{ flex: 1, justifyContent: 'center' }} 
-        onPress={onPress}
-        disabled={editable}
-      >
-        <TextInput
-          ref={ref}
-          value={value}
-          onChangeText={onChangeText}
-          onFocus={onFocus}
-          placeholder={placeholder}
-          placeholderTextColor={theme.colors.text.muted}
-          style={[styles.input, { color: theme.colors.text.primary }]}
-          selectionColor={theme.colors.brand.primary}
-          returnKeyType="search"
-          onSubmitEditing={onSubmit}
-          editable={editable}
-          pointerEvents={editable ? 'auto' : 'none'}
-        />
-      </Pressable>
+    return (
+      <View style={styles.innerContainer}>
+        <Feather name="search" size={22} color={theme.colors.text.primary} style={styles.icon} />
 
-      {value.length > 0 && (
-        <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-          <Feather name="x-circle" size={18} color={theme.colors.text.muted} />
-        </Pressable>
-      )}
-
-      <View style={styles.rightActions}>
-        <Pressable style={styles.micButton}>
-          <MaterialCommunityIcons name="microphone" size={24} color={theme.colors.text.primary} />
-        </Pressable>
-        
-        <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
-        
-        <Pressable 
-          style={styles.profileButton}
-          onPress={onProfilePress}
+        <Pressable
+          style={{ flex: 1, justifyContent: 'center' }}
+          onPress={onPress}
+          disabled={editable}
         >
-          <UserAvatar size={32} url={avatarUrl} isGuest={isGuest} />
+          <TextInput
+            ref={ref}
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={onFocus}
+            placeholder={placeholder}
+            placeholderTextColor={theme.colors.text.muted}
+            style={[styles.input, { color: theme.colors.text.primary }]}
+            selectionColor={theme.colors.brand.primary}
+            returnKeyType="search"
+            onSubmitEditing={onSubmit}
+            editable={editable}
+            pointerEvents={editable ? 'auto' : 'none'}
+          />
         </Pressable>
+
+        {value.length > 0 && (
+          <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
+            <Feather name="x-circle" size={18} color={theme.colors.text.muted} />
+          </Pressable>
+        )}
+
+        <View style={styles.rightActions}>
+          <Pressable style={styles.micButton}>
+            <MaterialCommunityIcons name="microphone" size={24} color={theme.colors.text.primary} />
+          </Pressable>
+
+          <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
+
+          <Pressable style={styles.profileButton} onPress={onProfilePress}>
+            <UserAvatar size={32} url={avatarUrl} isGuest={isGuest} />
+          </Pressable>
+        </View>
       </View>
-    </View>
-  );
-});
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   innerContainer: {
@@ -134,4 +131,3 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
-

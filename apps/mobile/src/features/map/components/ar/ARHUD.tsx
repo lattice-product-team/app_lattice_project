@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import Animated, { 
-  useAnimatedStyle, 
-  withTiming, 
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
   useSharedValue,
   withRepeat,
-  withSequence
+  withSequence,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme as useLatticeTheme } from '../../../../hooks/useAppTheme';
@@ -26,10 +26,7 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
 
   useEffect(() => {
     scanOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.5, { duration: 1000 })
-      ),
+      withSequence(withTiming(1, { duration: 1000 }), withTiming(0.5, { duration: 1000 })),
       -1,
       true
     );
@@ -46,33 +43,30 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
 
   // Adjust container for landscape rotation
   // If rotated 90deg, the "top" of our UI should be the long side of the device.
-  const landscapeContainerStyle = isLandscape ? {
-    width: height,
-    height: width,
-    top: (height - width) / 2,
-    left: (width - height) / 2,
-  } : {};
+  const landscapeContainerStyle = isLandscape
+    ? {
+        width: height,
+        height: width,
+        top: (height - width) / 2,
+        left: (width - height) / 2,
+      }
+    : {};
 
   return (
     <View style={[StyleSheet.absoluteFill, styles.container]} pointerEvents="box-none">
-      <Animated.View 
-        style={[
-          StyleSheet.absoluteFill, 
-          rotationStyle,
-          landscapeContainerStyle,
-          { padding: 0 }
-        ]} 
+      <Animated.View
+        style={[StyleSheet.absoluteFill, rotationStyle, landscapeContainerStyle, { padding: 0 }]}
         pointerEvents="box-none"
       >
         {/* Top Bar - Status & Exit */}
-        <View 
+        <View
           style={[
-            styles.topBar, 
-            { 
-              paddingTop: Math.max(isLandscape ? insets.left : insets.top, 24), 
-              paddingLeft: Math.max(isLandscape ? insets.top : insets.left, 24), 
-              paddingRight: Math.max(isLandscape ? insets.bottom : insets.right, 24) 
-            }
+            styles.topBar,
+            {
+              paddingTop: Math.max(isLandscape ? insets.left : insets.top, 24),
+              paddingLeft: Math.max(isLandscape ? insets.top : insets.left, 24),
+              paddingRight: Math.max(isLandscape ? insets.bottom : insets.right, 24),
+            },
           ]}
           pointerEvents="box-none"
         >
@@ -92,14 +86,14 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
         </View>
 
         {/* Bottom Interface - Compass/Heading Concept */}
-        <View 
+        <View
           style={[
-            styles.bottomBar, 
-            { 
-              paddingBottom: Math.max(isLandscape ? insets.right : insets.bottom, 24), 
-              paddingLeft: Math.max(isLandscape ? insets.top : insets.left, 24), 
-              paddingRight: Math.max(isLandscape ? insets.bottom : insets.right, 24) 
-            }
+            styles.bottomBar,
+            {
+              paddingBottom: Math.max(isLandscape ? insets.right : insets.bottom, 24),
+              paddingLeft: Math.max(isLandscape ? insets.top : insets.left, 24),
+              paddingRight: Math.max(isLandscape ? insets.bottom : insets.right, 24),
+            },
           ]}
           pointerEvents="box-none"
         >
@@ -109,7 +103,9 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
               <Text style={styles.headingText}>VIEWING GRANDSTAND AREA</Text>
               <View className="flex-row items-center mt-1">
                 <Feather name="compass" size={12} color={theme.colors.brand.primary} />
-                <Text style={[styles.subHeadingText, { color: theme.colors.text.muted }]}>HEADING NORTH-WEST</Text>
+                <Text style={[styles.subHeadingText, { color: theme.colors.text.muted }]}>
+                  HEADING NORTH-WEST
+                </Text>
               </View>
             </View>
             <View style={styles.compassLine} />
@@ -117,20 +113,17 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
         </View>
 
         {/* Side Controls - Concept */}
-        <View 
-          style={[
-            styles.sideControls, 
-            isLandscape && { right: Math.max(insets.bottom, 24) }
-          ]} 
+        <View
+          style={[styles.sideControls, isLandscape && { right: Math.max(insets.bottom, 24) }]}
           pointerEvents="box-none"
         >
           <View style={styles.controlGroup}>
             <Pressable style={styles.sideButton} accessibilityLabel="Zoom in AR">
-               <Feather name="plus" size={20} color="white" />
+              <Feather name="plus" size={20} color="white" />
             </Pressable>
             <View style={styles.divider} />
             <Pressable style={styles.sideButton} accessibilityLabel="Zoom out AR">
-               <Feather name="minus" size={20} color="white" />
+              <Feather name="minus" size={20} color="white" />
             </Pressable>
           </View>
         </View>

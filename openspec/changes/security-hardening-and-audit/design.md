@@ -5,32 +5,38 @@ The current authentication and gateway logic in the Lattice monorepo relies on i
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Implement cryptographically secure password storage using Bcrypt.
 - Implement standard JWT issuance and verification using a shared secret.
 - Hardened Gateway configuration (CORS, Helmet, Rate Limiting).
 - Maintain compatibility with the current microservice routing.
 
 **Non-Goals:**
+
 - Implementing a full OAuth2/OIDC server (out of scope for initial hardening).
 - Migrating to a different database or auth provider.
 
 ## Decisions
 
 ### 1. Password Hashing with Bcrypt
+
 - **Decision**: Use `bcryptjs` with 10 salt rounds for hashing in the `auth` service.
 - **Rationale**: Bcrypt is a proven, adaptive hashing algorithm that is resistant to brute-force and rainbow table attacks.
 - **Alternatives**: Argon2 (more secure but requires native bindings which can complicate cross-platform builds in some environments). Bcrypt is sufficient for current requirements.
 
 ### 2. JWT Implementation
+
 - **Decision**: Use `jsonwebtoken` with `HS256` (HMAC with SHA-256).
 - **Rationale**: HS256 is the standard for symmetric signing and is efficient for microservices sharing a centralized configuration.
 - **Secret Management**: A new `JWT_SECRET` will be added to the core configuration schema in `@app/core`.
 
 ### 3. Gateway Hardening Middleware
+
 - **Decision**: Integrate `helmet` for security headers, restricted `cors` configuration, and `express-rate-limit` for DDoS/Brute-force protection.
 - **Rationale**: These are industry-standard middleware components for Node.js/Express applications.
 
 ### 4. Transition Strategy
+
 - **Decision**: Update `auth.utils.ts` in the `auth` service to provide real signing/verification functions while maintaining the signature of existing functions to minimize refactoring in controllers.
 
 ## Risks / Trade-offs

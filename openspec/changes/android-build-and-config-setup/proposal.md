@@ -12,6 +12,7 @@ Currently, the project lacks a formal Android build and configuration strategy. 
 ## Capabilities
 
 ### New Capabilities
+
 - `android-cloud-build`: The ability to trigger and download Android builds (APK/AAB) entirely through the cloud without local Android Studio installation.
 
 ## Impact

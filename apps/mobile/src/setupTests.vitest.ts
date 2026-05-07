@@ -90,5 +90,3 @@ vi.mock('expo-modules-core', () => ({
     OS: 'ios',
   },
 }));
-
-

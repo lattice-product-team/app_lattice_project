@@ -12,9 +12,11 @@ The mobile application still contains legacy references to previous projects ("M
 ## Capabilities
 
 ### New Capabilities
+
 - `branding-consistency`: Verification that all user-facing and developer-facing identifiers match the "Lattice" brand.
 
 ### Modified Capabilities
+
 - `mobile-navigation`: Updated route map to include the scan feature within the `(main)` stack.
 
 ## Impact

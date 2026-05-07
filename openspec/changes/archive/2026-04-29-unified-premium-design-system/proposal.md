@@ -12,10 +12,12 @@ The current Lattice mobile application suffers from a fragmented visual identity
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-theme-system`: A centralized system for managing semantic tokens and theme state.
 - `premium-midnight-palette`: The official dark-mode specification for Lattice, including "Obsidian" surfaces and "Solar Gold" accents.
 
 ### Modified Capabilities
+
 - `branding-and-coherence`: Extending existing branding specs to include specific mobile theme implementation standards.
 
 ## Impact

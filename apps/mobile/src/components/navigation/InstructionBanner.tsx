@@ -1,6 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { ArrowUp, ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight, CornerUpLeft, CornerUpRight, RotateCcw, Loader2 } from 'lucide-react-native';
+import {
+  ArrowUp,
+  ArrowUpLeft,
+  ArrowUpRight,
+  ArrowLeft,
+  ArrowRight,
+  CornerUpLeft,
+  CornerUpRight,
+  RotateCcw,
+  Loader2,
+} from 'lucide-react-native';
 import { useNavigationStore } from '../../features/navigation/store/useNavigationStore';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 
@@ -19,15 +29,22 @@ export const InstructionBanner = () => {
   // Helper to get the correct icon based on maneuver type
   const renderIcon = () => {
     const iconProps = { size: 48, color: '#FFFFFF', strokeWidth: 2.5 };
-    
+
     switch (maneuverType) {
-      case 'straight': return <ArrowUp {...iconProps} />;
-      case 'left': return <CornerUpLeft {...iconProps} />;
-      case 'right': return <CornerUpRight {...iconProps} />;
-      case 'slight_left': return <ArrowUpLeft {...iconProps} />;
-      case 'slight_right': return <ArrowUpRight {...iconProps} />;
-      case 'u_turn': return <RotateCcw {...iconProps} />;
-      default: return <ArrowUp {...iconProps} />;
+      case 'straight':
+        return <ArrowUp {...iconProps} />;
+      case 'left':
+        return <CornerUpLeft {...iconProps} />;
+      case 'right':
+        return <CornerUpRight {...iconProps} />;
+      case 'slight_left':
+        return <ArrowUpLeft {...iconProps} />;
+      case 'slight_right':
+        return <ArrowUpRight {...iconProps} />;
+      case 'u_turn':
+        return <RotateCcw {...iconProps} />;
+      default:
+        return <ArrowUp {...iconProps} />;
     }
   };
 
@@ -37,23 +54,19 @@ export const InstructionBanner = () => {
   };
 
   return (
-    <Animated.View 
-      entering={FadeInUp} 
-      exiting={FadeOutUp}
-      style={styles.outerContainer}
-    >
-      <View style={[
-        styles.container, 
-        { 
-          backgroundColor: 'rgba(28, 28, 30, 0.95)',
-          borderColor: 'rgba(255, 255, 255, 0.15)'
-        }
-      ]}>
+    <Animated.View entering={FadeInUp} exiting={FadeOutUp} style={styles.outerContainer}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: 'rgba(28, 28, 30, 0.95)',
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+          },
+        ]}
+      >
         {nextInstruction ? (
           <>
-            <View style={styles.iconContainer}>
-              {renderIcon()}
-            </View>
+            <View style={styles.iconContainer}>{renderIcon()}</View>
             <View style={styles.textContainer}>
               <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
               <Text style={styles.instructionText} numberOfLines={2}>

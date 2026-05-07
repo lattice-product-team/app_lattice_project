@@ -15,4 +15,3 @@
 
 - [x] 3.1 Verify that POIs are clearly visible and labels are legible at zoom 15.0.
 - [x] 3.2 Verify that clicking an event feels smooth and the camera lands at the perfect readable distance.
-

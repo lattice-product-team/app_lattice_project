@@ -14,10 +14,12 @@ The current `admin-web` is highly fragmented, using hardcoded mock data for the 
 ## Capabilities
 
 ### New Capabilities
+
 - `global-ops-center`: The main dashboard for multi-event monitoring and global statistics.
 - `spatial-sync-engine`: The mechanism that bridges web-created maps with mobile clients.
 
 ### Modified Capabilities
+
 - `admin-ui-modernization`: (From previous work) Expanding to include the new global layout and map styles.
 - `map-discovery-v2`: Update requirements to ensure mobile clients pull dynamic boundary/POI data from the shared `geo` service instead of static files.
 

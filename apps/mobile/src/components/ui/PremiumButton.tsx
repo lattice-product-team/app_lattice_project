@@ -1,20 +1,13 @@
 import React from 'react';
-import { 
-  Text, 
-  ActivityIndicator, 
-  ViewStyle, 
-  StyleProp,
-  View,
-  StyleSheet
-} from 'react-native';
+import { Text, ActivityIndicator, ViewStyle, StyleProp, View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withSpring, 
-  PressableProps
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  PressableProps,
 } from 'react-native-reanimated';
 import { Pressable } from 'react-native';
 import { typography } from '../../styles/typography';
@@ -44,14 +37,14 @@ export const PremiumButton = ({
   isLoading = false,
   disabled = false,
   className = '',
-  style
+  style,
 }: PremiumButtonProps) => {
   const theme = useAppTheme();
   const scale = useSharedValue(1);
   const { responsive } = theme.motion.physics;
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }]
+    transform: [{ scale: scale.value }],
   }));
 
   const handlePressIn = () => {
@@ -110,10 +103,10 @@ export const PremiumButton = ({
   };
 
   const getTextStyle = () => {
-    const base = { 
-      fontSize: 15, 
+    const base = {
+      fontSize: 15,
       fontFamily: typography.sans.semibold,
-      letterSpacing: -0.2
+      letterSpacing: -0.2,
     };
 
     switch (variant) {
@@ -146,39 +139,38 @@ export const PremiumButton = ({
     >
       <View style={getContainerStyle()} className="overflow-hidden">
         {gradientColors && (
-          <LinearGradient
-            colors={gradientColors as any}
-            style={StyleSheet.absoluteFill}
-          />
+          <LinearGradient colors={gradientColors as any} style={StyleSheet.absoluteFill} />
         )}
-        
+
         {isLoading ? (
           <ActivityIndicator color={textColor} />
         ) : (
           <View className="flex-row items-center justify-center">
             {variant === 'apple' && (
-              <FontAwesome5 name="apple" size={18} color={textColor} style={{ marginRight: 10, marginBottom: 2 }} />
+              <FontAwesome5
+                name="apple"
+                size={18}
+                color={textColor}
+                style={{ marginRight: 10, marginBottom: 2 }}
+              />
             )}
             {variant === 'google' && (
               <View style={{ marginRight: 10 }}>
-                 <FontAwesome5 name="google" size={16} color="#4285F4" />
+                <FontAwesome5 name="google" size={16} color="#4285F4" />
               </View>
             )}
             {icon && !['apple', 'google'].includes(variant) && (
-              <MaterialCommunityIcons 
-                name={icon as any} 
-                size={20} 
-                color={textColor} 
+              <MaterialCommunityIcons
+                name={icon as any}
+                size={20}
+                color={textColor}
                 style={{ marginRight: 8 }}
               />
             )}
-            <Text style={getTextStyle()}>
-              {label}
-            </Text>
+            <Text style={getTextStyle()}>{label}</Text>
           </View>
         )}
       </View>
     </AnimatedPressable>
   );
 };
-

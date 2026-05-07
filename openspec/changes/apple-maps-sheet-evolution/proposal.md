@@ -12,9 +12,11 @@ The current map interaction layer lacks the polish and intuitive behavior of mod
 ## Capabilities
 
 ### New Capabilities
+
 - `premium-sheet-interaction`: Defines the orchestrated interaction model for map-based bottom sheets, including snap-point behavior, header stickiness, and haptic synchronization.
 
 ### Modified Capabilities
+
 <!-- No requirement changes to existing capabilities; this is a UI/UX enhancement change. -->
 
 ## Impact

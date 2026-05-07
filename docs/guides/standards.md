@@ -30,5 +30,6 @@ We practice a **Single Source of Truth** for our design tokens.
 - **Haptics:** Use `expo-haptics` to provide tactile feedback for primary user actions.
 
 ---
+
 > [!TIP]
 > Use `npm run format` and `npm run lint` regularly to ensure compliance with these standards.

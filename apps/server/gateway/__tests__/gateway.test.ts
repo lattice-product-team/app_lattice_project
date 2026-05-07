@@ -24,19 +24,15 @@ describe('Gateway Service', () => {
     });
 
     it('should permit requests from allowed origins', async () => {
-      const response = await request(app)
-        .get('/status')
-        .set('Origin', 'http://localhost:3004');
+      const response = await request(app).get('/status').set('Origin', 'http://localhost:3004');
       expect(response.headers['access-control-allow-origin']).toBe('http://localhost:3004');
     });
 
     it('should block requests from unauthorized origins', async () => {
       // We force NODE_ENV to production to test the restriction
       // Or we just accept that in 'test' env it's also restricted if not in allowedOrigins
-      const response = await request(app)
-        .get('/status')
-        .set('Origin', 'http://evil.com');
-      
+      const response = await request(app).get('/status').set('Origin', 'http://evil.com');
+
       expect(response.status).toBe(500);
       expect(response.text).toContain('Not allowed by CORS');
     });

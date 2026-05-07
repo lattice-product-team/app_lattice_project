@@ -1,6 +1,7 @@
 ## Why
 
 The current implementation relies heavily on `expo-blur` (via `SafeBlurView`) to achieve a glassmorphism effect. This has several drawbacks:
+
 1. **Performance**: Blur rendering is expensive, especially on Android devices.
 2. **Visual Inconsistency**: Stacking multiple blur layers (e.g., a button with blur inside a sheet with blur) causes oversaturated "white patches" and inconsistent contrast.
 3. **Complexity**: Managing blur intensity and tints adds unnecessary complexity to the UI components.
@@ -17,6 +18,7 @@ Standardizing on high-quality solid colors with calibrated transparency (e.g., `
 ## Capabilities
 
 ### Modified Capabilities
+
 - `eleven-design-system`: Update color tokens to move away from translucent glassmorphism towards "Modern Solid".
 - `event-detail-sheet`: Replace all blur layers with solid-transparency backgrounds.
 - `mini-card-ui`: Remove blur from the POI mini-card.

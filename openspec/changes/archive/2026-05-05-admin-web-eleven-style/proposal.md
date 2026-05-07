@@ -13,10 +13,12 @@ The current `admin-web` interface, while functional, lacks a cohesive and premiu
 ## Capabilities
 
 ### New Capabilities
+
 - `eleven-design-system`: Definition of the core tokens (Colors, Typography, Spacing, Shapes) based on the architectural blueprint.
 - `eleven-ui-components`: Specification for the standardized component library (Pill Buttons, Demo Cards, Voice List Items, and Editorial Inputs).
 
 ### Modified Capabilities
+
 - `admin-design-system`: Updating the existing administrative requirements to adhere to the new "Type-First" and "Eggshell" constraints.
 
 ## Impact

@@ -13,13 +13,15 @@ export const RemoteModeWarning = () => {
       exiting={FadeOutDown.duration(300)}
       style={styles.container}
     >
-      <View style={[
-        styles.card, 
-        { 
-          backgroundColor: 'rgba(28, 28, 30, 0.95)',
-          borderColor: 'rgba(255, 255, 255, 0.1)'
-        }
-      ]}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: 'rgba(28, 28, 30, 0.95)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+          },
+        ]}
+      >
         <View style={styles.content}>
           <View style={styles.iconContainer}>
             <Feather name="eye" size={20} color={theme.colors.brand.primary} />

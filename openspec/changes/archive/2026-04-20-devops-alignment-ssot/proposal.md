@@ -13,10 +13,12 @@ The current environment configuration is fragmented across multiple `.env` files
 ## Capabilities
 
 ### New Capabilities
+
 - `env-synchronization`: Tooling to manage and distribute environment variables from the root SSOT to sub-packages, specifically handling Expo's prefix requirements.
 - `cross-environment-networking`: A standard pattern for service discovery/networking that works across local development, Docker Compose, and production containers.
 
 ### Modified Capabilities
+
 - `standards-alignment/ci-cd`: Updating the deployment pipeline to prioritize direct secret injection over file-based configuration.
 
 ## Impact

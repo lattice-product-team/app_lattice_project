@@ -5,7 +5,7 @@ import { typography } from '../../src/styles/typography';
 
 export default function SavedScreen() {
   const theme = useAppTheme();
-  
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
       <Text style={[styles.title, { color: theme.colors.text.primary }]}>Favoritos</Text>

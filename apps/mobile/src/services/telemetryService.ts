@@ -14,7 +14,7 @@ export const telemetryService = {
   async ping() {
     const { user } = useAuthStore.getState();
     const eventId = useEventStore.getState().currentEventId;
-    
+
     if (!eventId || !user) return;
 
     try {
@@ -29,7 +29,7 @@ export const telemetryService = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
-      
+
       console.log('Telemetry ping sent');
     } catch (error) {
       console.error('Failed to send telemetry ping:', error);
@@ -44,7 +44,7 @@ export const telemetryService = {
     const interval = setInterval(() => {
       this.ping();
     }, intervalMs);
-    
+
     return () => clearInterval(interval);
-  }
+  },
 };

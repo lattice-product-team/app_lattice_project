@@ -32,5 +32,3 @@
 
 - [x] 6.1 Perform a visual audit on Android to ensure no "white patches" or contrast issues remain.
 - [x] 6.2 Deprecate and REMOVE `SafeBlurView.tsx` and `expo-blur` dependency.
-
-

@@ -5,11 +5,13 @@ The "Midnight Island" interface uses a glassmorphism aesthetic that relies on bl
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Achieve WCAG-compliant contrast for all text and icons in both light and dark themes.
 - Maintain the premium "glass" aesthetic in light mode.
 - Remove 100% of hardcoded color values from the affected components.
 
 **Non-Goals:**
+
 - Changing the layout or behavior of the island/HUD.
 - Updating the map tiles or colors (handled by MapTiler styles).
 

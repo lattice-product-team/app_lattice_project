@@ -11,9 +11,11 @@ After implementing wider zoom thresholds, event selection became unreliable. Use
 ## Capabilities
 
 ### New Capabilities
+
 - None.
 
 ### Modified Capabilities
+
 - `poi-selection-logic`: Update store to handle full deselection.
 - `map-layer-hierarchy`: Adjust rendering order to prevent touch occlusion.
 

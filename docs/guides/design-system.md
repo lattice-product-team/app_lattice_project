@@ -7,44 +7,47 @@ Our design language is a fusion of **Cupertino (Apple)** and **Material (Google)
 We use a sophisticated metallic palette centered around "Solar Gold" for a premium and formal aesthetic. The system supports both **Light** and **Dark** themes for all neutral and semantic tokens.
 
 ### Brand
-| Token | Hex | Description |
-| :--- | :--- | :--- |
-| **Primary** | `#E2B042` | Solar Gold - Main actions, highlights. |
-| **Secondary**| `#C59837` | Muted Gold - Hover states, accents. |
-| **Accent** | `#F4C978` | High-light Gold - Active feedback. |
-| **Deep** | `#A67C27` | Bronze Gold - Pressed states, borders. |
+
+| Token         | Hex       | Description                            |
+| :------------ | :-------- | :------------------------------------- |
+| **Primary**   | `#E2B042` | Solar Gold - Main actions, highlights. |
+| **Secondary** | `#C59837` | Muted Gold - Hover states, accents.    |
+| **Accent**    | `#F4C978` | High-light Gold - Active feedback.     |
+| **Deep**      | `#A67C27` | Bronze Gold - Pressed states, borders. |
 
 ### Neutrals (Dual-Theme)
-| Token | Light (Warm) | Dark (Premium) | Description |
-| :--- | :--- | :--- | :--- |
-| **Base** | `#FCFCFA` | `#0A0A09` | Primary background. |
-| **Surface** | `#F4F4F2` | `#141412` | Sidebars and toolbars. |
-| **Elevated**| `#EBEBE8` | `#1C1C1A` | Cards and list items. |
-| **Overlay** | `#E1E1DE` | `#262624` | Modal backgrounds. |
+
+| Token        | Light (Warm) | Dark (Premium) | Description            |
+| :----------- | :----------- | :------------- | :--------------------- |
+| **Base**     | `#FCFCFA`    | `#0A0A09`      | Primary background.    |
+| **Surface**  | `#F4F4F2`    | `#141412`      | Sidebars and toolbars. |
+| **Elevated** | `#EBEBE8`    | `#1C1C1A`      | Cards and list items.  |
+| **Overlay**  | `#E1E1DE`    | `#262624`      | Modal backgrounds.     |
 
 ### Semantic (Dual-Theme)
-| Use Case | Light Hex | Dark Hex | Description |
-| :--- | :--- | :--- | :--- |
-| **Success** | `#16A34A` | `#27C468` | Valid states, entries. |
-| **Warning** | `#D97706` | `#F2A03D` | Cautionary alerts. |
-| **Error** | `#DC2626` | `#E5484D` | Critical errors, danger. |
-| **Info** | `#2563EB` | `#54A6FF` | System information. |
+
+| Use Case    | Light Hex | Dark Hex  | Description              |
+| :---------- | :-------- | :-------- | :----------------------- |
+| **Success** | `#16A34A` | `#27C468` | Valid states, entries.   |
+| **Warning** | `#D97706` | `#F2A03D` | Cautionary alerts.       |
+| **Error**   | `#DC2626` | `#E5484D` | Critical errors, danger. |
+| **Info**    | `#2563EB` | `#54A6FF` | System information.      |
 
 ## Typography
 
 - **Primary Font:** **Inter** (Regular/Medium/Bold).
 - **Fallback:** system-ui, -apple-system, sans-serif.
 
-| Style | Size | Use Case |
-| :--- | :--- | :--- |
-| **4xl** | 36px | Hero titles. |
-| **3xl** | 30px | Page titles. |
-| **2xl** | 24px | Section headers. |
-| **xl** | 20px | Subtitles. |
-| **lg** | 18px | Large body text. |
-| **base** | 16px | Primary body text. |
-| **sm** | 14px | Captions, secondary info. |
-| **xs** | 12px | Tiny labels, metadata. |
+| Style    | Size | Use Case                  |
+| :------- | :--- | :------------------------ |
+| **4xl**  | 36px | Hero titles.              |
+| **3xl**  | 30px | Page titles.              |
+| **2xl**  | 24px | Section headers.          |
+| **xl**   | 20px | Subtitles.                |
+| **lg**   | 18px | Large body text.          |
+| **base** | 16px | Primary body text.        |
+| **sm**   | 14px | Captions, secondary info. |
+| **xs**   | 12px | Tiny labels, metadata.    |
 
 ## Glassmorphism
 
@@ -66,6 +69,7 @@ Used for overlays and floating cards to maintain context of the background map.
 All new components SHOULD use the design tokens from the shared `@app/theme` package.
 
 ### TypeScript Usage
+
 ```typescript
 import { colors, typography } from '@app/theme';
 
@@ -79,7 +83,9 @@ const styles = {
 ```
 
 ### Tailwind CSS Integration (Future)
+
 The shared package will eventually be integrated into the Tailwind configurations for `apps/mobile` and `apps/admin-web` to allow usage via utility classes:
+
 - `text-brand-primary`
 - `bg-neutral-light-base` / `dark:bg-neutral-dark-base`
 - `font-sans`

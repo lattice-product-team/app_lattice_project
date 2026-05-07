@@ -22,8 +22,9 @@ export async function truncateAllTables() {
   if (tableNames.length === 0) return;
 
   // Build the truncate query
-  const query = sql.raw(`TRUNCATE TABLE ${tableNames.map(name => `"${name}"`).join(', ')} RESTART IDENTITY CASCADE`);
-  
+  const query = sql.raw(
+    `TRUNCATE TABLE ${tableNames.map((name) => `"${name}"`).join(', ')} RESTART IDENTITY CASCADE`
+  );
+
   await db.execute(query);
 }
-

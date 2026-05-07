@@ -5,26 +5,31 @@ The monorepo uses `pnpm` with hoisting. Currently, core mobile dependencies (`ex
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Eliminate entry point resolution ambiguity by removing mobile dependencies from the root.
 - Force all mobile development to use the Development Client build.
 - Standardize the `mobile` URL scheme across all configurations.
 
 **Non-Goals:**
+
 - Upgrading Expo or React Native versions.
 - Modifying backend services or other monorepo apps.
 
 ## Decisions
 
 ### 1. Remove mobile dependencies from root `package.json`
+
 - **Decision**: Delete `expo`, `react`, and `react-native` from the root dependencies.
 - **Rationale**: These are app-specific dependencies. Having them at the root triggers default Expo behavior that is incompatible with a monorepo sub-app structure.
 - **Alternative**: Configuring Metro to ignore root `node_modules`. (Rejected: Too complex to maintain and brittle across different developer environments).
 
 ### 2. Strictly enforce Development Client
+
 - **Decision**: Disable "Expo Go" support by removing any fallback logic for it in `SafeBlurView` or other components.
 - **Rationale**: The app requires native modules that will never be in Expo Go. Providing fallbacks creates a degraded experience and maintenance burden.
 
 ### 3. URL Scheme Standardization
+
 - **Decision**: Use `mobile` as the primary scheme in `app.json` and `npx expo` commands.
 - **Rationale**: Matches the current iOS/Android native build configuration, avoiding "Unknown scheme" errors during app launch.
 

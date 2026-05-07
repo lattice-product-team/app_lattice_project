@@ -11,9 +11,11 @@ Selecting an event currently uses a fixed zoom level or a basic fit-bounds logic
 ## Capabilities
 
 ### New Capabilities
+
 - `event-boundary-camera`: Implements the math and camera triggers to adapt the viewport to event polygons and their children POIs.
 
 ### Modified Capabilities
+
 - `map-camera-logic`: Update existing camera manager to prioritize `boundary` data over simple point centering.
 
 ## Impact

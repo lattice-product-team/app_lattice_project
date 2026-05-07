@@ -15,4 +15,3 @@
 
 - [x] 3.1 Run mobile unit tests to ensure no regressions.
 - [x] 3.2 Perform a quick code audit to ensure all Catalan comments/docs are gone.
-

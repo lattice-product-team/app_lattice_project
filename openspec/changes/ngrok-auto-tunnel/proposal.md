@@ -13,6 +13,7 @@ The current mobile development environment relies on a custom `zrok` script to e
 ## Capabilities
 
 ### New Capabilities
+
 - `mobile-dev-tunnels`: Automated dual-tunneling for mobile development (Metro + API).
 
 ### Modified Capabilities

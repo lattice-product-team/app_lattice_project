@@ -3,7 +3,7 @@ import os from 'os';
 
 /**
  * dev-lan.ts
- * 
+ *
  * Orchestrates the LAN development environment startup.
  * 1. Detects IP
  * 2. Starts Expo
@@ -13,7 +13,7 @@ import os from 'os';
 function getLocalIP() {
   const interfaces = os.networkInterfaces();
   const priorityInterfaces = ['bridge100', 'en0', 'en1'];
-  
+
   for (const name of priorityInterfaces) {
     const iface = interfaces[name];
     if (iface) {
@@ -22,7 +22,7 @@ function getLocalIP() {
       }
     }
   }
-  
+
   for (const name of Object.keys(interfaces)) {
     const iface = interfaces[name];
     if (iface) {
@@ -34,12 +34,16 @@ function getLocalIP() {
   return '127.0.0.1';
 }
 
-async function runCommand(command: string, args: string[], envOverrides: Record<string, string> = {}) {
+async function runCommand(
+  command: string,
+  args: string[],
+  envOverrides: Record<string, string> = {}
+) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       stdio: 'inherit',
       shell: true,
-      env: { ...process.env, ...envOverrides }
+      env: { ...process.env, ...envOverrides },
     });
     child.on('exit', resolve);
   });
@@ -50,7 +54,7 @@ async function main() {
   console.log(`\n📡 LATTICE DEV ENGINE: Starting on LAN IP ${ip}\n`);
 
   // 1. Environment is handled dynamically by app.config.ts
-  
+
   // 2. Prepare Expo Environment
   const expoEnv = {
     LAN_IP: ip,
@@ -61,13 +65,17 @@ async function main() {
 
   // 3. Start Expo in background-like manner but keep stdio
   console.log('🚀 Starting Metro Bundler...\n');
-  
+
   // We start expo and then run diagnostics in parallel after a short delay
-  const expoProcess = spawn('npx', ['expo', 'start', '--dev-client', '--host', 'lan', '--scheme', 'lattice'], {
-    stdio: 'inherit',
-    shell: true,
-    env: { ...process.env, ...expoEnv }
-  });
+  const expoProcess = spawn(
+    'npx',
+    ['expo', 'start', '--dev-client', '--host', 'lan', '--scheme', 'lattice'],
+    {
+      stdio: 'inherit',
+      shell: true,
+      env: { ...process.env, ...expoEnv },
+    }
+  );
 
   // 4. Run Diagnostics after 8 seconds (enough time for Metro to bind)
   setTimeout(async () => {
@@ -75,7 +83,7 @@ async function main() {
     // We don't use 'inherit' here to keep the terminal clean while Expo is running
     spawn('npx', ['tsx', './scripts/check-connectivity.ts'], {
       stdio: 'inherit',
-      shell: true
+      shell: true,
     });
   }, 8000);
 

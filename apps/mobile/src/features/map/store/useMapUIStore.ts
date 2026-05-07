@@ -40,14 +40,16 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   lastCameraPosition: null,
 
   setUIState: (uiState) => set({ uiState }),
-  
-  triggerRecenter: () => set((state) => ({ 
-    recenterCount: state.recenterCount + 1 
-  })),
 
-  triggerForceCenter: () => set((state) => ({ 
-    forceCenterCount: state.forceCenterCount + 1 
-  })),
+  triggerRecenter: () =>
+    set((state) => ({
+      recenterCount: state.recenterCount + 1,
+    })),
+
+  triggerForceCenter: () =>
+    set((state) => ({
+      forceCenterCount: state.forceCenterCount + 1,
+    })),
 
   setIsFollowingUser: (isFollowingUser) => set({ isFollowingUser }),
 

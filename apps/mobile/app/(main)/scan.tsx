@@ -21,15 +21,10 @@ export default function ScanScreen() {
         facing="back"
         onBarcodeScanned={scanned ? undefined : ({ data }) => handleBarCodeScanned(data)}
         barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
+          barcodeTypes: ['qr'],
         }}
       />
-      <ScanOverlay 
-        isProcessing={isProcessing} 
-        scanned={scanned} 
-        onReset={resetScanner} 
-      />
+      <ScanOverlay isProcessing={isProcessing} scanned={scanned} onReset={resetScanner} />
     </View>
   );
 }
-

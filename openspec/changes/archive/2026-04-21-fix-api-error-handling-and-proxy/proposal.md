@@ -12,9 +12,11 @@ The current API error handling in the mobile app is fragile and often obscures t
 ## Capabilities
 
 ### New Capabilities
+
 - `error-standardization`: Ensures a consistent error response format across all backend services (Gateway, Auth, Geo, Social).
 
 ### Modified Capabilities
+
 - `standards-alignment`: Updates the technical standards for how API errors are handled and reported within the system.
 
 ## Impact

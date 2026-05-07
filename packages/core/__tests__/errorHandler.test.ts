@@ -31,9 +31,9 @@ describe('errorHandler', () => {
     } as unknown as Response;
     const mockNext = vi.fn();
     const error = {
-        status: 400,
-        message: 'Bad Request',
-        code: 'BAD_REQUEST',
+      status: 400,
+      message: 'Bad Request',
+      code: 'BAD_REQUEST',
     };
 
     errorHandler(error, mockReq, mockRes, mockNext);

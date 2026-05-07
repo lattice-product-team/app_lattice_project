@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
   Extrapolation,
   interpolate,
   useDerivedValue,
-  useAnimatedProps
+  useAnimatedProps,
 } from 'react-native-reanimated';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -38,48 +38,59 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   }, [poi?.id]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    const bottom = interpolate(visibility.value, [0, 1], [-200, insets.bottom + 12], Extrapolation.CLAMP);
+    const bottom = interpolate(
+      visibility.value,
+      [0, 1],
+      [-200, insets.bottom + 12],
+      Extrapolation.CLAMP
+    );
     return {
       bottom,
       opacity: visibility.value,
     };
   });
 
-
-
   // No unmount based on visibility.value to avoid render-time reads
 
   return (
     <Animated.View style={[styles.container, theme.shadows.soft, animatedStyle]}>
-      <View 
+      <View
         style={[
           styles.content,
-          { 
+          {
             backgroundColor: theme.colors.glass.background,
-            borderColor: theme.colors.glass.border
-          }
+            borderColor: theme.colors.glass.border,
+          },
         ]}
       >
         {/* Content Layer */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
-            <MaterialCommunityIcons name={poi?.categoryIcon || 'map-marker'} size={24} color="white" />
-          </View>
-          
-          <View style={styles.textContainer}>
-            <Text style={[styles.title, { color: theme.colors.text.primary }]}>{poi?.displayName}</Text>
-            <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>{poi?.categoryLabel}</Text>
+            <MaterialCommunityIcons
+              name={poi?.categoryIcon || 'map-marker'}
+              size={24}
+              color="white"
+            />
           </View>
 
-          <Pressable 
-            onPress={onClose} 
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+              {poi?.displayName}
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
+              {poi?.categoryLabel}
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={onClose}
             style={[
-              styles.closeButton, 
-              { 
+              styles.closeButton,
+              {
                 backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
                 borderColor: theme.colors.glass.border,
-                ...theme.shadows.soft
-              }
+                ...theme.shadows.soft,
+              },
             ]}
           >
             <Feather name="x" size={20} color={theme.colors.text.primary} />
@@ -87,7 +98,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
         </View>
 
         <View style={styles.footer}>
-          <Pressable 
+          <Pressable
             onPress={() => {
               setNavigating(true);
               onClose();

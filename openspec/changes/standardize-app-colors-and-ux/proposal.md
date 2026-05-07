@@ -13,9 +13,11 @@ The Lattice mobile application currently contains numerous hardcoded hex values 
 ## Capabilities
 
 ### New Capabilities
+
 - `design-system-tokens`: Establish a robust, semantic-first color management system that supports dynamic theming and ensures UI consistency.
 
 ### Modified Capabilities
+
 - (None)
 
 ## Impact

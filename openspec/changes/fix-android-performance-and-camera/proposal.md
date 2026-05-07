@@ -13,9 +13,11 @@ The Android version of the Lattice mobile application suffers from significant p
 ## Capabilities
 
 ### New Capabilities
+
 - None
 
 ### Modified Capabilities
+
 - `hybrid-map-rendering`: Optimize layer rendering for Android (transition from PointAnnotations to GL Layers).
 - `adaptive-map-controls`: Fix camera responsiveness and interaction physics on Android.
 - `pure-ui-animation-bridge`: Ensure smooth transitions between map and UI sheets without bridge saturation.

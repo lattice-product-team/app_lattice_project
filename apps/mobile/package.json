@@ -15,7 +15,6 @@
     "lint": "expo lint",
     "test": "npm run test:logic && npm run test:components",
     "test:components": "jest --passWithNoTests",
-
     "test:logic": "vitest run",
     "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.0.0 --activate"
   },

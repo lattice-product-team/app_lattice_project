@@ -72,6 +72,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: admin-web-prod
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     restart: always
     environment:
       - NODE_ENV=production
@@ -82,18 +84,8 @@ services:
     networks:
       - red_proxy
 
-  redis:
-    container_name: lattice_redis
-    image: redis:7-alpine
-    volumes:
-      - redis_data:/data
-    restart: always
-    networks:
-      - red_proxy
 
 networks:
   red_proxy:
     external: true
 
-volumes:
-  redis_data:

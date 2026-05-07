@@ -27,15 +27,15 @@ export const MapLayers = ({
   pathNetwork,
   currentRoute,
   isNavigating,
-  onPoiPress
+  onPoiPress,
 }: MapLayersProps) => {
-  const currentZoom = useMapUIStore(s => s.lastCameraPosition?.zoom || 15);
+  const currentZoom = useMapUIStore((s) => s.lastCameraPosition?.zoom || 15);
 
   return (
     <>
       {/* 2. POI LAYER (GL-BASED FOR PERFECT SYNC) */}
-      <MapLibreGL.ShapeSource 
-        id="poisSource" 
+      <MapLibreGL.ShapeSource
+        id="poisSource"
         shape={poisGeoJSON || EMPTY_GEOJSON}
         onPress={onPoiPress}
       >
@@ -48,19 +48,15 @@ export const MapLayers = ({
               'interpolate',
               ['linear'],
               ['zoom'],
-              16, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 18, 12],
-              18, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 24, 16]
+              16,
+              ['case', ['==', ['get', 'id'], selectedPoiId || ''], 18, 12],
+              18,
+              ['case', ['==', ['get', 'id'], selectedPoiId || ''], 24, 16],
             ],
             circleColor: ['get', 'color'],
             circleStrokeWidth: 2,
             circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              14.0, 0,
-              15.0, 1
-            ],
+            circleOpacity: ['interpolate', ['linear'], ['zoom'], 14.0, 0, 15.0, 1],
             circlePitchAlignment: 'map',
           }}
         />
@@ -70,25 +66,17 @@ export const MapLayers = ({
           id="poisIcon"
           minZoomLevel={14.0}
           style={{
-            iconImage: [
-              'coalesce',
-              ['concat', 'icon-', ['get', 'category']],
-              'icon-default'
-            ],
+            iconImage: ['coalesce', ['concat', 'icon-', ['get', 'category']], 'icon-default'],
             iconSize: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              16, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 0.6, 0.4],
-              18, ['case', ['==', ['get', 'id'], selectedPoiId || ''], 0.8, 0.6]
+              16,
+              ['case', ['==', ['get', 'id'], selectedPoiId || ''], 0.6, 0.4],
+              18,
+              ['case', ['==', ['get', 'id'], selectedPoiId || ''], 0.8, 0.6],
             ],
-            iconOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              14.0, 0,
-              15.0, 1
-            ],
+            iconOpacity: ['interpolate', ['linear'], ['zoom'], 14.0, 0, 15.0, 1],
             iconPitchAlignment: 'viewport',
             iconAllowOverlap: true,
             iconIgnorePlacement: true,
@@ -108,13 +96,7 @@ export const MapLayers = ({
             textColor: theme.colors.text.primary || '#000000',
             textHaloColor: theme.colors.bg.main || '#FFFFFF',
             textHaloWidth: 2,
-            textOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              15.0, 0,
-              16.0, 1
-            ],
+            textOpacity: ['interpolate', ['linear'], ['zoom'], 15.0, 0, 16.0, 1],
             textAllowOverlap: true,
             textIgnorePlacement: true,
           }}
@@ -123,10 +105,7 @@ export const MapLayers = ({
 
       {/* 3. EVENT PERIMETER (Stays in GL for performance) */}
       {!isNavigating && (
-        <MapLibreGL.ShapeSource 
-          id="boundarySource" 
-          shape={poisGeoJSON || EMPTY_GEOJSON}
-        >
+        <MapLibreGL.ShapeSource id="boundarySource" shape={poisGeoJSON || EMPTY_GEOJSON}>
           <MapLibreGL.FillLayer
             id="boundaryFill"
             filter={['==', ['get', 'type'], 'boundary']}
@@ -152,10 +131,10 @@ export const MapLayers = ({
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
             id="networkLines"
-            style={{ 
-              ...mapLayerStyles.networkLines, 
+            style={{
+              ...mapLayerStyles.networkLines,
               lineOpacity: 0.15,
-              lineColor: theme.colors.brand.primary
+              lineColor: theme.colors.brand.primary,
             }}
           />
         </MapLibreGL.ShapeSource>
@@ -180,7 +159,7 @@ export const MapLayers = ({
           coordinate={feature.geometry.coordinates}
           anchor={{ x: 0.5, y: 1.0 }}
         >
-          <EventMarker 
+          <EventMarker
             event={feature}
             theme={theme}
             isSelected={selectedEventId === feature.id}

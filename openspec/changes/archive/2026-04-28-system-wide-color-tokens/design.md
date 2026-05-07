@@ -5,6 +5,7 @@ The current color definitions are fragmented across the codebase (e.g., `apps/mo
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Centralize all color constants in a shared workspace package (`@app/theme`).
 - Define a professional "Solar Gold" brand scale.
 - Provide a robust neutral hierarchy for high-density UI.
@@ -12,6 +13,7 @@ The current color definitions are fragmented across the codebase (e.g., `apps/mo
 - Ensure all tokens are properly typed for TypeScript consumers.
 
 **Non-Goals:**
+
 - Updating existing UI components to use the new tokens (this will be done in subsequent tasks/changes).
 - Modifying the build systems of `apps/mobile` or `apps/admin-web`.
 - Implementing a full Design System (only colors for now).
@@ -19,12 +21,15 @@ The current color definitions are fragmented across the codebase (e.g., `apps/mo
 ## Decisions
 
 ### 1. New Shared Package: `@app/theme`
+
 **Rationale:** Creating a dedicated package at `packages/theme` follows the monorepo pattern established by `@app/core` and `@app/types-schema`. It prevents circular dependencies and allows independent versioning of the design language.
 **Alternatives Considered:** Adding to `@app/core`. Rejected because `@app/core` is currently focused on backend utilities/middleware.
 
 ### 2. Token Format: Nested TypeScript Objects
+
 **Rationale:** Provides the best developer experience with IDE autocomplete and type safety. Can be easily converted to Tailwind configuration or CSS variables if needed.
 **Implementation:**
+
 ```typescript
 export const colors = {
   brand: {
@@ -62,14 +67,16 @@ export const colors = {
     },
   },
   // ... category scales
-}
+};
 ```
 
 ### 3. Typography: The Inter Typeface
+
 **Rationale:** Inter is designed specifically for user interfaces. It provides superior legibility at small sizes and a neutral, professional tone that balances the "premium" feel of Solar Gold.
 **Implementation:** The package will export a `typography` object containing font families and a standard scale of sizes.
 
 ### 4. Tailwind Integration Strategy
+
 **Rationale:** The tokens should be the "Single Source of Truth". Tailwind configs in `apps/` will eventually import this package to extend their themes.
 
 ## Risks / Trade-offs
@@ -80,30 +87,34 @@ export const colors = {
 ## Color Specification
 
 ### Brand (Solar Gold)
+
 - `primary`: #E2B042
 - `secondary`: #C59837
 - `accent`: #F4C978
 - `deep`: #A67C27
 
 ### Neutrals (Dual-Theme)
-| Token | Light (Warm) | Dark (Premium) |
-| :--- | :--- | :--- |
-| `base` | #FCFCFA | #0A0A09 |
-| `surface` | #F4F4F2 | #141412 |
-| `elevated` | #EBEBE8 | #1C1C1A |
-| `overlay` | #E1E1DE | #262624 |
+
+| Token        | Light (Warm)        | Dark (Premium)            |
+| :----------- | :------------------ | :------------------------ |
+| `base`       | #FCFCFA             | #0A0A09                   |
+| `surface`    | #F4F4F2             | #141412                   |
+| `elevated`   | #EBEBE8             | #1C1C1A                   |
+| `overlay`    | #E1E1DE             | #262624                   |
 | `border-low` | rgba(0, 0, 0, 0.05) | rgba(255, 255, 255, 0.05) |
 | `border-med` | rgba(0, 0, 0, 0.12) | rgba(255, 255, 255, 0.12) |
 
 ### Semantics (Dual-Theme)
-| Token | Light | Dark |
-| :--- | :--- | :--- |
+
+| Token     | Light   | Dark    |
+| :-------- | :------ | :------ |
 | `success` | #16A34A | #27C468 |
 | `warning` | #D97706 | #F2A03D |
-| `error` | #DC2626 | #E5484D |
-| `info` | #2563EB | #54A6FF |
+| `error`   | #DC2626 | #E5484D |
+| `info`    | #2563EB | #54A6FF |
 
 ### Categories
+
 - `music`: #8E5DCF
 - `food`: #D97706
 - `tech`: #4F46E5
@@ -111,9 +122,11 @@ export const colors = {
 ## Typography Specification
 
 ### Font Family
+
 - `sans`: 'Inter', system-ui, -apple-system, sans-serif
 
 ### Size Scale (Base 16px)
+
 - `xs`: 0.75rem (12px)
 - `sm`: 0.875rem (14px)
 - `base`: 1rem (16px)

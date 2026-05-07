@@ -17,12 +17,14 @@ The current map pins are placeholders that don't reflect the premium aesthetic o
 ## Capabilities
 
 ### New Capabilities
+
 - `map-pin-components`: Premium React Native components for Event (Image-based) and POI (Glyph-based) markers.
 - `spatial-hierarchy-logic`: Core logic for visibility management (selection, geofencing, zoom).
 - `poi-category-filtering`: Logic to highlight/dim map markers based on selected categories from the UI.
 - `mini-card-ui`: A specialized bottom sheet variant for individual POI details.
 
 ### Modified Capabilities
+
 - `poi-store-optimization`: Update the `usePOIStore` to support hierarchical relationships and filtering states.
 
 ## Impact

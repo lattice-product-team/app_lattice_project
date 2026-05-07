@@ -1,6 +1,7 @@
 ## Context
 
 The current authentication system in the Lattice mobile app has recently undergone significant visual and functional changes (theme support, passkey removal). This has introduced some instability, most notably a redirection bug where users are stuck on the "Welcome back" screen or redirected incorrectly after a successful email login. The system uses:
+
 - **Expo Router** for navigation.
 - **Zustand** (`useAuthStore`) for managing tokens, user data, and redirection state (`intendedDestination`).
 - **Custom AuthService** for API calls (Google OAuth, Email/Password).
@@ -9,6 +10,7 @@ The current authentication system in the Lattice mobile app has recently undergo
 ## Goals / Non-Goals
 
 **Goals:**
+
 - **Standardize Redirection**: Ensure every authentication entry point (Login, Register, Google, Email) follows a consistent redirection logic.
 - **Fix Redirection Loop**: Resolve the bug where users are redirected back to the login screen after success.
 - **Robust Error Handling**: Provide clear visual feedback for common failures (invalid credentials, network issues, user already exists).
@@ -16,6 +18,7 @@ The current authentication system in the Lattice mobile app has recently undergo
 - **Cleanup**: Verify the complete removal of any residual passkey logic that might be interfering with the flow.
 
 **Non-Goals:**
+
 - Adding new authentication methods (e.g., Apple Sign-In).
 - Refactoring the entire backend authentication API.
 - Redesigning the main dashboard.

@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions, Text, TouchableOpacity, ScrollView , Alert } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import Animated, { 
-  useAnimatedStyle, 
-  withSpring, 
-  withTiming, 
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
   useSharedValue,
   interpolate,
   Extrapolate,
   FadeIn,
-  SharedValue
+  SharedValue,
 } from 'react-native-reanimated';
 import { Ticket } from '../../../types/models/auth';
 import { TicketCard } from './TicketCard';
@@ -36,15 +44,15 @@ interface WalletItemProps {
   toggleExpand: () => void;
 }
 
-const WalletItem: React.FC<WalletItemProps> = ({ 
-  ticket, 
-  index, 
-  totalTickets, 
-  isExpanded, 
-  selectedTicketId, 
+const WalletItem: React.FC<WalletItemProps> = ({
+  ticket,
+  index,
+  totalTickets,
+  isExpanded,
+  selectedTicketId,
   expandProgress,
   handleSelectTicket,
-  toggleExpand
+  toggleExpand,
 }) => {
   const isSelected = selectedTicketId === (ticket.id || ticket.code);
   const isAnySelected = selectedTicketId !== null;
@@ -68,25 +76,19 @@ const WalletItem: React.FC<WalletItemProps> = ({
     const finalTranslateY = isSelected ? withSpring(0) : translateY;
 
     return {
-      transform: [
-        { translateY: finalTranslateY },
-        { scale },
-        { perspective: 1000 },
-      ],
+      transform: [{ translateY: finalTranslateY }, { scale }, { perspective: 1000 }],
       zIndex: isSelected ? 100 : index,
       opacity,
     };
   });
 
   return (
-    <View 
-      style={[styles.pressable, isSelected && { position: 'relative', zIndex: 100 }]}
-    >
+    <View style={[styles.pressable, isSelected && { position: 'relative', zIndex: 100 }]}>
       <Animated.View style={[styles.cardWrapper, animatedStyle]}>
-        <TicketCard 
-          ticket={ticket} 
-          index={index} 
-          onCardPress={() => isExpanded ? handleSelectTicket(ticket) : toggleExpand()}
+        <TicketCard
+          ticket={ticket}
+          index={index}
+          onCardPress={() => (isExpanded ? handleSelectTicket(ticket) : toggleExpand())}
         />
       </Animated.View>
     </View>
@@ -117,49 +119,51 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
     }
   };
 
-  const selectedTicket = tickets.find(t => (t.id || t.code) === selectedTicketId);
+  const selectedTicket = tickets.find((t) => (t.id || t.code) === selectedTicketId);
 
   const handleDelete = (ticket: Ticket) => {
     Alert.alert(
-      "Eliminar Entrada",
-      "Estàs segur que vols eliminar aquesta entrada de la teva wallet?",
+      'Eliminar Entrada',
+      'Estàs segur que vols eliminar aquesta entrada de la teva wallet?',
       [
-        { text: "Cancel·lar", style: "cancel" },
-        { 
-          text: "Eliminar", 
-          style: "destructive",
+        { text: 'Cancel·lar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
           onPress: async () => {
             try {
               const success = await unclaimTicket(ticket.code!);
               if (success) {
                 setSelectedTicketId(null);
               } else {
-                Alert.alert("Error", "No s'ha pogut eliminar l'entrada.");
+                Alert.alert('Error', "No s'ha pogut eliminar l'entrada.");
               }
             } catch {
-              Alert.alert("Error", "Hi ha hagut un problema al connectar amb el servidor.");
+              Alert.alert('Error', 'Hi ha hagut un problema al connectar amb el servidor.');
             }
-          }
-        }
+          },
+        },
       ]
     );
   };
 
   return (
     <View style={styles.outerContainer}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={[
-          styles.container, 
-          { 
-            minHeight: isAnySelected 
-              ? height + 200 
-              : (isExpanded ? Math.max(800, tickets.length * (EXPANDED_OFFSET + 50)) : 500)
-          }
+          styles.container,
+          {
+            minHeight: isAnySelected
+              ? height + 200
+              : isExpanded
+                ? Math.max(800, tickets.length * (EXPANDED_OFFSET + 50))
+                : 500,
+          },
         ]}
         scrollEnabled={isExpanded || isAnySelected}
       >
         {tickets.map((ticket, index) => (
-          <WalletItem 
+          <WalletItem
             key={ticket.id || ticket.code}
             ticket={ticket}
             index={index}
@@ -175,7 +179,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
         {selectedTicket && (
           <Animated.View entering={FadeIn.delay(300)} style={styles.detailsContainer}>
             <Text style={styles.detailsTitle}>Informació Tècnica</Text>
-            
+
             <View style={styles.detailRow}>
               <View style={styles.detailItem}>
                 <Text style={styles.detailLabel}>ID BD</Text>
@@ -184,8 +188,19 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
               <View style={styles.detailItem}>
                 <Text style={[styles.detailLabel, { color: theme.colors.text.muted }]}>ESTAT</Text>
                 <View style={styles.statusBadge}>
-                  <View style={[styles.statusDot, { backgroundColor: selectedTicket.isActive ? theme.colors.status.success : theme.colors.status.error }]} />
-                  <Text style={[styles.statusText, { color: theme.colors.text.primary }]}>{selectedTicket.isActive ? 'ACTIVA' : 'INACTIVA'}</Text>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      {
+                        backgroundColor: selectedTicket.isActive
+                          ? theme.colors.status.success
+                          : theme.colors.status.error,
+                      },
+                    ]}
+                  />
+                  <Text style={[styles.statusText, { color: theme.colors.text.primary }]}>
+                    {selectedTicket.isActive ? 'ACTIVA' : 'INACTIVA'}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -196,7 +211,9 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
               <View style={styles.detailItem}>
                 <Text style={styles.detailLabel}>DATA REGISTRE</Text>
                 <Text style={styles.detailValue}>
-                  {selectedTicket.createdAt ? new Date(selectedTicket.createdAt).toLocaleDateString() : 'N/A'}
+                  {selectedTicket.createdAt
+                    ? new Date(selectedTicket.createdAt).toLocaleDateString()
+                    : 'N/A'}
                 </Text>
               </View>
             </View>
@@ -206,16 +223,22 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
             <View style={[styles.infoBox, { backgroundColor: theme.colors.status.successSurface }]}>
               <Feather name="shield" size={16} color={theme.colors.status.success} />
               <Text style={[styles.infoBoxText, { color: theme.colors.text.secondary }]}>
-                Entrada vinculada correctament al teu compte. Només tu pots utilitzar aquest QR per a l&apos;accés.
+                Entrada vinculada correctament al teu compte. Només tu pots utilitzar aquest QR per
+                a l&apos;accés.
               </Text>
             </View>
 
-            <TouchableOpacity 
-              style={[styles.deleteOptionButton, { backgroundColor: theme.colors.status.errorSurface }]} 
+            <TouchableOpacity
+              style={[
+                styles.deleteOptionButton,
+                { backgroundColor: theme.colors.status.errorSurface },
+              ]}
               onPress={() => handleDelete(selectedTicket)}
             >
               <Feather name="trash-2" size={18} color={theme.colors.status.error} />
-              <Text style={[styles.deleteOptionText, { color: theme.colors.status.error }]}>Eliminar Entrada</Text>
+              <Text style={[styles.deleteOptionText, { color: theme.colors.status.error }]}>
+                Eliminar Entrada
+              </Text>
             </TouchableOpacity>
           </Animated.View>
         )}

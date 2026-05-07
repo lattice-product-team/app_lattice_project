@@ -12,9 +12,11 @@ The current authentication flow uses a white-based theme that suffers from sever
 ## Capabilities
 
 ### New Capabilities
+
 - `premium-dark-theme`: Implementation of a global-ready dark theme configuration specifically for the onboarding and authentication experience.
 
 ### Modified Capabilities
+
 - `mobile-navigation`: UI polish across all auth-related routes.
 
 ## Impact

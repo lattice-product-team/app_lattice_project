@@ -23,24 +23,22 @@ const SOCIAL_SERVICE_URL = `http://${env.SOCIAL_HOST}:${env.SOCIAL_PORT}`;
 app.use(helmet());
 
 // 2. Restricted CORS
-const allowedOrigins = [
-  'http://localhost:3000', // Mobile LAN proxy (if applicable)
-  'http://localhost:3004', // Admin Web
-  // Add production domains here
-];
+const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // 3. Rate Limiting for Auth
 const authRateLimiter = rateLimit({
@@ -50,7 +48,7 @@ const authRateLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     error: 'Too many authentication attempts, please try again later',
-    code: 'TOO_MANY_REQUESTS'
+    code: 'TOO_MANY_REQUESTS',
   },
   skip: () => env.NODE_ENV === 'test',
 });
@@ -67,11 +65,11 @@ app.use((req, _res, next) => {
 
 // Health Checks
 const healthHandler = (req: Request, res: Response) => {
-  res.json({ 
-    status: 'gateway_ok', 
-    timestamp: new Date(), 
-    env: env.NODE_ENV, 
-    service: 'lattice_gateway'
+  res.json({
+    status: 'gateway_ok',
+    timestamp: new Date(),
+    env: env.NODE_ENV,
+    service: 'lattice_gateway',
   });
 };
 
@@ -109,7 +107,7 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
             message: errorMsg,
             code: err.code,
             url: req.originalUrl,
-            target
+            target,
           });
         }
         if (res && res.writeHead) {
@@ -127,7 +125,9 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
       },
       proxyReq: (proxyReq: any, req: any) => {
         if (env.NODE_ENV !== 'test') {
-          console.log(`[Gateway -> ${label}] Proxying: ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`);
+          console.log(
+            `[Gateway -> ${label}] Proxying: ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`
+          );
         }
       },
       proxyRes: (proxyRes: any, req: any) => {
@@ -176,7 +176,8 @@ router.use('*', (req: Request, res: Response) => {
   });
 });
 
-app.use('/', router);
+const baseMountPath = env.GATEWAY_BASE_PATH || '/';
+app.use(baseMountPath, router);
 app.use(errorHandler);
 
 if (env.NODE_ENV !== 'test') {

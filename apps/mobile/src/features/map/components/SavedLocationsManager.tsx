@@ -1,14 +1,14 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  Modal, 
-  StyleSheet, 
-  Pressable, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  Pressable,
+  ScrollView,
   ActivityIndicator,
   Dimensions,
-  Platform
+  Platform,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSavedLocations, useDeleteSavedLocation } from '../hooks/useSavedLocations';
@@ -25,10 +25,10 @@ interface SavedLocationsManagerProps {
   onSelectMarker: (coords: [number, number], id: number) => void;
 }
 
-export const SavedLocationsManager = ({ 
-  isVisible, 
+export const SavedLocationsManager = ({
+  isVisible,
   onClose,
-  onSelectMarker
+  onSelectMarker,
 }: SavedLocationsManagerProps) => {
   const theme = useLatticeTheme();
   const { data: savedData, isLoading } = useSavedLocations();
@@ -39,7 +39,7 @@ export const SavedLocationsManager = ({
     deleteMutation.mutate(id, {
       onSuccess: () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      },
     });
   };
 
@@ -49,22 +49,17 @@ export const SavedLocationsManager = ({
   };
 
   return (
-    <Modal
-      visible={isVisible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
+    <Modal visible={isVisible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <Pressable style={styles.backdrop} onPress={onClose} />
-        
+
         <SafeAreaContext.SafeAreaView style={styles.sheetContent}>
           <View style={styles.header}>
             <View style={styles.headerTextContainer}>
               <Text style={styles.title}>Mis Marcadores</Text>
               <Text style={styles.subtitle}>Gestiona tus lugares guardados en el mapa</Text>
             </View>
-            <Pressable 
+            <Pressable
               onPress={onClose}
               style={({ pressed }) => [styles.closeButton, pressed && { opacity: 0.7 }]}
             >
@@ -77,7 +72,7 @@ export const SavedLocationsManager = ({
               <ActivityIndicator color={theme.colors.brand.primary} size="large" />
             </View>
           ) : savedData?.features?.length > 0 ? (
-            <ScrollView 
+            <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
             >
@@ -92,23 +87,34 @@ export const SavedLocationsManager = ({
                         {feature.properties.label || 'Marcador sin nombre'}
                       </Text>
                       <Text style={styles.markerCoords}>
-                        {feature.geometry.coordinates[1].toFixed(5)}, {feature.geometry.coordinates[0].toFixed(5)}
+                        {feature.geometry.coordinates[1].toFixed(5)},{' '}
+                        {feature.geometry.coordinates[0].toFixed(5)}
                       </Text>
                     </View>
                   </View>
 
                   <View style={styles.actions}>
-                    <Pressable 
-                      onPress={() => handleGoTo(feature.geometry.coordinates, feature.properties.id)}
-                      style={({ pressed }) => [styles.actionBtn, styles.goBtn, pressed && { opacity: 0.7 }]}
+                    <Pressable
+                      onPress={() =>
+                        handleGoTo(feature.geometry.coordinates, feature.properties.id)
+                      }
+                      style={({ pressed }) => [
+                        styles.actionBtn,
+                        styles.goBtn,
+                        pressed && { opacity: 0.7 },
+                      ]}
                     >
                       <Feather name="navigation" size={16} color="white" />
                       <Text style={styles.actionText}>Ir</Text>
                     </Pressable>
 
-                    <Pressable 
+                    <Pressable
                       onPress={() => handleDelete(feature.properties.id)}
-                      style={({ pressed }) => [styles.actionBtn, styles.deleteBtn, pressed && { opacity: 0.7 }]}
+                      style={({ pressed }) => [
+                        styles.actionBtn,
+                        styles.deleteBtn,
+                        pressed && { opacity: 0.7 },
+                      ]}
                       disabled={deleteMutation.isPending}
                     >
                       <Feather name="trash-2" size={16} color="white" />
@@ -128,7 +134,7 @@ export const SavedLocationsManager = ({
           )}
 
           <View style={styles.footer}>
-            <Pressable 
+            <Pressable
               onPress={onClose}
               style={({ pressed }) => [styles.doneButton, pressed && { opacity: 0.9 }]}
             >
@@ -308,5 +314,5 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 17,
     fontFamily: typography.secondary.bold,
-  }
+  },
 });

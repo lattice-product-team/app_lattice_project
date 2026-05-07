@@ -7,11 +7,11 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
       - POSTGRES_DB=${DB_NAME:-lattice_db}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-lattice_db}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-lattice_db}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -22,7 +22,7 @@ services:
       dockerfile: Dockerfile
       target: gateway-dev
     ports:
-      - "${GATEWAY_PORT:-3000}:3000"
+      - '${GATEWAY_PORT:-3000}:3000'
     volumes:
       - .:/app:z
       - /app/node_modules
@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile
       target: auth-dev
     ports:
-      - "${AUTH_PORT:-3001}:3001"
+      - '${AUTH_PORT:-3001}:3001'
     volumes:
       - .:/app:z
       - /app/node_modules
@@ -67,7 +67,7 @@ services:
       dockerfile: Dockerfile
       target: geo-dev
     ports:
-      - "${GEO_PORT:-3002}:3002"
+      - '${GEO_PORT:-3002}:3002'
     volumes:
       - .:/app:z
       - /app/node_modules
@@ -85,7 +85,7 @@ services:
       dockerfile: Dockerfile
       target: social-dev
     ports:
-      - "${SOCIAL_PORT:-3003}:3003"
+      - '${SOCIAL_PORT:-3003}:3003'
     volumes:
       - .:/app:z
       - /app/node_modules
@@ -103,7 +103,7 @@ services:
       dockerfile: Dockerfile
       target: admin-web-dev
     ports:
-      - "${ADMIN_WEB_PORT:-3004}:${ADMIN_WEB_PORT:-3004}"
+      - '${ADMIN_WEB_PORT:-3004}:${ADMIN_WEB_PORT:-3004}'
     volumes:
       - .:/app:z
       - /app/node_modules
@@ -119,15 +119,15 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
-    restart: "no"
+    restart: 'no'
 
   valhalla:
     image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
     ports:
-      - "${VALHALLA_PORT:-8002}:8002"
+      - '${VALHALLA_PORT:-8002}:8002'
     volumes:
       - ./.docker/valhalla:/custom_files
     environment:

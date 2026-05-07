@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  Linking,
-  StyleSheet,
-  Dimensions
-} from 'react-native';
+import { View, Text, Pressable, Linking, StyleSheet, Dimensions } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -26,7 +19,7 @@ export default function RegisterScreen() {
   const router = useRouter();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  
+
   const { token } = useAuthStore();
 
   useEffect(() => {
@@ -36,26 +29,18 @@ export default function RegisterScreen() {
   }, [token, router]);
 
   return (
-    <AuthLayout 
-      transparent 
-      showBack 
-      onBack={() => router.replace('/(auth)/onboarding')}
-    >
+    <AuthLayout transparent showBack onBack={() => router.replace('/(auth)/onboarding')}>
       <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
-        
         {/* Header Section */}
-        <Animated.View 
-          entering={FadeInDown.duration(1000).springify()}
-          style={styles.header}
-        >
+        <Animated.View entering={FadeInDown.duration(1000).springify()} style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../assets/images/icon.png')} 
+            <Image
+              source={require('../../assets/images/icon.png')}
               style={styles.logoImage}
               contentFit="contain"
             />
           </View>
-          
+
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>
             Your new{'\n'}experience is here.
           </Text>
@@ -66,31 +51,43 @@ export default function RegisterScreen() {
 
         {/* Action Section */}
         <View style={styles.actionsContainer}>
-          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 12 }}>
-            <PremiumButton 
-              label="Continue with Google" 
-              variant="google" 
+          <Animated.View
+            entering={FadeInDown.delay(200).duration(1000).springify()}
+            style={{ gap: 12 }}
+          >
+            <PremiumButton
+              label="Continue with Google"
+              variant="google"
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: theme.colors.bg.surface,
+                  borderColor: theme.colors.border.subtle,
+                },
+              ]}
             />
-            
-            <PremiumButton 
-              label="Continue with Email" 
-              variant="outline" 
+
+            <PremiumButton
+              label="Continue with Email"
+              variant="outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(auth)/email-register');
               }}
-              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: theme.colors.bg.surface,
+                  borderColor: theme.colors.border.subtle,
+                },
+              ]}
             />
           </Animated.View>
         </View>
 
         {/* Footer Section */}
-        <Animated.View 
-          entering={FadeIn.delay(800).duration(1200)}
-          style={styles.footer}
-        >
+        <Animated.View entering={FadeIn.delay(800).duration(1200)} style={styles.footer}>
           <View style={styles.switchLink}>
             <Text style={[styles.footerText, { color: theme.colors.text.muted }]}>
               Already have an account?{' '}
@@ -106,8 +103,20 @@ export default function RegisterScreen() {
 
           <Text style={[styles.legalText, { color: theme.colors.text.muted }]}>
             By continuing, you agree to our{' '}
-            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
-            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
+            <Text
+              style={[styles.legalLink, { color: theme.colors.text.secondary }]}
+              onPress={() => Linking.openURL('#')}
+            >
+              Terms
+            </Text>{' '}
+            and{' '}
+            <Text
+              style={[styles.legalLink, { color: theme.colors.text.secondary }]}
+              onPress={() => Linking.openURL('#')}
+            >
+              Privacy Policy
+            </Text>
+            .
           </Text>
         </Animated.View>
       </View>

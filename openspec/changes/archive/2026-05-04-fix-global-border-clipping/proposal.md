@@ -11,9 +11,11 @@ Many UI components currently experience "border clipping" where the inner conten
 ## Capabilities
 
 ### New Capabilities
+
 - `border-overlay-system`: A standardized implementation pattern to ensure borders are never clipped by inner content.
 
 ### Modified Capabilities
+
 - `design-tokens`: Update requirements for border thickness and opacity to ensure visibility and contrast.
 
 ## Impact

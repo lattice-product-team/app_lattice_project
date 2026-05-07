@@ -7,7 +7,7 @@ import { AuthPromptSheet } from './AuthPromptSheet';
  */
 export const AuthPromptOverlay = () => {
   return (
-    <AuthPromptSheet 
+    <AuthPromptSheet
       title="Unlock the full experience"
       subtitle="Sign in to Lattice to access this feature and personalize your urban discovery."
     />

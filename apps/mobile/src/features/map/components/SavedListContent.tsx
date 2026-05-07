@@ -18,7 +18,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
   const handleShareList = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      const names = savedItems.map(i => i.displayName).join(', ');
+      const names = savedItems.map((i) => i.displayName).join(', ');
       await Share.share({
         message: `¡Mira mis eventos y sitios guardados en Lattice!: ${names}`,
       });
@@ -42,7 +42,9 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
     return (
       <View style={styles.emptyContainer}>
         <MaterialCommunityIcons name="bookmark-outline" size={64} color="rgba(255,255,255,0.1)" />
-        <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>Tu lista está vacía</Text>
+        <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>
+          Tu lista está vacía
+        </Text>
         <Text style={[styles.emptySubtitle, { color: theme.colors.text.muted }]}>
           Guarda eventos o sitios para verlos aquí y compartirlos con tus amigos.
         </Text>
@@ -54,12 +56,14 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.colors.text.primary }]}>Mis Guardados</Text>
-        <Pressable 
+        <Pressable
           onPress={handleShareList}
           style={({ pressed }) => [styles.shareAllButton, pressed && { opacity: 0.7 }]}
         >
           <Feather name="share-2" size={18} color={theme.colors.brand.primary} />
-          <Text style={[styles.shareAllText, { color: theme.colors.brand.primary }]}>Compartir lista</Text>
+          <Text style={[styles.shareAllText, { color: theme.colors.brand.primary }]}>
+            Compartir lista
+          </Text>
         </Pressable>
       </View>
 
@@ -73,25 +77,29 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
             }}
             style={({ pressed }) => [
               styles.itemCard,
-              { backgroundColor: pressed ? 'rgba(255,255,255,0.05)' : 'transparent' }
+              { backgroundColor: pressed ? 'rgba(255,255,255,0.05)' : 'transparent' },
             ]}
           >
-            <Image 
-              source={{ uri: item.images?.[0] || 'https://images.unsplash.com/photo-1514525253344-f81bad3b7431?q=80&w=200&auto=format&fit=crop' }}
+            <Image
+              source={{
+                uri:
+                  item.images?.[0] ||
+                  'https://images.unsplash.com/photo-1514525253344-f81bad3b7431?q=80&w=200&auto=format&fit=crop',
+              }}
               style={styles.itemImage}
             />
             <View style={styles.itemInfo}>
-              <Text style={[styles.itemName, { color: theme.colors.text.primary }]} numberOfLines={1}>
+              <Text
+                style={[styles.itemName, { color: theme.colors.text.primary }]}
+                numberOfLines={1}
+              >
                 {item.displayName}
               </Text>
               <Text style={[styles.itemCategory, { color: theme.colors.text.muted }]}>
                 {item.categoryLabel}
               </Text>
             </View>
-            <Pressable 
-              onPress={() => handleShareItem(item)}
-              style={styles.itemShareButton}
-            >
+            <Pressable onPress={() => handleShareItem(item)} style={styles.itemShareButton}>
               <Feather name="share" size={20} color="rgba(255,255,255,0.4)" />
             </Pressable>
           </Pressable>

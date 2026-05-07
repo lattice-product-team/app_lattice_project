@@ -17,14 +17,10 @@ export const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
       <View style={styles.avatarContainer}>
         <UserAvatar size={110} url={profile.avatarUrl} />
       </View>
-      
+
       <View style={styles.infoContainer}>
-        <Text style={[styles.name, { color: theme.colors.text.primary }]}>
-          {profile.name}
-        </Text>
-        <Text style={[styles.bio, { color: theme.colors.text.secondary }]}>
-          {profile.bio}
-        </Text>
+        <Text style={[styles.name, { color: theme.colors.text.primary }]}>{profile.name}</Text>
+        <Text style={[styles.bio, { color: theme.colors.text.secondary }]}>{profile.bio}</Text>
       </View>
 
       <View style={styles.statsContainer}>
@@ -32,27 +28,21 @@ export const ProfileHeader = ({ profile }: ProfileHeaderProps) => {
           <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
             {profile.stats.eventsAttended}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>
-            Eventos
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>Eventos</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: theme.colors.border.subtle }]} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
             {profile.stats.latticePoints}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>
-            Puntos
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>Puntos</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: theme.colors.border.subtle }]} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
             {profile.stats.savedEvents}
           </Text>
-          <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>
-            Guardados
-          </Text>
+          <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>Guardados</Text>
         </View>
       </View>
     </View>

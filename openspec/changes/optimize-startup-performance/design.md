@@ -5,12 +5,14 @@ The current boot sequence is linear and blocked by remote network requests for s
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Eliminate all blocking remote network requests during the first 2 seconds of startup.
 - Pre-warm the local style assets so the map engine initializes in <500ms.
 - Pre-fetch the first page of POIs and Events to have them in memory when the Map component renders.
 - Reduce perceived and actual Time to Interactive (TTI).
 
 **Non-Goals:**
+
 - Changing the backend API structure.
 - Modifying the visual design of the splash screen.
 - Implementing full offline support (out of scope, focused on startup performance).

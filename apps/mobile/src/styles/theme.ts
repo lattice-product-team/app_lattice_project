@@ -91,7 +91,7 @@ const baseTheme = {
       shadowOpacity: 0.15,
       shadowRadius: 16,
       elevation: 8,
-    }
+    },
   },
   motion: {
     physics: {
@@ -139,7 +139,7 @@ export const lightTheme: LatticeTheme = {
       elevation: primitiveColors.neutral.light.elevated,
     },
     text: {
-      primary: '#000000', 
+      primary: '#000000',
       secondary: '#3A3A3C',
       muted: '#8E8E93', // Apple standard muted grey
       inverse: '#FFFFFF',
@@ -239,5 +239,3 @@ export const darkTheme: LatticeTheme = {
 // Default export for backward compatibility during transition
 export const theme = darkTheme;
 export type Theme = LatticeTheme;
-
-

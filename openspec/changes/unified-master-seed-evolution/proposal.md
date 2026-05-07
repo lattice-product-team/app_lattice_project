@@ -6,9 +6,9 @@ Currently, the database seeding is fragmented into multiple specific scripts (`m
 
 - **Unified Seeding Script**: Consolidation of disparate seed files into a single `seed-master.ts` entry point.
 - **Barcelona Multi-Event Dataset**: Introduction of three distinct events in Barcelona:
-    - **Nitro GP** (Sports/Montmeló): A racing event focused on complex navigation and grandstands.
-    - **Neon Nights Festival** (Music/Parc del Fòrum): A coastal festival focused on stages and accessibility.
-    - **Quantum Conf** (Tech/Fira Gran Via): A professional congress focused on indoor routing and exhibition halls.
+  - **Nitro GP** (Sports/Montmeló): A racing event focused on complex navigation and grandstands.
+  - **Neon Nights Festival** (Music/Parc del Fòrum): A coastal festival focused on stages and accessibility.
+  - **Quantum Conf** (Tech/Fira Gran Via): A professional congress focused on indoor routing and exhibition halls.
 - **Categorized POIs & Nodes**: Each event will have its own isolated graph of points of interest and navigation nodes, strictly linked via `event_id`.
 - **Accessibility Testing Data**: Deliberate inclusion of accessibility obstacles (stairs) and solutions (ramps) to verify the new routing engine logic.
 - **Automatic Data Cleanup**: The master seed will handle cascading truncates to ensure a clean slate before populating data.
@@ -16,9 +16,11 @@ Currently, the database seeding is fragmented into multiple specific scripts (`m
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-event-seeding`: Capability to populate a complete multi-event environment with isolated routing graphs and categorized POIs.
 
 ### Modified Capabilities
+
 - `geo-data-management`: Requirements for POI and Node creation now include mandatory `event_id` assignment for multi-tenant event support.
 
 ## Impact

@@ -17,7 +17,7 @@ export default function EmailRegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const register = useRegister();
 
   const handleRegister = () => {
@@ -27,33 +27,40 @@ export default function EmailRegisterScreen() {
       return;
     }
 
-    register.mutate({ fullName, email, password }, {
-      onSuccess: () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        const { intendedDestination, setGuestMode } = useAuthStore.getState();
-        
-        // Ensure guest mode is disabled on successful registration
-        setGuestMode(false);
+    register.mutate(
+      { fullName, email, password },
+      {
+        onSuccess: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          const { intendedDestination, setGuestMode } = useAuthStore.getState();
 
-        if (intendedDestination) {
-          useAuthStore.getState().setIntendedDestination(null);
-          router.replace(intendedDestination as any);
-        } else {
-          router.replace('/(main)');
-        }
-      },
-      onError: (error: any) => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        const message = error instanceof Error ? error.message : (typeof error === 'string' ? error : 'An unexpected error occurred');
-        Alert.alert('Registration Failed', message);
+          // Ensure guest mode is disabled on successful registration
+          setGuestMode(false);
+
+          if (intendedDestination) {
+            useAuthStore.getState().setIntendedDestination(null);
+            router.replace(intendedDestination as any);
+          } else {
+            router.replace('/(main)');
+          }
+        },
+        onError: (error: any) => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          const message =
+            error instanceof Error
+              ? error.message
+              : typeof error === 'string'
+                ? error
+                : 'An unexpected error occurred';
+          Alert.alert('Registration Failed', message);
+        },
       }
-    });
+    );
   };
 
   return (
     <AuthLayout midnight showBack onBack={() => router.back()}>
       <View style={styles.container}>
-
         <Animated.View entering={FadeInDown.duration(600).springify()}>
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>Create Account</Text>
           <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
@@ -61,7 +68,7 @@ export default function EmailRegisterScreen() {
           </Text>
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           entering={FadeInDown.delay(200).duration(600).springify()}
           style={styles.form}
         >
@@ -69,12 +76,24 @@ export default function EmailRegisterScreen() {
             <View style={styles.errorBanner}>
               <Feather name="alert-circle" size={16} color={theme.colors.status.error} />
               <Text style={[styles.errorText, { color: theme.colors.status.error }]}>
-                {register.error instanceof Error ? register.error.message : 'Registration failed. Please try again.'}
+                {register.error instanceof Error
+                  ? register.error.message
+                  : 'Registration failed. Please try again.'}
               </Text>
             </View>
           )}
 
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: register.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
+          <View
+            style={[
+              styles.inputGroup,
+              {
+                backgroundColor: theme.colors.glass.subtle,
+                borderColor: register.isError
+                  ? theme.colors.status.error
+                  : theme.colors.border.subtle,
+              },
+            ]}
+          >
             <Feather name="user" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Full Name"
@@ -86,7 +105,17 @@ export default function EmailRegisterScreen() {
             />
           </View>
 
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: register.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
+          <View
+            style={[
+              styles.inputGroup,
+              {
+                backgroundColor: theme.colors.glass.subtle,
+                borderColor: register.isError
+                  ? theme.colors.status.error
+                  : theme.colors.border.subtle,
+              },
+            ]}
+          >
             <Feather name="mail" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Email"
@@ -99,7 +128,17 @@ export default function EmailRegisterScreen() {
             />
           </View>
 
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: register.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
+          <View
+            style={[
+              styles.inputGroup,
+              {
+                backgroundColor: theme.colors.glass.subtle,
+                borderColor: register.isError
+                  ? theme.colors.status.error
+                  : theme.colors.border.subtle,
+              },
+            ]}
+          >
             <Feather name="lock" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Password"
@@ -110,23 +149,35 @@ export default function EmailRegisterScreen() {
               secureTextEntry={!showPassword}
             />
             <Pressable onPress={() => setShowPassword(!showPassword)}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color={theme.colors.text.muted} />
+              <Feather
+                name={showPassword ? 'eye-off' : 'eye'}
+                size={20}
+                color={theme.colors.text.muted}
+              />
             </Pressable>
           </View>
 
-          <PremiumButton 
-            label={register.isPending ? "Creating..." : "CREATE ACCOUNT"} 
-            variant="primary" 
+          <PremiumButton
+            label={register.isPending ? 'Creating...' : 'CREATE ACCOUNT'}
+            variant="primary"
             onPress={handleRegister}
             disabled={register.isPending}
           />
 
           <View style={styles.registerLink}>
-            <Text style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Medium', fontSize: 14 }}>
+            <Text
+              style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Medium', fontSize: 14 }}
+            >
               Already have an account?{' '}
             </Text>
             <Pressable onPress={() => router.back()} hitSlop={10}>
-              <Text style={{ color: theme.colors.brand.primary, fontFamily: 'Inter-Bold', fontSize: 14 }}>
+              <Text
+                style={{
+                  color: theme.colors.brand.primary,
+                  fontFamily: 'Inter-Bold',
+                  fontSize: 14,
+                }}
+              >
                 Sign In
               </Text>
             </Pressable>
@@ -200,5 +251,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
-  }
+  },
 });

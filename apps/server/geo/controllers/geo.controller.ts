@@ -48,7 +48,10 @@ export const syncSocialData = async (req: Request, res: Response) => {
     if (!type || !id) {
       return res.status(400).json({ error: 'Type (event/poi) and ID are required' });
     }
-    const result = await socialService.syncAssetSocialData(type as 'event' | 'poi', parseInt(id as string, 10));
+    const result = await socialService.syncAssetSocialData(
+      type as 'event' | 'poi',
+      parseInt(id as string, 10)
+    );
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('Error syncing social data:', error);
@@ -59,7 +62,6 @@ export const syncSocialData = async (req: Request, res: Response) => {
 export const healthCheck = (req: Request, res: Response) => {
   res.json({ status: 'geo_service_ok', timestamp: new Date() });
 };
-
 
 export const getEventSpatial = async (req: Request, res: Response) => {
   try {
@@ -128,7 +130,6 @@ export const getEventSpatial = async (req: Request, res: Response) => {
   }
 };
 
-
 export const saveEventSpatial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -179,10 +180,13 @@ export const saveEventSpatial = async (req: Request, res: Response) => {
 
 export const getGlobalStats = async (req: Request, res: Response) => {
   try {
-    const [eventsCount] = await db.select({ count: sql<number>`count(*)::int` }).from(events).where(sql`end_date > now()`);
+    const [eventsCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(events)
+      .where(sql`end_date > now()`);
     // We can also count from users table if available in this context
     const [usersCount] = await db.select({ count: sql<number>`count(*)::int` }).from(sql`users`);
-    
+
     res.json({
       activeEvents: eventsCount.count || 0,
       totalCapacity: 120000, // Aggregate capacity across all events
@@ -361,13 +365,13 @@ export const getPoi = async (req: Request, res: Response) => {
     }
 
     const poi = result[0];
-    
+
     // Background sync if social data is missing
     const metadata = poi.metadata ? JSON.parse(poi.metadata as string) : {};
     if (!metadata.social) {
-      socialService.syncAssetSocialData('poi', poiId).catch(err => 
-        console.error('[Social] Background sync failed:', err)
-      );
+      socialService
+        .syncAssetSocialData('poi', poiId)
+        .catch((err) => console.error('[Social] Background sync failed:', err));
     }
 
     res.json({
@@ -458,7 +462,7 @@ export const getEvents = async (req: Request, res: Response) => {
       .from(events)
       .orderBy(events.startDate);
 
-    const formattedEvents = results.map(event => ({
+    const formattedEvents = results.map((event) => ({
       ...event,
       center: event.center ? JSON.parse(event.center) : null,
       boundary: event.boundary ? JSON.parse(event.boundary) : null,
@@ -474,41 +478,46 @@ export const getEvents = async (req: Request, res: Response) => {
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
-    const { 
-      name, 
-      description, 
-      type, 
-      startDate, 
-      endDate, 
-      locationName, 
-      address, 
+    const {
+      name,
+      description,
+      type,
+      startDate,
+      endDate,
+      locationName,
+      address,
       boundary,
       primaryColor,
       isPermanent,
-      center
+      center,
     } = req.body;
 
     if (!name || !startDate || !endDate) {
       return res.status(400).json({ error: 'Name, startDate and endDate are required' });
     }
 
-    const [newEvent] = await db.insert(events).values({
-      name,
-      description,
-      type: type || 'generic',
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      locationName,
-      address,
-      primaryColor,
-      isPermanent: isPermanent ?? false,
-      location: center 
-        ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(center)}), 4326)` 
-        : boundary 
-          ? sql`ST_Centroid(ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326))`
+    const [newEvent] = await db
+      .insert(events)
+      .values({
+        name,
+        description,
+        type: type || 'generic',
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        locationName,
+        address,
+        primaryColor,
+        isPermanent: isPermanent ?? false,
+        location: center
+          ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(center)}), 4326)`
+          : boundary
+            ? sql`ST_Centroid(ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326))`
+            : null,
+        boundary: boundary
+          ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`
           : null,
-      boundary: boundary ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)` : null,
-    }).returning();
+      })
+      .returning();
 
     res.status(201).json(newEvent);
   } catch (error) {
@@ -519,17 +528,17 @@ export const createEvent = async (req: Request, res: Response) => {
 
 export const createPoi = async (req: Request, res: Response) => {
   try {
-    const { 
-      eventId, 
-      name, 
-      description, 
-      type, 
-      geometry, 
-      locationName, 
+    const {
+      eventId,
+      name,
+      description,
+      type,
+      geometry,
+      locationName,
       address,
       capacity,
       isWheelchairAccessible,
-      hasPriorityLane
+      hasPriorityLane,
     } = req.body;
 
     if (!name || !type || !geometry) {
@@ -549,7 +558,7 @@ export const createPoi = async (req: Request, res: Response) => {
           FROM events 
           WHERE id = ${parsedEventId} AND boundary IS NOT NULL
         `);
-        
+
         const rows = (result as any).rows || result;
         if (rows && rows.length > 0) {
           const isValid = rows[0].is_valid;
@@ -562,20 +571,23 @@ export const createPoi = async (req: Request, res: Response) => {
       }
     }
 
-    const [newPoi] = await db.insert(pointsOfInterest).values({
-      eventId: parsedEventId,
-      name,
-      description,
-      type: type as any,
-      locationName,
-      address,
-      capacity: capacity ? parseInt(capacity as string, 10) : null,
-      currentOccupancy: 0,
-      status: 'open',
-      isWheelchairAccessible: isWheelchairAccessible ?? true,
-      hasPriorityLane: hasPriorityLane ?? false,
-      location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`,
-    }).returning();
+    const [newPoi] = await db
+      .insert(pointsOfInterest)
+      .values({
+        eventId: parsedEventId,
+        name,
+        description,
+        type: type as any,
+        locationName,
+        address,
+        capacity: capacity ? parseInt(capacity as string, 10) : null,
+        currentOccupancy: 0,
+        status: 'open',
+        isWheelchairAccessible: isWheelchairAccessible ?? true,
+        hasPriorityLane: hasPriorityLane ?? false,
+        location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`,
+      })
+      .returning();
 
     res.status(201).json(newPoi);
   } catch (error) {
@@ -623,9 +635,9 @@ export const getEvent = async (req: Request, res: Response) => {
     // Background sync if social data is missing
     const metadata = event.metadata ? JSON.parse(event.metadata as string) : {};
     if (!metadata.social) {
-      socialService.syncAssetSocialData('event', eventId).catch(err => 
-        console.error('[Social] Background sync failed:', err)
-      );
+      socialService
+        .syncAssetSocialData('event', eventId)
+        .catch((err) => console.error('[Social] Background sync failed:', err));
     }
 
     res.json({

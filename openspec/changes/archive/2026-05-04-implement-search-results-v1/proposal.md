@@ -13,10 +13,12 @@ The current search experience in the "Midnight Island" is purely visual and lack
 ## Capabilities
 
 ### New Capabilities
+
 - `search-history-management`: Logic for saving, retrieving, and clearing searches using MMKV.
 - `search-results-ui`: High-performance list components for displaying history, suggestions, and live search results.
 
 ### Modified Capabilities
+
 - `map-interface`: Update Level 3 transition logic to prioritize the search experience when the input is focused.
 
 ## Impact

@@ -12,9 +12,11 @@ The current monorepo structure has duplicated and hoisted dependencies (`expo`, 
 ## Capabilities
 
 ### New Capabilities
+
 - `environment-health-check`: Implementation of basic scripts to verify dependency hoisting status and entry point resolution.
 
 ### Modified Capabilities
+
 - `mobile-navigation`: Updated to ensure strict file-based routing without fallback resolution to root `App.js`.
 
 ## Impact

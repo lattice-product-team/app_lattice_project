@@ -9,7 +9,8 @@ export const getEventConfig = async (req: Request, res: Response) => {
   const { eventId } = req.params;
 
   try {
-    const eventResult = await db.select()
+    const eventResult = await db
+      .select()
       .from(events)
       .where(eq(events.id, Number(eventId)))
       .limit(1);
@@ -236,7 +237,9 @@ export const claimTicket = async (req: Request, res: Response) => {
     }
 
     if (ticket.userId) {
-      const decoded = authHeader?.startsWith('Bearer ') ? verifyToken(authHeader.substring(7)) : null;
+      const decoded = authHeader?.startsWith('Bearer ')
+        ? verifyToken(authHeader.substring(7))
+        : null;
       if (decoded) {
         const userId = decoded.userId;
 
@@ -561,7 +564,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     // TODO: Verify token with google-auth-library
     // const ticket = await client.verifyIdToken({ idToken: token, audience: CLIENT_ID });
     // const payload = ticket.getPayload();
-    
+
     // MOCK Verification for now - extraction from real token
     const decoded = decodeJwt(token);
     if (!decoded) {
@@ -577,7 +580,7 @@ export const googleLogin = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Google token missing required fields' });
     }
 
-    let userResult = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
+    const userResult = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
     let user = userResult[0];
 
     if (!user) {
@@ -587,24 +590,28 @@ export const googleLogin = async (req: Request, res: Response) => {
 
       if (emailUser) {
         // Link Google ID to existing email account
-        const updatedUser = await db.update(users)
-          .set({ 
+        const updatedUser = await db
+          .update(users)
+          .set({
             googleId: googleId,
             fullName: emailUser.fullName || name,
-            avatarUrl: emailUser.avatarUrl || avatarUrl
+            avatarUrl: emailUser.avatarUrl || avatarUrl,
           })
           .where(eq(users.id, emailUser.id))
           .returning();
         user = updatedUser[0];
       } else {
         // Create new user
-        const newUser = await db.insert(users).values({
-          email: email,
-          googleId: googleId,
-          fullName: name,
-          avatarUrl: avatarUrl,
-          passwordHash: 'social_login_no_password',
-        }).returning();
+        const newUser = await db
+          .insert(users)
+          .values({
+            email: email,
+            googleId: googleId,
+            fullName: name,
+            avatarUrl: avatarUrl,
+            passwordHash: 'social_login_no_password',
+          })
+          .returning();
         user = newUser[0];
       }
     }
@@ -612,7 +619,11 @@ export const googleLogin = async (req: Request, res: Response) => {
     // Associate ticket if provided
     if (ticket_code) {
       await db.update(tickets).set({ userId: user.id }).where(eq(tickets.code, ticket_code));
-      const updatedUser = await db.update(users).set({ hasTicket: true }).where(eq(users.id, user.id)).returning();
+      const updatedUser = await db
+        .update(users)
+        .set({ hasTicket: true })
+        .where(eq(users.id, user.id))
+        .returning();
       user = updatedUser[0];
     }
 
@@ -644,29 +655,38 @@ export const appleLogin = async (req: Request, res: Response) => {
 
   try {
     // TODO: Verify token with apple-signin-verify
-    
+
     // MOCK Verification for now - try to extract from token if it's a JWT
     const decoded = decodeJwt(token);
     const appleId = decoded?.sub || `apple_${token.substring(0, 10)}`;
     const email = decoded?.email || `apple_${token.substring(0, 8)}@example.com`;
 
-    let userResult = await db.select().from(users).where(eq(users.appleId, appleId)).limit(1);
+    const userResult = await db.select().from(users).where(eq(users.appleId, appleId)).limit(1);
     let user = userResult[0];
 
     if (!user) {
-      const newUser = await db.insert(users).values({
-        email: email,
-        appleId: appleId,
-        fullName: fullName ? `${fullName.firstName} ${fullName.lastName}` : (decoded?.name || 'Apple User'),
-        passwordHash: 'social_login_no_password',
-      }).returning();
+      const newUser = await db
+        .insert(users)
+        .values({
+          email: email,
+          appleId: appleId,
+          fullName: fullName
+            ? `${fullName.firstName} ${fullName.lastName}`
+            : decoded?.name || 'Apple User',
+          passwordHash: 'social_login_no_password',
+        })
+        .returning();
       user = newUser[0];
     }
 
     // Associate ticket if provided
     if (ticket_code) {
       await db.update(tickets).set({ userId: user.id }).where(eq(tickets.code, ticket_code));
-      const updatedUser = await db.update(users).set({ hasTicket: true }).where(eq(users.id, user.id)).returning();
+      const updatedUser = await db
+        .update(users)
+        .set({ hasTicket: true })
+        .where(eq(users.id, user.id))
+        .returning();
       user = updatedUser[0];
     }
 
@@ -742,14 +762,22 @@ export const loginPasskeyVerify = async (req: Request, res: Response) => {
   const { id, response } = req.body;
 
   try {
-    const credResult = await db.select().from(passkeyCredentials).where(eq(passkeyCredentials.id, id)).limit(1);
+    const credResult = await db
+      .select()
+      .from(passkeyCredentials)
+      .where(eq(passkeyCredentials.id, id))
+      .limit(1);
     const credential = credResult[0];
 
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
 
-    const userResult = await db.select().from(users).where(eq(users.id, credential.userId)).limit(1);
+    const userResult = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, credential.userId))
+      .limit(1);
     const user = userResult[0];
 
     res.json({

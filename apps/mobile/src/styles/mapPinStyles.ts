@@ -66,5 +66,5 @@ export const mapPinStyles = StyleSheet.create({
     height: 8,
     backgroundColor: '#FFFFFF',
     marginTop: -1,
-  }
+  },
 });

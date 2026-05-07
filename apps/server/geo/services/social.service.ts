@@ -13,30 +13,36 @@ export class SocialService {
       // 1. Fetch asset details
       const table = type === 'event' ? events : pointsOfInterest;
       const result = await db.select().from(table).where(eq(table.id, id)).limit(1);
-      
+
       if (result.length === 0) return null;
       const asset = result[0] as any;
 
       // --- CACHE CHECK ---
       const existingMetadata = asset.metadata ? JSON.parse(asset.metadata) : {};
       const lastSync = existingMetadata.social?.last_sync;
-      
+
       if (!force && lastSync) {
-        const diffDays = Math.ceil((new Date().getTime() - new Date(lastSync).getTime()) / (1000 * 3600 * 24));
+        const diffDays = Math.ceil(
+          (new Date().getTime() - new Date(lastSync).getTime()) / (1000 * 3600 * 24)
+        );
         if (diffDays < 7) {
-          console.log(`[SocialService] Cache hit for ${type} ${id} (${diffDays} days old). Skipping API.`);
+          console.log(
+            `[SocialService] Cache hit for ${type} ${id} (${diffDays} days old). Skipping API.`
+          );
           return existingMetadata.social;
         }
       }
 
       console.log(`[SocialService] Syncing ${type} ${id} from DataForSEO...`);
-      
+
       // Use asset location if available
-      let lat = 41.3851, lng = 2.1734; // Default BCN
+      const lat = 41.3851,
+        lng = 2.1734; // Default BCN
 
       // 2. Perform Search
       // Use manual override if available, otherwise search by name
-      const searchKeyword = existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
+      const searchKeyword =
+        existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
       const business = await dataForSEO.searchBusiness(searchKeyword, { lat, lng });
 
       if (!business) {
@@ -51,26 +57,27 @@ export class SocialService {
         source_url: business.url || business.website,
         place_id: business.place_id || business.cid,
         last_sync: new Date().toISOString(),
-        snippets: [] as string[]
+        snippets: [] as string[],
       };
 
       // 4. Fetch reviews if place_id/cid found
       const targetId = business.place_id || business.cid;
       if (targetId) {
         const reviews = await dataForSEO.getReviews(targetId);
-        socialData.snippets = reviews.slice(0, 3).map((r: any) => r.text).filter(Boolean);
+        socialData.snippets = reviews
+          .slice(0, 3)
+          .map((r: any) => r.text)
+          .filter(Boolean);
       }
 
       // 4. Update metadata in DB
       // We merge with existing metadata
       const updatedMetadata = JSON.stringify({
         ...existingMetadata,
-        social: socialData
+        social: socialData,
       });
 
-      await db.update(table)
-        .set({ metadata: updatedMetadata })
-        .where(eq(table.id, id));
+      await db.update(table).set({ metadata: updatedMetadata }).where(eq(table.id, id));
 
       console.log(`[SocialService] Successfully synced ${type} ${id}`);
       return socialData;

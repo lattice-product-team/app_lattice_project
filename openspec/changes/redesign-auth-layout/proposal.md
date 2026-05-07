@@ -12,10 +12,12 @@ The current authentication flow can be a barrier for new users who want to explo
 ## Capabilities
 
 ### New Capabilities
+
 - `guest-access-mode`: Logic and UI state to handle unauthenticated exploration and contextual prompts.
 - `passkey-onboarding`: A post-auth screen/prompt to setup FIDO2/WebAuthn passkeys.
 
 ### Modified Capabilities
+
 - `user-auth`: Update existing authentication UI and flows to support the new layout and social-first hierarchy.
 
 ## Impact

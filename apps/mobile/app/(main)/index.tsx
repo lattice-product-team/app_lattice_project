@@ -4,9 +4,9 @@ import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import * as Haptics from 'expo-haptics';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withSpring,
   interpolate,
   interpolateColor,
@@ -16,7 +16,7 @@ import Animated, {
   withTiming,
   Extrapolation,
   useAnimatedReaction,
-  useAnimatedScrollHandler
+  useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -58,7 +58,7 @@ export default function MapIndexPage() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  
+
   // Start location tracking
   useLocationService();
   const isGuest = useAuthStore((state) => state.isGuest);
@@ -68,27 +68,21 @@ export default function MapIndexPage() {
   const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
 
   // Map & POI State
-  const { 
-    selectedPoiId, 
-    selectedPoi,
-    selectPoi,
-    deselect, 
-    selectedEventId, 
-    setSelectedEvent 
-  } = usePOIStore();
-  
+  const { selectedPoiId, selectedPoi, selectPoi, deselect, selectedEventId, setSelectedEvent } =
+    usePOIStore();
+
   const selectedEvent = useEventStore((s) => s.selectedEvent);
   const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
-  
+
   const { isNavigating } = useNavigationStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  
+
   const { events } = useSearchEvents(searchQuery);
   const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
   const { data: globalPois } = usePOIs(); // Load global POIs
-  
+
   // Merge global POIs with event-specific spatial data
   const mergedPois = useMemo(() => {
     const features = [...(globalPois?.features || [])];
@@ -97,7 +91,7 @@ export default function MapIndexPage() {
     }
     return { type: 'FeatureCollection', features };
   }, [globalPois, eventSpatial]);
-  
+
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
 
@@ -111,12 +105,12 @@ export default function MapIndexPage() {
   }, [isGuest, router, openAuthPrompt]);
 
   // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
-  const islandState = useSharedValue(0); 
+  const islandState = useSharedValue(0);
   const startState = useSharedValue(0);
 
   const preSearchLevel = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
-  
+
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
@@ -125,27 +119,30 @@ export default function MapIndexPage() {
   });
 
   const [isHeaderEditable, setIsHeaderEditable] = useState(false);
- 
-   // Effect removed to prevent auto-expanding search on POI click
-   useAnimatedReaction(
-     () => islandState.value > 0.1,
-     (isReady, prev) => {
-       if (isReady !== prev) {
-         runOnJS(setIsHeaderEditable)(isReady);
-       }
-     }
-   );
 
-  const handleEventSelect = useCallback((event: LatticeEvent) => {
-    // Save current level before collapsing
-    preSearchLevel.value = islandState.value;
-    
-    setSelectedEvent(event.id);
-    setCurrentEvent(event);
-    selectPoi(null); // Clear any active POI selection
-    islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
+  // Effect removed to prevent auto-expanding search on POI click
+  useAnimatedReaction(
+    () => islandState.value > 0.1,
+    (isReady, prev) => {
+      if (isReady !== prev) {
+        runOnJS(setIsHeaderEditable)(isReady);
+      }
+    }
+  );
+
+  const handleEventSelect = useCallback(
+    (event: LatticeEvent) => {
+      // Save current level before collapsing
+      preSearchLevel.value = islandState.value;
+
+      setSelectedEvent(event.id);
+      setCurrentEvent(event);
+      selectPoi(null); // Clear any active POI selection
+      islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    },
+    [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
+  );
 
   const handleCloseDetails = useCallback(() => {
     setSelectedEvent(null);
@@ -180,7 +177,7 @@ export default function MapIndexPage() {
   );
 
   const islandHeight = useDerivedValue(() => {
-    const fullHeight = SCREEN_HEIGHT * 0.80; 
+    const fullHeight = SCREEN_HEIGHT * 0.8;
     if (islandState.value <= 0.5) {
       return interpolate(islandState.value, [0, 0.5], [60, 450], Extrapolation.CLAMP);
     }
@@ -198,12 +195,12 @@ export default function MapIndexPage() {
       // Allow dragging down if at Level 3 and scroll is at top
       const isDraggingDown = event.translationY > 0;
       const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
-      
+
       if (canDragSheet) {
         // Dynamic divisor for 1:1 tracking
         // The distance from Level 1 (60px) to Level 3 (SCREEN_HEIGHT * 0.8)
-        const fullTravel = (SCREEN_HEIGHT * 0.8) - 60;
-        const stateDelta = -event.translationY / fullTravel; 
+        const fullTravel = SCREEN_HEIGHT * 0.8 - 60;
+        const stateDelta = -event.translationY / fullTravel;
         let newPos = startState.value + stateDelta;
         islandState.value = Math.max(0, Math.min(1, newPos));
       }
@@ -211,10 +208,10 @@ export default function MapIndexPage() {
     .onEnd((event) => {
       isPanning.value = false;
       // Increased inertia factor for "toque suave" (Apple-style response)
-      const fullTravel = (SCREEN_HEIGHT * 0.8) - 60;
+      const fullTravel = SCREEN_HEIGHT * 0.8 - 60;
       const velocity = -event.velocityY / fullTravel;
       let predictedPos = islandState.value + velocity * 0.12;
-      
+
       // ANTI-SKIP PROTECTION:
       // If we start at Level 1 (0), don't allow snapping directly to Level 3 (1.0).
       // This forces the user to pass through Level 2 (0.5) first as requested.
@@ -228,7 +225,7 @@ export default function MapIndexPage() {
 
       let closest = SNAP_POINTS[0];
       let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
-      
+
       SNAP_POINTS.forEach((point) => {
         const diff = Math.abs(predictedPos - point);
         if (diff < minDiff) {
@@ -251,8 +248,13 @@ export default function MapIndexPage() {
   const islandStyle = useAnimatedStyle(() => {
     const margin = interpolate(islandState.value, [0.5, 1], [12, 0], Extrapolation.CLAMP);
     const radius = 32;
-    const bottom = interpolate(islandState.value, [0.5, 1], [insets.bottom + 5, 0], Extrapolation.CLAMP);
-    
+    const bottom = interpolate(
+      islandState.value,
+      [0.5, 1],
+      [insets.bottom + 5, 0],
+      Extrapolation.CLAMP
+    );
+
     return {
       height: islandHeight.value,
       left: margin,
@@ -269,8 +271,18 @@ export default function MapIndexPage() {
     return {
       borderTopLeftRadius: radius,
       borderTopRightRadius: radius,
-      borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
-      borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
+      borderBottomLeftRadius: interpolate(
+        islandState.value,
+        [0.5, 1],
+        [radius, 0],
+        Extrapolation.CLAMP
+      ),
+      borderBottomRightRadius: interpolate(
+        islandState.value,
+        [0.5, 1],
+        [radius, 0],
+        Extrapolation.CLAMP
+      ),
       backgroundColor: interpolateColor(
         islandState.value,
         [0.7, 0.95],
@@ -278,8 +290,6 @@ export default function MapIndexPage() {
       ),
     };
   });
-
-
 
   const dimmerStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
@@ -306,7 +316,7 @@ export default function MapIndexPage() {
 
   const dimmerProps = useAnimatedProps(() => {
     return {
-      pointerEvents: islandState.value > 0.5 ? 'auto' : 'none' as any,
+      pointerEvents: islandState.value > 0.5 ? 'auto' : ('none' as any),
     };
   });
 
@@ -331,20 +341,23 @@ export default function MapIndexPage() {
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
-  const onSelectSearchResult = useCallback((name: string, coords?: [number, number]) => {
-    saveSearch(name);
-    setSearchQuery(name);
-    setIsSearching(false);
-    Keyboard.dismiss();
-    
-    // If we have coordinates, move map. For now just collapse.
-    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-    
-    if (coords) {
-      console.log('Moving map to:', coords);
-      // In a real app, we would use mapRef.current.flyTo
-    }
-  }, [saveSearch, islandState]);
+  const onSelectSearchResult = useCallback(
+    (name: string, coords?: [number, number]) => {
+      saveSearch(name);
+      setSearchQuery(name);
+      setIsSearching(false);
+      Keyboard.dismiss();
+
+      // If we have coordinates, move map. For now just collapse.
+      islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+
+      if (coords) {
+        console.log('Moving map to:', coords);
+        // In a real app, we would use mapRef.current.flyTo
+      }
+    },
+    [saveSearch, islandState]
+  );
 
   const handleSelectCategory = useCallback((id: string) => {
     console.log('Selected Category:', id);
@@ -355,12 +368,12 @@ export default function MapIndexPage() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      
+
       <View style={StyleSheet.absoluteFill}>
-        <MapContent 
-          poisGeoJSON={mergedPois} 
+        <MapContent
+          poisGeoJSON={mergedPois}
           allEvents={events}
-          sheetPosition={sheetPosition} 
+          sheetPosition={sheetPosition}
           islandState={islandState}
           onDeselect={handleMapPress}
           onSelectEvent={handleEventSelect}
@@ -370,18 +383,14 @@ export default function MapIndexPage() {
 
       <InstructionBanner />
 
-      <Pressable 
-        style={StyleSheet.absoluteFill}
-        onPress={handleMapPress}
-        pointerEvents="box-none"
-      >
-        <Animated.View 
+      <Pressable style={StyleSheet.absoluteFill} onPress={handleMapPress} pointerEvents="box-none">
+        <Animated.View
           animatedProps={dimmerProps}
-          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]} 
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]}
         />
       </Pressable>
 
-      <AdaptiveControlOverlay 
+      <AdaptiveControlOverlay
         islandHeight={islandHeight}
         islandState={islandState}
         bottomOffset={insets.bottom + 5}
@@ -394,26 +403,28 @@ export default function MapIndexPage() {
       />
 
       <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
-        <Animated.View 
+        <Animated.View
           pointerEvents={selectedEvent ? 'none' : 'auto'}
           style={[styles.islandContainer, islandStyle]}
         >
-          <Animated.View 
+          <Animated.View
             style={[
-              styles.islandBackground, 
+              styles.islandBackground,
               islandBackgroundStyle,
-              { borderColor: theme.colors.glass.border }
+              { borderColor: theme.colors.glass.border },
             ]}
           >
             <View style={styles.handleContainer}>
-              <View style={[
-                styles.handle, 
-                { backgroundColor: theme.dark ? 'rgba(255, 255, 255, 0.25)' : '#C6C6C8' }
-              ]} />
+              <View
+                style={[
+                  styles.handle,
+                  { backgroundColor: theme.dark ? 'rgba(255, 255, 255, 0.25)' : '#C6C6C8' },
+                ]}
+              />
             </View>
 
             <View style={styles.islandHeader}>
-              <FloatingSearchBar 
+              <FloatingSearchBar
                 ref={searchInputRef}
                 value={searchQuery}
                 onChangeText={(text) => {
@@ -443,7 +454,7 @@ export default function MapIndexPage() {
               />
             </View>
 
-            <Animated.ScrollView 
+            <Animated.ScrollView
               style={{ flex: 1 }}
               contentContainerStyle={styles.islandScrollContent}
               showsVerticalScrollIndicator={false}
@@ -454,7 +465,7 @@ export default function MapIndexPage() {
               scrollEventThrottle={16}
             >
               <Animated.View style={level2ContentStyle}>
-                <DiscoveryDashboard 
+                <DiscoveryDashboard
                   islandState={islandState}
                   onSelectCategory={handleSelectCategory}
                   onSelectEvent={handleEventSelect}
@@ -462,7 +473,7 @@ export default function MapIndexPage() {
               </Animated.View>
 
               <Animated.View style={[StyleSheet.absoluteFill, level3ContentStyle, { top: 0 }]}>
-                <SearchExperience 
+                <SearchExperience
                   query={searchQuery}
                   onSelectResult={(q, coords) => {
                     // Clear search query when selecting from list to keep navigation clean
@@ -470,11 +481,11 @@ export default function MapIndexPage() {
                     saveSearch(q);
                     setIsSearching(false);
                     Keyboard.dismiss();
-                    
+
                     // If we have coordinates, move map.
                     islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-                    
-                    const match = events.find(e => e.name.toLowerCase() === q.toLowerCase());
+
+                    const match = events.find((e) => e.name.toLowerCase() === q.toLowerCase());
                     if (match) handleEventSelect(match);
                   }}
                 />
@@ -484,18 +495,15 @@ export default function MapIndexPage() {
         </Animated.View>
       </GestureDetector>
 
-      <EventDetailSheet 
-        event={selectedPoi?.parentId ? null : selectedEvent} 
-        onClose={handleCloseDetails} 
+      <EventDetailSheet
+        event={selectedPoi?.parentId ? null : selectedEvent}
+        onClose={handleCloseDetails}
       />
 
-      <POIMiniCard 
-        poi={selectedPoi}
-        onClose={deselect}
-      />
-      
+      <POIMiniCard poi={selectedPoi} onClose={deselect} />
+
       <NavigationInfo />
-      
+
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );
@@ -509,5 +517,5 @@ const styles = StyleSheet.create({
   handle: { width: 50, height: 4, borderRadius: 2 },
   islandHeader: { paddingBottom: 9 },
   islandScrollContent: { paddingBottom: 10 },
-  placeholderContent: { padding: 20, alignItems: 'center' }
+  placeholderContent: { padding: 20, alignItems: 'center' },
 });

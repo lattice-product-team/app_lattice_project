@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import Animated, { 
-  withSpring, 
+import Animated, {
+  withSpring,
   withTiming,
   withDelay,
   useSharedValue,
   useAnimatedStyle,
   interpolate,
-  Extrapolation
+  Extrapolation,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -26,68 +26,60 @@ interface POIPinProps {
   zoom: SharedValue<number>;
 }
 
-export const POIPin = React.memo(({ 
-  category, 
-  icon, 
-  iconFamily = 'feather',
-  color, 
-  coordinates, 
-  isSelected, 
-  onPress,
-  zoom
-}: POIPinProps) => {
-  const theme = useAppTheme();
-  const activeFilters = usePOIStore(s => s.activeCategoryFilters);
-  const scale = useSharedValue(0); // Start at 0 for pop animation
-  const opacity = useSharedValue(0);
-  
-  const isDimmed = activeFilters.length > 0 && !activeFilters.includes(category);
+export const POIPin = React.memo(
+  ({
+    category,
+    icon,
+    iconFamily = 'feather',
+    color,
+    coordinates,
+    isSelected,
+    onPress,
+    zoom,
+  }: POIPinProps) => {
+    const theme = useAppTheme();
+    const activeFilters = usePOIStore((s) => s.activeCategoryFilters);
+    const scale = useSharedValue(0); // Start at 0 for pop animation
+    const opacity = useSharedValue(0);
 
-  useEffect(() => {
-    // Small delay to allow MapLibre to sync projection before showing the marker
-    opacity.value = withDelay(50, withTiming(1, { duration: 200 }));
-  }, []);
+    const isDimmed = activeFilters.length > 0 && !activeFilters.includes(category);
 
-  useEffect(() => {
-    scale.value = withSpring(isSelected ? 1.3 : 1, theme.motion.physics.snappy);
-  }, [isSelected, theme.motion.physics.snappy]);
+    useEffect(() => {
+      // Small delay to allow MapLibre to sync projection before showing the marker
+      opacity.value = withDelay(50, withTiming(1, { duration: 200 }));
+    }, []);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    // Zoom-based opacity (Fade out between 16.0 and 15.5)
-    const zoomOpacity = interpolate(
-      zoom.value,
-      [15.5, 16.0],
-      [0, 1],
-      Extrapolation.CLAMP
-    );
+    useEffect(() => {
+      scale.value = withSpring(isSelected ? 1.3 : 1, theme.motion.physics.snappy);
+    }, [isSelected, theme.motion.physics.snappy]);
 
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value * zoomOpacity * (isDimmed ? 0.3 : 1),
-    };
-  });
+    const animatedStyle = useAnimatedStyle(() => {
+      // Zoom-based opacity (Fade out between 16.0 and 15.5)
+      const zoomOpacity = interpolate(zoom.value, [15.5, 16.0], [0, 1], Extrapolation.CLAMP);
 
-  const IconComponent = iconFamily === 'material' ? MaterialCommunityIcons : Feather;
+      return {
+        transform: [{ scale: scale.value }],
+        opacity: opacity.value * zoomOpacity * (isDimmed ? 0.3 : 1),
+      };
+    });
 
-  return (
-    <MapLibreGL.MarkerView coordinate={coordinates}>
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <View style={styles.touchTarget} onTouchEnd={onPress}>
-          <View style={[
-            styles.glyphCircle, 
-            { backgroundColor: color || theme.colors.brand.primary }
-          ]}>
-            <IconComponent 
-              name={icon as any} 
-              size={12} 
-              color="#FFFFFF" 
-            />
+    const IconComponent = iconFamily === 'material' ? MaterialCommunityIcons : Feather;
+
+    return (
+      <MapLibreGL.MarkerView coordinate={coordinates}>
+        <Animated.View style={[styles.container, animatedStyle]}>
+          <View style={styles.touchTarget} onTouchEnd={onPress}>
+            <View
+              style={[styles.glyphCircle, { backgroundColor: color || theme.colors.brand.primary }]}
+            >
+              <IconComponent name={icon as any} size={12} color="#FFFFFF" />
+            </View>
           </View>
-        </View>
-      </Animated.View>
-    </MapLibreGL.MarkerView>
-  );
-});
+        </Animated.View>
+      </MapLibreGL.MarkerView>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {

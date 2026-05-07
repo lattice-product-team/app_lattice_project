@@ -4,7 +4,7 @@ import { useAuthStore } from '../../../store/useAuthStore';
 
 export const useUserTickets = () => {
   const { setTickets } = useAuthStore();
-  
+
   return useQuery({
     queryKey: ['user-tickets'],
     queryFn: async () => {

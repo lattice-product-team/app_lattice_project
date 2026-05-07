@@ -13,7 +13,7 @@ import * as fs from 'fs';
 if (fs.existsSync(rootEnvPath)) {
   const envOutput = dotenv.config({ path: rootEnvPath });
   expand(envOutput);
-  
+
   // Explicitly ensure LAN_IP is in process.env
   if (envOutput.parsed?.LAN_IP) {
     process.env.LAN_IP = envOutput.parsed.LAN_IP;
@@ -21,7 +21,6 @@ if (fs.existsSync(rootEnvPath)) {
 } else {
   console.log('ℹ️ [Config] No .env file found at root, relying on environment variables.');
 }
-
 
 /**
  * Environment Variables Schema
@@ -44,7 +43,10 @@ const envSchema = z.object({
 const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
-  console.error('❌ Invalid environment variables:', JSON.stringify(parsedEnv.error.format(), null, 2));
+  console.error(
+    '❌ Invalid environment variables:',
+    JSON.stringify(parsedEnv.error.format(), null, 2)
+  );
   // In a professional setup, we throw to prevent building with invalid config
   throw new Error('Invalid environment variables');
 }
@@ -87,9 +89,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSAppTransportSecurity: {
         NSAllowsArbitraryLoads: true,
       },
-      NSCameraUsageDescription: 'Lattice uses the camera to display augmented reality navigation and points of interest.',
-      NSLocationWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through events.',
-      NSLocationAlwaysAndWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through events.',
+      NSCameraUsageDescription:
+        'Lattice uses the camera to display augmented reality navigation and points of interest.',
+      NSLocationWhenInUseUsageDescription:
+        'Allow Lattice to use your location to guide you through events.',
+      NSLocationAlwaysAndWhenInUseUsageDescription:
+        'Allow Lattice to use your location to guide you through events.',
     },
   },
   android: {
@@ -136,8 +141,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-location',
       {
-        locationAlwaysAndWhenInUsePermission: 'Allow Lattice to use your location to guide you through events.',
-        locationWhenInUsePermission: 'Allow Lattice to use your location to guide you through events.',
+        locationAlwaysAndWhenInUsePermission:
+          'Allow Lattice to use your location to guide you through events.',
+        locationWhenInUsePermission:
+          'Allow Lattice to use your location to guide you through events.',
         isAndroidBackgroundLocationEnabled: false,
       },
     ],

@@ -69,6 +69,7 @@ You do not need to decompose the request into screens first. Send the full inten
 **After every chat run that produces `screen_created` or `screen_updated` operations, always take screenshots and show them to the user.** Never silently complete a chat run without delivering the visuals.
 
 **When screens are created for the first time on a project** (i.e. the run includes `screen_created` operations), deliver:
+
 1. One screenshot per newly created screen (individual `componentIds: [screenId]`)
 2. One combined screenshot of all screens in the project (`componentIds: [all screen ids]`)
 
@@ -310,11 +311,11 @@ Content-Type: application/json
 }
 ```
 
-| Field        | Default       | Notes                                                                 |
-| ------------ | ------------- | --------------------------------------------------------------------- |
-| `format`     | `png`         | `png` or `webp`                                                      |
-| `scale`      | `2`           | 1–3 (device pixel ratio)                                             |
-| `gap`        | `40`          | Pixels between components                                            |
+| Field           | Default       | Notes                                                                |
+| --------------- | ------------- | -------------------------------------------------------------------- |
+| `format`        | `png`         | `png` or `webp`                                                      |
+| `scale`         | `2`           | 1–3 (device pixel ratio)                                             |
+| `gap`           | `40`          | Pixels between components                                            |
 | `padding`       | `40`          | Uniform padding on all sides                                         |
 | `paddingX`      | _(optional)_  | Horizontal padding; overrides `padding` for left/right when provided |
 | `paddingY`      | _(optional)_  | Vertical padding; overrides `padding` for top/bottom when provided   |
@@ -432,7 +433,7 @@ GET /api/v1/projects?limit=10&offset=20
 
 | Mistake                                             | Fix                                                                             |
 | --------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Sending to `/api/v1` without `Authorization` header | Add `Authorization: Bearer $SLEEK_API_KEY` to every request                              |
+| Sending to `/api/v1` without `Authorization` header | Add `Authorization: Bearer $SLEEK_API_KEY` to every request                     |
 | Using wrong scope                                   | Check key's scopes match the endpoint (e.g. `chats:write` for sending messages) |
 | Sending next message before run completes           | Poll until `completed`/`failed` before next send                                |
 | Using `wait=true` on long generations               | It blocks 300s max; have a fallback to polling for `202` response               |

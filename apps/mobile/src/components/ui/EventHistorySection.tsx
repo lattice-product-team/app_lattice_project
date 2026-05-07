@@ -19,8 +19,8 @@ export const EventHistorySection = ({ events }: EventHistorySectionProps) => {
         </Pressable>
       </View>
 
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -29,9 +29,15 @@ export const EventHistorySection = ({ events }: EventHistorySectionProps) => {
           return (
             <View key={event.id} style={styles.card}>
               <View style={[styles.iconContainer, { backgroundColor: `${metadata.color}15` }]}>
-                <MaterialCommunityIcons name={metadata.icon as any} size={24} color={metadata.color} />
+                <MaterialCommunityIcons
+                  name={metadata.icon as any}
+                  size={24}
+                  color={metadata.color}
+                />
               </View>
-              <Text style={styles.eventName} numberOfLines={1}>{event.name}</Text>
+              <Text style={styles.eventName} numberOfLines={1}>
+                {event.name}
+              </Text>
               <Text style={styles.eventDate}>Agosto 2024</Text>
             </View>
           );
@@ -110,5 +116,5 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.3)',
     fontSize: 14,
     fontFamily: typography.secondary.medium,
-  }
+  },
 });

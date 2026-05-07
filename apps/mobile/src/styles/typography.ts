@@ -22,7 +22,7 @@ export const typography = {
     regular: 'CormorantGaramond-Regular',
     medium: 'CormorantGaramond-Medium',
     bold: 'CormorantGaramond-Bold',
-  }
+  },
 } as const;
 
 export const authStyles = {
@@ -36,7 +36,7 @@ export const authStyles = {
     fontFamily: 'Inter-Medium',
     fontSize: 18,
     lineHeight: 28,
-  }
+  },
 } as const;
 
 export const pageStyles = {
@@ -50,7 +50,7 @@ export const pageStyles = {
     fontSize: 14,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
-  }
+  },
 } as const;
 
 export default typography;
