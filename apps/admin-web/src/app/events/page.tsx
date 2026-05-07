@@ -18,6 +18,7 @@ export default function EventsPage() {
   const { events, loading, error, refetch } = useEvents();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
   
   // Form State
   const [name, setName] = useState("");
@@ -29,7 +30,11 @@ export default function EventsPage() {
   const { boundaryPoints, setBoundaryPoints, undoLastPoint, clearBoundary } = useMapInteractions('DRAW_BOUNDARY');
 
   const handleCreateEvent = async () => {
-    if (!name || !startDate || !endDate) return;
+    setFormError("");
+    if (!name || !startDate || !endDate) {
+      setFormError("Please fill in all required fields (Name, Start Date, End Date).");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const boundary = boundaryPoints.length > 2 
@@ -104,11 +109,35 @@ export default function EventsPage() {
 
       <Modal isOpen={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <ModalBackdrop>
-          <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
-            <ModalDialog className="outline-none h-full">
-              <div className="flex h-[600px]">
-              {/* Form Side */}
-              <div className="w-1/2 p-8 overflow-y-auto space-y-6">
+          <ModalContainer size="lg" className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle overflow-hidden">
+            <ModalDialog className="outline-none">
+              <div className="flex flex-col h-[700px] max-h-[90vh]">
+              
+              {/* Map Side (Top) */}
+              <div className="w-full h-[250px] bg-powder/30 relative shrink-0 border-b border-chalk">
+                <div className="absolute inset-0">
+                  <AdminMap 
+                    mode="DRAW_BOUNDARY" 
+                    boundaryPoints={boundaryPoints} 
+                    onBoundaryChange={setBoundaryPoints}
+                  />
+                </div>
+                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                  <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-chalk shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-0.5">Boundary Editor</p>
+                    <p className="text-[9px] text-gravel leading-tight">Click map to define perimeter.</p>
+                  </div>
+                  {boundaryPoints.length > 0 && (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="compact" className="bg-white/90 shadow-sm" onClick={undoLastPoint}>Undo</Button>
+                      <Button size="sm" variant="compact" className="bg-white/90 text-ember shadow-sm" onClick={clearBoundary}>Clear</Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Form Side (Bottom) */}
+              <div className="w-full flex-1 p-6 overflow-y-auto space-y-6 bg-white">
                 <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Initialize Event</ModalHeader>
                 <div className="space-y-4">
                   <div className="space-y-1">
@@ -134,34 +163,14 @@ export default function EventsPage() {
                     <Input placeholder="Street address..." value={address} onChange={e => setAddress(e.target.value)} />
                   </div>
                 </div>
-                <div className="pt-4 flex gap-3">
-                  <Button variant="ghost" className="flex-1" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
-                  <Button variant="primary" className="flex-1" onClick={handleCreateEvent}>
-                    {isSubmitting ? <Spinner size="sm" color="current" /> : "Register Event"}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Map Side */}
-              <div className="w-1/2 bg-powder/30 relative">
-                <div className="absolute inset-0">
-                  <AdminMap 
-                    mode="DRAW_BOUNDARY" 
-                    boundaryPoints={boundaryPoints} 
-                    onBoundaryChange={setBoundaryPoints}
-                  />
-                </div>
-                <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                  <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Boundary Editor</p>
-                    <p className="text-[9px] text-gravel">Click map to define the event perimeter.</p>
+                <div className="pt-4 flex flex-col gap-3 mt-auto">
+                  {formError && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">{formError}</p>}
+                  <div className="flex gap-3">
+                    <Button variant="ghost" className="flex-1" onClick={() => { setIsCreateModalOpen(false); setFormError(""); }}>Cancel</Button>
+                    <Button variant="primary" className="flex-1" onClick={handleCreateEvent}>
+                      {isSubmitting ? <Spinner size="sm" color="current" /> : "Register Event"}
+                    </Button>
                   </div>
-                  {boundaryPoints.length > 0 && (
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="compact" className="bg-white/90" onClick={undoLastPoint}>Undo</Button>
-                      <Button size="sm" variant="compact" className="bg-white/90 text-ember" onClick={clearBoundary}>Clear</Button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

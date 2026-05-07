@@ -32,6 +32,7 @@ export default function POIsPage() {
   
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
   
   // Form State
   const [selectedEventId, setSelectedEventId] = useState<string>("");
@@ -49,7 +50,11 @@ export default function POIsPage() {
   );
 
   const handleRegisterAsset = async () => {
-    if (!name || !type || !selectedPoi || !selectedEventId) return;
+    setFormError("");
+    if (!name || !type || !selectedPoi || !selectedEventId) {
+      setFormError("Please fill in all required fields and select a location on the map.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const res = await fetch("http://localhost:3000/api/v1/pois", {
@@ -119,11 +124,37 @@ export default function POIsPage() {
 
       <Modal isOpen={isRegisterModalOpen} onOpenChange={setIsRegisterModalOpen}>
         <ModalBackdrop>
-          <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
-            <ModalDialog className="outline-none h-full">
-              <div className="flex h-[600px]">
-              {/* Form Side */}
-              <div className="w-1/2 p-8 overflow-y-auto space-y-6">
+          <ModalContainer size="lg" className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle overflow-hidden">
+            <ModalDialog className="outline-none">
+              <div className="flex flex-col h-[700px] max-h-[90vh]">
+              
+              {/* Map Side (Top) */}
+              <div className="w-full h-[250px] bg-powder/30 relative shrink-0 border-b border-chalk">
+                <div className="absolute inset-0">
+                  <AdminMap 
+                    mode="PICK_COORDINATE" 
+                    selectedPoi={selectedPoi} 
+                    onPoiSelect={selectPoi}
+                    activeEventBoundary={selectedEvent?.boundary ? { type: 'Feature', geometry: selectedEvent.boundary, properties: {} } : null}
+                    initialViewState={selectedEvent?.center ? { 
+                      longitude: selectedEvent.center.coordinates[0], 
+                      latitude: selectedEvent.center.coordinates[1], 
+                      zoom: 16 
+                    } : undefined}
+                  />
+                </div>
+                <div className="absolute top-4 left-4 z-10">
+                  <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-chalk shadow-sm max-w-[200px]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-0.5">Location Picker</p>
+                    <p className="text-[9px] text-gravel leading-tight">
+                      {selectedEventId ? `Place pin within ${selectedEvent?.name}.` : "Select an event first."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Side (Bottom) */}
+              <div className="w-full flex-1 p-6 overflow-y-auto space-y-6 bg-white">
                 <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Register Infrastructure</ModalHeader>
                 
                 <div className="space-y-4">
@@ -134,11 +165,9 @@ export default function POIsPage() {
                       aria-label="Select parent event"
                       selectedKey={selectedEventId}
                       onSelectionChange={(key) => {
-                        // Extract key from Selection object if necessary
                         const newKey = (key && typeof key === 'object' && 'anchorKey' in key) 
                           ? (key as any).anchorKey 
                           : key as string;
-                          
                         if (newKey && newKey !== selectedEventId) {
                           setSelectedEventId(newKey);
                         }
@@ -183,35 +212,13 @@ export default function POIsPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 flex gap-3">
-                  <Button variant="ghost" className="flex-1" onClick={() => setIsRegisterModalOpen(false)}>Cancel</Button>
-                  <Button variant="primary" className="flex-1" onClick={handleRegisterAsset}>
-                    {isSubmitting ? <Spinner size="sm" color="current" /> : "Confirm Asset"}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Map Side */}
-              <div className="w-1/2 bg-powder/30 relative">
-                <div className="absolute inset-0">
-                  <AdminMap 
-                    mode="PICK_COORDINATE" 
-                    selectedPoi={selectedPoi} 
-                    onPoiSelect={selectPoi}
-                    activeEventBoundary={selectedEvent?.boundary ? { type: 'Feature', geometry: selectedEvent.boundary, properties: {} } : null}
-                    initialViewState={selectedEvent?.center ? { 
-                      longitude: selectedEvent.center.coordinates[0], 
-                      latitude: selectedEvent.center.coordinates[1], 
-                      zoom: 16 
-                    } : undefined}
-                  />
-                </div>
-                <div className="absolute top-4 left-4 z-10">
-                  <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm max-w-[200px]">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Location Picker</p>
-                    <p className="text-[9px] text-gravel leading-tight">
-                      {selectedEventId ? `Place the pin within the boundary of ${selectedEvent?.name}.` : "Select an event first to see its boundary."}
-                    </p>
+                <div className="pt-4 flex flex-col gap-3 mt-auto">
+                  {formError && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">{formError}</p>}
+                  <div className="flex gap-3">
+                    <Button variant="ghost" className="flex-1" onClick={() => { setIsRegisterModalOpen(false); setFormError(""); }}>Cancel</Button>
+                    <Button variant="primary" className="flex-1" onClick={handleRegisterAsset}>
+                      {isSubmitting ? <Spinner size="sm" color="current" /> : "Confirm Asset"}
+                    </Button>
                   </div>
                 </div>
               </div>

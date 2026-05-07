@@ -502,7 +502,11 @@ export const createEvent = async (req: Request, res: Response) => {
       address,
       primaryColor,
       isPermanent: isPermanent ?? false,
-      location: center ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(center)}), 4326)` : null,
+      location: center 
+        ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(center)}), 4326)` 
+        : boundary 
+          ? sql`ST_Centroid(ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326))`
+          : null,
       boundary: boundary ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)` : null,
     }).returning();
 
@@ -536,18 +540,25 @@ export const createPoi = async (req: Request, res: Response) => {
 
     // Optional Spatial Validation: Ensure POI is within event boundary
     if (parsedEventId) {
-      const [event] = await db.select({ boundary: events.boundary }).from(events).where(eq(events.id, parsedEventId));
-      if (event?.boundary) {
-        const [isValid] = await db.execute(sql`
+      try {
+        const result = await db.execute(sql`
           SELECT ST_Contains(
-            ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(event.boundary)}), 4326),
+            boundary,
             ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)
           ) as is_valid
+          FROM events 
+          WHERE id = ${parsedEventId} AND boundary IS NOT NULL
         `);
-        if (!(isValid as any).is_valid) {
-          console.warn(`[Geo] POI "${name}" is outside the boundary of event ${parsedEventId}`);
-          // We allow it but log a warning for now, or could return 400
+        
+        const rows = (result as any).rows || result;
+        if (rows && rows.length > 0) {
+          const isValid = rows[0].is_valid;
+          if (!isValid) {
+            console.warn(`[Geo] POI "${name}" is outside the boundary of event ${parsedEventId}`);
+          }
         }
+      } catch (validationErr) {
+        console.warn(`[Geo] Spatial validation query failed:`, validationErr);
       }
     }
 

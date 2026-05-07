@@ -30,7 +30,6 @@ function NavItem({ href, icon, label, subtitle, active = false }: { href: string
   return (
     <Link 
       href={href} 
-      underline="none"
       className={`
         flex items-center gap-4 px-5 py-2.5 rounded-full transition-all group w-full no-underline text-admin-base
         ${active 
