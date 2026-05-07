@@ -1,13 +1,66 @@
 "use client";
 
-import { Chip, Spinner, Tooltip } from "@heroui/react";
+import { useState } from "react";
+import { Chip, Spinner, Tooltip, Modal, ModalContainer, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEvents } from "@/hooks/use-admin-data";
+import { AdminMap } from "@/components/map/admin-map";
+import { useMapInteractions } from "@/components/map/use-map-interactions";
 
 export default function EventsPage() {
   const { events, loading, error, refetch } = useEvents();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Form State
+  const [name, setName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [locationName, setLocationName] = useState("");
+  const [address, setAddress] = useState("");
+
+  const { boundaryPoints, setBoundaryPoints, undoLastPoint, clearBoundary } = useMapInteractions('DRAW_BOUNDARY');
+
+  const handleCreateEvent = async () => {
+    if (!name || !startDate || !endDate) return;
+    setIsSubmitting(true);
+    try {
+      const boundary = boundaryPoints.length > 2 
+        ? { type: 'Polygon', coordinates: [[...boundaryPoints, boundaryPoints[0]]] }
+        : null;
+
+      const res = await fetch("http://localhost:3000/api/v1/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          startDate,
+          endDate,
+          locationName,
+          address,
+          boundary
+        })
+      });
+
+      if (res.ok) {
+        setIsCreateModalOpen(false);
+        refetch();
+        // Reset form
+        setName("");
+        setStartDate("");
+        setEndDate("");
+        setLocationName("");
+        setAddress("");
+        clearBoundary();
+      }
+    } catch (err) {
+      console.error("Failed to create event", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const syncSocial = async (id: number) => {
     try {
@@ -37,12 +90,76 @@ export default function EventsPage() {
         </div>
         <div className="flex items-center gap-4">
           <Button variant="ghost">Archive All</Button>
-          <Button variant="primary">
+          <Button variant="primary" onClick={() => setIsCreateModalOpen(true)}>
             <Icons.Plus className="w-4 h-4 mr-2" />
             Create New Event
           </Button>
         </div>
       </header>
+
+      <Modal isOpen={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <ModalContainer className="bg-white border border-chalk rounded-2xl p-0 shadow-subtle max-w-4xl overflow-hidden">
+          <div className="flex h-[600px]">
+            {/* Form Side */}
+            <div className="w-1/2 p-8 overflow-y-auto space-y-6">
+              <ModalHeader className="waldenburg-display text-admin-xl text-obsidian p-0">Initialize Event</ModalHeader>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Event Name</p>
+                  <Input placeholder="e.g. Primavera Sound 2026" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Start Date</p>
+                    <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gravel">End Date</p>
+                    <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Location Name</p>
+                  <Input placeholder="e.g. Parc del Fòrum" value={locationName} onChange={e => setLocationName(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gravel">Address</p>
+                  <Input placeholder="Street address..." value={address} onChange={e => setAddress(e.target.value)} />
+                </div>
+              </div>
+              <div className="pt-4 flex gap-3">
+                <Button variant="ghost" className="flex-1" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                <Button variant="primary" className="flex-1" onClick={handleCreateEvent}>
+                  {isSubmitting ? <Spinner size="sm" color="current" /> : "Register Event"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Map Side */}
+            <div className="w-1/2 bg-powder/30 relative">
+              <div className="absolute inset-0">
+                <AdminMap 
+                  mode="DRAW_BOUNDARY" 
+                  boundaryPoints={boundaryPoints} 
+                  onBoundaryChange={setBoundaryPoints}
+                />
+              </div>
+              <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                <div className="bg-white/90 backdrop-blur-sm p-3 rounded-xl border border-chalk shadow-sm">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-obsidian mb-1">Boundary Editor</p>
+                  <p className="text-[9px] text-gravel">Click map to define the event perimeter.</p>
+                </div>
+                {boundaryPoints.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="compact" className="bg-white/90" onClick={undoLastPoint}>Undo</Button>
+                    <Button size="sm" variant="compact" className="bg-white/90 text-ember" onClick={clearBoundary}>Clear</Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </ModalContainer>
+      </Modal>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-admin-base font-medium">
@@ -84,7 +201,7 @@ export default function EventsPage() {
               {loading ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center">
-                    <Spinner color="current" size="sm" label="Loading operational telemetry..." />
+                    <Spinner color="current" size="sm" />
                   </td>
                 </tr>
               ) : events.length === 0 ? (
@@ -117,11 +234,9 @@ export default function EventsPage() {
                               <span className="text-admin-sm font-black text-obsidian">{social.rating}</span>
                               <span className="text-[10px] text-gravel font-medium">({social.reviews_count})</span>
                             </div>
-                            <Tooltip content="Source: Google Maps via DataForSEO">
-                              <span className="text-[9px] text-signal-blue font-bold uppercase tracking-tighter flex items-center gap-1 cursor-help">
-                                <Icons.CheckCircle className="w-2.5 h-2.5" /> Social Linked
-                              </span>
-                            </Tooltip>
+                            <span className="text-[9px] text-signal-blue font-bold uppercase tracking-tighter flex items-center gap-1 cursor-help">
+                              <Icons.CheckCircle className="w-2.5 h-2.5" /> Social Linked
+                            </span>
                           </div>
                         ) : (
                           <Button 
