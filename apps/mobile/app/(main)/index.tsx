@@ -24,7 +24,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapContent } from '../../src/features/map/components/MapContent';
 import { AdaptiveControlOverlay } from '../../src/features/map/components/AdaptiveControlOverlay';
 import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
-import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
@@ -53,7 +52,6 @@ import { useLocationService } from '../../src/hooks/useLocationService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 const SNAP_POINTS = [0, 0.5, 1];
 
 export default function MapIndexPage() {
@@ -276,16 +274,12 @@ export default function MapIndexPage() {
       backgroundColor: interpolateColor(
         islandState.value,
         [0.7, 0.95],
-        ['transparent', theme.colors.bg.surface]
+        [theme.colors.glass.background, theme.colors.bg.surface]
       ),
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop
-    };
-  });
+
 
   const dimmerStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
@@ -356,6 +350,8 @@ export default function MapIndexPage() {
     console.log('Selected Category:', id);
   }, []);
 
+  const searchInputRef = useRef<TextInput>(null);
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -402,14 +398,11 @@ export default function MapIndexPage() {
           pointerEvents={selectedEvent ? 'none' : 'auto'}
           style={[styles.islandContainer, islandStyle]}
         >
-          <AnimatedSafeBlurView 
-            tint={theme.colors.glass.tint} 
-            intensity={90}
-            animatedProps={blurProps}
+          <Animated.View 
             style={[
               styles.islandBackground, 
               islandBackgroundStyle,
-              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+              { borderColor: theme.colors.glass.border }
             ]}
           >
             <View style={styles.handleContainer}>
@@ -421,6 +414,7 @@ export default function MapIndexPage() {
 
             <View style={styles.islandHeader}>
               <FloatingSearchBar 
+                ref={searchInputRef}
                 value={searchQuery}
                 onChangeText={(text) => {
                   setSearchQuery(text);
@@ -436,10 +430,12 @@ export default function MapIndexPage() {
                   Keyboard.dismiss();
                 }}
                 onPress={() => {
-                  if (islandState.value < 0.1) {
-                    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
+                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Wait for editable to become true before focusing
+                  setTimeout(() => {
+                    searchInputRef.current?.focus();
+                  }, 100);
                 }}
                 avatarUrl={user?.avatarUrl}
                 isGuest={isGuest}
@@ -469,14 +465,22 @@ export default function MapIndexPage() {
                 <SearchExperience 
                   query={searchQuery}
                   onSelectResult={(q, coords) => {
-                    onSelectSearchResult(q, coords);
+                    // Clear search query when selecting from list to keep navigation clean
+                    setSearchQuery('');
+                    saveSearch(q);
+                    setIsSearching(false);
+                    Keyboard.dismiss();
+                    
+                    // If we have coordinates, move map.
+                    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+                    
                     const match = events.find(e => e.name.toLowerCase() === q.toLowerCase());
                     if (match) handleEventSelect(match);
                   }}
                 />
               </Animated.View>
             </Animated.ScrollView>
-          </AnimatedSafeBlurView>
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
 

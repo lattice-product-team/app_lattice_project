@@ -12,13 +12,11 @@ import Animated, {
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { StandardUIPOI } from '../../poi/types';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 
 interface POIMiniCardProps {
   poi: any | null;
@@ -47,11 +45,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop
-    };
-  });
+
 
   // No unmount based on visibility.value to avoid render-time reads
 
@@ -61,22 +55,12 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
         style={[
           styles.content,
           { 
-            backgroundColor: 'transparent',
-            borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' 
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border
           }
         ]}
       >
-        {/* 1. Base Blur Layer */}
-        <SafeBlurView 
-          tint={theme.colors.glass.tint}
-          intensity={90}
-          style={StyleSheet.absoluteFill}
-        />
-
-        {/* 2. Inner Glow Border */}
-        <View style={styles.innerGlowBorder} />
-
-        {/* 3. Content Layer */}
+        {/* Content Layer */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
             <MaterialCommunityIcons name={poi?.categoryIcon || 'map-marker'} size={24} color="white" />
@@ -93,12 +77,12 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
               styles.closeButton, 
               { 
                 backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-                borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                borderColor: theme.colors.glass.border,
                 ...theme.shadows.soft
               }
             ]}
           >
-            <Feather name="x" size={20} color={theme.colors.text.muted} />
+            <Feather name="x" size={20} color={theme.colors.text.primary} />
           </Pressable>
         </View>
 
@@ -131,13 +115,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     gap: 16,
-  },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 24,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
   },
   header: {
     flexDirection: 'row',

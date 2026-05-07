@@ -4,7 +4,6 @@ import Animated, { useAnimatedStyle, SharedValue, interpolate, Extrapolation } f
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 
 interface AdaptiveControlOverlayProps {
@@ -48,19 +47,17 @@ export const AdaptiveControlOverlay = ({
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
-      <View style={[styles.pill, !theme.dark && theme.shadows.soft, { backgroundColor: theme.colors.glass.background }]}>
-        <SafeBlurView 
-          intensity={90} 
-          tint={theme.colors.glass.tint} 
-          style={[
-            StyleSheet.absoluteFill, 
-            { 
-              borderRadius: 25, 
-              borderWidth: 1, 
-              borderColor: theme.colors.glass.border 
-            }
-          ]} 
-        />
+      <View 
+        style={[
+          styles.pill, 
+          { 
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border,
+            borderWidth: 1,
+            ...theme.shadows.soft
+          }
+        ]}
+      >
         
         {/* 1. 3D Toggle */}
         <Pressable

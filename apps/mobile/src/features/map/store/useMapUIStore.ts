@@ -42,8 +42,7 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   setUIState: (uiState) => set({ uiState }),
   
   triggerRecenter: () => set((state) => ({ 
-    recenterCount: state.recenterCount + 1,
-    isFollowingUser: true 
+    recenterCount: state.recenterCount + 1 
   })),
 
   triggerForceCenter: () => set((state) => ({ 

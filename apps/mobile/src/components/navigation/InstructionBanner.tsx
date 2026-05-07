@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SafeBlurView } from '../ui/SafeBlurView';
 import { ArrowUp, ArrowUpLeft, ArrowUpRight, ArrowLeft, ArrowRight, CornerUpLeft, CornerUpRight, RotateCcw, Loader2 } from 'lucide-react-native';
 import { useNavigationStore } from '../../features/navigation/store/useNavigationStore';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
@@ -43,7 +42,13 @@ export const InstructionBanner = () => {
       exiting={FadeOutUp}
       style={styles.outerContainer}
     >
-      <SafeBlurView tint="dark" intensity={95} style={styles.container}>
+      <View style={[
+        styles.container, 
+        { 
+          backgroundColor: 'rgba(28, 28, 30, 0.95)',
+          borderColor: 'rgba(255, 255, 255, 0.15)'
+        }
+      ]}>
         {nextInstruction ? (
           <>
             <View style={styles.iconContainer}>
@@ -62,7 +67,7 @@ export const InstructionBanner = () => {
             <Text style={styles.loadingText}>Calculating premium route...</Text>
           </View>
         )}
-      </SafeBlurView>
+      </View>
     </Animated.View>
   );
 };

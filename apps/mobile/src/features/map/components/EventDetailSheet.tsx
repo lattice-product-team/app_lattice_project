@@ -16,7 +16,6 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
 import { useEventDetails } from '../hooks/useEventDetails';
@@ -25,7 +24,6 @@ import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 
 interface EventDetailSheetProps {
   event: LatticeEvent | null;
@@ -113,16 +111,12 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       backgroundColor: interpolateColor(
         islandState.value,
         [0.7, 1],
-        ['transparent', theme.colors.bg.surface]
+        [theme.colors.glass.background, theme.colors.bg.surface]
       ),
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop for SafeBlurView to handle it correctly
-    };
-  });
+
 
   // Sync scroll enabled state to avoid render-time reads of islandState.value
   useAnimatedReaction(
@@ -144,31 +138,22 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
             style={[
               styles.background, 
               islandBackgroundStyle,
-              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+              { borderColor: theme.colors.glass.border }
             ]}
           >
-            {/* 1. Base Blur Layer */}
-            <SafeBlurView 
-              tint={theme.colors.glass.tint}
-              intensity={90}
-              style={StyleSheet.absoluteFill}
-            />
-
-            {/* 2. Inner Glow & Color Overlay */}
-            <View style={[styles.innerGlowBorder]} />
-
-            {/* 3. Content Layer */}
+            {/* Content Layer */}
             <View style={StyleSheet.absoluteFill}>
               {/* Header / Drag Handle */}
               <View style={styles.header}>
                 <View style={styles.handle} />
                 <View style={styles.headerActions}>
                   <Pressable 
+                    onPress={() => Haptics.selectionAsync()}
                     style={[
                       styles.actionCircle,
                       { 
-                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                        borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: theme.colors.glass.border,
                         ...theme.shadows.soft
                       }
                     ]}
@@ -181,8 +166,8 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                     style={[
                       styles.actionCircle,
                       { 
-                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.6)' : 'rgba(255, 255, 255, 0.6)',
-                        borderColor: theme.dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: theme.colors.glass.border,
                         ...theme.shadows.soft
                       }
                     ]}
@@ -272,7 +257,10 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
                             }}
                             style={[
                               styles.serviceItem,
-                              { backgroundColor: isActive ? theme.colors.brand.primary : (theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)') },
+                              { 
+                                backgroundColor: isActive ? theme.colors.brand.primary : (theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)'),
+                                borderColor: isActive ? 'transparent' : theme.colors.glass.border
+                              },
                               isActive && styles.activeService
                             ]}
                           >
@@ -339,12 +327,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
   },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
-  },
   header: {
     paddingTop: 8,
     paddingHorizontal: 16,
@@ -401,13 +383,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-  },
-  actionIconInnerGlow: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 28,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    pointerEvents: 'none',
   },
   actionBorder: {
     borderRadius: 28,
@@ -477,15 +452,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
     overflow: 'hidden',
-  },
-  serviceItemInnerGlow: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 22,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    pointerEvents: 'none',
   },
   activeService: {
     borderColor: 'transparent',

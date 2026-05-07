@@ -18,7 +18,7 @@ interface FloatingSearchBarProps {
   editable?: boolean;
 }
 
-export const FloatingSearchBar = ({
+export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarProps>(({
   value,
   onChangeText,
   onFocus,
@@ -29,7 +29,7 @@ export const FloatingSearchBar = ({
   avatarUrl,
   isGuest,
   editable = true,
-}: FloatingSearchBarProps) => {
+}, ref) => {
   const theme = useAppTheme();
 
   return (
@@ -41,8 +41,13 @@ export const FloatingSearchBar = ({
         style={styles.icon} 
       />
       
-      <View style={{ flex: 1 }}>
+      <Pressable 
+        style={{ flex: 1, justifyContent: 'center' }} 
+        onPress={onPress}
+        disabled={editable}
+      >
         <TextInput
+          ref={ref}
           value={value}
           onChangeText={onChangeText}
           onFocus={onFocus}
@@ -53,14 +58,9 @@ export const FloatingSearchBar = ({
           returnKeyType="search"
           onSubmitEditing={onSubmit}
           editable={editable}
+          pointerEvents={editable ? 'auto' : 'none'}
         />
-        {Platform.OS === 'android' && !editable && (
-          <Pressable 
-            style={StyleSheet.absoluteFill} 
-            onPress={onPress}
-          />
-        )}
-      </View>
+      </Pressable>
 
       {value.length > 0 && (
         <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
@@ -84,7 +84,7 @@ export const FloatingSearchBar = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   innerContainer: {

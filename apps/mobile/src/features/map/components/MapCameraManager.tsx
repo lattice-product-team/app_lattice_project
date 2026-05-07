@@ -170,7 +170,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   return (
     <MapLibreGL.Camera
       ref={cameraRef}
-      minZoomLevel={11}
+      minZoomLevel={2}
       defaultSettings={{ 
         centerCoordinate: userCoords || lastCameraPosition?.center || MAP_CENTER, 
         zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM, 
