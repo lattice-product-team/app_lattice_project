@@ -39,6 +39,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 }, ref) => {
   const cameraRef = React.useRef<any>(null);
   const insets = useSafeAreaInsets();
+  const lastTargetRef = React.useRef<string | null>(null);
+  const lastActionTimestamp = React.useRef<number>(0);
+  const CAMERA_ACTION_THROTTLE = 500; // ms
 
   useImperativeHandle(ref, () => ({
     setCamera: (config: any) => cameraRef.current?.setCamera(config),
@@ -79,7 +82,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   // Focus on selected POI
   useEffect(() => {
+    const now = Date.now();
     if (selectedCoords && cameraRef.current && !isNavigating) {
+      // Prevent redundant updates to the same location unless forced
+      const targetKey = `poi-${selectedCoords.join(',')}`;
+      if (lastTargetRef.current === targetKey && now - lastActionTimestamp.current < CAMERA_ACTION_THROTTLE) return;
+      
+      lastTargetRef.current = targetKey;
+      lastActionTimestamp.current = now;
+
       cameraRef.current.setCamera({
         centerCoordinate: selectedCoords,
         zoomLevel: 17.2,
@@ -98,7 +109,14 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   // Focus on selected event or its children
   useEffect(() => {
+    const now = Date.now();
     if (selectedEvent && cameraRef.current && !isNavigating) {
+      const eventId = selectedEvent.id || selectedEvent.properties?.id;
+      if (lastTargetRef.current === `event-${eventId}` && now - lastActionTimestamp.current < CAMERA_ACTION_THROTTLE) return;
+      
+      lastTargetRef.current = `event-${eventId}`;
+      lastActionTimestamp.current = now;
+
       if (poisGeoJSON?.features) {
         const childPoiCoords = poisGeoJSON.features
           .filter((f: any) => f.properties.parentId === selectedEvent.id || f.properties.event_id === selectedEvent.id)

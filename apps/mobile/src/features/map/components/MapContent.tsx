@@ -16,6 +16,7 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 
 // Components
 import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
+import { MapImageManager } from './MapImageManager';
 import { MapLayers } from './MapLayers';
 
 // Constants & Utilities
@@ -76,10 +77,19 @@ export const MapContent = function MapContent({
 
   const handleCameraChange = useCallback((e: any) => {
     const { geometry, properties } = e;
+    const now = Date.now();
+    const isUserInteraction = e.properties?.isUserInteraction;
+
     if (properties?.zoomLevel) {
+      // Shared value is cheap (running on UI thread via Reanimated), update it every frame
       zoomSharedValue.value = properties.zoomLevel;
-      if (Math.abs(currentZoom - properties.zoomLevel) > 0.1) {
-        setCurrentZoom(properties.zoomLevel);
+      
+      // Throttle React state updates for zoom to prevent re-render loops
+      if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
+        if (Math.abs(currentZoom - properties.zoomLevel) > 0.15) {
+          setCurrentZoom(properties.zoomLevel);
+          lastZoomUpdateRef.current = now;
+        }
       }
     }
 
@@ -87,12 +97,14 @@ export const MapContent = function MapContent({
     const center = geometry?.coordinates as [number, number];
     const zoom = properties?.zoomLevel;
     const pitch = properties?.pitch;
-    if (center && zoom) {
+    
+    if (center && zoom && (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS)) {
       setLastCameraPosition({ center, zoom, pitch });
+      lastZoomUpdateRef.current = now;
     }
 
     // If camera is changing due to user interaction, stop following
-    if (e.properties?.isUserInteraction && isFollowingUser) {
+    if (isUserInteraction && isFollowingUser) {
       setIsFollowingUser(false);
     }
   }, [currentZoom, setCurrentZoom, zoomSharedValue, setLastCameraPosition, isFollowingUser, setIsFollowingUser]);
@@ -249,6 +261,8 @@ export const MapContent = function MapContent({
 
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         
+        <MapImageManager events={events} />
+
         <MapCameraManager 
           ref={cameraRef}
           userCoords={userCoords}
