@@ -158,18 +158,22 @@ export const MapContent = function MapContent({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       triggerForceCenter();
       
-      if (properties.category === 'event') {
-        // If it's an event, handle it via handleEventPress logic
-        setSelectedEvent(properties.id);
-        setGlobalCurrentEvent(properties.raw || feature);
-        islandState.value = withSpring(0, theme.motion.physics.snappy);
+      const isEvent = properties.category === 'event' || properties.type === 'event' || !!properties.imageKey;
+      
+      if (isEvent) {
+        // Handle event selection
+        const eventData = properties.raw || feature;
+        if (onSelectEvent) {
+          onSelectEvent(eventData);
+        } else {
+          setSelectedEvent(properties.id);
+          setGlobalCurrentEvent(eventData);
+          selectPoi(null);
+          islandState.value = withSpring(0, theme.motion.physics.snappy);
+        }
       } else {
         // Normal POI selection
-        selectPoi(normalizePOI({
-          ...properties,
-          coordinates: geometry.coordinates,
-          raw: feature
-        }));
+        selectPoi(normalizePOI(feature));
       }
     },
     [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]

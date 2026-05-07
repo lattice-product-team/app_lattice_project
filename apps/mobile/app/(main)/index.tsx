@@ -117,15 +117,11 @@ export default function MapIndexPage() {
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
-    return withTiming(selectedEvent ? 0 : 1, { duration: 300 });
+    const isSomethingSelected = !!selectedEvent || !!selectedPoiId;
+    return withTiming(isSomethingSelected ? 0 : 1, { duration: 300 });
   });
 
-  // Effect to handle POI selection triggering Level 3
-  useEffect(() => {
-    if (selectedPoiId) {
-      islandState.value = withSpring(1, theme.motion.physics.magnetic);
-    }
-  }, [selectedPoiId, islandState]);
+  // Effect removed to prevent auto-expanding search on POI click
 
   const handleEventSelect = useCallback((event: LatticeEvent) => {
     // Save current level before collapsing
@@ -465,7 +461,7 @@ export default function MapIndexPage() {
       />
 
       <POIMiniCard 
-        poi={selectedPoi?.parentId ? selectedPoi : null}
+        poi={selectedPoi}
         onClose={deselect}
       />
       
