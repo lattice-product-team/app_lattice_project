@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
+import bcrypt from 'bcryptjs';
 import app from '../app';
 import * as dbLib from '@app/db';
 
@@ -56,10 +57,14 @@ describe('Auth Service Integration Tests', () => {
     });
 
     it('should login successfully with correct credentials', async () => {
+      const password = 'correct_password';
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+
       const mockUser = {
         id: 1,
         email: 'kore@example.com',
-        passwordHash: 'correct_password',
+        passwordHash: passwordHash,
         fullName: 'Kore User',
         hasTicket: false,
       };

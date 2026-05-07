@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 
 interface InputProps extends Omit<HeroInputProps, "variant"> {
   variant?: "contained" | "transparent";
+  classNames?: {
+    inputWrapper?: string;
+    input?: string;
+    label?: string;
+  };
 }
 
 export function Input({ 

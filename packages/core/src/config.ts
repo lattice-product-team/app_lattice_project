@@ -37,6 +37,10 @@ const backendEnvSchema = z.object({
   AUTH_HOST: z.string().default('localhost'),
   GEO_HOST: z.string().default('localhost'),
   SOCIAL_HOST: z.string().default('localhost'),
+
+  // Security
+  JWT_SECRET: z.string().default('development_secret_do_not_use_in_prod'),
+  BCRYPT_ROUNDS: z.string().transform(Number).default(10),
 });
 
 export type BackendEnv = z.infer<typeof backendEnvSchema>;

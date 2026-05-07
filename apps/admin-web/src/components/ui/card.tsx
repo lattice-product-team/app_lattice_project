@@ -11,9 +11,8 @@ export function Card({
   
   return (
     <HeroCard
-      radius="lg" // lg is 16px in HeroUI by default, or we can use custom
       className={cn(
-        "hairline-card p-6",
+        "hairline-card p-6 rounded-2xl",
         className
       )}
       {...props}

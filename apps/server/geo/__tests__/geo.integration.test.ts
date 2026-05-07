@@ -3,13 +3,24 @@ import request from 'supertest';
 import app from '../app';
 import * as dbLib from '@app/db';
 
-// Mock the entire DB library
+// Mock the entire DB library with a chainable mock
 vi.mock('@app/db', async () => {
   const actual = (await vi.importActual('@app/db')) as any;
+  const mockQuery = {
+    from: vi.fn().mockReturnThis(),
+    leftJoin: vi.fn().mockReturnThis(),
+    $dynamic: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    then: vi.fn().mockImplementation((onSuccess) => Promise.resolve([]).then(onSuccess)),
+  };
+
   return {
     ...actual,
     db: {
-      select: vi.fn(),
+      select: vi.fn().mockReturnValue(mockQuery),
+      execute: vi.fn().mockResolvedValue({ rows: [] }),
     },
   };
 });
@@ -58,12 +69,14 @@ describe('Geo Service Integration Tests', () => {
         $dynamic: vi.fn().mockReturnValue({ where: mockDynamic, ...mockDynamic }),
       });
 
-      // Drizzle dynamic query mock is complex, let's simplify for the test
-      (dbLib.db.select as any).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          $dynamic: vi.fn().mockReturnValue(Promise.resolve(mockResults)),
-        }),
-      });
+      // Setup chainable mock for this specific test
+      const mockChain = {
+        from: vi.fn().mockReturnThis(),
+        leftJoin: vi.fn().mockReturnThis(),
+        $dynamic: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((resolve) => resolve(mockResults)),
+      };
+      (dbLib.db.select as any).mockReturnValue(mockChain);
 
       const response = await request(app).get('/pois');
       expect(response.status).toBe(200);

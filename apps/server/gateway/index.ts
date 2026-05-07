@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { logger, errorHandler, loadConfig } from '@app/core';
 
@@ -15,7 +17,44 @@ const AUTH_SERVICE_URL = `http://${env.AUTH_HOST}:${env.AUTH_PORT}`;
 const GEO_SERVICE_URL = `http://${env.GEO_HOST}:${env.GEO_PORT}`;
 const SOCIAL_SERVICE_URL = `http://${env.SOCIAL_HOST}:${env.SOCIAL_PORT}`;
 
-app.use(cors());
+// --- SECURITY MIDDLEWARE ---
+
+// 1. Helmet for security headers
+app.use(helmet());
+
+// 2. Restricted CORS
+const allowedOrigins = [
+  'http://localhost:3000', // Mobile LAN proxy (if applicable)
+  'http://localhost:3004', // Admin Web
+  // Add production domains here
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
+// 3. Rate Limiting for Auth
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many authentication attempts, please try again later',
+    code: 'TOO_MANY_REQUESTS'
+  },
+  skip: () => env.NODE_ENV === 'test',
+});
+
 app.use(logger);
 
 // Log incoming requests for debugging
@@ -109,6 +148,7 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
 };
 
 // Mount Service Proxies
+router.use(authRateLimiter); // Apply to all for now or more specifically
 router.use(createServiceProxy(AUTH_SERVICE_URL, 'Auth', ['/auth', '/users']));
 router.use(
   createServiceProxy(GEO_SERVICE_URL, 'Geo', [
