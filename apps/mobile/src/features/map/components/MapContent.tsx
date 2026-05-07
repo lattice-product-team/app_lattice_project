@@ -188,7 +188,7 @@ export const MapContent = function MapContent({
         selectPoi(normalizePOI(feature));
       }
     },
-    [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]
+    [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter, onSelectEvent, theme]
   );
 
   const handleEventPress = useCallback((poi: any) => {

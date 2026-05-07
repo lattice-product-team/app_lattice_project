@@ -155,6 +155,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           },
         });
       }
+    } else if (!selectedEvent) {
+      // Clear last target so re-selecting the same event triggers the animation again
+      lastTargetRef.current = null;
     }
   }, [selectedEvent, poisGeoJSON, isNavigating, insets.top, forceCenterCount]);
 

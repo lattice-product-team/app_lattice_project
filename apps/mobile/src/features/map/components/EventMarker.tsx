@@ -27,12 +27,9 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(({
         style={{ 
           alignItems: 'center',
           justifyContent: 'flex-end',
-          // Correct for scale-from-center with bottom anchor
-          // We need to shift the whole component down so its bottom stays at the anchor point
-          // Visual expansion is (scale - 1) * height. We shift by half of that.
           transform: [
             { scale: isSelected ? 1.15 : 1 },
-            { translateY: isSelected ? -5 : 0 } // Fine-tuned offset
+            { translateY: isSelected ? -5 : 0 }
           ]
         }}
       >

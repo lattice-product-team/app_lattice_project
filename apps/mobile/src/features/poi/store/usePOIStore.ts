@@ -57,6 +57,7 @@ export const usePOIStore = create<POIState>((set) => ({
       selectedPoiId: null,
       selectedPoi: null,
       selectedCoords: null,
+      selectedEventId: null,
     }),
 
   setRemote: (isRemote) => set({ isRemote }),

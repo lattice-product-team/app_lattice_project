@@ -33,23 +33,6 @@ export const MapLayers = ({
 
   return (
     <>
-      {/* 1. EVENTS LAYER (PointAnnotation for better Android sync) */}
-      {eventsGeoJSON?.features?.map((feature: any) => (
-        <MapLibreGL.PointAnnotation
-          key={feature.id}
-          id={`event-marker-${feature.id}`}
-          coordinate={feature.geometry.coordinates}
-          anchor={{ x: 0.5, y: 1.0 }}
-        >
-          <EventMarker 
-            event={feature}
-            theme={theme}
-            isSelected={selectedEventId === feature.id}
-            onPress={onPoiPress}
-          />
-        </MapLibreGL.PointAnnotation>
-      ))}
-
       {/* 2. POI LAYER (GL-BASED FOR PERFECT SYNC) */}
       <MapLibreGL.ShapeSource 
         id="poisSource" 
@@ -188,6 +171,23 @@ export const MapLayers = ({
           />
         </MapLibreGL.ShapeSource>
       )}
+
+      {/* 6. EVENTS LAYER (Using MarkerView for better touch reliability) */}
+      {eventsGeoJSON?.features?.map((feature: any) => (
+        <MapLibreGL.MarkerView
+          key={feature.id}
+          id={`event-marker-${feature.id}`}
+          coordinate={feature.geometry.coordinates}
+          anchor={{ x: 0.5, y: 1.0 }}
+        >
+          <EventMarker 
+            event={feature}
+            theme={theme}
+            isSelected={selectedEventId === feature.id}
+            onPress={onPoiPress}
+          />
+        </MapLibreGL.MarkerView>
+      ))}
     </>
   );
 };
