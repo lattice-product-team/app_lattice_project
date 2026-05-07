@@ -31,7 +31,7 @@ export const MapLayers = ({
       {eventsGeoJSON?.features?.map((feature: any) => {
         const { id, properties, geometry } = feature;
         const isSelected = selectedEventId === id;
-        const color = properties.color || theme.colors.primary;
+        const color = theme.colors.brand.primary; // Force brand primary color for events
         
         return (
           <MapLibreGL.PointAnnotation
@@ -81,7 +81,7 @@ export const MapLayers = ({
         );
       })}
 
-      {/* 2. VENUE BOUNDARY */}
+      {/* 2. EVENT PERIMETER */}
       <MapLibreGL.ShapeSource 
         id="boundarySource" 
         shape={poisGeoJSON || EMPTY_GEOJSON}

@@ -1,9 +1,34 @@
-import React from 'react';
-import { View, ViewStyle, StyleProp, Platform, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, ViewStyle, StyleProp, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import Animated, { useAnimatedProps } from 'react-native-reanimated';
 
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+// --- Extreme Safety: Dynamic Skia Loading ---
+let Skia: any = null;
+let Canvas: any = null;
+let BackdropBlur: any = null;
+let Fill: any = null;
+let FractalNoise: any = null;
+let Group: any = null;
+
+try {
+  // Use require to prevent crash at import time
+  if (Platform.OS !== 'web') {
+    const SkiaModule = require('@shopify/react-native-skia');
+    Skia = SkiaModule.Skia;
+    Canvas = SkiaModule.Canvas;
+    BackdropBlur = SkiaModule.BackdropBlur;
+    Fill = SkiaModule.Fill;
+    FractalNoise = SkiaModule.FractalNoise;
+    Group = SkiaModule.Group;
+    
+    // Test if Skia is actually functional
+    if (Skia && typeof Skia.RuntimeEffect === 'undefined') {
+      Skia = null; // Mark as unavailable
+    }
+  }
+} catch (e) {
+  // Skia failed to load, we will use Expo Blur fallback
+}
 
 interface SafeBlurViewProps {
   intensity?: number;
@@ -13,8 +38,11 @@ interface SafeBlurViewProps {
 }
 
 /**
- * SafeBlurView uses native expo-blur for high-fidelity frosted glass effects.
- * It provides a consistent aesthetic across iOS and Android.
+ * SafeBlurView: High-fidelity Liquid Glass UI.
+ * Multi-tier Fallback Strategy:
+ * 1. Skia (Premium Liquid Glass)
+ * 2. Expo Blur (Native Hardware-Accelerated Blur)
+ * 3. Translucent View (Standard Fallback)
  */
 export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
   intensity = 80,
@@ -22,48 +50,79 @@ export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
   style,
   children
 }, ref) => {
-  const fallbackColor = tint === 'dark' ? 'rgba(28, 27, 28, 0.7)' : 'rgba(255, 255, 255, 0.7)';
-  const useNativeBlur = true;
+  // Only activate Skia if ALL required primitives are available
+  const isSkiaAvailable = !!Canvas && !!BackdropBlur && !!Skia && !!FractalNoise;
+  
+  const blurSigma = typeof intensity === 'number' ? intensity / 6 : 15;
+  
+  const overlayColor = useMemo(() => {
+    if (tint === 'dark') return 'rgba(15, 15, 18, 0.45)';
+    return 'rgba(255, 255, 255, 0.35)';
+  }, [tint]);
 
-  // Internal animated props to bridge JS props to Native BlurView
-  const animatedBlurProps = useAnimatedProps(() => {
-    return {
-      intensity: typeof intensity === 'number' ? intensity : (intensity as any)?.value ?? 95,
-      tint: tint
-    };
-  });
+  const expoBlurTint = useMemo(() => {
+    if (tint === 'dark') return 'dark';
+    if (tint === 'light') return 'light';
+    return 'default';
+  }, [tint]);
 
-  if (useNativeBlur && (Platform.OS === 'ios' || Platform.OS === 'android')) {
+  // Liquid Glass Effect Component (Skia)
+  const SkiaEffect = () => {
+    if (!isSkiaAvailable) return null;
     try {
       return (
-        <View ref={ref} style={[style, styles.container]}>
-          <AnimatedBlurView 
-            animatedProps={animatedBlurProps}
-            style={StyleSheet.absoluteFill} 
-          />
-          {children}
-          <View 
-            pointerEvents="none" 
-            style={[
-              StyleSheet.absoluteFill, 
-              styles.borderOverlay,
-              { 
-                borderColor: (style as any)?.borderColor,
-                borderRadius: (style as any)?.borderRadius || 0,
-                borderWidth: (style as any)?.borderWidth ? 1 : 0,
-              }
-            ]} 
-          />
-        </View>
+        <Canvas style={StyleSheet.absoluteFill}>
+          <Group>
+            <BackdropBlur blur={blurSigma}>
+              <Fill color={overlayColor.replace(/0\.\d+\)$/, '0.2)')} />
+            </BackdropBlur>
+            <Group opacity={0.03}>
+               <FractalNoise freqX={0.05} freqY={0.05} octaves={2} />
+            </Group>
+          </Group>
+        </Canvas>
       );
-    } catch (e) {
-      console.warn('[SafeBlurView] Native BlurView failed');
+    } catch (err) {
+      return null;
     }
-  }
+  };
 
   return (
-    <View ref={ref} style={[style, styles.container, { backgroundColor: fallbackColor }]}>
+    <View ref={ref} style={[style, styles.container]}>
+      {/* Background layer: Tiered Fallback */}
+      {isSkiaAvailable ? (
+        <SkiaEffect />
+      ) : (
+        <BlurView 
+          intensity={intensity} 
+          tint={expoBlurTint} 
+          style={StyleSheet.absoluteFill} 
+        />
+      )}
+      
+      {/* Fallback for when even expo-blur is having issues (rare) */}
+      {!isSkiaAvailable && (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor, opacity: 0.2 }]} pointerEvents="none" />
+      )}
+      
+      {/* Specular shine (CSS-like) */}
+      <View style={[StyleSheet.absoluteFill, styles.shineLayer]} pointerEvents="none" />
+      
       {children}
+      
+      {/* Border overlay */}
+      <View 
+        pointerEvents="none" 
+        style={[
+          StyleSheet.absoluteFill, 
+          styles.borderOverlay,
+          { 
+            borderColor: (style as any)?.borderColor || (tint === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'),
+            borderRadius: (style as any)?.borderRadius || 0,
+            borderWidth: (style as any)?.borderWidth || 1,
+          }
+        ]} 
+      />
     </View>
   );
 });
@@ -71,10 +130,17 @@ export const SafeBlurView = React.forwardRef<View, SafeBlurViewProps>(({
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-    // We remove border styles from the main container in the actual usage
+    backgroundColor: 'transparent',
+  },
+  shineLayer: {
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 0,
   },
   borderOverlay: {
     borderStyle: 'solid',
     zIndex: 999,
   },
 });
+
+

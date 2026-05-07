@@ -7,18 +7,21 @@ const router = Router();
 
 router.get('/health', geoController.healthCheck);
 router.get('/stats', geoController.getGlobalStats);
-router.get('/venues', geoController.getVenues);
 router.get('/events/:id/spatial', geoController.getEventSpatial);
 router.post('/events/:id/spatial', geoController.saveEventSpatial);
 router.get('/events', geoController.getEvents);
+router.post('/events', geoController.createEvent);
 router.get('/events/:id', geoController.getEvent);
 router.get('/events/:id/stats', geoController.getEventStats);
 router.get('/pois', geoController.getPois);
+router.post('/pois', geoController.createPoi);
 router.get('/pois/categories', geoController.getCategories);
 router.get('/pois/:id', geoController.getPoi);
 router.get('/locations', geoController.getLocations);
 router.get('/navigation/network', geoController.getPathNetwork);
 router.post('/navigation/route', geoController.getRoute);
+router.get('/resolve-address', geoController.resolveAddress);
+router.post('/social/sync', geoController.syncSocialData);
 
 // Saved locations routes - Protected
 router.use('/saved', authenticate, savedRoutes);

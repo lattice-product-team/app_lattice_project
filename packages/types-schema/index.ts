@@ -10,7 +10,6 @@ import * as schema from '@app/db';
 
 // --- INFERRED TYPES FROM DB SCHEMA ---
 export type User = InferSelectModel<typeof schema.users>;
-export type Venue = InferSelectModel<typeof schema.venues>;
 export type Event = InferSelectModel<typeof schema.events>;
 export type Ticket = InferSelectModel<typeof schema.tickets>;
 export type POI = InferSelectModel<typeof schema.pointsOfInterest>;
@@ -21,7 +20,6 @@ export type SavedLocation = InferSelectModel<typeof schema.savedLocations>;
 
 export interface TicketInfo {
   code: string;
-  venueId?: number;
   eventId?: number;
   gate: string;
   zoneName: string;
@@ -35,20 +33,11 @@ export interface UserTicketSyncResponse {
   token: string;
   ticket_info: TicketInfo;
   event_config?: {
-    venue: Venue;
     event: Event;
   };
 }
 
-export type POIType =
-  | 'restaurant'
-  | 'wc'
-  | 'grandstand'
-  | 'gate'
-  | 'medical'
-  | 'shop'
-  | 'parking'
-  | 'meetup_point';
+export type POIType = typeof schema.poiTypeEnum.enumValues[number];
 
 // Re-export enums and other useful bits from schema if needed
 export {

@@ -43,7 +43,6 @@ export type EventType = 'music' | 'food' | 'tech' | 'sports' | 'generic';
 
 export interface LatticeEvent {
   id: number;
-  venueId?: number;
   name: string;
   type: EventType;
   imageUrl?: string;

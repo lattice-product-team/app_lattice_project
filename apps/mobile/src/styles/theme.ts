@@ -57,6 +57,7 @@ export interface LatticeTheme {
   spacing: typeof baseTheme.spacing;
   borderRadius: typeof baseTheme.borderRadius;
   shadows: typeof baseTheme.shadows;
+  motion: typeof baseTheme.motion;
 }
 
 const baseTheme = {
@@ -91,7 +92,34 @@ const baseTheme = {
       shadowRadius: 16,
       elevation: 8,
     }
-  }
+  },
+  motion: {
+    physics: {
+      magnetic: {
+        damping: 55,
+        stiffness: 300,
+        mass: 1.0,
+        overshootClamping: true,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 2,
+      },
+      responsive: {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.8,
+      },
+      snappy: {
+        damping: 25,
+        stiffness: 150,
+        mass: 0.5,
+      },
+      gentle: {
+        damping: 30,
+        stiffness: 100,
+        mass: 1.0,
+      },
+    },
+  },
 };
 
 export const lightTheme: LatticeTheme = {

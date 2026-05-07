@@ -4,7 +4,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '../store/useAuthStore';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { Passkey } from 'react-native-passkey';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -32,16 +31,17 @@ export class AuthService {
     }
   }
 
-  static async signInWithPasskey() {
-    return { success: false, error: 'Passkeys are currently disabled' };
-  }
   async login(credentials: any) {
     const response = await fetch(`${AuthService.API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
-    return response.json();
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || data.error || 'Login failed');
+    }
+    return data;
   }
 
   async register(data: any) {
@@ -50,7 +50,11 @@ export class AuthService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return response.json();
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.message || responseData.error || 'Registration failed');
+    }
+    return responseData;
   }
 
   async getUserTickets() {

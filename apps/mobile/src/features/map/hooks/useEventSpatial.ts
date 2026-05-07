@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { geoService } from '../../../services/geoService';
 
-export const useVenueSpatial = (venueId?: number | null) => {
+export const useEventSpatial = (eventId?: number | null) => {
   const [spatialData, setSpatialData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!venueId) {
+    if (!eventId) {
       setSpatialData(null);
       return;
     }
@@ -14,17 +14,17 @@ export const useVenueSpatial = (venueId?: number | null) => {
     const fetchSpatial = async () => {
       setLoading(true);
       try {
-        const data = await geoService.getVenueSpatial(venueId);
+        const data = await geoService.getEventSpatial(eventId);
         setSpatialData(data);
       } catch (error) {
-        console.error('Failed to fetch venue spatial data:', error);
+        console.error('Failed to fetch event spatial data:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchSpatial();
-  }, [venueId]);
+  }, [eventId]);
 
   return { spatialData, loading };
 };

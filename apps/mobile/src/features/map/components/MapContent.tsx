@@ -4,15 +4,6 @@ import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-const SPRING_CONFIG = {
-  damping: 30,
-  stiffness: 150,
-  mass: 1.0,
-  overshootClamping: true,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 2,
-};
-
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
@@ -29,8 +20,10 @@ import { MapLayers } from './MapLayers';
 
 // Constants & Utilities
 import { useLocationStore } from '../../../store/useLocationStore';
+import { useStartupStore } from '../../../store/useStartupStore';
 import styleLight from '../../../../assets/map/style-light.json';
 import styleDark from '../../../../assets/map/style-dark.json';
+import { MAPTILER_KEY } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
 
 interface MapContentProps {
@@ -107,8 +100,8 @@ export const MapContent = function MapContent({
   // Combined POIs logic
   const allUIPois = useMemo(() => {
     const eventPois = normalizeEventList(allEvents || []);
-    const venuePois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
-    return [...venuePois, ...eventPois];
+    const spatialPois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
+    return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
   // Hierarchical visibility logic for POIs
@@ -148,7 +141,8 @@ export const MapContent = function MapContent({
         category: poi.category,
         color: poi.mainColor,
         imageKey: poi.imageKey,
-        imageUrl: poi.images?.[0]
+        imageUrl: poi.images?.[0],
+        raw: poi.raw
       }
     }))
   }), [events]);
@@ -164,18 +158,22 @@ export const MapContent = function MapContent({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       triggerForceCenter();
       
-      if (properties.category === 'event') {
-        // If it's an event, handle it via handleEventPress logic
-        setSelectedEvent(properties.id);
-        setGlobalCurrentEvent(properties.raw || feature);
-        islandState.value = withSpring(0, SPRING_CONFIG);
+      const isEvent = properties.category === 'event' || properties.type === 'event' || !!properties.imageKey;
+      
+      if (isEvent) {
+        // Handle event selection
+        const eventData = properties.raw || feature;
+        if (onSelectEvent) {
+          onSelectEvent(eventData);
+        } else {
+          setSelectedEvent(properties.id);
+          setGlobalCurrentEvent(eventData);
+          selectPoi(null);
+          islandState.value = withSpring(0, theme.motion.physics.snappy);
+        }
       } else {
         // Normal POI selection
-        selectPoi(normalizePOI({
-          ...properties,
-          coordinates: geometry.coordinates,
-          raw: feature
-        }));
+        selectPoi(normalizePOI(feature));
       }
     },
     [selectPoi, setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]
@@ -187,7 +185,7 @@ export const MapContent = function MapContent({
     setSelectedEvent(poi.id);
     setGlobalCurrentEvent(poi.raw);
     // selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
-    islandState.value = withSpring(0, SPRING_CONFIG); // Use the same spring config as index.tsx
+    islandState.value = withSpring(0, theme.motion.physics.snappy); // Use the same spring config as index.tsx
   }, [setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]);
 
   const glPoisGeoJSON = useMemo(() => {
@@ -200,6 +198,8 @@ export const MapContent = function MapContent({
     };
   }, [poisGeoJSON, selectedPoiId]);
 
+  const setMapReady = useStartupStore((s) => s.setMapReady);
+
   // Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -207,10 +207,11 @@ export const MapContent = function MapContent({
         console.log('⚠️ [MapContent] Safety timeout triggered: forcing map ready');
         hasInitialRendered.current = true;
         setInitialLoadComplete(true);
+        setMapReady(true);
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, [setInitialLoadComplete]);
+  }, [setInitialLoadComplete, setMapReady]);
 
   const mapStyle = useMemo(() => {
     const baseStyle = theme.dark ? styleDark : styleLight;
@@ -222,7 +223,7 @@ export const MapContent = function MapContent({
         ...(baseStyle.sources || {}),
         maptiler_planet: {
           type: "vector",
-          url: "https://api.maptiler.com/tiles/v3/tiles.json?key=iqk4irD5FCOr6M6VHVWZ"
+          url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`
         }
       }
     };
@@ -244,10 +245,12 @@ export const MapContent = function MapContent({
           if (!hasInitialRendered.current) {
             hasInitialRendered.current = true;
             setInitialLoadComplete(true);
+            setMapReady(true);
             startupMetrics.markInteractive('Map');
           }
         }}
       >
+
         <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
         
         <MapCameraManager 
