@@ -30,6 +30,8 @@ import { SearchExperience } from '../../src/features/map/components/SearchExperi
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
 import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
+import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
+import { NavigationInfo } from '../../src/features/map/components/NavigationInfo';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
@@ -42,6 +44,7 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
+import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -78,6 +81,8 @@ export default function MapIndexPage() {
   
   const selectedEvent = useEventStore((s) => s.selectedEvent);
   const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
+  
+  const { isNavigating } = useNavigationStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -360,6 +365,8 @@ export default function MapIndexPage() {
         />
       </View>
 
+      <InstructionBanner />
+
       <Pressable 
         style={StyleSheet.absoluteFill}
         onPress={handleMapPress}
@@ -468,6 +475,8 @@ export default function MapIndexPage() {
         poi={selectedPoi?.parentId ? selectedPoi : null}
         onClose={deselect}
       />
+      
+      <NavigationInfo />
       
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>

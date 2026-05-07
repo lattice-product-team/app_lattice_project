@@ -32,6 +32,7 @@ const envSchema = z.object({
   API_URL: z.string().url(),
   GATEWAY_HOST: z.string().default('localhost'),
   GATEWAY_PORT: z.string().default('3000'),
+  VALHALLA_PORT: z.string().default('8002'),
   // Variables provided by scripts (overrides)
   TUNNEL_URL: z.string().url().optional(),
   LAN_IP: z.string().optional(),
@@ -60,7 +61,13 @@ const resolveApiUrl = () => {
   return env.API_URL;
 };
 
+const resolveValhallaUrl = () => {
+  if (env.LAN_IP) return `http://${env.LAN_IP}:${env.VALHALLA_PORT}`;
+  return `http://localhost:${env.VALHALLA_PORT}`;
+};
+
 const API_URL = resolveApiUrl();
+const VALHALLA_URL = resolveValhallaUrl();
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -145,6 +152,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     ...config.extra,
     apiUrl: API_URL,
+    valhallaUrl: VALHALLA_URL,
     nodeEnv: env.NODE_ENV,
     mapTilerKey: process.env.MAPTILER_KEY || 'iqk4irD5FCOr6M6VHVWZ',
     googleIosClientId: env.GOOGLE_IOS_CLIENT_ID || 'missing-ios-client-id',

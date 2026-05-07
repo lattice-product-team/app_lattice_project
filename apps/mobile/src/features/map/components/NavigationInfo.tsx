@@ -1,27 +1,25 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { X } from 'lucide-react-native';
 import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
-import { usePOIStore } from '../../poi/store/usePOIStore';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { useAppTheme } from '../../../hooks/useAppTheme';
-import { typography } from '../../../styles/typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+/**
+ * NavigationInfo: Bottom arrival summary sheet.
+ * Aesthetic: White Glassmorphism consistent with the user's reference image.
+ */
 export const NavigationInfo = () => {
   const { isNavigating, routeMetadata, clearNavigation } = useNavigationStore();
-  const { deselect } = usePOIStore();
   const insets = useSafeAreaInsets();
-  const theme = useAppTheme();
 
   if (!isNavigating || !routeMetadata) return null;
 
   const handleCancel = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     clearNavigation();
-    deselect();
   };
 
   const formatDistance = (m: number) => {
@@ -32,7 +30,13 @@ export const NavigationInfo = () => {
   const formatDuration = (s: number) => {
     const mins = Math.round(s / 60);
     if (mins < 1) return '< 1 min';
-    return `${mins} min`;
+    return `${mins}`;
+  };
+
+  const getArrivalTime = (seconds: number) => {
+    const arrivalDate = new Date();
+    arrivalDate.setSeconds(arrivalDate.getSeconds() + seconds);
+    return arrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -41,26 +45,33 @@ export const NavigationInfo = () => {
       exiting={FadeOutDown.duration(300)}
       style={[styles.container, { bottom: insets.bottom + 20 }]}
     >
-      <SafeBlurView intensity={80} tint="dark" style={styles.card}>
+      <SafeBlurView intensity={90} tint="light" style={styles.card}>
+        <View style={styles.handle} />
         <View style={styles.content}>
-          <View style={styles.infoSection}>
-            <View style={styles.mainInfo}>
-              <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>{formatDuration(routeMetadata.duration)}</Text>
-              <View style={styles.dot} />
-              <Text style={styles.distanceText}>{formatDistance(routeMetadata.distance)}</Text>
-            </View>
-            <Text style={styles.destinationText} numberOfLines={1}>
-              Hacia {routeMetadata.destinationName || 'tu destino'}
-            </Text>
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>{getArrivalTime(routeMetadata.duration)}</Text>
+            <Text style={styles.statLabel}>arrival</Text>
           </View>
-
+          
           <View style={styles.divider} />
+          
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>{formatDuration(routeMetadata.duration)}</Text>
+            <Text style={styles.statLabel}>min</Text>
+          </View>
+          
+          <View style={styles.divider} />
+          
+          <View style={styles.stat}>
+            <Text style={styles.statValue}>{formatDistance(routeMetadata.distance).split(' ')[0]}</Text>
+            <Text style={styles.statLabel}>{formatDistance(routeMetadata.distance).split(' ')[1]}</Text>
+          </View>
 
           <Pressable
             onPress={handleCancel}
-            style={({ pressed }) => [styles.cancelButton, { opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.closeButton, { opacity: pressed ? 0.7 : 1 }]}
           >
-            <Feather name="x" size={24} color="#FF453A" />
+            <X size={20} color="#666" />
           </Pressable>
         </View>
       </SafeBlurView>
@@ -71,66 +82,61 @@ export const NavigationInfo = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    alignItems: 'center',
+    left: 16,
+    right: 16,
     zIndex: 9999,
   },
   card: {
-    width: '100%',
-    borderRadius: 24,
+    borderRadius: 32,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
     overflow: 'hidden',
-    backgroundColor: 'rgba(20, 20, 22, 0.8)',
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'space-around',
     paddingHorizontal: 20,
   },
-  infoSection: {
+  stat: {
+    alignItems: 'center',
     flex: 1,
   },
-  mainInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  durationText: {
-    fontSize: 22,
-    fontFamily: typography.primary.bold,
+  statValue: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#000',
     letterSpacing: -0.5,
   },
-  distanceText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 18,
-    fontFamily: typography.secondary.medium,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    marginHorizontal: 10,
-  },
-  destinationText: {
-    color: 'rgba(255, 255, 255, 0.4)',
-    fontSize: 13,
-    fontFamily: typography.secondary.regular,
+  statLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(0, 0, 0, 0.4)',
+    marginTop: -2,
   },
   divider: {
     width: 1,
-    height: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginHorizontal: 16,
+    height: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
-  cancelButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 69, 58, 0.15)',
+  closeButton: {
+    position: 'absolute',
+    right: 12,
+    top: -4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },

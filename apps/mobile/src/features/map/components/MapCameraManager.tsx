@@ -137,16 +137,17 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
   }, [selectedEvent, poisGeoJSON, isNavigating, insets.top, forceCenterCount]);
 
-  // Sync pitch
+  // Navigation camera behavior
   useEffect(() => {
-    if (cameraRef.current) {
+    if (isNavigating && cameraRef.current) {
       cameraRef.current.setCamera({
-        pitch: is3DActive ? 60 : 0,
-        animationDuration: 1000,
+        zoomLevel: 18,
+        pitch: 45,
+        animationDuration: 1500,
         animationMode: 'flyTo',
       });
     }
-  }, [is3DActive]);
+  }, [isNavigating]);
 
   return (
     <MapLibreGL.Camera
@@ -158,8 +159,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         pitch: lastCameraPosition?.pitch || 0 
       }}
       followUserLocation={isNavigating || isFollowingUser}
-      followUserMode={(isNavigating ? 'compass' : 'normal') as any}
-      followZoomLevel={17}
+      followUserMode={(isNavigating ? 'course' : 'normal') as any}
+      followZoomLevel={isNavigating ? 18 : undefined}
+      followPitch={isNavigating ? 45 : undefined}
     />
   );
 });

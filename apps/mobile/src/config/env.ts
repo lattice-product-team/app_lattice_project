@@ -9,6 +9,7 @@ import Constants from 'expo-constants';
 
 interface EnvConfig {
   apiUrl: string;
+  valhallaUrl: string;
   nodeEnv: string;
 }
 
@@ -22,6 +23,7 @@ if (!extra || !extra.apiUrl) {
 
 export const Env: EnvConfig = {
   apiUrl: extra?.apiUrl || 'http://localhost:3000/api/v1',
+  valhallaUrl: extra?.valhallaUrl || 'http://localhost:8002',
   nodeEnv: extra?.nodeEnv || 'development',
 };
 
