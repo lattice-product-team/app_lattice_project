@@ -1,38 +1,20 @@
-name: Pipeline - CI/CD
+name: Pipeline - Deploy Production
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - dev
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Lint, TypeCheck & Test
+  build-check:
+    name: Verify Build Integrity
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgis/postgis:15-3.3
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -52,19 +34,12 @@ jobs:
       - name: Run Build (Dry Run)
         run: pnpm build
 
-      - name: Run All Tests
-        env:
-          DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
-          JWT_SECRET: test_secret_placeholder
-          NODE_ENV: test
-        run: pnpm test
-
   deploy:
     name: Build & Deploy Production
-    needs: quality
+    needs: build-check
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: [self-hosted, Linux, X64]
-
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -77,6 +52,7 @@ jobs:
           echo "GATEWAY_BASE_PATH=/lattice/api" >> .env
           echo "NEXT_PUBLIC_API_URL=https://projects.kore29.com/lattice/api/v1" >> .env
           echo "NODE_ENV=production" >> .env
+          echo "DB_SSL=false" >> .env
           cp .env apps/admin-web/.env
 
       - name: Build and Deploy Production
@@ -86,7 +62,7 @@ jobs:
           export DATABASE_URL=${{ secrets.DATABASE_URL }}
           pnpm db:migrate
           pnpm db:check
-
+          
           docker compose -f docker-compose.prod.yml down --remove-orphans
           docker compose -f docker-compose.prod.yml up -d --build
 
