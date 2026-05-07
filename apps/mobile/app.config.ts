@@ -4,22 +4,24 @@ import { expand } from 'dotenv-expand';
 import path from 'path';
 import { z } from 'zod';
 
-// Load environment variables from the root .env
+// Load environment variables from the root .env if it exists
 const projectRoot = __dirname;
 const rootDir = path.resolve(projectRoot, '../../');
 const rootEnvPath = path.join(rootDir, '.env');
 
-const envOutput = dotenv.config({ path: rootEnvPath });
-expand(envOutput);
-
-if (envOutput.error) {
-  console.error('❌ [Config] Error loading .env file:', envOutput.error);
-} else {
+import * as fs from 'fs';
+if (fs.existsSync(rootEnvPath)) {
+  const envOutput = dotenv.config({ path: rootEnvPath });
+  expand(envOutput);
+  
   // Explicitly ensure LAN_IP is in process.env
   if (envOutput.parsed?.LAN_IP) {
     process.env.LAN_IP = envOutput.parsed.LAN_IP;
   }
+} else {
+  console.log('ℹ️ [Config] No .env file found at root, relying on environment variables.');
 }
+
 
 /**
  * Environment Variables Schema
