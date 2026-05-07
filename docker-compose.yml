@@ -125,7 +125,7 @@ services:
     restart: "no"
 
   valhalla:
-    image: gisops/valhalla:latest
+    image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
     ports:
       - "${VALHALLA_PORT:-8002}:8002"
     volumes:

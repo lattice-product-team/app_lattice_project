@@ -39,6 +39,32 @@ const POI_TYPES: Record<string, string> = {
   shop: '🛍️',
 };
 
+const isPointInPolygon = (point: [number, number], polygon: [number, number][][]) => {
+  const [x, y] = point;
+  let inside = false;
+  for (let i = 0, j = polygon[0].length - 1; i < polygon[0].length; j = i++) {
+      const xi = polygon[0][i][0], yi = polygon[0][i][1];
+      const xj = polygon[0][j][0], yj = polygon[0][j][1];
+      const intersect = ((yi > y) !== (yj > y))
+          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+  }
+  return inside;
+};
+
+const getBBox = (coordinates: [number, number][][]) => {
+  let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+  for (const ring of coordinates) {
+    for (const point of ring) {
+      if (point[0] < minLng) minLng = point[0];
+      if (point[0] > maxLng) maxLng = point[0];
+      if (point[1] < minLat) minLat = point[1];
+      if (point[1] > maxLat) maxLat = point[1];
+    }
+  }
+  return [minLng, minLat, maxLng, maxLat] as [number, number, number, number];
+};
+
 export const AdminMap: React.FC<AdminMapProps> = ({
   mode,
   initialViewState = { longitude: 2.2575, latitude: 41.5641, zoom: 15 },
@@ -51,7 +77,21 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   onAssetClick,
   activeEventBoundary
 }) => {
+  const mapRef = React.useRef<any>(null);
   const [viewState, setViewState] = useState(initialViewState);
+
+  // Sync view state when initialViewState or activeEventBoundary changes
+  React.useEffect(() => {
+    if (activeEventBoundary?.geometry?.coordinates) {
+      const bbox = getBBox(activeEventBoundary.geometry.coordinates);
+      mapRef.current?.fitBounds(
+        [[bbox[0], bbox[1]], [bbox[2], bbox[3]]],
+        { padding: 40, duration: 1000 }
+      );
+    } else if (initialViewState) {
+      setViewState(initialViewState);
+    }
+  }, [initialViewState?.longitude, initialViewState?.latitude, activeEventBoundary?.geometry]);
 
   const handleMapClick = useCallback((e: MapLayerMouseEvent) => {
     const { lng, lat } = e.lngLat;
@@ -59,9 +99,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     if (mode === 'DRAW_BOUNDARY' && onBoundaryChange) {
       onBoundaryChange([...boundaryPoints, [lng, lat]]);
     } else if (mode === 'PICK_COORDINATE' && onPoiSelect) {
+      // If we have an active event boundary, validate the click is inside
+      if (activeEventBoundary?.geometry?.coordinates) {
+        const isInside = isPointInPolygon([lng, lat], activeEventBoundary.geometry.coordinates);
+        if (!isInside) {
+          // You might want to show a toast here, but for now we just ignore the click
+          console.warn("Click outside event boundary");
+          return;
+        }
+      }
       onPoiSelect({ lng, lat });
     }
-  }, [mode, boundaryPoints, onBoundaryChange, onPoiSelect]);
+  }, [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary]);
 
   const boundaryGeoJSON = useMemo(() => {
     if (boundaryPoints.length < 3) return null;
@@ -90,6 +139,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   return (
     <div className="w-full h-full relative">
       <Map
+        ref={mapRef}
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         mapStyle={MAP_STYLE}

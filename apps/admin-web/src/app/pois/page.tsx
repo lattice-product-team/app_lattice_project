@@ -100,6 +100,20 @@ export default function POIsPage() {
     }
   };
 
+  const mapViewState = useMemo(() => {
+    if (!selectedEvent?.center) return undefined;
+    return {
+      longitude: selectedEvent.center.coordinates[0],
+      latitude: selectedEvent.center.coordinates[1],
+      zoom: 16
+    };
+  }, [selectedEvent]);
+
+  const activeEventBoundary = useMemo(() => 
+    selectedEvent?.boundary ? { type: 'Feature', geometry: selectedEvent.boundary, properties: {} } : null,
+    [selectedEvent]
+  );
+
   return (
     <div className="space-y-12 px-8 py-12 pb-24">
 
@@ -135,12 +149,8 @@ export default function POIsPage() {
                     mode="PICK_COORDINATE" 
                     selectedPoi={selectedPoi} 
                     onPoiSelect={selectPoi}
-                    activeEventBoundary={selectedEvent?.boundary ? { type: 'Feature', geometry: selectedEvent.boundary, properties: {} } : null}
-                    initialViewState={selectedEvent?.center ? { 
-                      longitude: selectedEvent.center.coordinates[0], 
-                      latitude: selectedEvent.center.coordinates[1], 
-                      zoom: 16 
-                    } : undefined}
+                    activeEventBoundary={activeEventBoundary}
+                    initialViewState={mapViewState}
                   />
                 </div>
                 <div className="absolute top-4 left-4 z-10">
