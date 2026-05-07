@@ -14,9 +14,11 @@ Establish a unified, professional, and elegant visual identity for the Lattice e
 ## Capabilities
 
 ### New Capabilities
+
 - `design-tokens`: Centralized management of visual constants (colors, typography, spacing) shared across the workspace.
 
 ### Modified Capabilities
+
 - `standards-alignment`: Updates to UI standards to include the new formal brand guidelines.
 
 ## Impact

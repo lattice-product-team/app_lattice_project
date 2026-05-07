@@ -21,7 +21,7 @@ interface NavigationState {
   isNavigating: boolean;
   transportMode: TransportMode;
   nextInstruction: Instruction | null;
-  
+
   // Actions
   setRoute: (route: RouteGeoJSON | null, metadata?: RouteMetadata | null) => void;
   setNavigating: (navigating: boolean) => void;
@@ -56,9 +56,9 @@ export const useNavigationStore = create<NavigationState>((set) => ({
     }),
 
   setNavigating: (isNavigating) => set({ isNavigating }),
-  
+
   setTransportMode: (transportMode) => set({ transportMode }),
-  
+
   setNextInstruction: (nextInstruction) => set({ nextInstruction }),
 
   clearNavigation: () =>

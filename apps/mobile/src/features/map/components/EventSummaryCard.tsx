@@ -45,7 +45,11 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
         <View style={styles.titleSection}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.glass.subtle }]}>
             {metadata.iconFamily === 'material' ? (
-              <MaterialCommunityIcons name={metadata.icon as any} size={24} color={theme.colors.brand.primary} />
+              <MaterialCommunityIcons
+                name={metadata.icon as any}
+                size={24}
+                color={theme.colors.brand.primary}
+              />
             ) : (
               <Feather name={metadata.icon as any} size={24} color={theme.colors.brand.primary} />
             )}
@@ -61,28 +65,31 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
       </View>
 
       <View style={styles.actions}>
-        <Pressable 
+        <Pressable
           onPress={isDownloaded ? undefined : handleDownload}
           disabled={isDownloading || isDownloaded}
           style={[
             styles.downloadButton,
             { backgroundColor: theme.colors.brand.primary },
             isDownloaded && styles.downloadedButton,
-            isDownloading && styles.downloadingButton
+            isDownloading && styles.downloadingButton,
           ]}
         >
           {isDownloading ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
-            <Feather 
-              name={isDownloaded ? "check-circle" : "download-cloud"} 
-              size={18} 
-              color="white" 
+            <Feather
+              name={isDownloaded ? 'check-circle' : 'download-cloud'}
+              size={18}
+              color="white"
             />
           )}
           <Text style={styles.buttonText}>
-            {isDownloading ? `Descargando ${Math.round(progress * 100)}%` : 
-             isDownloaded ? 'Disponible offline' : 'Descargar pack offline'}
+            {isDownloading
+              ? `Descargando ${Math.round(progress * 100)}%`
+              : isDownloaded
+                ? 'Disponible offline'
+                : 'Descargar pack offline'}
           </Text>
         </Pressable>
       </View>

@@ -12,9 +12,11 @@ The current mobile UI feels inconsistent and cluttered. Despite architectural im
 ## Capabilities
 
 ### New Capabilities
+
 - `mobile-ui-fidelization`: Core requirements for the premium Apple-style interaction layer and map visual standards.
 
 ### Modified Capabilities
+
 - `poi-visuals`: Update requirements to explicitly exclude native map POIs.
 
 ## Impact

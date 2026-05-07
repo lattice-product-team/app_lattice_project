@@ -5,11 +5,13 @@ Actualmente, los gestos de los paneles en `MapIndexPage` y `EventDetailSheet` ut
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Lograr un seguimiento 1:1 entre el dedo del usuario y el panel.
 - Unificar la física de muelle (`SPRING_CONFIG`) para una sensación de peso y suavidad consistente.
 - Reducir la sensibilidad a la velocidad para favorecer el anclaje al nivel más cercano.
 
 **Non-Goals:**
+
 - Cambiar la estructura visual de los paneles.
 - Modificar la lógica de negocio o el contenido de los paneles.
 - Implementar nuevos estados de navegación.
@@ -17,13 +19,17 @@ Actualmente, los gestos de los paneles en `MapIndexPage` y `EventDetailSheet` ut
 ## Decisions
 
 ### 1. Cálculo Dinámico del Divisor de Gestos
+
 **Decisión**: Utilizar la distancia física real entre los puntos de anclaje (Snap Points) para calcular el `stateDelta`.
 **Racional**: Para que el movimiento sea 1:1, el divisor debe ser exactamente la diferencia en píxeles que representa un cambio de `1.0` en el estado.
+
 - Para `MapIndexPage`: `DIVISOR = (SCREEN_HEIGHT * 0.80) - 60` (aproximadamente 600-700px dependiendo del dispositivo).
 - Para `EventDetailSheet`: `DIVISOR = (SCREEN_HEIGHT * 0.80) - (insets.bottom + 5)`.
 
 ### 2. Estandarización de `SPRING_CONFIG`
+
 **Decisión**: Adoptar una configuración de muelle más amortiguada y con mayor "fuerza" de atracción (magnetismo).
+
 ```typescript
 const PREMIUM_SPRING_CONFIG = {
   damping: 38,
@@ -34,9 +40,11 @@ const PREMIUM_SPRING_CONFIG = {
   restSpeedThreshold: 2,
 };
 ```
+
 **Racional**: Aumentar `stiffness` a 170 permite que el panel se sienta más atraído por los puntos de anclaje ("efecto imán"), mientras que un `damping` de 38 asegura que el movimiento siga siendo suave y premium sin rebotes.
 
 ### 3. Ajuste de Inercia en `onEnd`
+
 **Decisión**: Reducir drásticamente el multiplicador de velocidad de `0.03` a `0.01`.
 **Racional**: Al bajar a `0.01`, la posición proyectada dependerá casi exclusivamente de la posición actual del panel, haciendo que sea muy difícil saltarse un nivel accidentalmente mediante un "flick". El panel se sentirá "pegado" al nivel actual a menos que el movimiento sea muy amplio.
 

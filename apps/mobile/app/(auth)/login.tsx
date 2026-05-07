@@ -1,13 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  Alert,
-  Linking,
-  StyleSheet,
-  Dimensions
-} from 'react-native';
+import { View, Text, Pressable, Alert, Linking, StyleSheet, Dimensions } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,7 +46,7 @@ export default function LoginScreen() {
     if (result.success) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const { intendedDestination, setGuestMode } = useAuthStore.getState();
-      
+
       // Ensure guest mode is disabled on successful social login
       setGuestMode(false);
 
@@ -70,26 +62,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthLayout 
-      transparent 
-      showBack 
-      onBack={() => router.replace('/(auth)/onboarding')}
-    >
+    <AuthLayout transparent showBack onBack={() => router.replace('/(auth)/onboarding')}>
       <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
-        
         {/* Header Section - Centered */}
-        <Animated.View 
-          entering={FadeInDown.duration(1000).springify()}
-          style={styles.header}
-        >
+        <Animated.View entering={FadeInDown.duration(1000).springify()} style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../assets/images/icon.png')} 
+            <Image
+              source={require('../../assets/images/icon.png')}
               style={styles.logoImage}
               contentFit="contain"
             />
           </View>
-          
+
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>
             Welcome back{'\n'}to Lattice.
           </Text>
@@ -100,36 +84,60 @@ export default function LoginScreen() {
 
         {/* Action Section */}
         <View style={styles.actionsContainer}>
-          <Animated.View entering={FadeInDown.delay(200).duration(1000).springify()} style={{ gap: 12 }}>
-            <PremiumButton 
-              label="Continue with Google" 
-              variant="google" 
+          <Animated.View
+            entering={FadeInDown.delay(200).duration(1000).springify()}
+            style={{ gap: 12 }}
+          >
+            <PremiumButton
+              label="Continue with Google"
+              variant="google"
               onPress={() => promptAsync()}
               disabled={!request}
-              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: theme.colors.bg.surface,
+                  borderColor: theme.colors.border.subtle,
+                },
+              ]}
             />
-            
-            <PremiumButton 
-              label="Continue with Email" 
-              variant="outline" 
+
+            <PremiumButton
+              label="Continue with Email"
+              variant="outline"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(auth)/email-auth');
               }}
-              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: theme.colors.bg.surface,
+                  borderColor: theme.colors.border.subtle,
+                },
+              ]}
             />
           </Animated.View>
         </View>
 
         {/* Footer Section */}
-        <Animated.View 
-          entering={FadeIn.delay(800).duration(1200)}
-          style={styles.footer}
-        >
+        <Animated.View entering={FadeIn.delay(800).duration(1200)} style={styles.footer}>
           <Text style={[styles.legalText, { color: theme.colors.text.muted }]}>
             By continuing, you agree to our{' '}
-            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
-            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
+            <Text
+              style={[styles.legalLink, { color: theme.colors.text.secondary }]}
+              onPress={() => Linking.openURL('#')}
+            >
+              Terms
+            </Text>{' '}
+            and{' '}
+            <Text
+              style={[styles.legalLink, { color: theme.colors.text.secondary }]}
+              onPress={() => Linking.openURL('#')}
+            >
+              Privacy Policy
+            </Text>
+            .
           </Text>
         </Animated.View>
       </View>

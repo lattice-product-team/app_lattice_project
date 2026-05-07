@@ -12,9 +12,11 @@ The current monorepo structure causes EAS Build failures due to a conflicting `a
 ## Capabilities
 
 ### New Capabilities
+
 - `monorepo-build-standardization`: Establishing a single, reliable way to build mobile apps within the monorepo using EAS.
 
 ### Modified Capabilities
+
 - `android-cloud-build`: Updating the implementation path for Android cloud builds to support the new structure.
 
 ## Impact

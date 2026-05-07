@@ -5,11 +5,13 @@ The mobile app is built with Expo and React Native in a monorepo. Recently, a ne
 ## Goals / Non-Goals
 
 **Goals:**
+
 - **Bundling Success**: Restore the ability to build and run the mobile app via Metro.
 - **Token Centralization**: Fully transition the mobile app to use `@app/theme` tokens.
 - **Type Stability**: Eliminate all 34+ TypeScript errors currently blocking development.
 
 **Non-Goals:**
+
 - **UI Redesign**: This is a maintenance and migration task, not a visual redesign.
 - **State Overhaul**: We are fixing imports and types, not changing the underlying state logic.
 

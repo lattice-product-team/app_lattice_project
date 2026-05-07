@@ -13,10 +13,12 @@ The current network layer requires manual token management and couples asynchron
 ## Capabilities
 
 ### New Capabilities
+
 - `automated-api-auth`: Provides transparent authentication handling at the network level.
 - `async-auth-mutations`: Standardizes authentication-related side effects using TanStack Query.
 
 ### Modified Capabilities
+
 - `env-synchronization`: Update documentation if API configuration patterns change.
 
 ## Impact

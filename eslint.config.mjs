@@ -11,13 +11,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
-    ignores: [
-      '**/node_modules/',
-      '**/dist/',
-      '**/.expo/',
-      'babel.config.js',
-      'metro.config.js',
-    ],
+    ignores: ['**/node_modules/', '**/dist/', '**/.expo/', 'babel.config.js', 'metro.config.js'],
   },
   {
     files: ['**/*.{ts,tsx}'],

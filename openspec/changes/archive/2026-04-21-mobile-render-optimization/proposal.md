@@ -12,10 +12,12 @@ The mobile application currently suffers from significant rendering performance 
 ## Capabilities
 
 ### New Capabilities
+
 - `granular-mobile-state`: A standard for atomic state subscriptions in React Native to ensure 60fps UI responsiveness.
 - `decoupled-location-management`: A location tracking system that updates logic-heavy state only on significant movement while allowing fluid visual tracking.
 
 ### Modified Capabilities
+
 - `standards-alignment`: Extending performance standards to include React Native render optimization guidelines.
 
 ## Impact

@@ -5,19 +5,23 @@ The Lattice mobile app currently uses a hybrid rendering approach for map entiti
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Unify all POI and Event rendering under a single `MapLibreGL.MarkerView` system.
 - Fix Android-specific bugs: text clipping, coordinate displacement during rotation, and "floating" markers.
 - Create a reusable `MapPin` component system for easy styling updates.
 - Maintain 60fps performance on Android by leveraging the existing viewport state throttling.
 
 **Non-Goals:**
+
 - Implementing clustering (out of scope for this UI polish phase).
 - Modifying the underlying map tile engine or navigation logic.
 
 ## Decisions
 
 ### 1. Unified Component Architecture
+
 We will move away from inline rendering in `MapLayers.tsx` and instead create a hierarchy of React components:
+
 - `BaseMapMarker`: Handles the `MarkerView` wrapper, positioning, and common anchor logic.
 - `EventMarker`: Specific styling for events (images, large badges).
 - `POIMarker`: Minimalist styling for categories (glyphs, smaller badges).
@@ -25,16 +29,22 @@ We will move away from inline rendering in `MapLayers.tsx` and instead create a 
 **Rationale**: This promotes code reuse and makes it trivial to apply global style changes (e.g., border radius or shadow depth) across the entire map.
 
 ### 2. Standardized Anchor Calibration
-We will standardize all markers to use `anchor={{ x: 0.5, y: 1.0 }}` (bottom-center). 
+
+We will standardize all markers to use `anchor={{ x: 0.5, y: 1.0 }}` (bottom-center).
+
 - **Alternatives considered**: `center` (0.5, 0.5).
 - **Rationale**: Bottom-center is more stable for pins that have a "stem" or vertical orientation. When the map tilts (3D) or rotates, the base of the pin remains exactly on the coordinate, whereas `center` anchors often appear to "sink" or "drift" relative to the ground plane.
 
 ### 3. Absolute Label Layering
+
 Labels will be rendered as children of the `MarkerView` but will use absolute positioning and a fixed `zIndex` system to ensure they appear consistently below or above the pin body as designed.
+
 - **Rationale**: This fixes the "missing text" and "clipping" issues on Android where relative layout in native view containers can be unpredictable.
 
 ### 4. JS-Side Visibility Culling
+
 Since we are moving away from GL filters (`filter: ['==', ...]`), we will implement visibility logic in the React render loop using the throttled `zoom` and `bounds` state from the store.
+
 - **Rationale**: Rendering 100+ `MarkerView`s simultaneously on Android can cause lag. By only mounting markers that are within the current viewport (with a small buffer), we maintain peak performance.
 
 ## Risks / Trade-offs

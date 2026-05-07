@@ -15,10 +15,12 @@ The authentication flow is the gateway to the application. Recent changes (remov
 ## Capabilities
 
 ### New Capabilities
+
 - `mobile-auth-verification`: A comprehensive test suite and manual verification checklist for all mobile authentication scenarios.
 - `email-auth-flow`: Implementation and validation of the email/password authentication flow.
 
 ### Modified Capabilities
+
 - `social-auth-provider`: Removing passkey triggers and updating redirection logic for social login flows.
 
 ## Impact

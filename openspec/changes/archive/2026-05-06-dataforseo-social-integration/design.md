@@ -1,15 +1,18 @@
 ## Context
+
 Lattice needs to fetch external social proof (ratings/reviews) from Google Maps via the DataForSEO API. We have existing JSONB `metadata` columns in both `events` and `points_of_interest` tables that can be utilized for storage without schema migrations.
 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Implement a reusable `DataForSEOClient` for authenticated API requests.
 - Create an automated matching service using name and geospatial proximity.
 - Store social metrics (rating, review count, snippets) in the existing metadata JSONB.
 - Provide a manual override mechanism in the Admin UI for specific Google Maps linkage.
 
 **Non-Goals:**
+
 - Real-time review streaming (data will be cached/synced periodically).
 - Rendering reviews in the Admin UI (only metrics for now).
 - Frontend design for the mobile application.
@@ -17,12 +20,16 @@ Lattice needs to fetch external social proof (ratings/reviews) from Google Maps 
 ## Decisions
 
 ### 1. Dedicated Social Orchestrator Service
+
 We will create a `SocialService` within the `server/geo` package.
+
 - **Rationale**: Keeps the business logic for external API matching separate from the core database operations.
 - **Alternatives**: Putting logic in controllers (too messy) or a separate microservice (overkill for now).
 
 ### 2. JSONB Metadata Structure
+
 Social data will be nested under a `social` key in the metadata column.
+
 - **Structure**:
   ```json
   {
@@ -39,7 +46,9 @@ Social data will be nested under a `social` key in the metadata column.
 - **Alternatives**: Dedicated `reviews` table (more complex, not needed yet).
 
 ### 3. Background Sync Policy
+
 Data will be fetched on-demand if missing, and then synced in the background every 7 days.
+
 - **Rationale**: DataForSEO calls cost money/credits; ratings don't change daily.
 - **Alternatives**: Sync on every request (too expensive) or only manual sync (stale data).
 

@@ -9,17 +9,13 @@ interface ScanOverlayProps {
   onReset: () => void;
 }
 
-export const ScanOverlay: React.FC<ScanOverlayProps> = ({ 
-  isProcessing, 
-  scanned, 
-  onReset 
-}) => {
+export const ScanOverlay: React.FC<ScanOverlayProps> = ({ isProcessing, scanned, onReset }) => {
   const theme = useAppTheme();
 
   return (
     <View className="absolute inset-0 items-center justify-center pointer-events-none">
       {/* Scan Frame */}
-      <View 
+      <View
         className="w-64 h-64 border-2 rounded-3xl items-center justify-center"
         style={{
           borderColor: scanned ? theme.colors.status.success : theme.colors.text.muted,
@@ -31,7 +27,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({
             <ActivityIndicator color={theme.colors.brand.primary} size="large" />
           </View>
         )}
-        
+
         {scanned && !isProcessing && (
           <View className="bg-black/60 p-6 rounded-2xl items-center">
             <Feather name="check-circle" size={48} color={theme.colors.status.success} />
@@ -42,7 +38,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({
       {/* Reset Button (only shown when scanned) */}
       {scanned && (
         <View className="absolute bottom-20 left-0 right-0 items-center" pointerEvents="auto">
-          <Pressable 
+          <Pressable
             onPress={onReset}
             className="bg-white/10 border border-white/20 px-8 py-4 rounded-full flex-row items-center"
           >

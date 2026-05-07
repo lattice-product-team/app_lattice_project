@@ -1,9 +1,11 @@
 # Proposal: Mobile Onboarding and Auth Redesign
 
 ## Problem
+
 The current entry experience of the Lattice mobile app is functional but lacks the "WOW" factor of modern premium applications. The transition for new users is abrupt (straight to login), and the visual identity doesn't fully exploit the brand's aesthetic potential. Additionally, guest access is buried within the login/register screens rather than being a clear alternative path from the start.
 
 ## Proposed Changes
+
 1.  **New Onboarding Screen**:
     - Implement a high-fidelity onboarding flow inspired by the "Roi" app.
     - Features a scrollable informational pager explaining the app's value proposition.
@@ -19,10 +21,12 @@ The current entry experience of the Lattice mobile app is functional but lacks t
     - Update the app's root index to direct unauthenticated first-time users to the Onboarding screen instead of Login.
 
 ## Goals
+
 - Increase user engagement through a premium first impression.
 - Clarify the app's purpose for new users before asking for registration.
 - Provide a cleaner, more focused registration experience.
 
 ## Non-Goals
+
 - Changing the underlying authentication logic (Google/Apple/Email).
 - Modifying the post-login experience (Main map/Profile).

@@ -12,9 +12,11 @@ Los paneles desplegables de la aplicación móvil presentan una sensibilidad exc
 ## Capabilities
 
 ### New Capabilities
+
 - `natural-sheet-physics`: Define los requisitos técnicos para una interacción de paneles que siga el movimiento del usuario de forma natural, sin aceleraciones artificiales ni saltos bruscos entre estados.
 
 ### Modified Capabilities
+
 - `premium-sheet-interaction`: Se actualizan los requisitos de respuesta táctil y suavidad de movimiento para alinearlos con el nuevo modelo de física 1:1.
 - `event-detail-sheet`: Se ajusta la lógica de cierre y expansión para que sea coherente con el buscador principal.
 

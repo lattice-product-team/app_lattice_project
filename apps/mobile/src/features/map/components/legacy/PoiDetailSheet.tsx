@@ -54,14 +54,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
       return `${mins} min`;
     };
 
-    const snapPoints = React.useMemo(
-      () => [
-        220, 
-        SCREEN_HEIGHT * 0.45, 
-        SCREEN_HEIGHT * 0.88,
-      ],
-      []
-    );
+    const snapPoints = React.useMemo(() => [220, SCREEN_HEIGHT * 0.45, SCREEN_HEIGHT * 0.88], []);
 
     if (!poi) return null;
 
@@ -75,7 +68,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
         backgroundComponent={CustomBackground}
         handleIndicatorStyle={[
           styles.handleIndicator,
-          { backgroundColor: 'rgba(255,255,255,0.3)' }
+          { backgroundColor: 'rgba(255,255,255,0.3)' },
         ]}
         handleStyle={styles.handle}
         animatedPosition={translateY}
@@ -103,7 +96,9 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               <Text style={styles.poiTitle} numberOfLines={1}>
                 {poi.displayName}
               </Text>
-              <Text style={[styles.poiSubtitle, { color: theme.colors.text.muted }]}>{metadata.label}</Text>
+              <Text style={[styles.poiSubtitle, { color: theme.colors.text.muted }]}>
+                {metadata.label}
+              </Text>
             </View>
 
             <Pressable
@@ -146,7 +141,11 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 style={styles.tridentButtonSecondary}
               >
                 <SafeBlurView intensity={20} style={styles.buttonBlur}>
-                  <MaterialCommunityIcons name="ticket-confirmation" size={22} color={theme.colors.brand.primary} />
+                  <MaterialCommunityIcons
+                    name="ticket-confirmation"
+                    size={22}
+                    color={theme.colors.brand.primary}
+                  />
                 </SafeBlurView>
                 <Text style={styles.tridentLabelSecondary}>ENTRADAS</Text>
               </Pressable>
@@ -194,7 +193,11 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               ))}
             </ScrollView>
 
-            {poi.description && <Text style={[styles.description, { color: theme.colors.text.muted }]}>{poi.description}</Text>}
+            {poi.description && (
+              <Text style={[styles.description, { color: theme.colors.text.muted }]}>
+                {poi.description}
+              </Text>
+            )}
           </BottomSheetScrollView>
         </View>
       </BottomSheet>

@@ -34,27 +34,29 @@ Given the typical network saturation at circuits, the app is designed to be func
 ## Augmented Reality (AR)
 
 - **Engine:** React Three Fiber (R3F).
-- **Implementation Strategy:** 
-    - **View Layering:** `expo-camera` provides the background feed, with a R3F `Canvas` overlaid for 3D rendering.
-    - **World Tracking:** Aligning the AR coordinate system using GPS and device sensors.
-    - **Asset Rendering:** Optimized 3D components and `drei` for text projections in 3D space.
+- **Implementation Strategy:**
+  - **View Layering:** `expo-camera` provides the background feed, with a R3F `Canvas` overlaid for 3D rendering.
+  - **World Tracking:** Aligning the AR coordinate system using GPS and device sensors.
+  - **Asset Rendering:** Optimized 3D components and `drei` for text projections in 3D space.
 
 ## App States & Transitions
 
 The transition between 2D (Map) and AR is driven by **Device Sensors** (Tilt-to-AR logic) and **Orientation**:
 
-| Orientation | Pitch Angle | State | UI Behavior |
-| :--- | :--- | :--- | :--- |
-| **Portrait** | Any | 2D Map | Full MapLibre view. |
-| **Landscape** | **< 30°** | 2D Map | Full MapLibre view. Low sensor polling. |
+| Orientation   | Pitch Angle   | State      | UI Behavior                                  |
+| :------------ | :------------ | :--------- | :------------------------------------------- |
+| **Portrait**  | Any           | 2D Map     | Full MapLibre view.                          |
+| **Landscape** | **< 30°**     | 2D Map     | Full MapLibre view. Low sensor polling.      |
 | **Landscape** | **30° - 75°** | Transition | Interpolated blur. Start Camera & AR engine. |
-| **Landscape** | **> 75°** | AR Live | Overlay R3F Scene on top of Camera. |
+| **Landscape** | **> 75°**     | AR Live    | Overlay R3F Scene on top of Camera.          |
 
 **Important:** AR is restricted to **Landscape (Horizontal)** mode to ensure better field of view and stability.
 
 **Automatic Overrides:**
+
 - AR is disabled if `battery < 15%`.
 - Reverts to 2D if the device temperature exceeds safety thresholds due to high GPU usage.
 
 ---
+
 > For setup instructions, see the [**Developer Setup Guide**](../guides/setup.md).

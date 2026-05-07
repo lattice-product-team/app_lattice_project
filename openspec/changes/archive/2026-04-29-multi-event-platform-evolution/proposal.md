@@ -14,11 +14,13 @@ The current Lattice application is limited to a single-event navigation experien
 ## Capabilities
 
 ### New Capabilities
+
 - `multi-event-discovery`: Logic and UI for browsing, selecting, and switching between active events.
 - `offline-event-experience`: Capability to bundle and download event-specific data for offline usage.
 - `accessibility-aware-routing`: Routing engine enhancement to respect user-defined physical constraints.
 
 ### Modified Capabilities
+
 - `decoupled-location-management`: Update to handle event boundaries and distance-based feature gating.
 - `granular-mobile-state`: Expand the global state to manage `currentEventId` and category-based theme tokens.
 

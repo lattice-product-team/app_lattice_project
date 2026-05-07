@@ -14,10 +14,12 @@ The application has pivoted from a circuit-specific navigation tool to a premium
 ## Capabilities
 
 ### New Capabilities
+
 - `event-poi-orchestration`: Manages the 1:N relationship and map visibility logic (Events visible by default, POIs visible on selection/zoom).
 - `saved-discovery-management`: Handles saved events/venues and the new sharing functionality within the bottom sheet.
 
 ### Modified Capabilities
+
 - `premium-sheet-interaction`: Extending the interaction model to support sticky action trident and temporal discovery filters.
 
 ## Impact
@@ -25,4 +27,3 @@ The application has pivoted from a circuit-specific navigation tool to a premium
 - **Components**: `MapBottomSheet.tsx`, `PoiDetailSheet.tsx`, `MapSheetManager.tsx`, `MapContent.tsx`.
 - **Logic**: New camera orchestration and conditional rendering for map layers.
 - **Styles**: Premium aesthetic alignment (Uber/Airbnb style) with standardized icons and glassmorphism.
-

@@ -13,9 +13,11 @@ The project currently suffers from critical technical inconsistencies that jeopa
 ## Capabilities
 
 ### New Capabilities
+
 - `standards-alignment`: Ensures the codebase follows the project's performance and styling pillars.
 
 ### Modified Capabilities
+
 - `navigation-logic`: Requirement for consistent coordinate ordering across services.
 
 ## Impact

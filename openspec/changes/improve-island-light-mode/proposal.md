@@ -12,6 +12,7 @@ The "Midnight Island" discovery dashboard currently lacks sufficient visual cont
 ## Capabilities
 
 ### Modified Capabilities
+
 - `ui-components`: Refinement of global UI component styles for light mode contrast.
 - `map-interface`: Adjustment of HUD and Island contrast on the map.
 

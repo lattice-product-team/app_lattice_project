@@ -12,9 +12,11 @@ The current map pin system has undergone multiple iterations trying to balance R
 ## Capabilities
 
 ### New Capabilities
+
 - `gpu-image-registry`: A centralized manager to handle remote image fetching and registration into the map's texture atlas.
 
 ### Modified Capabilities
+
 - `map-pin-components`: Update definition to support GPU-based rendering properties instead of native view props.
 - `spatial-hierarchy-logic`: Refine visibility thresholds to work seamlessly with GPU layer filters (`minZoomLevel`, `filter`).
 

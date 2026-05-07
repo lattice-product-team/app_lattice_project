@@ -5,12 +5,14 @@ The current spatial management is coupled with a "Canvas" concept in `MapEditorP
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Decouple spatial data entry from the visualization map.
 - Implement a global visualizer for all active events and their assets.
 - Provide contextual spatial selection (e.g., seeing a boundary when placing a POI).
 - Ensure 1:1 synchronization with the mobile application's map layers.
 
 **Non-Goals:**
+
 - Real-time collaborative editing of boundaries.
 - Support for complex multi-polygon boundaries.
 - Modification of the mobile app's rendering logic (reuse existing layers).
@@ -18,23 +20,29 @@ The current spatial management is coupled with a "Canvas" concept in `MapEditorP
 ## Decisions
 
 ### 1. Shared `AdminMap` Component
+
 **Decision**: Create a highly configurable `AdminMap` component in `apps/admin-web/src/components/map/admin-map.tsx`.
 **Rationale**: Centralizing map logic ensures consistent styling (Maptiler), control handling, and layer management across the global view, event creation, and POI creation.
 **Alternatives**: duplicating map logic in each page (leads to drift) or using raw MapLibre (harder to integrate with React state).
 
 ### 2. Interaction Modes
+
 **Decision**: The `AdminMap` will support three distinct `InteractionModes`:
+
 - `GLOBAL_VIEW`: Read-only, cluster-enabled (if needed), shows all events.
 - `DRAW_BOUNDARY`: Clicking on the map adds points to a polygon.
 - `PICK_COORDINATE`: Clicking on the map places a single marker; shows a boundary overlay if `eventId` is provided.
 
 ### 3. RESTful API Evolution
+
 **Decision**: Move away from `POST /events/:id/spatial` (bulk save) towards individual resource endpoints:
+
 - `POST /api/v1/events`: Creates the event record including the boundary.
 - `POST /api/v1/pois`: Creates a POI record associated with an `eventId`.
-**Rationale**: Improves auditability and reduces the risk of overwriting data during bulk saves.
+  **Rationale**: Improves auditability and reduces the risk of overwriting data during bulk saves.
 
 ### 4. Data Sincronization
+
 **Decision**: Use existing PostGIS geometry storage.
 **Rationale**: The mobile app already consumes GeoJSON from the `geo-service`. By keeping the storage format consistent, no mobile-side changes are required.
 

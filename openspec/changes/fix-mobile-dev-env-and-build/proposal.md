@@ -13,9 +13,11 @@ The current mobile development environment is unstable and prone to failures dur
 ## Capabilities
 
 ### New Capabilities
+
 - `network-preflight-diagnostics`: A tool to verify if the MacBook's local ports are reachable from the external network interface.
 
 ### Modified Capabilities
+
 - `env-synchronization`: Allow dynamic runtime overrides for variables (like `GATEWAY_HOST`) during the sync process without persisting them to the root file.
 - `cross-environment-networking`: Standardize the use of LAN IPs and Tunnels to ensure consistent connectivity across all development scenarios.
 

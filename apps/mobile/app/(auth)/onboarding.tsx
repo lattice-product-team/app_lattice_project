@@ -11,12 +11,12 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import Animated, { 
-  FadeInDown, 
+import Animated, {
+  FadeInDown,
   useSharedValue,
   useAnimatedStyle,
   interpolate,
-  Extrapolate
+  Extrapolate,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
@@ -87,29 +87,26 @@ export default function OnboardingScreen() {
         [0, 1, 0],
         Extrapolate.CLAMP
       );
-      
+
       return {
         opacity,
       };
     });
 
     return (
-      <Animated.View 
-        key={`bg-${index}`} 
-        style={[StyleSheet.absoluteFill, animatedStyle]}
-      >
-        <Image 
+      <Animated.View key={`bg-${index}`} style={[StyleSheet.absoluteFill, animatedStyle]}>
+        <Image
           source={ONBOARDING_DATA[index].image}
           style={styles.backgroundImage}
           contentFit="cover"
         />
         <LinearGradient
           colors={[
-            'transparent', 
-            theme.dark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', 
-            theme.dark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)', 
-            theme.dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)', 
-            theme.colors.bg.main
+            'transparent',
+            theme.dark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+            theme.dark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
+            theme.dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
+            theme.colors.bg.main,
           ]}
           locations={[0, 0.4, 0.6, 0.8, 1]}
           style={styles.gradient}
@@ -118,16 +115,16 @@ export default function OnboardingScreen() {
     );
   };
 
-  const renderItem = ({ item }: { item: typeof ONBOARDING_DATA[0] }) => (
+  const renderItem = ({ item }: { item: (typeof ONBOARDING_DATA)[0] }) => (
     <View style={styles.slide}>
-      <Animated.View 
+      <Animated.View
         entering={FadeInDown.delay(200).duration(1000).springify()}
         style={styles.textContainer}
       >
         {item.showLogo ? (
           <View style={styles.centralLogoShadow}>
-            <Image 
-              source={require('../../assets/images/icon.png')} 
+            <Image
+              source={require('../../assets/images/icon.png')}
               style={styles.logoImage}
               contentFit="contain"
             />
@@ -137,13 +134,13 @@ export default function OnboardingScreen() {
             {item.subtitle}
           </Text>
         )}
-        <Text 
+        <Text
           style={[
-            styles.slideTitle, 
+            styles.slideTitle,
             { color: theme.colors.text.primary },
-            item.showLogo && { fontSize: 64, lineHeight: 68 } // Larger title for first slide
-          ]} 
-          numberOfLines={2} 
+            item.showLogo && { fontSize: 64, lineHeight: 68 }, // Larger title for first slide
+          ]}
+          numberOfLines={2}
           adjustsFontSizeToFit
         >
           {item.title}
@@ -180,10 +177,11 @@ export default function OnboardingScreen() {
               key={i}
               style={[
                 styles.dot,
-                { 
+                {
                   width: activeIndex === i ? 16 : 4,
-                  backgroundColor: activeIndex === i ? theme.colors.text.primary : theme.colors.border.strong,
-                  opacity: activeIndex === i ? 1 : 0.3
+                  backgroundColor:
+                    activeIndex === i ? theme.colors.text.primary : theme.colors.border.strong,
+                  opacity: activeIndex === i ? 1 : 0.3,
                 },
               ]}
             />
@@ -191,18 +189,25 @@ export default function OnboardingScreen() {
         </View>
 
         <View style={styles.buttonContainer}>
-          <Pressable 
-            onPress={handleGetStarted} 
+          <Pressable
+            onPress={handleGetStarted}
             style={[styles.getStartedButton, { backgroundColor: theme.colors.text.primary }]}
           >
-            <Text style={[styles.getStartedText, { color: theme.colors.bg.main }]}>Get started</Text>
+            <Text style={[styles.getStartedText, { color: theme.colors.bg.main }]}>
+              Get started
+            </Text>
           </Pressable>
 
-          <Pressable 
-            onPress={handleGuestMode} 
-            style={[styles.guestButton, { backgroundColor: 'transparent', borderColor: theme.colors.border.strong }]}
+          <Pressable
+            onPress={handleGuestMode}
+            style={[
+              styles.guestButton,
+              { backgroundColor: 'transparent', borderColor: theme.colors.border.strong },
+            ]}
           >
-            <Text style={[styles.guestText, { color: theme.colors.text.primary }]}>Entrar como invitado</Text>
+            <Text style={[styles.guestText, { color: theme.colors.text.primary }]}>
+              Entrar como invitado
+            </Text>
           </Pressable>
         </View>
       </View>

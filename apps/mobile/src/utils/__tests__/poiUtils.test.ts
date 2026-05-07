@@ -3,9 +3,9 @@ import { getCategoryIcon, getCategoryColor } from '../poiUtils';
 describe('poiUtils', () => {
   describe('getCategoryIcon', () => {
     it('should return correct icon for known categories', () => {
-      expect(getCategoryIcon('restaurant')).toBe('food-fork-drink');
-      expect(getCategoryIcon('wc')).toBe('toilet');
-      expect(getCategoryIcon('medical')).toBe('medical-bag');
+      expect(getCategoryIcon('restaurant')).toBe('coffee');
+      expect(getCategoryIcon('wc')).toBe('user');
+      expect(getCategoryIcon('medical')).toBe('plus-square');
     });
 
     it('should return default icon for unknown categories', () => {
@@ -19,12 +19,15 @@ describe('poiUtils', () => {
 
   describe('getCategoryColor', () => {
     it('should return correct color for specific categories', () => {
-      expect(getCategoryColor('toilet')).toBe('#9BD9D9');
-      expect(getCategoryColor('medical')).toBe('#D99B9B');
+      // colors.semantic.dark.info is #54A6FF
+      expect(getCategoryColor('toilet')).toBe('#54A6FF');
+      // colors.semantic.dark.error is #E5484D
+      expect(getCategoryColor('medical')).toBe('#E5484D');
     });
 
     it('should return default color for unknown categories', () => {
-      expect(getCategoryColor('unknown')).toBe('#8E8E93');
+      // colors.neutral.dark.overlay is #262624
+      expect(getCategoryColor('unknown')).toBe('#262624');
     });
   });
 });

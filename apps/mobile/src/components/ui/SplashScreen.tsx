@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Image } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withRepeat, 
-  withTiming, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
   Easing,
   interpolate,
 } from 'react-native-reanimated';
@@ -32,7 +32,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
 
   const animatedGradientStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: interpolate(gradientPos.value, [0, 1], [-SCREEN_WIDTH * 0.2, SCREEN_WIDTH * 0.2]) },
+      {
+        translateX: interpolate(
+          gradientPos.value,
+          [0, 1],
+          [-SCREEN_WIDTH * 0.2, SCREEN_WIDTH * 0.2]
+        ),
+      },
     ],
   }));
 
@@ -42,7 +48,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
       <Animated.View style={[styles.backgroundWrapper, animatedGradientStyle]}>
         <LinearGradient
           colors={
-            theme.dark 
+            theme.dark
               ? [theme.colors.bg.main, '#1A1A18', '#0D0D0C', '#141412', theme.colors.bg.main]
               : ['#ffffff', '#d0e3ff', '#eaeaee', '#faf2e5', '#ffffff']
           }
@@ -54,8 +60,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete 
 
       {/* Main Branding (Instant) */}
       <View style={styles.logoContainer}>
-        <Image 
-          source={require('../../../assets/images/icon.png')} 
+        <Image
+          source={require('../../../assets/images/icon.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -92,5 +98,5 @@ const styles = StyleSheet.create({
   logo: {
     width: '100%',
     height: '100%',
-  }
+  },
 });

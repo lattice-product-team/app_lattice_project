@@ -12,6 +12,7 @@ Currently, the mobile app map initializes at a hardcoded Madrid coordinate befor
 ## Capabilities
 
 ### Modified Capabilities
+
 - `decoupled-location-management`: Add requirement for location persistence to ensure a seamless startup experience.
 
 ## Impact

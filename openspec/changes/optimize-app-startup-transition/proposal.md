@@ -12,9 +12,11 @@ The current app startup flow is sequential, which increases the total time the u
 ## Capabilities
 
 ### New Capabilities
+
 - `startup-orchestration`: Defines the requirements for synchronized, parallel app initialization and the "ready-state" handshake between the UI, data, and map layers.
 
 ### Modified Capabilities
+
 - `hybrid-map-rendering`: Update rendering requirements to support a "hidden-start" mode where the map initializes behind an overlay to prevent visual pop-in.
 
 ## Impact

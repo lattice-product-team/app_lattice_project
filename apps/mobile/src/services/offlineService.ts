@@ -26,26 +26,30 @@ export const offlineService = {
     // 3. Download Map Tiles
     // We use the first ring of the polygon as the boundary for tiles
     const coordinates = event.boundary.coordinates[0];
-    
+
     const packOptions = {
       name: `event_${event.id}`,
       styleURL: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`,
       bounds: [
-        [Math.min(...coordinates.map(c => c[0])), Math.min(...coordinates.map(c => c[1]))], // SW
-        [Math.max(...coordinates.map(c => c[0])), Math.max(...coordinates.map(c => c[1]))], // NE
+        [Math.min(...coordinates.map((c) => c[0])), Math.min(...coordinates.map((c) => c[1]))], // SW
+        [Math.max(...coordinates.map((c) => c[0])), Math.max(...coordinates.map((c) => c[1]))], // NE
       ] as any,
       minZoom: 12,
       maxZoom: 18,
     };
 
     // Note: MapLibre Offline Manager uses a callback-based API
-    await MapLibreGL.offlineManager.createPack(packOptions, (pack, status) => {
-      if (onProgress) {
-        onProgress(status.percentage / 100);
+    await MapLibreGL.offlineManager.createPack(
+      packOptions,
+      (pack, status) => {
+        if (onProgress) {
+          onProgress(status.percentage / 100);
+        }
+      },
+      (pack, error) => {
+        console.error('Offline pack error:', error);
       }
-    }, (pack, error) => {
-      console.error('Offline pack error:', error);
-    });
+    );
 
     storage.set(`downloaded_${event.id}`, true);
   },
@@ -69,5 +73,5 @@ export const offlineService = {
     storage.remove(`pois_${eventId}`);
     storage.remove(`network_${eventId}`);
     storage.remove(`downloaded_${eventId}`);
-  }
+  },
 };

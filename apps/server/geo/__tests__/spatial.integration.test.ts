@@ -27,11 +27,27 @@ describe('Geo Service Spatial Endpoints', () => {
       const mockEvent = {
         id: 1,
         name: 'Test Event',
-        boundary: JSON.stringify({ type: 'Polygon', coordinates: [[[0,0], [1,0], [1,1], [0,1], [0,0]]] }),
+        boundary: JSON.stringify({
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 0],
+              [1, 1],
+              [0, 1],
+              [0, 0],
+            ],
+          ],
+        }),
       };
 
       const mockPois = [
-        { id: 10, name: 'Bar 1', type: 'bar', geometry: JSON.stringify({ type: 'Point', coordinates: [0.5, 0.5] }) }
+        {
+          id: 10,
+          name: 'Bar 1',
+          type: 'bar',
+          geometry: JSON.stringify({ type: 'Point', coordinates: [0.5, 0.5] }),
+        },
       ];
 
       (dbLib.db.select as any).mockReturnValueOnce({
@@ -83,10 +99,21 @@ describe('Geo Service Spatial Endpoints', () => {
       });
 
       const payload = {
-        boundary: { type: 'Polygon', coordinates: [[[0,0], [1,0], [1,1], [0,1], [0,0]]] },
+        boundary: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 0],
+              [1, 1],
+              [0, 1],
+              [0, 0],
+            ],
+          ],
+        },
         pois: [
-          { name: 'New Bar', type: 'bar', geometry: { type: 'Point', coordinates: [0.6, 0.6] } }
-        ]
+          { name: 'New Bar', type: 'bar', geometry: { type: 'Point', coordinates: [0.6, 0.6] } },
+        ],
       };
 
       const response = await request(app).post('/events/1/spatial').send(payload);

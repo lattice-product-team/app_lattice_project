@@ -7,21 +7,21 @@ export type InteractionMode = 'GLOBAL_VIEW' | 'DRAW_BOUNDARY' | 'PICK_COORDINATE
 export function useMapInteractions(initialMode: InteractionMode = 'GLOBAL_VIEW') {
   const [mode, setMode] = useState<InteractionMode>(initialMode);
   const [boundaryPoints, setBoundaryPoints] = useState<[number, number][]>([]);
-  const [selectedPoi, setSelectedPoi] = useState<{ lng: number, lat: number } | null>(null);
+  const [selectedPoi, setSelectedPoi] = useState<{ lng: number; lat: number } | null>(null);
 
   const addBoundaryPoint = useCallback((point: [number, number]) => {
-    setBoundaryPoints(prev => [...prev, point]);
+    setBoundaryPoints((prev) => [...prev, point]);
   }, []);
 
   const undoLastPoint = useCallback(() => {
-    setBoundaryPoints(prev => prev.slice(0, -1));
+    setBoundaryPoints((prev) => prev.slice(0, -1));
   }, []);
 
   const clearBoundary = useCallback(() => {
     setBoundaryPoints([]);
   }, []);
 
-  const selectPoi = useCallback((coords: { lng: number, lat: number }) => {
+  const selectPoi = useCallback((coords: { lng: number; lat: number }) => {
     setSelectedPoi(coords);
   }, []);
 
@@ -46,6 +46,6 @@ export function useMapInteractions(initialMode: InteractionMode = 'GLOBAL_VIEW')
     setSelectedPoi,
     selectPoi,
     clearPoi,
-    reset
+    reset,
   };
 }

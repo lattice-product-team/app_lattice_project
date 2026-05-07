@@ -5,18 +5,21 @@ The Lattice mobile application requires a highly performant and stable map inter
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Achieve 100% stability in pin positioning (zero flickering).
 - Support high-fidelity circular event icons with dynamic images.
 - Scale to thousands of POIs using vector icons.
 - Implement a hierarchical zoom visibility system.
 
 **Non-Goals:**
+
 - Supporting 3D pin models.
 - Changing the underlying GeoJSON data structures.
 
 ## Decisions
 
 ### 1. GPU Layer Stack for Hero Events
+
 - **Decision**: Instead of a single complex React component, we will stack multiple GPU layers:
   1. `CircleLayer` (Shadow): Soft black blur behind the pin.
   2. `CircleLayer` (Body): White circle with a dynamic `circleStrokeColor` based on the event category.
@@ -25,11 +28,13 @@ The Lattice mobile application requires a highly performant and stable map inter
 - **Alternative**: Using `MarkerView` (rejected: flickering/performance).
 
 ### 2. Dynamic Image Management
+
 - **Decision**: Implement a `MapImageRegistry` component within `MapContent` that uses `<MapLibreGL.Images>` to register remote URLs as named icons (e.g., `event-img-{id}`).
 - **Rationale**: MapLibre's `SymbolLayer` can only render images that are registered in the map's texture atlas.
 - **Alternative**: Pre-fetching all images and bundling them (rejected: dynamic events).
 
 ### 3. Vector Iconography for POIs
+
 - **Decision**: Use the built-in `maptiler_planet` icon set for secondary POIs (toilets, food, etc.).
 - **Rationale**: Built-in icons are rendered directly from the vector tiles, making them nearly free in terms of performance.
 

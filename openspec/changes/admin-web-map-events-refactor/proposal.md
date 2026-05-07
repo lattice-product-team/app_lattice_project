@@ -14,11 +14,13 @@ The current "Map Editor" in admin-web is overly complex and mixes concerns, lead
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-global-map`: A read-only, high-performance global map visualizer for all assets and events.
 - `event-spatial-onboarding`: Integration of boundary drawing into the event creation wizard.
 - `poi-spatial-onboarding`: Integration of coordinate picking into the POI registration flow, with event-boundary context.
 
 ### Modified Capabilities
+
 - `event-poi-orchestration`: Updating the relationship and creation flow between events and their child assets.
 - `spatial-sync-engine`: Ensuring that individual updates (instead of bulk spatial saves) are propagated correctly to the database and mobile clients.
 

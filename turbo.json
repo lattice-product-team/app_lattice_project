@@ -8,7 +8,8 @@
     },
     "lint": {},
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "passThroughEnv": ["NODE_ENV", "DATABASE_URL", "REDIS_URL", "JWT_SECRET"]
     },
     "dev": {
       "cache": false,
@@ -31,21 +32,25 @@
         "DATABASE_URL",
         "REDIS_HOST",
         "REDIS_PORT",
-        "REDIS_URL",
+        "REDIS_URL"
       ]
     },
     "db:generate": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL"]
     },
     "db:migrate": {
       "cache": false,
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "passThroughEnv": ["DATABASE_URL", "REDIS_URL"]
     },
     "db:seed": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL"]
     },
     "db:clean": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_URL"]
     },
     "db:studio": {
       "cache": false,

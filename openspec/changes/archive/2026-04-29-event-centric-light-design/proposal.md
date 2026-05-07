@@ -13,10 +13,12 @@ The project is pivoting from a specialized "Circuit-only" navigation tool to a b
 ## Capabilities
 
 ### New Capabilities
+
 - `event-centric-navigation`: Logic specialized for large-scale temporary events.
 - `light-theme-system`: Full support for light mode with a specialized yellow-based palette.
 
 ### Modified Capabilities
+
 - `map-interaction`: Unified interaction patterns for both light and dark modes (future-proofing).
 
 ## Impact

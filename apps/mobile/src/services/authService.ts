@@ -1,4 +1,3 @@
-
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuthStore } from '../store/useAuthStore';
@@ -39,11 +38,12 @@ export class AuthService {
     });
     const data = await response.json();
     if (!response.ok) {
-      const errorMsg = data.error?.user_friendly_message || 
-                       data.error?.message || 
-                       data.message || 
-                       data.error || 
-                       'Login failed';
+      const errorMsg =
+        data.error?.user_friendly_message ||
+        data.error?.message ||
+        data.message ||
+        data.error ||
+        'Login failed';
       throw new Error(typeof errorMsg === 'string' ? errorMsg : 'Login failed');
     }
     return data;
@@ -57,11 +57,12 @@ export class AuthService {
     });
     const responseData = await response.json();
     if (!response.ok) {
-      const errorMsg = responseData.error?.user_friendly_message || 
-                       responseData.error?.message || 
-                       responseData.message || 
-                       responseData.error || 
-                       'Registration failed';
+      const errorMsg =
+        responseData.error?.user_friendly_message ||
+        responseData.error?.message ||
+        responseData.message ||
+        responseData.error ||
+        'Registration failed';
       throw new Error(typeof errorMsg === 'string' ? errorMsg : 'Registration failed');
     }
     return responseData;
@@ -69,7 +70,7 @@ export class AuthService {
 
   async getUserTickets() {
     const response = await fetch(`${AuthService.API_URL}/auth/tickets`, {
-      headers: { 'Authorization': `Bearer ${useAuthStore.getState().token}` }
+      headers: { Authorization: `Bearer ${useAuthStore.getState().token}` },
     });
     return response.json();
   }
@@ -77,9 +78,9 @@ export class AuthService {
   async claimTicket(code: string) {
     const response = await fetch(`${AuthService.API_URL}/auth/ticket/claim`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${useAuthStore.getState().token}`
+        Authorization: `Bearer ${useAuthStore.getState().token}`,
       },
       body: JSON.stringify({ ticket_code: code }),
     });
@@ -89,9 +90,9 @@ export class AuthService {
   async unclaimTicket(code: string) {
     const response = await fetch(`${AuthService.API_URL}/auth/ticket/unclaim`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${useAuthStore.getState().token}`
+        Authorization: `Bearer ${useAuthStore.getState().token}`,
       },
       body: JSON.stringify({ ticket_code: code }),
     });

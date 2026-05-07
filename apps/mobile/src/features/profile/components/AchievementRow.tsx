@@ -16,13 +16,9 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-          Logros Lattice
-        </Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Logros Lattice</Text>
         <Pressable>
-          <Text style={[styles.seeAll, { color: theme.colors.brand.primary }]}>
-            Ver todos
-          </Text>
+          <Text style={[styles.seeAll, { color: theme.colors.brand.primary }]}>Ver todos</Text>
         </Pressable>
       </View>
 
@@ -38,38 +34,51 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
             </Text>
             <View style={[styles.border, { borderColor: theme.colors.glass.border }]} />
           </View>
-        ) : medals.map((medal) => (
-          <View key={medal.id} style={styles.medalCard}>
-            <View style={styles.medalWrapper}>
-              <LinearGradient
-                colors={medal.isLocked 
-                  ? [theme.colors.interactive.disabled, theme.colors.bg.elevation] 
-                  : [theme.colors.brand.primary, theme.colors.brand.primaryVariant]}
-                style={styles.medalGradient}
+        ) : (
+          medals.map((medal) => (
+            <View key={medal.id} style={styles.medalCard}>
+              <View style={styles.medalWrapper}>
+                <LinearGradient
+                  colors={
+                    medal.isLocked
+                      ? [theme.colors.interactive.disabled, theme.colors.bg.elevation]
+                      : [theme.colors.brand.primary, theme.colors.brand.primaryVariant]
+                  }
+                  style={styles.medalGradient}
+                >
+                  <View style={[styles.innerCircle, { backgroundColor: theme.colors.bg.surface }]}>
+                    <MaterialCommunityIcons
+                      name={medal.icon as any}
+                      size={28}
+                      color={medal.isLocked ? theme.colors.text.muted : theme.colors.brand.primary}
+                    />
+                  </View>
+                </LinearGradient>
+                {/* Ribbon effect or layered border */}
+                <View
+                  style={[
+                    styles.outerBorder,
+                    {
+                      borderColor: medal.isLocked
+                        ? theme.colors.border.subtle
+                        : theme.colors.brand.primarySurface,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.medalTitle,
+                  { color: theme.colors.text.primary },
+                  medal.isLocked && { color: theme.colors.text.muted },
+                ]}
+                numberOfLines={1}
               >
-                <View style={[styles.innerCircle, { backgroundColor: theme.colors.bg.surface }]}>
-                  <MaterialCommunityIcons 
-                    name={medal.icon as any} 
-                    size={28} 
-                    color={medal.isLocked ? theme.colors.text.muted : theme.colors.brand.primary} 
-                  />
-                </View>
-              </LinearGradient>
-              {/* Ribbon effect or layered border */}
-              <View style={[styles.outerBorder, { borderColor: medal.isLocked ? theme.colors.border.subtle : theme.colors.brand.primarySurface }]} />
+                {medal.title}
+              </Text>
             </View>
-            <Text 
-              style={[
-                styles.medalTitle, 
-                { color: theme.colors.text.primary },
-                medal.isLocked && { color: theme.colors.text.muted }
-              ]}
-              numberOfLines={1}
-            >
-              {medal.title}
-            </Text>
-          </View>
-        ))}
+          ))
+        )}
       </ScrollView>
     </View>
   );

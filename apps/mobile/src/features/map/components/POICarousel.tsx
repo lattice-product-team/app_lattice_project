@@ -22,9 +22,9 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const Δφ = ((lat2 - lat1) * Math.PI) / 180;
   const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
@@ -40,15 +40,18 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
   const theme = useLatticeTheme();
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const metadata = getCategoryMetadata(poi.category);
-  const imageUrl = (poi.images && poi.images.length > 0) 
-    ? poi.images[0] 
-    : 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=800&auto=format&fit=crop';
+  const imageUrl =
+    poi.images && poi.images.length > 0
+      ? poi.images[0]
+      : 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=800&auto=format&fit=crop';
 
   const distanceText = useMemo(() => {
     if (!userCoords || !poi.coordinates) return null;
     const d = calculateDistance(
-      userCoords[1], userCoords[0],
-      poi.coordinates[1], poi.coordinates[0]
+      userCoords[1],
+      userCoords[0],
+      poi.coordinates[1],
+      poi.coordinates[0]
     );
     if (d >= 1000) return `${(d / 1000).toFixed(1)} km`;
     return `${Math.round(d)} m`;
@@ -56,27 +59,27 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
 
   return (
     <View style={styles.cardWrapper}>
-      <Pressable 
+      <Pressable
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onPress();
         }}
         style={({ pressed }) => [
           styles.card,
-          { 
+          {
             backgroundColor: theme.colors.bg.elevation,
-            borderColor: theme.colors.glass.border 
+            borderColor: theme.colors.glass.border,
           },
-          pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }
+          pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
         ]}
       >
-        <Image 
-          source={{ uri: imageUrl }} 
-          style={styles.cardImage} 
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.cardImage}
           contentFit="cover"
           transition={300}
         />
-        
+
         <View style={styles.overlay} />
 
         <View style={styles.cardContent}>
@@ -89,9 +92,17 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
               )}
               <Text style={styles.categoryText}>{metadata.label.toUpperCase()}</Text>
             </View>
-            
+
             {distanceText && (
-              <View style={[styles.distanceBadge, { backgroundColor: theme.colors.overlay.modal, borderColor: theme.colors.glass.border }]}>
+              <View
+                style={[
+                  styles.distanceBadge,
+                  {
+                    backgroundColor: theme.colors.overlay.modal,
+                    borderColor: theme.colors.glass.border,
+                  },
+                ]}
+              >
                 <Feather name="navigation" size={10} color="white" />
                 <Text style={styles.distanceText}>{distanceText}</Text>
               </View>
@@ -99,11 +110,17 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
           </View>
 
           <View style={styles.bottomInfo}>
-            <Text style={[styles.poiName, { color: 'white' }]} numberOfLines={1}>{poi.displayName}</Text>
+            <Text style={[styles.poiName, { color: 'white' }]} numberOfLines={1}>
+              {poi.displayName}
+            </Text>
             <View style={styles.detailsRow}>
               <View style={styles.statusWrapper}>
-                <View style={[styles.statusDot, { backgroundColor: theme.colors.status.success }]} />
-                <Text style={[styles.statusText, { color: 'rgba(255,255,255,0.7)' }]}>Poca gente</Text>
+                <View
+                  style={[styles.statusDot, { backgroundColor: theme.colors.status.success }]}
+                />
+                <Text style={[styles.statusText, { color: 'rgba(255,255,255,0.7)' }]}>
+                  Poca gente
+                </Text>
               </View>
               <View style={[styles.dot, { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
               <Text style={[styles.statusText, { color: 'rgba(255,255,255,0.7)' }]}>Abierto</Text>
@@ -124,12 +141,22 @@ interface POICarouselProps {
 export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
   const theme = useLatticeTheme();
   const userCoords = useLocationStore((s) => s.logicalCoords);
-  
+
   const sortedPois = useMemo(() => {
     if (!userCoords || !pois) return pois;
     return [...pois].sort((a, b) => {
-      const distA = calculateDistance(userCoords[1], userCoords[0], a.coordinates[1], a.coordinates[0]);
-      const distB = calculateDistance(userCoords[1], userCoords[0], b.coordinates[1], b.coordinates[0]);
+      const distA = calculateDistance(
+        userCoords[1],
+        userCoords[0],
+        a.coordinates[1],
+        a.coordinates[0]
+      );
+      const distB = calculateDistance(
+        userCoords[1],
+        userCoords[0],
+        b.coordinates[1],
+        b.coordinates[0]
+      );
       return distA - distB;
     });
   }, [pois, userCoords]);
@@ -144,8 +171,8 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
           <Feather name="chevron-right" size={16} color={theme.colors.text.muted} />
         </View>
       )}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         style={{ height: 180 }}
         showsHorizontalScrollIndicator={false}
         snapToInterval={CARD_WIDTH + 16}
@@ -153,12 +180,7 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
         contentContainerStyle={styles.scrollContent}
       >
         {sortedPois.map((poi, index) => (
-          <POICarouselCard 
-            key={poi.id} 
-            poi={poi} 
-            index={index}
-            onPress={() => onSelectPoi(poi)} 
-          />
+          <POICarouselCard key={poi.id} poi={poi} index={index} onPress={() => onSelectPoi(poi)} />
         ))}
       </ScrollView>
     </View>

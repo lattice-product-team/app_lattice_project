@@ -12,23 +12,23 @@ interface UserAvatarProps {
 
 export const UserAvatar = ({ size = 32, url, isGuest }: UserAvatarProps) => {
   const theme = useAppTheme();
-  
+
   const containerStyle = [
     styles.container,
-    { 
-      width: size, 
-      height: size, 
+    {
+      width: size,
+      height: size,
       borderRadius: size / 2,
       backgroundColor: isGuest ? theme.colors.glass.subtle : theme.colors.bg.surface,
       borderColor: theme.colors.border.subtle,
       borderWidth: 1,
-    }
+    },
   ];
 
   if (url) {
     return (
       <View style={containerStyle}>
-        <Image 
+        <Image
           source={{ uri: url }}
           style={{ width: '100%', height: '100%', borderRadius: size / 2 }}
         />
@@ -38,10 +38,10 @@ export const UserAvatar = ({ size = 32, url, isGuest }: UserAvatarProps) => {
 
   return (
     <View style={containerStyle}>
-      <Feather 
-        name={isGuest ? "user-x" : "user"} 
-        size={size * 0.6} 
-        color={isGuest ? theme.colors.text.muted : theme.colors.text.primary} 
+      <Feather
+        name={isGuest ? 'user-x' : 'user'}
+        size={size * 0.6}
+        color={isGuest ? theme.colors.text.muted : theme.colors.text.primary}
       />
     </View>
   );

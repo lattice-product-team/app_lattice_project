@@ -16,20 +16,24 @@ export interface SearchEvent {
 }
 
 export const useSearchEvents = (query: string) => {
-  const { data: events = [], isLoading: loading, error } = useQuery({
+  const {
+    data: events = [],
+    isLoading: loading,
+    error,
+  } = useQuery({
     queryKey: ['events-search', ''], // Static key for pre-fetching
-    queryFn: () => geoService.getEvents()
+    queryFn: () => geoService.getEvents(),
   });
 
   const filteredEvents = useMemo(() => {
     if (!query || query.trim() === '') {
       return events;
     }
-    
+
     const searchLower = query.toLowerCase().trim();
     return events.filter(
-      (event) => 
-        event.name.toLowerCase().includes(searchLower) || 
+      (event) =>
+        event.name.toLowerCase().includes(searchLower) ||
         event.type.toLowerCase().includes(searchLower)
     );
   }, [query, events]);

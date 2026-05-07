@@ -13,11 +13,13 @@ La interfaz actual del mapa es excelente en su estado minimalista, pero carece d
 ## Capabilities
 
 ### New Capabilities
+
 - `map-island-expansion`: Orquestación de los estados de altura y gestos de la cápsula flotante.
 - `discovery-dashboard`: Componente contenedor para los widgets de nivel 2 (categorías, filtros).
 - `event-spotlight`: Sistema de renderizado de tarjetas de evento optimizadas para la altura media.
 
 ### Modified Capabilities
+
 - `map-interface`: Ajuste de la arquitectura base en `index.tsx` para soportar la expansión de contenido.
 
 ## Impact

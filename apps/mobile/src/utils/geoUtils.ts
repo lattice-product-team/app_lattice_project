@@ -5,15 +5,17 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
   const Δφ = ((lat2 - lat1) * Math.PI) / 180;
   const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
 };
 
-export const calculateBBox = (coords: [number, number][]): [number, number, number, number] | null => {
+export const calculateBBox = (
+  coords: [number, number][]
+): [number, number, number, number] | null => {
   if (!coords || coords.length === 0) return null;
 
   let minLng = coords[0][0];
@@ -80,4 +82,22 @@ export const decodePolyline = (str: string, precision: number = 6): [number, num
   }
 
   return coordinates;
+};
+
+/**
+ * Calculates the centroid of a set of coordinates.
+ * Useful for finding the center of a polygon or a cluster of POIs.
+ */
+export const calculateCentroid = (coords: [number, number][]): [number, number] | null => {
+  if (!coords || coords.length === 0) return null;
+
+  let sumLng = 0;
+  let sumLat = 0;
+
+  for (const [lng, lat] of coords) {
+    sumLng += lng;
+    sumLat += lat;
+  }
+
+  return [sumLng / coords.length, sumLat / coords.length];
 };

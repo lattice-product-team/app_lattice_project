@@ -6,14 +6,14 @@ import { getCategoryMetadata } from '../../../../utils/poiUtils';
 // Haversine distance formula in meters
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371e3;
-  const p1 = lat1 * Math.PI / 180;
-  const p2 = lat2 * Math.PI / 180;
-  const dp = (lat2 - lat1) * Math.PI / 180;
-  const dl = (lon2 - lon1) * Math.PI / 180;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dp = ((lat2 - lat1) * Math.PI) / 180;
+  const dl = ((lon2 - lon1) * Math.PI) / 180;
 
-  const a = Math.sin(dp / 2) * Math.sin(dp / 2) +
-            Math.cos(p1) * Math.cos(p2) *
-            Math.sin(dl / 2) * Math.sin(dl / 2);
+  const a =
+    Math.sin(dp / 2) * Math.sin(dp / 2) +
+    Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
@@ -21,16 +21,15 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 
 // Bearing from origin to destination in degrees
 const getBearing = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const p1 = lat1 * Math.PI / 180;
-  const p2 = lat2 * Math.PI / 180;
-  const l1 = lon1 * Math.PI / 180;
-  const l2 = lon2 * Math.PI / 180;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const l1 = (lon1 * Math.PI) / 180;
+  const l2 = (lon2 * Math.PI) / 180;
 
   const y = Math.sin(l2 - l1) * Math.cos(p2);
-  const x = Math.cos(p1) * Math.sin(p2) -
-            Math.sin(p1) * Math.cos(p2) * Math.cos(l2 - l1);
+  const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(l2 - l1);
   const theta = Math.atan2(y, x);
-  return (theta * 180 / Math.PI + 360) % 360;
+  return ((theta * 180) / Math.PI + 360) % 360;
 };
 
 interface ARPinProps {
@@ -48,7 +47,7 @@ const ARPin: React.FC<ARPinProps> = ({ color, name, distance }) => {
         <sphereGeometry args={[0.05, 16, 16]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
-      
+
       {/* Outer Glow */}
       <mesh>
         {/* eslint-disable-next-line react/no-unknown-property */}
@@ -73,52 +72,46 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
     if (!userCoords || pois.length === 0) return [];
 
     const [userLon, userLat] = userCoords;
-    const MAX_DISTANCE = 1000; 
+    const MAX_DISTANCE = 1000;
 
-    return pois.map((poi, idx) => {
-      const [poiLon, poiLat] = poi.geometry.coordinates;
-      const distance = getDistance(userLat, userLon, poiLat, poiLon);
-      
-      if (distance > MAX_DISTANCE) return null;
+    return pois
+      .map((poi, idx) => {
+        const [poiLon, poiLat] = poi.geometry.coordinates;
+        const distance = getDistance(userLat, userLon, poiLat, poiLon);
 
-      const bearing = getBearing(userLat, userLon, poiLat, poiLon);
-      const angleDiff = bearing - heading;
-      const rad = angleDiff * (Math.PI / 180);
-      
-      const scaledDistance = Math.min(Math.max(distance / 5, 2), 20); 
+        if (distance > MAX_DISTANCE) return null;
 
-      let x = 0;
-      let y = (idx % 3) * 0.5 - 0.5; 
-      let z = 0;
+        const bearing = getBearing(userLat, userLon, poiLat, poiLon);
+        const angleDiff = bearing - heading;
+        const rad = angleDiff * (Math.PI / 180);
 
-      if (isLandscape) {
-        x = 0; 
-        y = Math.sin(rad) * scaledDistance; 
-        z = -Math.cos(rad) * scaledDistance;
-      } else {
-        x = Math.sin(rad) * scaledDistance;
-        y = (idx % 3) * 0.5 - 0.5;
-        z = -Math.cos(rad) * scaledDistance;
-      }
+        const scaledDistance = Math.min(Math.max(distance / 5, 2), 20);
 
-      const metadata = getCategoryMetadata(poi.properties.category);
+        let x = 0;
+        let y = (idx % 3) * 0.5 - 0.5;
+        let z = 0;
 
-      return (
-        /* eslint-disable-next-line react/no-unknown-property */
-        <group key={poi.properties.id || idx} position={[x, y, z]}>
-          <ARPin 
-            color={metadata.color} 
-            name={poi.properties.name} 
-            distance={distance}
-          />
-        </group>
-      );
-    }).filter(Boolean);
+        if (isLandscape) {
+          x = 0;
+          y = Math.sin(rad) * scaledDistance;
+          z = -Math.cos(rad) * scaledDistance;
+        } else {
+          x = Math.sin(rad) * scaledDistance;
+          y = (idx % 3) * 0.5 - 0.5;
+          z = -Math.cos(rad) * scaledDistance;
+        }
+
+        const metadata = getCategoryMetadata(poi.properties.category);
+
+        return (
+          /* eslint-disable-next-line react/no-unknown-property */
+          <group key={poi.properties.id || idx} position={[x, y, z]}>
+            <ARPin color={metadata.color} name={poi.properties.name} distance={distance} />
+          </group>
+        );
+      })
+      .filter(Boolean);
   }, [userCoords, heading, pois, isLandscape]);
 
-  return (
-    <group>
-      {poiNodes}
-    </group>
-  );
+  return <group>{poiNodes}</group>;
 };

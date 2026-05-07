@@ -17,7 +17,7 @@ export const useLocationPermission = () => {
   // Sync internal status with expo-location hook
   useEffect(() => {
     if (!permissionResponse) return;
-    
+
     if (permissionResponse.status === Location.PermissionStatus.GRANTED) {
       setStatus('granted');
     } else if (permissionResponse.status === Location.PermissionStatus.DENIED) {
@@ -28,7 +28,7 @@ export const useLocationPermission = () => {
   const requestPermission = useCallback(async () => {
     console.log('[Permission] A. Starting requestPermission');
     setStatus('loading');
-    
+
     try {
       console.log('[Permission] B. Calling requestPermissionInternal from hook');
       const response = await requestPermissionInternal();

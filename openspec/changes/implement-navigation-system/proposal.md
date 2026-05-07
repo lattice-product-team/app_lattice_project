@@ -8,18 +8,20 @@ Lattice carece de un sistema integrado de navegación, obligando a los usuarios 
 - **Servicio de Navegación (Mobile):** Implementación de un cliente de rutas en la app móvil que soporte perfiles de 'driving' y 'pedestrian'.
 - **UI de Previsualización:** Nueva interfaz en el `EventDetailSheet` para mostrar tiempo estimado, distancia y selección de modo de transporte.
 - **Modo Navegación Activa (Active Navigation):** Interfaz inmersiva que se activa al iniciar la ruta:
-    - **Capa Superior:** Banner con instrucciones de giro (flechas, distancia, nombre de calle) con estética glassmorphism oscura.
-    - **Capa Inferior:** Panel de estado con tiempo de llegada, minutos y distancia restante.
-    - **Cámara:** Seguimiento dinámico con inclinación (pitch) y rotación automática según la dirección de movimiento.
-    - **Icono:** Reemplazo del marcador de posición por un "navigation puck" direccional.
+  - **Capa Superior:** Banner con instrucciones de giro (flechas, distancia, nombre de calle) con estética glassmorphism oscura.
+  - **Capa Inferior:** Panel de estado con tiempo de llegada, minutos y distancia restante.
+  - **Cámara:** Seguimiento dinámico con inclinación (pitch) y rotación automática según la dirección de movimiento.
+  - **Icono:** Reemplazo del marcador de posición por un "navigation puck" direccional.
 - **Capa de Mapa:** Visualización dinámica de la ruta (polyline) sobre el mapa de MapLibre con estilos personalizados de Lattice.
 
 ## Capabilities
 
 ### New Capabilities
+
 - `navigation-system`: Gestión de rutas, perfiles de transporte (pie/coche) e interfaz de navegación activa dentro de la aplicación móvil.
 
 ### Modified Capabilities
+
 - `map-interface`: Requisitos añadidos para soportar capas de rutas dinámicas y estados de navegación.
 
 ## Impact

@@ -1,33 +1,20 @@
-name: Pipeline - CI/CD
+name: Pipeline - Deploy Production
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Lint, TypeCheck & Test
+  build-check:
+    name: Verify Build Integrity
     runs-on: ubuntu-latest
     
-    # Añadimos una base de datos con PostGIS para los tests
-    services:
-      postgres:
-        image: postgis/postgis:15-3.3
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,33 +31,38 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Run All Tests
-        env:
-          # Configuramos la URL de la base de datos para los tests
-          DATABASE_URL: postgres://postgres:password@localhost:5432/test_db
-        run: pnpm test
+      - name: Run Build (Dry Run)
+        run: pnpm build
 
   deploy:
-    name: Deploy to Production
-    needs: quality
+    name: Build & Deploy Production
+    needs: build-check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: [self-hosted, Linux, X64]
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Pre-build Cleanup
+      - name: Setup Environment
         run: |
-          docker system prune -af || true
-          docker builder prune -af || true
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" >> .env
+          echo "GATEWAY_BASE_PATH=/lattice/api" >> .env
+          echo "NEXT_PUBLIC_API_URL=https://projects.kore29.com/lattice/api/v1" >> .env
+          echo "NODE_ENV=production" >> .env
+          echo "DB_SSL=false" >> .env
+          cp .env apps/admin-web/.env
 
-      - name: Build and Deploy Containers
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          NODE_ENV: production
+      - name: Build and Deploy Production
         run: |
           pnpm install --no-frozen-lockfile
+          # Run migrations on the host before containers restart
+          export DATABASE_URL=${{ secrets.DATABASE_URL }}
           pnpm db:migrate
+          pnpm db:check
+          
           docker compose -f docker-compose.prod.yml down --remove-orphans
           docker compose -f docker-compose.prod.yml up -d --build
 

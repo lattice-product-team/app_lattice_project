@@ -1,3 +1,9 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { loadConfig } from '@app/core';
+
+const config = loadConfig();
+
 /**
  * Decode a JWT token payload without verification.
  * Useful for extracting public information like email or name from a Google id_token.
@@ -14,6 +20,42 @@ export function decodeJwt(token: string): any {
     return JSON.parse(decoded);
   } catch (error) {
     console.error('Error decoding JWT:', error);
+    return null;
+  }
+}
+
+/**
+ * Hashes a plaintext password using Bcrypt.
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const salt = await bcrypt.genSalt(config.BCRYPT_ROUNDS);
+  return bcrypt.hash(password, salt);
+}
+
+/**
+ * Compares a plaintext password with a Bcrypt hash.
+ */
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+/**
+ * Generates a signed JWT token for a user.
+ */
+export function generateToken(payload: { userId: number; email: string }): string {
+  return jwt.sign(payload, config.JWT_SECRET, {
+    expiresIn: '24h',
+  });
+}
+
+/**
+ * Verifies and decodes a JWT token.
+ */
+export function verifyToken(token: string): any {
+  try {
+    return jwt.verify(token, config.JWT_SECRET);
+  } catch (error) {
+    console.error('JWT Verification Error:', error);
     return null;
   }
 }

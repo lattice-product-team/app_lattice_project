@@ -22,40 +22,48 @@ const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: Sett
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
-        backgroundColor: pressed ? theme.colors.interactive.pressed : 'transparent'
+        backgroundColor: pressed ? theme.colors.interactive.pressed : 'transparent',
       })}
     >
       <View style={styles.itemContainer}>
         <View style={styles.iconBox}>
-          <Feather 
-            name={icon as any} 
-            size={20} 
-            color={destructive ? theme.colors.status.error : theme.colors.brand.primary} 
+          <Feather
+            name={icon as any}
+            size={20}
+            color={destructive ? theme.colors.status.error : theme.colors.brand.primary}
           />
         </View>
-        
+
         <View style={styles.contentRow}>
-          <Text style={[styles.label, { color: destructive ? theme.colors.status.error : theme.colors.text.primary }]}>
+          <Text
+            style={[
+              styles.label,
+              { color: destructive ? theme.colors.status.error : theme.colors.text.primary },
+            ]}
+          >
             {label}
           </Text>
           <View style={styles.rightSide}>
             {value && (
-              <Text style={[styles.value, { color: theme.colors.text.muted }]}>
-                {value}
-              </Text>
+              <Text style={[styles.value, { color: theme.colors.text.muted }]}>{value}</Text>
             )}
             <Feather name="chevron-right" size={18} color={theme.colors.text.muted} />
           </View>
         </View>
-        
+
         {!isLast && (
-          <View style={[styles.separator, { 
-            backgroundColor: theme.colors.border.subtle,
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            left: 62,
-          }]} />
+          <View
+            style={[
+              styles.separator,
+              {
+                backgroundColor: theme.colors.border.subtle,
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                left: 62,
+              },
+            ]}
+          />
         )}
       </View>
     </Pressable>
@@ -67,20 +75,16 @@ export const SettingsGroup = () => {
   const router = useRouter();
 
   const handleLogout = () => {
-    Alert.alert(
-      "Cerrar Sesión",
-      "¿Estás seguro de que quieres salir de Lattice?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Salir", 
-          style: "destructive",
-          onPress: () => {
-            useAuthStore.getState().logout();
-          }
-        }
-      ]
-    );
+    Alert.alert('Cerrar Sesión', '¿Estás seguro de que quieres salir de Lattice?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Salir',
+        style: 'destructive',
+        onPress: () => {
+          useAuthStore.getState().logout();
+        },
+      },
+    ]);
   };
 
   const handlePress = (label: string) => {
@@ -92,31 +96,51 @@ export const SettingsGroup = () => {
       <Text style={[styles.groupTitle, { color: theme.colors.text.muted }]}>
         Cuenta y Seguridad
       </Text>
-      
+
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
-        <SettingsItem icon="user" label="Información Personal" onPress={() => handlePress('Información Personal')} />
-        <SettingsItem icon="shield" label="Privacidad y Seguridad" onPress={() => handlePress('Privacidad y Seguridad')} />
-        <SettingsItem icon="bell" label="Notificaciones" isLast onPress={() => handlePress('Notificaciones')} />
+        <SettingsItem
+          icon="user"
+          label="Información Personal"
+          onPress={() => handlePress('Información Personal')}
+        />
+        <SettingsItem
+          icon="shield"
+          label="Privacidad y Seguridad"
+          onPress={() => handlePress('Privacidad y Seguridad')}
+        />
+        <SettingsItem
+          icon="bell"
+          label="Notificaciones"
+          isLast
+          onPress={() => handlePress('Notificaciones')}
+        />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
 
-      <Text style={[styles.groupTitle, { color: theme.colors.text.muted }]}>
-        Soporte
-      </Text>
-      
+      <Text style={[styles.groupTitle, { color: theme.colors.text.muted }]}>Soporte</Text>
+
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
-        <SettingsItem icon="help-circle" label="Centro de Ayuda" onPress={() => handlePress('Centro de Ayuda')} />
-        <SettingsItem icon="info" label="Términos de Servicio" isLast onPress={() => handlePress('Términos de Servicio')} />
+        <SettingsItem
+          icon="help-circle"
+          label="Centro de Ayuda"
+          onPress={() => handlePress('Centro de Ayuda')}
+        />
+        <SettingsItem
+          icon="info"
+          label="Términos de Servicio"
+          isLast
+          onPress={() => handlePress('Términos de Servicio')}
+        />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface, marginTop: 12 }]}>
-        <SettingsItem 
-          icon="log-out" 
-          label="Cerrar Sesión" 
-          destructive 
-          isLast 
-          onPress={handleLogout} 
+        <SettingsItem
+          icon="log-out"
+          label="Cerrar Sesión"
+          destructive
+          isLast
+          onPress={handleLogout}
         />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>

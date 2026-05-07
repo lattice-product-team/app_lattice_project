@@ -7,20 +7,17 @@ interface AppLoadingViewProps {
   spinnerColor?: string;
 }
 
-export const AppLoadingView: React.FC<AppLoadingViewProps> = ({ 
-  backgroundColor, 
-  spinnerColor 
+export const AppLoadingView: React.FC<AppLoadingViewProps> = ({
+  backgroundColor,
+  spinnerColor,
 }) => {
   const theme = useAppTheme();
 
   return (
-    <View style={[
-      styles.container, 
-      { backgroundColor: backgroundColor || theme.colors.bg.main }
-    ]}>
-      <ActivityIndicator 
-        color={spinnerColor || theme.colors.brand.primary} 
-        size="large" 
+    <View style={[styles.container, { backgroundColor: backgroundColor || theme.colors.bg.main }]}>
+      <ActivityIndicator
+        color={spinnerColor || theme.colors.brand.primary}
+        size="large"
         style={styles.spinner}
       />
     </View>
@@ -36,5 +33,5 @@ const styles = StyleSheet.create({
   },
   spinner: {
     transform: [{ scale: 1.2 }], // Slightly larger for a premium feel
-  }
+  },
 });

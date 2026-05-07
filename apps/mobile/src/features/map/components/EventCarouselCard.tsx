@@ -32,36 +32,40 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
   const formattedDate = React.useMemo(() => {
     if (event.date) return event.date;
     if (!event.startDate) return 'Hoy';
-    
+
     const date = new Date(event.startDate);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
-    
-    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-    
+
+    const timeStr = date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+
     if (isToday) return `Hoy, ${timeStr}`;
-    
+
     return date.toLocaleDateString([], { day: '2-digit', month: 'short' }) + `, ${timeStr}`;
   }, [event.date, event.startDate]);
 
   return (
     <View style={styles.shadowWrapper}>
-      <Pressable 
+      <Pressable
         onPress={onPress}
         style={({ pressed }) => [
           { width: 260, height: 280 },
-          pressed && { transform: [{ scale: 0.97 }] }
+          pressed && { transform: [{ scale: 0.97 }] },
         ]}
       >
         <View style={styles.container}>
           {/* Background Image */}
-          <Image 
-            source={event.image || event.imageUrl} 
+          <Image
+            source={event.image || event.imageUrl}
             style={styles.image}
             contentFit="cover"
             transition={300}
           />
-          
+
           {/* Top Row for Badges */}
           <View style={styles.topRow}>
             <View style={[styles.badge, styles.categoryBadge]}>
@@ -78,12 +82,25 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
           </View>
 
           {/* Info Footer - Blurred/Semi-transparent for Apple look */}
-          <View style={[styles.footer, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
+          <View
+            style={[
+              styles.footer,
+              {
+                backgroundColor: theme.colors.glass.background,
+                borderColor: theme.colors.glass.border,
+              },
+            ]}
+          >
             <View style={styles.footerContent}>
-              <Text style={[styles.title, { color: theme.colors.text.primary }]} numberOfLines={1}>{event.name}</Text>
-              
+              <Text style={[styles.title, { color: theme.colors.text.primary }]} numberOfLines={1}>
+                {event.name}
+              </Text>
+
               {event.description && (
-                <Text style={[styles.description, { color: theme.colors.text.secondary }]} numberOfLines={1}>
+                <Text
+                  style={[styles.description, { color: theme.colors.text.secondary }]}
+                  numberOfLines={1}
+                >
                   {event.description}
                 </Text>
               )}
@@ -91,25 +108,29 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
                   <Feather name="calendar" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{formattedDate}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>
+                    {formattedDate}
+                  </Text>
                 </View>
                 <View style={styles.detailSeparator} />
                 <View style={styles.detailItem}>
                   <Feather name="map-pin" size={11} color={theme.colors.text.muted} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>{event.location || 'Barcelona'}</Text>
+                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>
+                    {event.location || 'Barcelona'}
+                  </Text>
                 </View>
               </View>
             </View>
           </View>
-          
+
           {/* Border Overlay - Ensures sharp edges on rounded corners */}
-          <View 
-            pointerEvents="none" 
+          <View
+            pointerEvents="none"
             style={[
-              StyleSheet.absoluteFill, 
+              StyleSheet.absoluteFill,
               styles.borderOverlay,
-              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)' }
-            ]} 
+              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)' },
+            ]}
           />
         </View>
       </Pressable>
@@ -125,7 +146,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: 260,
-    height: 280, 
+    height: 280,
     borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#1a1a1a',

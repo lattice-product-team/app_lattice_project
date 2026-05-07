@@ -19,5 +19,5 @@ export const startupMetrics = {
     const duration = Date.now() - startTime;
     console.log(`🚀 [Metrics] ${label} Interactive in ${duration}ms`);
     return duration;
-  }
+  },
 };

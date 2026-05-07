@@ -12,9 +12,11 @@ The current app startup experience lacks a premium "wow" factor and transitions 
 ## Capabilities
 
 ### New Capabilities
+
 - `app-initialization-flow`: Manages the sequence of startup tasks and the presentation of the premium splash screen component.
 
 ### Modified Capabilities
+
 - `eleven-design-system`: Add specific design tokens for the vibrant gradient and splash-specific glass effects.
 
 ## Impact

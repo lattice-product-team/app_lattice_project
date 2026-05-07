@@ -9,9 +9,7 @@ export const isValidCoordinate = (coords?: number[] | null): boolean => {
   if (!coords || coords.length !== 2) return false;
   const [lng, lat] = coords;
   // Basic [0,0] check and range check
-  return (lng !== 0 || lat !== 0) && 
-         Math.abs(lng) <= 180 && 
-         Math.abs(lat) <= 90;
+  return (lng !== 0 || lat !== 0) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90;
 };
 
 /**
@@ -31,10 +29,7 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
     categoryIcon: metadata.icon,
     iconFamily: metadata.iconFamily,
     mainColor: metadata.color,
-    coordinates: [
-      geometry.coordinates?.[0] || 0, 
-      geometry.coordinates?.[1] || 0
-    ],
+    coordinates: [geometry.coordinates?.[0] || 0, geometry.coordinates?.[1] || 0],
     parentId: properties.parentId || properties.event_id,
     description: properties.description,
     images: properties.images,
@@ -58,7 +53,7 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
     images: event.imageUrl ? [event.imageUrl] : [],
     imageKey: event.imageUrl ? `event-img-${id}` : 'placeholder-event',
-    raw: event
+    raw: event,
   };
 };
 
@@ -66,16 +61,12 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
  * Bulk normalization for lists of POIs.
  */
 export const normalizePOIList = (rawList: POIGeoJSON[]): StandardUIPOI[] => {
-  return (rawList || [])
-    .map(normalizePOI)
-    .filter(poi => isValidCoordinate(poi.coordinates));
+  return (rawList || []).map(normalizePOI).filter((poi) => isValidCoordinate(poi.coordinates));
 };
 
 /**
  * Bulk normalization for lists of Events.
  */
 export const normalizeEventList = (events: any[]): StandardUIPOI[] => {
-  return (events || [])
-    .map(normalizeEvent)
-    .filter(poi => isValidCoordinate(poi.coordinates));
+  return (events || []).map(normalizeEvent).filter((poi) => isValidCoordinate(poi.coordinates));
 };

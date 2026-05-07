@@ -35,11 +35,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [colorScheme, selectedEvent]);
 
-  return (
-    <ThemeContext.Provider value={theme}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
 };
 
 /**

@@ -12,9 +12,11 @@ The current platform architecture separates spatial data into "Venues" and "Even
 ## Capabilities
 
 ### New Capabilities
+
 - `event-centric-map-editor`: A dedicated map editor capability that allows admins to define the geographical bounds, center, and POIs directly within the context of a specific Event.
 
 ### Modified Capabilities
+
 - `event-operations-dashboard`: Update the dashboard requirements to remove Venue management and elevate Event management as the primary top-level entity.
 - `event-poi-orchestration`: Modify POI management requirements so that POIs are exclusively linked to and managed through an Event context.
 

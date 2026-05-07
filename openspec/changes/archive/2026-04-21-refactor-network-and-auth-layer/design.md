@@ -5,12 +5,14 @@ The mobile application uses `MMKV` for fast, synchronous storage and `Zustand` f
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Implement a token-aware `apiClient`.
 - Decouple API side effects from Zustand state.
 - Standardize the location of stores in `src/store/`.
 - Provide a seamless migration path for existing services.
 
 **Non-Goals:**
+
 - Swapping `fetch` for `Axios` (keep the footprint small).
 - Implementing OAuth2/Refresh token logic (out of scope for this refactor).
 - Changing the backend API contracts.
@@ -18,16 +20,22 @@ The mobile application uses `MMKV` for fast, synchronous storage and `Zustand` f
 ## Decisions
 
 ### 1. Synchronous Token Retrieval
+
 The `apiClient` will read the token directly from `MMKV` before each request.
+
 - **Rationale**: Since `MMKV` is synchronous, we can inject the header without making the `apiClient` logic more complex with `async` initialization.
 - **Implementation**: `const token = storage.getString('auth-token');` inside the request builder.
 
 ### 2. TanStack Query for Auth Actions
+
 `claimTicket` and `syncTickets` will move to `useMutation` and `useQuery` respectively.
+
 - **Rationale**: Provides out-of-the-box support for loading states, error handling, and cache invalidation (e.g., refetching the wallet after claiming a ticket).
 
 ### 3. Store Location Normalization
+
 `useAuthStore.ts` moves to `src/store/`.
+
 - **Rationale**: Consistency with `useMapStore.ts` and `useLocationStore.ts`.
 
 ## Risks / Trade-offs

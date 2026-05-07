@@ -15,15 +15,15 @@ interface ThemeGradientProps {
 /**
  * Standardized Theme Gradient component.
  */
-export const ThemeGradient = ({ 
-  variant = 'auth', 
-  showBlob = false, 
-  blobColor, 
-  style, 
-  children 
+export const ThemeGradient = ({
+  variant = 'auth',
+  showBlob = false,
+  blobColor,
+  style,
+  children,
 }: ThemeGradientProps) => {
   const theme = useAppTheme();
-  
+
   const primaryColor = theme.colors.brand.primary;
 
   const getGradientConfig = () => {
@@ -66,9 +66,9 @@ export const ThemeGradient = ({
         locations={config.locations}
         style={StyleSheet.absoluteFill}
       />
-      
+
       {showBlob && (
-        <View 
+        <View
           pointerEvents="none"
           style={[
             styles.blobContainer,
@@ -78,8 +78,8 @@ export const ThemeGradient = ({
               shadowOpacity: theme.dark ? 0.4 : 0.2,
               shadowRadius: theme.dark ? 220 : 300,
               backgroundColor: finalBlobColor,
-            }
-          ]} 
+            },
+          ]}
         />
       )}
 
@@ -100,8 +100,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       android: {
         elevation: 20,
-      }
-    })
-  }
+      },
+    }),
+  },
 });
-

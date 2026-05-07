@@ -16,7 +16,7 @@ export const useSaveLocation = () => {
   const { token } = useAuthStore();
 
   return useMutation({
-    mutationFn: (data: { label: string, latitude: number, longitude: number }) => 
+    mutationFn: (data: { label: string; latitude: number; longitude: number }) =>
       geoService.saveLocation(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['saved-locations'] });

@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import Animated, { 
-  useAnimatedStyle, 
-  interpolate, 
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
   SharedValue,
-  Extrapolation
+  Extrapolation,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -34,100 +34,110 @@ interface DiscoveryDashboardProps {
   onSelectEvent?: (event: LatticeEvent) => void;
 }
 
-export const DiscoveryDashboard = React.memo(({ 
-  islandState, 
-  onSelectCategory,
-  onSelectEvent,
-}: DiscoveryDashboardProps) => {
-  const theme = useAppTheme();
-  const { events, loading: eventsLoading } = useSearchEvents(''); // Fetch all events for the dashboard
+export const DiscoveryDashboard = React.memo(
+  ({ islandState, onSelectCategory, onSelectEvent }: DiscoveryDashboardProps) => {
+    const theme = useAppTheme();
+    const { events, loading: eventsLoading } = useSearchEvents(''); // Fetch all events for the dashboard
 
-  const rContainerStyle = useAnimatedStyle(() => {
-    // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
-    // Opacidad baja de 0.5 a 0.6 (Nivel 2 -> 3)
-    const opacity = interpolate(
-      islandState.value,
-      [0.05, 0.3, 0.5, 0.6],
-      [0, 1, 1, 0],
-      Extrapolation.CLAMP
-    );
+    const rContainerStyle = useAnimatedStyle(() => {
+      // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
+      // Opacidad baja de 0.5 a 0.6 (Nivel 2 -> 3)
+      const opacity = interpolate(
+        islandState.value,
+        [0.05, 0.3, 0.5, 0.6],
+        [0, 1, 1, 0],
+        Extrapolation.CLAMP
+      );
 
-    return {
-      opacity,
-      pointerEvents: opacity < 0.1 ? 'none' : 'auto',
-    };
-  });
+      return {
+        opacity,
+        pointerEvents: opacity < 0.1 ? 'none' : 'auto',
+      };
+    });
 
-  return (
-    <Animated.View style={[styles.container, rContainerStyle]}>
-      {/* 1. Categories Row (Carousel) */}
-      <View style={styles.categoriesContainer}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScroll}
-        >
-          {CATEGORIES.map((cat) => (
-            <Pressable
-              key={cat.id}
-              onPress={() => onSelectCategory?.(cat.id)}
-              style={({ pressed }) => [
-                { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] }
-              ]}
-            >
-              <View style={[
-                styles.categoryPill,
-                { 
-                  backgroundColor: theme.colors.glass.tint === 'dark' 
-                    ? 'rgba(120, 120, 128, 0.36)' 
-                    : 'rgba(120, 120, 128, 0.12)',
-                }
-              ]}>
-                <MaterialCommunityIcons 
-                  name={cat.icon} 
-                  size={18} 
-                  color={theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'} 
-                />
-                <Text style={[styles.categoryLabel, { color: theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' }]}>
-                  {cat.label}
-                </Text>
-              </View>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* 2. Events Carousel */}
-      <View style={styles.carouselSection}>
-        {eventsLoading ? (
-          <View style={[styles.carouselScrollContainer, { justifyContent: 'center' }]}>
-            <Text style={{ color: theme.colors.text.muted, textAlign: 'center' }}>Cargando eventos...</Text>
-          </View>
-        ) : (
-          <ScrollView 
-            horizontal 
+    return (
+      <Animated.View style={[styles.container, rContainerStyle]}>
+        {/* 1. Categories Row (Carousel) */}
+        <View style={styles.categoriesContainer}>
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
-            style={styles.carouselScrollContainer}
-            contentContainerStyle={styles.carouselScroll}
-            snapToInterval={276} // 260 width + 16 gap
-            decelerationRate="fast"
+            contentContainerStyle={styles.categoryScroll}
           >
-            {events.map((event) => (
-              <EventCarouselCard 
-                key={event.id}
-                event={event as any}
-                onPress={() => onSelectEvent?.(event as any)}
-              />
+            {CATEGORIES.map((cat) => (
+              <Pressable
+                key={cat.id}
+                onPress={() => onSelectCategory?.(cat.id)}
+                style={({ pressed }) => [
+                  { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.categoryPill,
+                    {
+                      backgroundColor:
+                        theme.colors.glass.tint === 'dark'
+                          ? 'rgba(120, 120, 128, 0.36)'
+                          : 'rgba(120, 120, 128, 0.12)',
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={cat.icon}
+                    size={18}
+                    color={theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'}
+                  />
+                  <Text
+                    style={[
+                      styles.categoryLabel,
+                      { color: theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' },
+                    ]}
+                  >
+                    {cat.label}
+                  </Text>
+                </View>
+              </Pressable>
             ))}
-            {events.length === 0 && (
-              <Text style={{ color: theme.colors.text.muted, padding: 20 }}>No hay eventos programados hoy.</Text>
-            )}
           </ScrollView>
-        )}
-      </View>
-    </Animated.View>
-  );
-});
+        </View>
+
+        {/* 2. Events Carousel */}
+        <View style={styles.carouselSection}>
+          {eventsLoading ? (
+            <View style={[styles.carouselScrollContainer, { justifyContent: 'center' }]}>
+              <Text style={{ color: theme.colors.text.muted, textAlign: 'center' }}>
+                Cargando eventos...
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.carouselScrollContainer}
+              contentContainerStyle={styles.carouselScroll}
+              snapToInterval={276} // 260 width + 16 gap
+              decelerationRate="fast"
+            >
+              {events.map((event) => (
+                <EventCarouselCard
+                  key={event.id}
+                  event={event as any}
+                  onPress={() => onSelectEvent?.(event as any)}
+                />
+              ))}
+              {events.length === 0 && (
+                <Text style={{ color: theme.colors.text.muted, padding: 20 }}>
+                  No hay eventos programados hoy.
+                </Text>
+              )}
+            </ScrollView>
+          )}
+        </View>
+      </Animated.View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {

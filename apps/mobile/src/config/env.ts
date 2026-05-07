@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 
 /**
  * Environment Configuration
- * 
+ *
  * Centralized, type-safe accessor for environment variables.
  * These are injected via app.config.ts into expoConfig.extra.
  */

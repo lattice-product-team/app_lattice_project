@@ -1,6 +1,6 @@
 ## Why
 
-The current map interface has grown fragmented through multiple iterations, leading to overlapping controls (3D button, navigation pill), inconsistent "Island" behavior across different sheet states, and technical debt in legacy components. 
+The current map interface has grown fragmented through multiple iterations, leading to overlapping controls (3D button, navigation pill), inconsistent "Island" behavior across different sheet states, and technical debt in legacy components.
 
 A "from scratch" rebuild is necessary to establish a clean, unified architecture that ensures a premium Apple Maps experience with stable glassmorphism, perfect control alignment, and a cohesive "Island" design system that never breaks regardless of the sheet's expansion level.
 
@@ -15,10 +15,12 @@ A "from scratch" rebuild is necessary to establish a clean, unified architecture
 ## Capabilities
 
 ### New Capabilities
+
 - `map-discovery-platform`: A unified system for event discovery and POI interaction using a state-driven "Island" UI.
 - `adaptive-map-controls`: A contextual control system that adapts its position and appearance based on the map and sheet state.
 
 ### Modified Capabilities
+
 - `map-navigation`: Updating requirements for how users interact with map markers and recenter functionality.
 
 ## Impact

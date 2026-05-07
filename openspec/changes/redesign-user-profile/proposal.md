@@ -14,9 +14,11 @@ The current profile screen is empty. Users need a central, private hub to manage
 ## Capabilities
 
 ### New Capabilities
+
 - `user-profile`: Manages the display and logic for user personal data, event history, and achievement status.
 
 ### Modified Capabilities
+
 - None.
 
 ## Impact

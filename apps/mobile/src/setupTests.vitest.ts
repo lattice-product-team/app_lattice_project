@@ -52,3 +52,41 @@ vi.mock('@maplibre/maplibre-react-native', () => ({
 vi.mock('@expo/vector-icons', () => ({
   MaterialCommunityIcons: 'MaterialCommunityIcons',
 }));
+
+vi.mock('react-native-mmkv', () => ({
+  createMMKV: vi.fn(() => ({
+    set: vi.fn(),
+    getString: vi.fn(),
+    getNumber: vi.fn(),
+    getBoolean: vi.fn(),
+    contains: vi.fn(),
+    delete: vi.fn(),
+    getAllKeys: vi.fn(),
+    clearAll: vi.fn(),
+  })),
+}));
+
+vi.mock('expo-constants', () => ({
+  default: {
+    expoConfig: {
+      extra: {
+        apiUrl: 'http://test.com/api',
+        nodeEnv: 'test',
+      },
+    },
+  },
+}));
+
+vi.mock('expo-modules-core', () => ({
+  requireNativeModule: vi.fn(() => ({})),
+  NativeModulesProxy: {},
+  EventEmitter: class {
+    addListener = vi.fn();
+    removeListener = vi.fn();
+    removeAllListeners = vi.fn();
+    emit = vi.fn();
+  },
+  Platform: {
+    OS: 'ios',
+  },
+}));

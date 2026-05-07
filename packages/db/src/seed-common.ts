@@ -22,9 +22,7 @@ export async function seedCommon(db: any) {
   }
 
   // 2. Seeding additional tester accounts
-  const testerEmails = [
-    'tester_tech2026@example.com'
-  ];
+  const testerEmails = ['tester_tech2026@example.com'];
 
   for (const email of testerEmails) {
     await db
@@ -37,11 +35,11 @@ export async function seedCommon(db: any) {
       })
       .onConflictDoUpdate({
         target: users.email,
-        set: { 
+        set: {
           passwordHash: 'password123',
           fullName: email.split('@')[0],
-          hasTicket: true
-        }
+          hasTicket: true,
+        },
       });
     console.log(`Ensured tester account exists and is updated: ${email}`);
   }

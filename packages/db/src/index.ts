@@ -35,7 +35,7 @@ const isProduction = env.NODE_ENV === 'production';
  */
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  ssl: env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   max: isProduction ? 20 : 10,
   idleTimeoutMillis: isProduction ? 30000 : 10000,
   connectionTimeoutMillis: 2000,
@@ -48,3 +48,4 @@ pool.on('error', (err) => {
 });
 
 export const db = drizzle(pool, { schema });
+export * from './test-utils';

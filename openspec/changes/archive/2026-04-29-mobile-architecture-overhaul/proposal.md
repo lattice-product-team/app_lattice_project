@@ -12,10 +12,12 @@ The current mobile codebase has grown organically, leading to redundant componen
 ## Capabilities
 
 ### New Capabilities
+
 - `mobile-domain-architecture`: Defines the standards for feature-based directory structure and module boundaries.
 - `mobile-data-adapter`: Establishes the contract for normalizing external data sources into unified UI models.
 
 ### Modified Capabilities
+
 - `design-tokens`: Updating the consumption pattern to support dynamic brand overrides via a single theme hook.
 - `granular-mobile-state`: Refactoring `useMapStore` into specialized domain stores (Navigation, UI, POI).
 - `event-navigation`: Updating navigation logic to consume standardized POI models.

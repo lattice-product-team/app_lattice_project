@@ -11,32 +11,36 @@ export default function Index() {
   const navigationState = useRootNavigationState();
   const token = useAuthStore((state) => state.token);
   const isGuest = useAuthStore((state) => state.isGuest);
-  
+
   const { isDataReady, setDataReady } = useStartupStore();
 
   useEffect(() => {
     if (navigationState?.key) {
       console.log('🚀 [Index] Root Navigation Ready. Starting prep...');
       startupMetrics.markInteractive('Index');
-      
+
       const prepare = async () => {
         try {
           Promise.all([
             queryClient.prefetchQuery({
               queryKey: ['events-search', ''],
-              queryFn: () => import('../src/services/geoService').then(m => m.geoService.getEvents())
+              queryFn: () =>
+                import('../src/services/geoService').then((m) => m.geoService.getEvents()),
             }),
             queryClient.prefetchQuery({
               queryKey: ['pois', undefined, undefined],
-              queryFn: () => import('../src/services/geoService').then(m => m.geoService.getPOIs())
+              queryFn: () =>
+                import('../src/services/geoService').then((m) => m.geoService.getPOIs()),
+            }),
+          ])
+            .then(() => {
+              console.log('✅ [Index] Data Pre-fetch Complete');
+              setDataReady(true);
             })
-          ]).then(() => {
-            console.log('✅ [Index] Data Pre-fetch Complete');
-            setDataReady(true);
-          }).catch(e => {
-            console.warn('⚠️ [Index] Pre-fetch failed, proceeding anyway', e);
-            setDataReady(true);
-          });
+            .catch((e) => {
+              console.warn('⚠️ [Index] Pre-fetch failed, proceeding anyway', e);
+              setDataReady(true);
+            });
         } catch (e) {
           setDataReady(true);
         }
@@ -63,8 +67,6 @@ export default function Index() {
       return () => clearTimeout(timer);
     }
   }, [navigationState?.key, token, isGuest, router]);
-
-
 
   // Root _layout will handle the SplashScreen overlay
   return null;

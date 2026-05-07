@@ -19,10 +19,7 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
   const isQueryEmpty = !query || query.trim() === '';
 
   const renderHistoryItem = ({ item }: { item: string }) => (
-    <Pressable 
-      style={styles.itemRow}
-      onPress={() => onSelectResult(item)}
-    >
+    <Pressable style={styles.itemRow} onPress={() => onSelectResult(item)}>
       <View style={styles.iconContainer}>
         <Feather name="clock" size={18} color={theme.colors.text.muted} />
       </View>
@@ -34,7 +31,7 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
   );
 
   const renderEventItem = ({ item }: { item: SearchEvent }) => (
-    <Pressable 
+    <Pressable
       style={styles.itemRow}
       onPress={() => onSelectResult(item.name, item.center?.coordinates)}
     >
@@ -43,7 +40,11 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
           <Image source={{ uri: item.imageUrl }} style={styles.eventImage} />
         ) : (
           <View style={[styles.eventPlaceholder, { backgroundColor: theme.colors.glass.subtle }]}>
-            <MaterialCommunityIcons name="calendar-star" size={20} color={theme.colors.brand.primary} />
+            <MaterialCommunityIcons
+              name="calendar-star"
+              size={20}
+              color={theme.colors.brand.primary}
+            />
           </View>
         )}
       </View>
@@ -60,15 +61,21 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
       {isQueryEmpty && history.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>RECENT SEARCHES</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
+              RECENT SEARCHES
+            </Text>
             <Pressable onPress={clearHistory}>
-              <Text style={[styles.clearText, { color: theme.colors.brand.primary }]}>Clear All</Text>
+              <Text style={[styles.clearText, { color: theme.colors.brand.primary }]}>
+                Clear All
+              </Text>
             </Pressable>
           </View>
           {history.map((item, index) => (
             <View key={`history-${index}`}>
               {renderHistoryItem({ item })}
-              {index < history.length - 1 && <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />}
+              {index < history.length - 1 && (
+                <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />
+              )}
             </View>
           ))}
         </View>
@@ -80,18 +87,22 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
             {isQueryEmpty ? 'AVAILABLE EVENTS' : 'SEARCH RESULTS'}
           </Text>
         </View>
-        
+
         {loading ? (
           <Text style={[styles.statusText, { color: theme.colors.text.muted }]}>Loading...</Text>
         ) : events.length > 0 ? (
           events.map((item, index) => (
             <View key={`event-${item.id}`}>
               {renderEventItem({ item })}
-              {index < events.length - 1 && <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />}
+              {index < events.length - 1 && (
+                <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />
+              )}
             </View>
           ))
         ) : (
-          <Text style={[styles.statusText, { color: theme.colors.text.muted }]}>No results found</Text>
+          <Text style={[styles.statusText, { color: theme.colors.text.muted }]}>
+            No results found
+          </Text>
         )}
       </View>
     </View>

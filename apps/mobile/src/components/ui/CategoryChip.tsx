@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { typography } from '../../styles/typography';
-import { SafeBlurView } from './SafeBlurView';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface CategoryChipProps {
@@ -11,43 +10,44 @@ interface CategoryChipProps {
   activeColor: string;
 }
 
-export const CategoryChip = ({
-  label,
-  isSelected,
-  onPress,
-  activeColor
-}: CategoryChipProps) => {
+export const CategoryChip = ({ label, isSelected, onPress, activeColor }: CategoryChipProps) => {
   const theme = useAppTheme();
 
   return (
-    <Pressable 
+    <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.container,
-        pressed && { opacity: 0.9, transform: [{ scale: 0.96 }] }
+        pressed && { opacity: 0.9, transform: [{ scale: 0.96 }] },
       ]}
     >
-      <SafeBlurView 
-        intensity={isSelected ? 0 : 40} 
-        tint={theme.dark ? 'dark' : 'light'}
+      <View
         style={[
           styles.blurContainer,
-          { 
-            backgroundColor: isSelected ? activeColor : 'rgba(255,255,255,0.05)',
-            borderColor: isSelected ? activeColor : 'rgba(255,255,255,0.1)' 
-          }
+          {
+            backgroundColor: isSelected
+              ? activeColor
+              : theme.dark
+                ? 'rgba(255,255,255,0.08)'
+                : 'rgba(0,0,0,0.05)',
+            borderColor: isSelected
+              ? activeColor
+              : theme.dark
+                ? 'rgba(255,255,255,0.1)'
+                : 'rgba(0,0,0,0.08)',
+          },
         ]}
       >
-        <Text 
+        <Text
           style={[
             styles.text,
             { color: theme.colors.text.primary },
-            isSelected && { color: theme.colors.text.inverse }
+            isSelected && { color: theme.colors.text.inverse },
           ]}
         >
           {label}
         </Text>
-      </SafeBlurView>
+      </View>
     </Pressable>
   );
 };
@@ -73,4 +73,3 @@ const styles = StyleSheet.create({
     fontFamily: typography.secondary.bold,
   },
 });
-

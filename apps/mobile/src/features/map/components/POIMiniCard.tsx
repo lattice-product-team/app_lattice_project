@@ -1,24 +1,22 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
   Extrapolation,
   interpolate,
   useDerivedValue,
-  useAnimatedProps
+  useAnimatedProps,
 } from 'react-native-reanimated';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { StandardUIPOI } from '../../poi/types';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 
 interface POIMiniCardProps {
   poi: any | null;
@@ -32,24 +30,23 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   const setNavigating = useNavigationStore((s) => s.setNavigating);
 
   useEffect(() => {
-    if (poi) {
+    if (poi?.id) {
       visibility.value = withSpring(1, theme.motion.physics.magnetic);
     } else {
       visibility.value = withSpring(0, theme.motion.physics.magnetic);
     }
-  }, [poi]);
+  }, [poi?.id]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    const bottom = interpolate(visibility.value, [0, 1], [-200, insets.bottom + 12], Extrapolation.CLAMP);
+    const bottom = interpolate(
+      visibility.value,
+      [0, 1],
+      [-200, insets.bottom + 12],
+      Extrapolation.CLAMP
+    );
     return {
       bottom,
       opacity: visibility.value,
-    };
-  });
-
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop
     };
   });
 
@@ -57,43 +54,51 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
 
   return (
     <Animated.View style={[styles.container, theme.shadows.soft, animatedStyle]}>
-      <View 
+      <View
         style={[
           styles.content,
-          { 
-            backgroundColor: 'transparent',
-            borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' 
-          }
+          {
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border,
+          },
         ]}
       >
-        {/* 1. Base Blur Layer */}
-        <SafeBlurView 
-          tint={theme.colors.glass.tint}
-          intensity={90}
-          style={StyleSheet.absoluteFill}
-        />
-
-        {/* 2. Inner Glow Border */}
-        <View style={styles.innerGlowBorder} />
-
-        {/* 3. Content Layer */}
+        {/* Content Layer */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
-            <MaterialCommunityIcons name={poi?.categoryIcon || 'map-marker'} size={24} color="white" />
-          </View>
-          
-          <View style={styles.textContainer}>
-            <Text style={[styles.title, { color: theme.colors.text.primary }]}>{poi?.displayName}</Text>
-            <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>{poi?.categoryLabel}</Text>
+            <MaterialCommunityIcons
+              name={poi?.categoryIcon || 'map-marker'}
+              size={24}
+              color="white"
+            />
           </View>
 
-          <Pressable onPress={onClose} style={styles.closeButton}>
-            <Feather name="x" size={20} color={theme.colors.text.muted} />
+          <View style={styles.textContainer}>
+            <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+              {poi?.displayName}
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
+              {poi?.categoryLabel}
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={onClose}
+            style={[
+              styles.closeButton,
+              {
+                backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                borderColor: theme.colors.glass.border,
+                ...theme.shadows.soft,
+              },
+            ]}
+          >
+            <Feather name="x" size={20} color={theme.colors.text.primary} />
           </Pressable>
         </View>
 
         <View style={styles.footer}>
-          <Pressable 
+          <Pressable
             onPress={() => {
               setNavigating(true);
               onClose();
@@ -121,13 +126,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     gap: 16,
-  },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 24,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
   },
   header: {
     flexDirection: 'row',
@@ -157,9 +155,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   footer: {
     flexDirection: 'row',

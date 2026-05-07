@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { X } from 'lucide-react-native';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -45,26 +44,38 @@ export const NavigationInfo = () => {
       exiting={FadeOutDown.duration(300)}
       style={[styles.container, { bottom: insets.bottom + 20 }]}
     >
-      <SafeBlurView intensity={90} tint="light" style={styles.card}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: 'rgba(0, 0, 0, 0.1)',
+          },
+        ]}
+      >
         <View style={styles.handle} />
         <View style={styles.content}>
           <View style={styles.stat}>
             <Text style={styles.statValue}>{getArrivalTime(routeMetadata.duration)}</Text>
             <Text style={styles.statLabel}>arrival</Text>
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.stat}>
             <Text style={styles.statValue}>{formatDuration(routeMetadata.duration)}</Text>
             <Text style={styles.statLabel}>min</Text>
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatDistance(routeMetadata.distance).split(' ')[0]}</Text>
-            <Text style={styles.statLabel}>{formatDistance(routeMetadata.distance).split(' ')[1]}</Text>
+            <Text style={styles.statValue}>
+              {formatDistance(routeMetadata.distance).split(' ')[0]}
+            </Text>
+            <Text style={styles.statLabel}>
+              {formatDistance(routeMetadata.distance).split(' ')[1]}
+            </Text>
           </View>
 
           <Pressable
@@ -74,7 +85,7 @@ export const NavigationInfo = () => {
             <X size={20} color="#666" />
           </Pressable>
         </View>
-      </SafeBlurView>
+      </View>
     </Animated.View>
   );
 };

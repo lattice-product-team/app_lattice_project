@@ -91,7 +91,7 @@ const baseTheme = {
       shadowOpacity: 0.15,
       shadowRadius: 16,
       elevation: 8,
-    }
+    },
   },
   motion: {
     physics: {
@@ -139,7 +139,7 @@ export const lightTheme: LatticeTheme = {
       elevation: primitiveColors.neutral.light.elevated,
     },
     text: {
-      primary: '#000000', 
+      primary: '#000000',
       secondary: '#3A3A3C',
       muted: '#8E8E93', // Apple standard muted grey
       inverse: '#FFFFFF',
@@ -149,10 +149,10 @@ export const lightTheme: LatticeTheme = {
       strong: primitiveColors.neutral.light['border-med'],
     },
     glass: {
-      background: 'rgba(248, 248, 246, 0.7)', // Reduced from 0.92 to allow blur visibility
-      border: 'rgba(0, 0, 0, 0.08)', // Increased from 0.04 for 1px sharpness
-      subtle: 'rgba(0, 0, 0, 0.03)',
-      subtleBorder: 'rgba(0, 0, 0, 0.05)',
+      background: 'rgba(248, 248, 246, 0.9)', // Standard Modern Solid Opacity
+      border: 'rgba(0, 0, 0, 0.1)', // Sharper border for definition
+      subtle: 'rgba(0, 0, 0, 0.04)',
+      subtleBorder: 'rgba(0, 0, 0, 0.08)',
       tint: 'light',
     },
     status: {
@@ -206,10 +206,10 @@ export const darkTheme: LatticeTheme = {
       strong: primitiveColors.neutral.dark['border-med'],
     },
     glass: {
-      background: 'rgba(20, 20, 18, 0.7)',
-      border: 'rgba(255, 255, 255, 0.12)',
-      subtle: 'rgba(255, 255, 255, 0.15)',
-      subtleBorder: 'rgba(255, 255, 255, 0.2)',
+      background: 'rgba(20, 20, 18, 0.9)', // Standard Modern Solid Opacity
+      border: 'rgba(255, 255, 255, 0.15)', // Sharper border for definition
+      subtle: 'rgba(255, 255, 255, 0.08)',
+      subtleBorder: 'rgba(255, 255, 255, 0.12)',
       tint: 'dark',
     },
     status: {
@@ -239,5 +239,3 @@ export const darkTheme: LatticeTheme = {
 // Default export for backward compatibility during transition
 export const theme = darkTheme;
 export type Theme = LatticeTheme;
-
-

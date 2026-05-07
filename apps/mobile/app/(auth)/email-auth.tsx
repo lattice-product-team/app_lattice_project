@@ -16,7 +16,7 @@ export default function EmailAuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const login = useLogin();
 
   const handleLogin = () => {
@@ -26,41 +26,50 @@ export default function EmailAuthScreen() {
       return;
     }
 
-    login.mutate({ email, password }, {
-      onSuccess: () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        const { intendedDestination, setGuestMode } = useAuthStore.getState();
-        
-        // Ensure guest mode is disabled on successful login
-        setGuestMode(false);
+    login.mutate(
+      { email, password },
+      {
+        onSuccess: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          const { intendedDestination, setGuestMode } = useAuthStore.getState();
 
-        if (intendedDestination) {
-          useAuthStore.getState().setIntendedDestination(null);
-          router.replace(intendedDestination as any);
-        } else {
-          router.replace('/(main)');
-        }
-      },
-      onError: (error: any) => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        const message = error instanceof Error ? error.message : (typeof error === 'string' ? error : 'An unexpected error occurred');
-        Alert.alert('Login Failed', message);
+          // Ensure guest mode is disabled on successful login
+          setGuestMode(false);
+
+          if (intendedDestination) {
+            useAuthStore.getState().setIntendedDestination(null);
+            router.replace(intendedDestination as any);
+          } else {
+            router.replace('/(main)');
+          }
+        },
+        onError: (error: any) => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          const message =
+            error instanceof Error
+              ? error.message
+              : typeof error === 'string'
+                ? error
+                : 'An unexpected error occurred';
+          Alert.alert('Login Failed', message);
+        },
       }
-    });
+    );
   };
 
   return (
     <AuthLayout midnight showBack onBack={() => router.back()}>
       <View style={styles.container}>
-
         <Animated.View entering={FadeInDown.duration(600).springify()}>
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>Sign in with Email</Text>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+            Sign in with Email
+          </Text>
           <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Enter your details to access your account.
           </Text>
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           entering={FadeInDown.delay(200).duration(600).springify()}
           style={styles.form}
         >
@@ -68,12 +77,22 @@ export default function EmailAuthScreen() {
             <View style={styles.errorBanner}>
               <Feather name="alert-circle" size={16} color={theme.colors.status.error} />
               <Text style={[styles.errorText, { color: theme.colors.status.error }]}>
-                {login.error instanceof Error ? login.error.message : 'Login failed. Please check your credentials.'}
+                {login.error instanceof Error
+                  ? login.error.message
+                  : 'Login failed. Please check your credentials.'}
               </Text>
             </View>
           )}
 
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: login.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
+          <View
+            style={[
+              styles.inputGroup,
+              {
+                backgroundColor: theme.colors.glass.subtle,
+                borderColor: login.isError ? theme.colors.status.error : theme.colors.border.subtle,
+              },
+            ]}
+          >
             <Feather name="mail" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Email"
@@ -86,7 +105,15 @@ export default function EmailAuthScreen() {
             />
           </View>
 
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: login.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
+          <View
+            style={[
+              styles.inputGroup,
+              {
+                backgroundColor: theme.colors.glass.subtle,
+                borderColor: login.isError ? theme.colors.status.error : theme.colors.border.subtle,
+              },
+            ]}
+          >
             <Feather name="lock" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Password"
@@ -97,29 +124,43 @@ export default function EmailAuthScreen() {
               secureTextEntry={!showPassword}
             />
             <Pressable onPress={() => setShowPassword(!showPassword)}>
-              <Feather name={showPassword ? "eye-off" : "eye"} size={20} color={theme.colors.text.muted} />
+              <Feather
+                name={showPassword ? 'eye-off' : 'eye'}
+                size={20}
+                color={theme.colors.text.muted}
+              />
             </Pressable>
           </View>
 
           <View style={styles.forgotPassword}>
-            <Text style={{ color: theme.colors.brand.primary, fontFamily: 'Inter-Bold', fontSize: 13 }}>
+            <Text
+              style={{ color: theme.colors.brand.primary, fontFamily: 'Inter-Bold', fontSize: 13 }}
+            >
               Forgot Password?
             </Text>
           </View>
 
-          <PremiumButton 
-            label={login.isPending ? "Connecting..." : "SIGN IN"} 
-            variant="primary" 
+          <PremiumButton
+            label={login.isPending ? 'Connecting...' : 'SIGN IN'}
+            variant="primary"
             onPress={handleLogin}
             disabled={login.isPending}
           />
 
           <View style={styles.registerLink}>
-            <Text style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Medium', fontSize: 14 }}>
+            <Text
+              style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Medium', fontSize: 14 }}
+            >
               Don't have an account?{' '}
             </Text>
             <Pressable onPress={() => router.push('/(auth)/email-register')} hitSlop={10}>
-              <Text style={{ color: theme.colors.brand.primary, fontFamily: 'Inter-Bold', fontSize: 14 }}>
+              <Text
+                style={{
+                  color: theme.colors.brand.primary,
+                  fontFamily: 'Inter-Bold',
+                  fontSize: 14,
+                }}
+              >
                 Create one
               </Text>
             </Pressable>
@@ -197,5 +238,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
-  }
+  },
 });

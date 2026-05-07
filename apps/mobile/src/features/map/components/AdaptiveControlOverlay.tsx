@@ -1,10 +1,14 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
-import Animated, { useAnimatedStyle, SharedValue, interpolate, Extrapolation } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  SharedValue,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 
 interface AdaptiveControlOverlayProps {
@@ -44,38 +48,28 @@ export const AdaptiveControlOverlay = ({
     };
   });
 
-
-
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
-      <View style={[styles.pill, !theme.dark && theme.shadows.soft, { backgroundColor: theme.colors.glass.background }]}>
-        <SafeBlurView 
-          intensity={90} 
-          tint={theme.colors.glass.tint} 
-          style={[
-            StyleSheet.absoluteFill, 
-            { 
-              borderRadius: 25, 
-              borderWidth: 1, 
-              borderColor: theme.colors.glass.border 
-            }
-          ]} 
-        />
-        
+      <View
+        style={[
+          styles.pill,
+          {
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border,
+            borderWidth: 1,
+            ...theme.shadows.soft,
+          },
+        ]}
+      >
         {/* 1. 3D Toggle */}
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onToggle3D();
           }}
-          style={({ pressed }) => [
-            styles.action,
-            pressed && { opacity: 0.7 }
-          ]}
+          style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
-          <Text style={[styles.text3D, { color: iconColor }]}>
-            {is3DActive ? '2D' : '3D'}
-          </Text>
+          <Text style={[styles.text3D, { color: iconColor }]}>{is3DActive ? '2D' : '3D'}</Text>
         </Pressable>
 
         {/* 2. Recenter */}
@@ -84,10 +78,7 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onRecenter();
           }}
-          style={({ pressed }) => [
-            styles.action,
-            pressed && { opacity: 0.7 }
-          ]}
+          style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
           <Feather name="navigation" size={22} color={iconColor} />
         </Pressable>
@@ -98,10 +89,7 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onOpenBinoculars?.();
           }}
-          style={({ pressed }) => [
-            styles.action,
-            pressed && { opacity: 0.7 }
-          ]}
+          style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
           <MaterialCommunityIcons name="binoculars" size={22} color={iconColor} />
         </Pressable>

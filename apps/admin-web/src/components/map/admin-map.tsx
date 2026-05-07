@@ -1,9 +1,15 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import Map, { NavigationControl, Marker, Source, Layer, MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import Map, {
+  NavigationControl,
+  Marker,
+  Source,
+  Layer,
+  MapLayerMouseEvent,
+} from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Icons } from "@/components/icons";
+import { Icons } from '@/components/icons';
 
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
@@ -21,8 +27,8 @@ interface AdminMapProps {
   pois?: any[];
   boundaryPoints?: [number, number][];
   onBoundaryChange?: (points: [number, number][]) => void;
-  selectedPoi?: { lng: number, lat: number } | null;
-  onPoiSelect?: (coords: { lng: number, lat: number }) => void;
+  selectedPoi?: { lng: number; lat: number } | null;
+  onPoiSelect?: (coords: { lng: number; lat: number }) => void;
   onAssetClick?: (asset: any) => void;
   activeEventBoundary?: any;
 }
@@ -43,17 +49,21 @@ const isPointInPolygon = (point: [number, number], polygon: [number, number][][]
   const [x, y] = point;
   let inside = false;
   for (let i = 0, j = polygon[0].length - 1; i < polygon[0].length; j = i++) {
-      const xi = polygon[0][i][0], yi = polygon[0][i][1];
-      const xj = polygon[0][j][0], yj = polygon[0][j][1];
-      const intersect = ((yi > y) !== (yj > y))
-          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
+    const xi = polygon[0][i][0],
+      yi = polygon[0][i][1];
+    const xj = polygon[0][j][0],
+      yj = polygon[0][j][1];
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
   }
   return inside;
 };
 
 const getBBox = (coordinates: [number, number][][]) => {
-  let minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+  let minLng = Infinity,
+    maxLng = -Infinity,
+    minLat = Infinity,
+    maxLat = -Infinity;
   for (const ring of coordinates) {
     for (const point of ring) {
       if (point[0] < minLng) minLng = point[0];
@@ -75,7 +85,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   selectedPoi,
   onPoiSelect,
   onAssetClick,
-  activeEventBoundary
+  activeEventBoundary,
 }) => {
   const mapRef = React.useRef<any>(null);
   const [viewState, setViewState] = useState(initialViewState);
@@ -85,32 +95,57 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     if (activeEventBoundary?.geometry?.coordinates) {
       const bbox = getBBox(activeEventBoundary.geometry.coordinates);
       mapRef.current?.fitBounds(
-        [[bbox[0], bbox[1]], [bbox[2], bbox[3]]],
+        [
+          [bbox[0], bbox[1]],
+          [bbox[2], bbox[3]],
+        ],
         { padding: 40, duration: 1000 }
       );
     } else if (initialViewState) {
-      setViewState(initialViewState);
+      // Only update if actually different to avoid cascading render warnings
+      const timerId = setTimeout(() => {
+        setViewState((prev) => {
+          if (
+            prev.longitude === initialViewState.longitude &&
+            prev.latitude === initialViewState.latitude &&
+            prev.zoom === initialViewState.zoom
+          ) {
+            return prev;
+          }
+          return initialViewState;
+        });
+      }, 0);
+      return () => clearTimeout(timerId);
     }
-  }, [initialViewState?.longitude, initialViewState?.latitude, activeEventBoundary?.geometry]);
+  }, [
+    initialViewState.longitude,
+    initialViewState.latitude,
+    initialViewState.zoom,
+    activeEventBoundary?.geometry,
+    initialViewState,
+  ]);
 
-  const handleMapClick = useCallback((e: MapLayerMouseEvent) => {
-    const { lng, lat } = e.lngLat;
+  const handleMapClick = useCallback(
+    (e: MapLayerMouseEvent) => {
+      const { lng, lat } = e.lngLat;
 
-    if (mode === 'DRAW_BOUNDARY' && onBoundaryChange) {
-      onBoundaryChange([...boundaryPoints, [lng, lat]]);
-    } else if (mode === 'PICK_COORDINATE' && onPoiSelect) {
-      // If we have an active event boundary, validate the click is inside
-      if (activeEventBoundary?.geometry?.coordinates) {
-        const isInside = isPointInPolygon([lng, lat], activeEventBoundary.geometry.coordinates);
-        if (!isInside) {
-          // You might want to show a toast here, but for now we just ignore the click
-          console.warn("Click outside event boundary");
-          return;
+      if (mode === 'DRAW_BOUNDARY' && onBoundaryChange) {
+        onBoundaryChange([...boundaryPoints, [lng, lat]]);
+      } else if (mode === 'PICK_COORDINATE' && onPoiSelect) {
+        // If we have an active event boundary, validate the click is inside
+        if (activeEventBoundary?.geometry?.coordinates) {
+          const isInside = isPointInPolygon([lng, lat], activeEventBoundary.geometry.coordinates);
+          if (!isInside) {
+            // You might want to show a toast here, but for now we just ignore the click
+            console.warn('Click outside event boundary');
+            return;
+          }
         }
+        onPoiSelect({ lng, lat });
       }
-      onPoiSelect({ lng, lat });
-    }
-  }, [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary]);
+    },
+    [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary]
+  );
 
   const boundaryGeoJSON = useMemo(() => {
     if (boundaryPoints.length < 3) return null;
@@ -118,8 +153,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
       type: 'Feature',
       geometry: {
         type: 'Polygon',
-        coordinates: [[...boundaryPoints, boundaryPoints[0]]]
-      }
+        coordinates: [[...boundaryPoints, boundaryPoints[0]]],
+      },
     } as any;
   }, [boundaryPoints]);
 
@@ -127,12 +162,12 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     return {
       type: 'FeatureCollection',
       features: events
-        .filter(e => e.boundary)
-        .map(e => ({
+        .filter((e) => e.boundary)
+        .map((e) => ({
           type: 'Feature',
           properties: { id: e.id, name: e.name, color: e.primaryColor },
-          geometry: e.boundary
-        }))
+          geometry: e.boundary,
+        })),
     } as any;
   }, [events]);
 
@@ -141,7 +176,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
       <Map
         ref={mapRef}
         {...viewState}
-        onMove={evt => setViewState(evt.viewState)}
+        onMove={(evt) => setViewState(evt.viewState)}
         mapStyle={MAP_STYLE}
         onClick={handleMapClick}
         style={{ width: '100%', height: '100%' }}
@@ -156,7 +191,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               type="fill"
               paint={{
                 'fill-color': ['get', 'color'],
-                'fill-opacity': 0.1
+                'fill-opacity': 0.1,
               }}
             />
             <Layer
@@ -164,7 +199,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               type="line"
               paint={{
                 'line-color': ['get', 'color'],
-                'line-width': 2
+                'line-width': 2,
               }}
             />
           </Source>
@@ -203,35 +238,32 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         )}
 
         {/* Global POIs */}
-        {mode === 'GLOBAL_VIEW' && pois.map((poi: any) => (
-          <Marker
-            key={poi.id}
-            longitude={poi.geometry.coordinates[0]}
-            latitude={poi.geometry.coordinates[1]}
-            anchor="bottom"
-            onClick={(e) => {
-              e.originalEvent.stopPropagation();
-              onAssetClick?.(poi);
-            }}
-          >
-            <div className="group relative cursor-pointer">
-              <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-110">
-                <span className="text-sm">{POI_TYPES[poi.category] || '📍'}</span>
+        {mode === 'GLOBAL_VIEW' &&
+          pois.map((poi: any) => (
+            <Marker
+              key={poi.id}
+              longitude={poi.geometry.coordinates[0]}
+              latitude={poi.geometry.coordinates[1]}
+              anchor="bottom"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                onAssetClick?.(poi);
+              }}
+            >
+              <div className="group relative cursor-pointer">
+                <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-110">
+                  <span className="text-sm">{POI_TYPES[poi.category] || '📍'}</span>
+                </div>
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {poi.name}
+                </div>
               </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                {poi.name}
-              </div>
-            </div>
-          </Marker>
-        ))}
+            </Marker>
+          ))}
 
         {/* Selected POI Marker */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
-          <Marker
-            longitude={selectedPoi.lng}
-            latitude={selectedPoi.lat}
-            anchor="bottom"
-          >
+          <Marker longitude={selectedPoi.lng} latitude={selectedPoi.lat} anchor="bottom">
             <div className="bg-obsidian text-eggshell p-2.5 rounded-full shadow-hairline border border-chalk animate-bounce">
               <span className="text-xl">📍</span>
             </div>
@@ -239,11 +271,12 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         )}
 
         {/* Boundary Control Points */}
-        {mode === 'DRAW_BOUNDARY' && boundaryPoints.map((point, i) => (
-          <Marker key={`bp-${i}`} longitude={point[0]} latitude={point[1]}>
-            <div className="w-3 h-3 bg-white rounded-full border-2 border-obsidian shadow-hairline" />
-          </Marker>
-        ))}
+        {mode === 'DRAW_BOUNDARY' &&
+          boundaryPoints.map((point, i) => (
+            <Marker key={`bp-${i}`} longitude={point[0]} latitude={point[1]}>
+              <div className="w-3 h-3 bg-white rounded-full border-2 border-obsidian shadow-hairline" />
+            </Marker>
+          ))}
       </Map>
     </div>
   );

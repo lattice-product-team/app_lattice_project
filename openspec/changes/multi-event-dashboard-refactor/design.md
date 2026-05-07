@@ -5,21 +5,25 @@ The previous redesign established the operational UI patterns but hardcoded the 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Decouple all hardcoded strings (Event names, Gate IDs) from the UI.
 - Implement a `Selector` pattern for switching between active venues and events.
 - Implement a "Global Dashboard" view for cross-event monitoring.
 - Maintain the HeroUI v3 aesthetic while increasing UI density for complex selections.
 
 **Non-Goals:**
+
 - Backend implementation of event switching APIs (UI will use local state and mock data mapping).
 - Persistent state across sessions (localStorage/DB) for the active selection (out of scope).
 
 ## Decisions
 
 ### 1. State Management: Active Context
+
 **Decision:** Use a local `activeEvent` state in `Dashboard` to drive all child components.
 **Rationale:** Simple and sufficient for a single-page dashboard.
 **Data Structure:**
+
 ```typescript
 {
   id: string;
@@ -31,10 +35,12 @@ The previous redesign established the operational UI patterns but hardcoded the 
 ```
 
 ### 2. UI Pattern: Double Selector
+
 **Decision:** Use two HeroUI `<Select>` components in the header: one for Venue and one for Event.
 **Rationale:** Hierarchical selection (Venue > Event) reflects the database schema (`events` table has `venue_id`).
 
 ### 3. Component Refinement: Generic Operations
+
 **Decision:** Rename "Gate Status" to "Access Point Monitor" and "Spectators" to "Participants/Attendees" based on event type.
 **Rationale:** Professional platforms use terminology that fits the customer's specific industry.
 

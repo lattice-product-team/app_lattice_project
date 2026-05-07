@@ -20,17 +20,17 @@ export const MapPinFrame: React.FC<MapPinFrameProps> = ({
   style,
 }) => {
   const pinSize = size === 'event' ? mapPinStyles.eventPinSize : mapPinStyles.poiPinSize;
-  
+
   return (
-    <View 
+    <View
       style={[
-        mapPinStyles.pinFrame, 
+        mapPinStyles.pinFrame,
         pinSize,
-        { 
-          borderColor, 
+        {
+          borderColor,
           borderWidth: isSelected ? borderWidth + 1 : borderWidth,
         },
-        style
+        style,
       ]}
     >
       {children}

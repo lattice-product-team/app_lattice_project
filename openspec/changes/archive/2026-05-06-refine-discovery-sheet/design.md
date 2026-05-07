@@ -5,6 +5,7 @@ The current sheet implementation uses a single `GestureDetector` for the entire 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Enable intuitive "drag-down" behavior from Level 3 using `SimultaneousHandlers`.
 - Improve perceived fluidity by using the `mass` property in spring animations.
 - Eliminate the legacy "Select point" placeholder.
@@ -12,7 +13,7 @@ The current sheet implementation uses a single `GestureDetector` for the entire 
 
 ## Decisions
 
-1. **Simultaneous Gestures**: 
+1. **Simultaneous Gestures**:
    - We will use `Gesture.Simultaneous(panGesture, nativeGesture)` on the sheet container.
    - We will implement a `useSharedValue` called `isScrollAtTop` updated by the ScrollView's `onScroll` event.
    - The `PanGesture` will only take control if `isScrollAtTop.value === true` and the user is dragging downwards.

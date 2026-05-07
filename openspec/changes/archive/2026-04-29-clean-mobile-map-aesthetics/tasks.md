@@ -7,9 +7,9 @@
 ## 2. Style Patching Logic
 
 - [x] 2.1 Implement the patching function to iterate through layers and set `visibility: 'none'` for:
-    - [x] 2.1.1 `Ferry line` and `Ferry`
-    - [x] 2.1.2 All `Highway shield` layers
-    - [x] 2.1.3 All layers with `source-layer: "poi"`
+  - [x] 2.1.1 `Ferry line` and `Ferry`
+  - [x] 2.1.2 All `Highway shield` layers
+  - [x] 2.1.3 All layers with `source-layer: "poi"`
 - [x] 2.2 Integration: Apply the patched style to the `MapLibreGL.MapView`
 
 ## 3. Cleanup & Verification

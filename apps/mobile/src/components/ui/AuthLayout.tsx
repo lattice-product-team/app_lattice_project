@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  View, 
-  KeyboardAvoidingView, 
-  Platform, 
-  ScrollView, 
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   Pressable,
-  StyleSheet
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -29,15 +29,15 @@ interface AuthLayoutProps {
  * Shared layout for all authentication screens.
  * Handles progress, navigation, and consistent background styling.
  */
-export const AuthLayout = ({ 
-  children, 
-  step, 
-  totalSteps = 3, 
-  onBack, 
+export const AuthLayout = ({
+  children,
+  step,
+  totalSteps = 3,
+  onBack,
   showBack = false,
   isScrollable = true,
   transparent = false,
-  midnight = false
+  midnight = false,
 }: AuthLayoutProps) => {
   const theme = useAppTheme();
 
@@ -45,7 +45,7 @@ export const AuthLayout = ({
     <View style={[styles.navigationOverlay, { top: 10 }]}>
       {/* Button Row */}
       {showBack ? (
-        <Pressable 
+        <Pressable
           onPress={() => {
             Haptics.selectionAsync();
             if (onBack) onBack();
@@ -61,13 +61,14 @@ export const AuthLayout = ({
       {step ? (
         <View style={styles.progressContainer}>
           {Array.from({ length: totalSteps }).map((_, i) => (
-            <View 
-              key={i} 
+            <View
+              key={i}
               style={{
                 height: 4,
                 borderRadius: 2,
                 flex: 1,
-                backgroundColor: step >= i + 1 ? theme.colors.text.primary : theme.colors.border.subtle,
+                backgroundColor:
+                  step >= i + 1 ? theme.colors.text.primary : theme.colors.border.subtle,
                 opacity: step >= i + 1 ? 0.8 : 0.2,
               }}
             />
@@ -79,35 +80,30 @@ export const AuthLayout = ({
 
   return (
     <View className="flex-1">
-      <StatusBar style={theme.dark ? "light" : "dark"} />
-      
+      <StatusBar style={theme.dark ? 'light' : 'dark'} />
+
       {!transparent && (
-        <ThemeGradient 
-          variant={midnight || theme.dark ? "midnight" : "auth"} 
-          showBlob={true} 
-        />
+        <ThemeGradient variant={midnight || theme.dark ? 'midnight' : 'auth'} showBlob={true} />
       )}
-      
+
       <SafeAreaView className="flex-1">
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
           <View className="flex-1 px-7">
             {navigationRow}
-            
+
             {isScrollable ? (
-              <ScrollView 
-                contentContainerStyle={{ flexGrow: 1 }} 
+              <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
               >
                 {children}
               </ScrollView>
             ) : (
-              <View className="flex-1">
-                {children}
-              </View>
+              <View className="flex-1">{children}</View>
             )}
           </View>
         </KeyboardAvoidingView>
@@ -140,6 +136,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginLeft: 20,
-  }
+  },
 });
-

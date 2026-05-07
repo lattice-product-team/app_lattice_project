@@ -12,9 +12,11 @@ The current map pin system suffers from visual instability, specifically the "to
 ## Capabilities
 
 ### New Capabilities
+
 - `zoom-based-discovery`: Logic for revealing sub-POIs based on camera proximity/zoom level.
 
 ### Modified Capabilities
+
 - `map-pin-components`: Update visuals for "Simple" pins and add technical requirements for positioning stability.
 - `spatial-hierarchy-logic`: Update visibility rules to include zoom-based reveal.
 

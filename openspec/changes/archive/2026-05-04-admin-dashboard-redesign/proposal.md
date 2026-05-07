@@ -6,7 +6,7 @@ The current dashboard in the Admin Web application is using generic placeholders
 
 - **Dashboard Header**: Replace "Good morning, Kate" greeting with a context-aware header showing current live event status.
 - **Overview Metrics**: Replace sales metrics with real-time operational KPIs: Active Spectators, Incident Alerts, and Ticket Claim Percentage.
-- **Charts Section**: 
+- **Charts Section**:
   - Replace "Total Sales" bar chart with a "Spectator Inflow/Density" visualization.
   - Replace the generic line chart with "Entry Flow by Gate" or "Zone Congestion" trends.
 - **Operations Table**: Replace the "Employees Table" with a "Gate & POI Live Status" table showing congestion levels, wait times, and operational status.
@@ -15,9 +15,11 @@ The current dashboard in the Admin Web application is using generic placeholders
 ## Capabilities
 
 ### New Capabilities
+
 - `event-operations-dashboard`: Defines the requirements for real-time visualization of event-specific telemetry, gate congestion levels, and spectator inflow metrics.
 
 ### Modified Capabilities
+
 - `standards-alignment`: Ensuring the dashboard adheres to the newly established HeroUI v3 / Tailwind v4 design tokens and component patterns.
 
 ## Impact

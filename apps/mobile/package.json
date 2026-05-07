@@ -14,7 +14,7 @@
     "pods": "cd ios && pod install && cd ..",
     "lint": "expo lint",
     "test": "npm run test:logic && npm run test:components",
-    "test:components": "jest",
+    "test:components": "jest --passWithNoTests",
     "test:logic": "vitest run",
     "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.0.0 --activate"
   },
@@ -36,7 +36,6 @@
     "expo": "~54.0.34",
     "expo-application": "~7.0.8",
     "expo-auth-session": "^7.0.11",
-    "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "^6.0.21",

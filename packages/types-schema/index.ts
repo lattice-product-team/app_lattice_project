@@ -1,7 +1,7 @@
 /**
  * Core TypeScript interfaces for Lattice
- * 
- * We use a combination of manual interfaces and inferred types 
+ *
+ * We use a combination of manual interfaces and inferred types
  * from the Drizzle schema to ensure a single source of truth.
  */
 
@@ -37,11 +37,7 @@ export interface UserTicketSyncResponse {
   };
 }
 
-export type POIType = typeof schema.poiTypeEnum.enumValues[number];
+export type POIType = (typeof schema.poiTypeEnum.enumValues)[number];
 
 // Re-export enums and other useful bits from schema if needed
-export {
-  mobilityModeEnum,
-  poiTypeEnum,
-  crowdLevelEnum,
-} from '@app/db';
+export { mobilityModeEnum, poiTypeEnum, crowdLevelEnum } from '@app/db';

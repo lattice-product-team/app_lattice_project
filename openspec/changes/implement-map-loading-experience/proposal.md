@@ -14,9 +14,11 @@ La experiencia actual de carga del mapa en Lattice presenta parpadeos (flickerin
 ## Capabilities
 
 ### New Capabilities
+
 - `map-loading-orchestration`: Sistema centralizado para gestionar los estados de carga, pre-carga de estilos y transiciones visuales del mapa.
 
 ### Modified Capabilities
+
 - (ninguna)
 
 ## Impact

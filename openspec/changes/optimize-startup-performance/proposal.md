@@ -12,9 +12,11 @@ The application takes 6.5 seconds to start (Splash Screen to interactive Map), w
 ## Capabilities
 
 ### New Capabilities
+
 - `startup-performance-monitor`: Add basic logging to track TTI (Time to Interactive) in production/development.
 
 ### Modified Capabilities
+
 - `map-discovery`: Requirement changed to support "Instant Data" (loading markers from cache immediately on mount).
 
 ## Impact

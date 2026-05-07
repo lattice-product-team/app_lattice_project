@@ -8,12 +8,17 @@ export default defineConfig({
     setupFiles: ['./src/setupTests.vitest.ts'],
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'react-native': 'react-native-web',
     },
+
     include: [
       'src/utils/__tests__/**/*.{test,spec}.{ts,tsx}',
       'src/hooks/__tests__/**/*.{test,spec}.{ts,tsx}',
       'src/services/__tests__/**/*.{test,spec}.{ts,tsx}',
     ],
+    define: {
+      __DEV__: true,
+    },
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
   },
 });

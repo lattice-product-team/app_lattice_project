@@ -56,7 +56,7 @@ async function resolveCoords(input: { lat?: number; lng?: number; poiId?: number
 function buildAdjacencyList(
   nodes: any[],
   edges: any[],
-  options: { avoidStairs?: boolean, wheelchairAccess?: boolean }
+  options: { avoidStairs?: boolean; wheelchairAccess?: boolean }
 ): AdjacencyList {
   const graph: AdjacencyList = {};
   nodes.forEach((n) => (graph[n.id] = []));
@@ -109,7 +109,7 @@ async function reconstructPath(pathNodes: number[]) {
 export async function findRoute(
   origin: { lat?: number; lng?: number; poiId?: number },
   destination: { lat?: number; lng?: number; poiId?: number },
-  options: { avoidStairs?: boolean, wheelchairAccess?: boolean, eventId?: number } = {}
+  options: { avoidStairs?: boolean; wheelchairAccess?: boolean; eventId?: number } = {}
 ) {
   const startCoords = await resolveCoords(origin);
   const endCoords = await resolveCoords(destination);

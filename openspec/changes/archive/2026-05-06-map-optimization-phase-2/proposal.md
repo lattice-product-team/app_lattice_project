@@ -12,9 +12,11 @@ The current map implementation exhibits visual glitches (markers flashing at top
 ## Capabilities
 
 ### New Capabilities
+
 - `hybrid-map-rendering`: Requirements for high-performance map rendering using GL layers and selective React marker injection.
 
 ### Modified Capabilities
+
 - `map-aesthetic-control`: Update requirements to include guidelines for marker stability and coordinate validation standards.
 
 ## Impact

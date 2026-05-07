@@ -7,7 +7,7 @@ Welcome to the Lattice development team. This guide will help you get your local
 - **Node.js (LTS):** v18.0.0 or higher.
 - **pnpm:** v10.0.0 or higher.
 - **Docker Desktop:** Running and updated (Required for PostGIS).
-- **Mobile SDKs:** 
+- **Mobile SDKs:**
   - Xcode (macOS only) for iOS.
   - Android Studio + SDK Platform Tools for Android.
   - **Environment Variables**: `ANDROID_HOME` must point to your Android SDK location.
@@ -15,6 +15,7 @@ Welcome to the Lattice development team. This guide will help you get your local
 ## Setup Instructions
 
 1. **Install Dependencies:**
+
    ```bash
    pnpm install
    ```
@@ -24,11 +25,13 @@ Welcome to the Lattice development team. This guide will help you get your local
    The mobile app and all server services now read configuration directly from this central file.
 
 3. **Start Infrastructure:**
+
    ```bash
    docker compose up -d db
    ```
 
 4. **Prepare Database:**
+
    ```bash
    pnpm db:migrate
    pnpm db:clean          # Optional: Start with a fresh DB
@@ -103,4 +106,5 @@ This is the fastest, most stable method for local Android testing.
     ```
 
 ---
+
 > For contribution guidelines, see [**Contribution Standards**](./standards.md).

@@ -12,7 +12,7 @@ export const ActionGrid = () => {
 
   const handlePress = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
+
     switch (id) {
       case 'tickets':
         router.push('/tickets');
@@ -32,13 +32,25 @@ export const ActionGrid = () => {
     {
       id: 'tickets',
       label: 'Entradas',
-      icon: <MaterialCommunityIcons name="ticket-confirmation-outline" size={26} color={theme.colors.brand.primary} />,
+      icon: (
+        <MaterialCommunityIcons
+          name="ticket-confirmation-outline"
+          size={26}
+          color={theme.colors.brand.primary}
+        />
+      ),
       onPress: () => handlePress('tickets'),
     },
     {
       id: 'wallet',
       label: 'Wallet',
-      icon: <MaterialCommunityIcons name="wallet-outline" size={26} color={theme.colors.brand.primary} />,
+      icon: (
+        <MaterialCommunityIcons
+          name="wallet-outline"
+          size={26}
+          color={theme.colors.brand.primary}
+        />
+      ),
       onPress: () => handlePress('wallet'),
     },
     {
@@ -58,11 +70,13 @@ export const ActionGrid = () => {
           style={({ pressed }) => [
             styles.card,
             { backgroundColor: theme.colors.bg.surface },
-            pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 }
+            pressed && { transform: [{ scale: 0.96 }], opacity: 0.9 },
           ]}
         >
           <View style={styles.cardContent}>
-            <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary + '10' }]}>
+            <View
+              style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary + '10' }]}
+            >
               {action.icon}
             </View>
             <Text style={[styles.label, { color: theme.colors.text.primary }]} numberOfLines={1}>

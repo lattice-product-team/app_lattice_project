@@ -12,10 +12,12 @@ Currently, the Admin Dashboard relies on hardcoded static data for its primary o
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-api-integration`: A standardized pattern for fetching, validating, and displaying administrative data in the web dashboard.
 - `cross-platform-spatial-sync`: The infrastructure and logic required to propagate spatial edits from the admin environment to the mobile discovery layer.
 
 ### Modified Capabilities
+
 - `event-operations-dashboard`: Updating operational requirements to move from static monitoring to dynamic, real-time data management.
 - `map-discovery-platform`: Modifying the discovery logic to prioritize dynamic spatial data from the server over local or hardcoded fallbacks.
 

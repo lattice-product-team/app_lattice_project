@@ -12,9 +12,11 @@ The current `expo-blur` implementation provides a basic blur effect that lacks t
 ## Capabilities
 
 ### New Capabilities
+
 - `liquid-glass-ui`: Defines the visual standards and technical requirements for the new shader-based blur system.
 
 ### Modified Capabilities
+
 - `pure-ui-animation-bridge`: Update to ensure Skia-based effects integrate smoothly with the existing animation system.
 
 ## Impact

@@ -11,9 +11,11 @@ El sistema de animaciones actual está fragmentado, con constantes de física de
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-motion-system`: Define la arquitectura de tokens de movimiento para la aplicación, asegurando que todas las animaciones sigan presets predefinidos.
 
 ### Modified Capabilities
+
 - `design-tokens`: Se expande la definición de tokens para incluir propiedades de animación y física.
 
 ## Impact

@@ -27,7 +27,7 @@ export const useEventDetails = (eventId: string | null) => {
       setLoading(true);
       try {
         const data = await geoService.getEvent(Number(eventId));
-        
+
         // Parse metadata if it exists and is a string
         let metadataObj = {};
         if (data.metadata) {
@@ -46,7 +46,7 @@ export const useEventDetails = (eventId: string | null) => {
           ...data,
           ...metadataObj,
           openingHours: 'Open', // Mocking for now as it's not in DB yet
-          distance: '900m',    // Mocking for now
+          distance: '900m', // Mocking for now
         });
         setError(null);
       } catch (e) {

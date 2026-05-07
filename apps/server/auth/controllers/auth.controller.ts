@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db, users, tickets, events, passkeyCredentials, eq, and, sql } from '@app/db';
-import { decodeJwt } from './auth.utils';
+import { decodeJwt, hashPassword, comparePassword, generateToken, verifyToken } from './auth.utils';
 
 /**
  * Get configuration for a specific event including direct branding
@@ -9,7 +9,8 @@ export const getEventConfig = async (req: Request, res: Response) => {
   const { eventId } = req.params;
 
   try {
-    const eventResult = await db.select()
+    const eventResult = await db
+      .select()
       .from(events)
       .where(eq(events.id, Number(eventId)))
       .limit(1);
@@ -50,10 +51,11 @@ export const register = async (req: Request, res: Response) => {
 
     if (existingUser) {
       if (existingUser.passwordHash === 'auto_generated_pass') {
+        const hashedPassword = await hashPassword(password);
         const updatedUser = await db
           .update(users)
           .set({
-            passwordHash: password,
+            passwordHash: hashedPassword,
             fullName: fullName || existingUser.fullName,
             hasTicket: ticket_code ? true : existingUser.hasTicket,
           })
@@ -73,7 +75,7 @@ export const register = async (req: Request, res: Response) => {
             fullName: user.fullName,
             hasTicket: user.hasTicket,
           },
-          token: `mock_jwt_token_for_${user.id}`,
+          token: generateToken({ userId: user.id, email: user.email }),
         });
       }
 
@@ -92,11 +94,12 @@ export const register = async (req: Request, res: Response) => {
       hasTicket = true;
     }
 
+    const hashedPassword = await hashPassword(password);
     const newUser = await db
       .insert(users)
       .values({
         email,
-        passwordHash: password,
+        passwordHash: hashedPassword,
         fullName: fullName || email.split('@')[0],
         hasTicket,
       })
@@ -115,7 +118,7 @@ export const register = async (req: Request, res: Response) => {
         fullName: newUser[0].fullName,
         hasTicket: newUser[0].hasTicket,
       },
-      token: `mock_jwt_token_for_${newUser[0].id}`,
+      token: generateToken({ userId: newUser[0].id, email: newUser[0].email }),
       tickets: userTickets,
     });
   } catch (error) {
@@ -141,7 +144,20 @@ export const login = async (req: Request, res: Response) => {
     const userResult = await db.select().from(users).where(eq(users.email, email)).limit(1);
     const user = userResult[0];
 
-    if (!user || user.passwordHash !== password) {
+    let isMatch = false;
+    if (user) {
+      isMatch = await comparePassword(password, user.passwordHash);
+
+      // Lazy migration: if password matches as plaintext (legacy), hash it now
+      if (!isMatch && user.passwordHash === password) {
+        console.log(`[Auth] Lazy migrating user ${user.id} to Bcrypt`);
+        const newHash = await hashPassword(password);
+        await db.update(users).set({ passwordHash: newHash }).where(eq(users.id, user.id));
+        isMatch = true;
+      }
+    }
+
+    if (!user || !isMatch) {
       return res.status(401).json({
         error: {
           code: 'INVALID_CREDENTIALS',
@@ -169,7 +185,7 @@ export const login = async (req: Request, res: Response) => {
         fullName: user.fullName,
         hasTicket,
       },
-      token: `mock_jwt_token_for_${user.id}`,
+      token: generateToken({ userId: user.id, email: user.email }),
       tickets: userTickets,
     });
   } catch (error) {
@@ -221,9 +237,11 @@ export const claimTicket = async (req: Request, res: Response) => {
     }
 
     if (ticket.userId) {
-      if (authHeader && authHeader.startsWith('Bearer mock_jwt_token_for_')) {
-        const userIdStr = authHeader.replace('Bearer mock_jwt_token_for_', '');
-        const userId = parseInt(userIdStr, 10);
+      const decoded = authHeader?.startsWith('Bearer ')
+        ? verifyToken(authHeader.substring(7))
+        : null;
+      if (decoded) {
+        const userId = decoded.userId;
 
         if (ticket.userId === userId) {
           const userTickets = await db.select().from(tickets).where(eq(tickets.userId, userId));
@@ -257,9 +275,9 @@ export const claimTicket = async (req: Request, res: Response) => {
       });
     }
 
-    if (authHeader && authHeader.startsWith('Bearer mock_jwt_token_for_')) {
-      const userIdStr = authHeader.replace('Bearer mock_jwt_token_for_', '');
-      const userId = parseInt(userIdStr, 10);
+    const decoded = authHeader?.startsWith('Bearer ') ? verifyToken(authHeader.substring(7)) : null;
+    if (decoded) {
+      const userId = decoded.userId;
 
       if (ticket.ownerEmail) {
         const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
@@ -390,7 +408,7 @@ export const ticketSync = async (req: Request, res: Response) => {
         fullName: user.fullName,
         hasTicket: user.hasTicket,
       },
-      token: `mock_jwt_token_for_${user.id}`,
+      token: generateToken({ userId: user.id, email: user.email }),
       ticket_info: ticketInfo,
       tickets: userTickets,
       requires_setup: user.passwordHash === 'auto_generated_pass',
@@ -409,8 +427,8 @@ export const ticketSync = async (req: Request, res: Response) => {
 
 export const getTickets = async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
-  const userIdStr = authHeader!.replace('Bearer mock_jwt_token_for_', '');
-  const userId = parseInt(userIdStr, 10);
+  const decoded = verifyToken(authHeader!.substring(7));
+  const userId = decoded.userId;
 
   try {
     const userTickets = await db.select().from(tickets).where(eq(tickets.userId, userId));
@@ -422,8 +440,8 @@ export const getTickets = async (req: Request, res: Response) => {
 
 export const updateMe = async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
-  const userIdStr = authHeader!.replace('Bearer mock_jwt_token_for_', '');
-  const userId = parseInt(userIdStr, 10);
+  const decoded = verifyToken(authHeader!.substring(7));
+  const userId = decoded.userId;
   const { avoidStairs, avoidCrowds, avoidSlopes, avoidGrandstands, fullName } = req.body;
 
   try {
@@ -448,8 +466,8 @@ export const updateMe = async (req: Request, res: Response) => {
 
 export const getMe = async (req: Request, res: Response) => {
   const authHeader = req.headers.authorization;
-  const userIdStr = authHeader!.replace('Bearer mock_jwt_token_for_', '');
-  const userId = parseInt(userIdStr, 10);
+  const decoded = verifyToken(authHeader!.substring(7));
+  const userId = decoded.userId;
 
   try {
     const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
@@ -467,7 +485,8 @@ export const getMe = async (req: Request, res: Response) => {
 export const unclaimTicket = async (req: Request, res: Response) => {
   const { ticket_code } = req.body;
   const authHeader = req.headers.authorization;
-  const userId = parseInt(authHeader!.replace('Bearer mock_jwt_token_for_', ''), 10);
+  const decoded = verifyToken(authHeader!.substring(7));
+  const userId = decoded.userId;
 
   let finalCode = ticket_code;
   try {
@@ -545,7 +564,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     // TODO: Verify token with google-auth-library
     // const ticket = await client.verifyIdToken({ idToken: token, audience: CLIENT_ID });
     // const payload = ticket.getPayload();
-    
+
     // MOCK Verification for now - extraction from real token
     const decoded = decodeJwt(token);
     if (!decoded) {
@@ -561,7 +580,7 @@ export const googleLogin = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Google token missing required fields' });
     }
 
-    let userResult = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
+    const userResult = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
     let user = userResult[0];
 
     if (!user) {
@@ -571,24 +590,28 @@ export const googleLogin = async (req: Request, res: Response) => {
 
       if (emailUser) {
         // Link Google ID to existing email account
-        const updatedUser = await db.update(users)
-          .set({ 
+        const updatedUser = await db
+          .update(users)
+          .set({
             googleId: googleId,
             fullName: emailUser.fullName || name,
-            avatarUrl: emailUser.avatarUrl || avatarUrl
+            avatarUrl: emailUser.avatarUrl || avatarUrl,
           })
           .where(eq(users.id, emailUser.id))
           .returning();
         user = updatedUser[0];
       } else {
         // Create new user
-        const newUser = await db.insert(users).values({
-          email: email,
-          googleId: googleId,
-          fullName: name,
-          avatarUrl: avatarUrl,
-          passwordHash: 'social_login_no_password',
-        }).returning();
+        const newUser = await db
+          .insert(users)
+          .values({
+            email: email,
+            googleId: googleId,
+            fullName: name,
+            avatarUrl: avatarUrl,
+            passwordHash: 'social_login_no_password',
+          })
+          .returning();
         user = newUser[0];
       }
     }
@@ -596,7 +619,11 @@ export const googleLogin = async (req: Request, res: Response) => {
     // Associate ticket if provided
     if (ticket_code) {
       await db.update(tickets).set({ userId: user.id }).where(eq(tickets.code, ticket_code));
-      const updatedUser = await db.update(users).set({ hasTicket: true }).where(eq(users.id, user.id)).returning();
+      const updatedUser = await db
+        .update(users)
+        .set({ hasTicket: true })
+        .where(eq(users.id, user.id))
+        .returning();
       user = updatedUser[0];
     }
 
@@ -608,7 +635,7 @@ export const googleLogin = async (req: Request, res: Response) => {
         hasTicket: user.hasTicket,
         avatarUrl: user.avatarUrl,
       },
-      token: `mock_jwt_token_for_${user.id}`,
+      token: generateToken({ userId: user.id, email: user.email }),
     });
   } catch (error) {
     console.error('Google Login Error:', error);
@@ -628,29 +655,38 @@ export const appleLogin = async (req: Request, res: Response) => {
 
   try {
     // TODO: Verify token with apple-signin-verify
-    
+
     // MOCK Verification for now - try to extract from token if it's a JWT
     const decoded = decodeJwt(token);
     const appleId = decoded?.sub || `apple_${token.substring(0, 10)}`;
     const email = decoded?.email || `apple_${token.substring(0, 8)}@example.com`;
 
-    let userResult = await db.select().from(users).where(eq(users.appleId, appleId)).limit(1);
+    const userResult = await db.select().from(users).where(eq(users.appleId, appleId)).limit(1);
     let user = userResult[0];
 
     if (!user) {
-      const newUser = await db.insert(users).values({
-        email: email,
-        appleId: appleId,
-        fullName: fullName ? `${fullName.firstName} ${fullName.lastName}` : (decoded?.name || 'Apple User'),
-        passwordHash: 'social_login_no_password',
-      }).returning();
+      const newUser = await db
+        .insert(users)
+        .values({
+          email: email,
+          appleId: appleId,
+          fullName: fullName
+            ? `${fullName.firstName} ${fullName.lastName}`
+            : decoded?.name || 'Apple User',
+          passwordHash: 'social_login_no_password',
+        })
+        .returning();
       user = newUser[0];
     }
 
     // Associate ticket if provided
     if (ticket_code) {
       await db.update(tickets).set({ userId: user.id }).where(eq(tickets.code, ticket_code));
-      const updatedUser = await db.update(users).set({ hasTicket: true }).where(eq(users.id, user.id)).returning();
+      const updatedUser = await db
+        .update(users)
+        .set({ hasTicket: true })
+        .where(eq(users.id, user.id))
+        .returning();
       user = updatedUser[0];
     }
 
@@ -662,7 +698,7 @@ export const appleLogin = async (req: Request, res: Response) => {
         hasTicket: user.hasTicket,
         avatarUrl: user.avatarUrl,
       },
-      token: `mock_jwt_token_for_${user.id}`,
+      token: generateToken({ userId: user.id, email: user.email }),
     });
   } catch (error) {
     console.error('Apple Login Error:', error);
@@ -689,7 +725,8 @@ export const registerPasskeyChallenge = async (req: Request, res: Response) => {
 export const registerPasskeyVerify = async (req: Request, res: Response) => {
   const { id, response } = req.body;
   const authHeader = req.headers.authorization;
-  const userId = parseInt(authHeader!.replace('Bearer mock_jwt_token_for_', ''), 10);
+  const decoded = verifyToken(authHeader!.substring(7));
+  const userId = decoded.userId;
 
   try {
     await db.insert(passkeyCredentials).values({
@@ -725,14 +762,22 @@ export const loginPasskeyVerify = async (req: Request, res: Response) => {
   const { id, response } = req.body;
 
   try {
-    const credResult = await db.select().from(passkeyCredentials).where(eq(passkeyCredentials.id, id)).limit(1);
+    const credResult = await db
+      .select()
+      .from(passkeyCredentials)
+      .where(eq(passkeyCredentials.id, id))
+      .limit(1);
     const credential = credResult[0];
 
     if (!credential) {
       return res.status(404).json({ error: 'Credential not found' });
     }
 
-    const userResult = await db.select().from(users).where(eq(users.id, credential.userId)).limit(1);
+    const userResult = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, credential.userId))
+      .limit(1);
     const user = userResult[0];
 
     res.json({
@@ -741,7 +786,7 @@ export const loginPasskeyVerify = async (req: Request, res: Response) => {
         email: user.email,
         fullName: user.fullName,
       },
-      token: `mock_jwt_token_for_${user.id}`,
+      token: generateToken({ userId: user.id, email: user.email }),
     });
   } catch (error) {
     res.status(500).json({ error: String(error) });

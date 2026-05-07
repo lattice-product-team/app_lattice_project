@@ -1,6 +1,7 @@
 ## Why
 
 The current map implementation has two major UX issues:
+
 1. **Laggy interactivity**: Event pins and POIs only appear or disappear after the user stops dragging the map, creating a "jumpy" experience.
 2. **Visual bugs**: Map markers (MarkerViews) occasionally appear in the top-left corner (0,0) before jumping to their correct location, creating a low-quality "glitchy" feel.
 
@@ -18,9 +19,11 @@ Fixing these is essential for the "premium" feel of the application.
 ## Capabilities
 
 ### New Capabilities
+
 - `fluid-map-pins`: Requirements for real-time interactivity and stable positioning of custom map markers.
 
 ### Modified Capabilities
+
 - None
 
 ## Impact

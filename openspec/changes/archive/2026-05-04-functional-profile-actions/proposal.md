@@ -4,22 +4,24 @@ The profile screen currently has several interactive elements (ActionGrid, Setti
 
 ## What Changes
 
-- **ActionGrid Navigation**: 
-    - "Tickets" -> Navigate to `/ (main)/tickets` (if exists).
-    - "Wallet" -> Navigate to `/ (main)/wallet` (if exists).
-    - "Favorites" -> Navigate to `/ (main)/favorites` or a filtered view of the map.
-- **SettingsGroup Functionality**: 
-    - "Logout" -> Call `useAuthStore.logout()` and redirect to login.
-    - "Account Settings" -> Navigate to account management.
-    - "Accessibility" -> Connect to the accessibility preferences already defined in the `User` model.
+- **ActionGrid Navigation**:
+  - "Tickets" -> Navigate to `/ (main)/tickets` (if exists).
+  - "Wallet" -> Navigate to `/ (main)/wallet` (if exists).
+  - "Favorites" -> Navigate to `/ (main)/favorites` or a filtered view of the map.
+- **SettingsGroup Functionality**:
+  - "Logout" -> Call `useAuthStore.logout()` and redirect to login.
+  - "Account Settings" -> Navigate to account management.
+  - "Accessibility" -> Connect to the accessibility preferences already defined in the `User` model.
 - **Guest Protection**: Intercept these actions for guest users, showing the `AuthPromptSheet` instead of navigating.
 
 ## Capabilities
 
 ### New Capabilities
+
 - `profile-navigation`: Centralized handling of profile-related navigation logic.
 
 ### Modified Capabilities
+
 - `user-settings`: Expand functionality to allow toggling accessibility preferences and logging out.
 
 ## Impact

@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { logger, errorHandler, loadConfig } from '@app/core';
 
@@ -15,7 +17,42 @@ const AUTH_SERVICE_URL = `http://${env.AUTH_HOST}:${env.AUTH_PORT}`;
 const GEO_SERVICE_URL = `http://${env.GEO_HOST}:${env.GEO_PORT}`;
 const SOCIAL_SERVICE_URL = `http://${env.SOCIAL_HOST}:${env.SOCIAL_PORT}`;
 
-app.use(cors());
+// --- SECURITY MIDDLEWARE ---
+
+// 1. Helmet for security headers
+app.use(helmet());
+
+// 2. Restricted CORS
+const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// 3. Rate Limiting for Auth
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many authentication attempts, please try again later',
+    code: 'TOO_MANY_REQUESTS',
+  },
+  skip: () => env.NODE_ENV === 'test',
+});
+
 app.use(logger);
 
 // Log incoming requests for debugging
@@ -28,11 +65,11 @@ app.use((req, _res, next) => {
 
 // Health Checks
 const healthHandler = (req: Request, res: Response) => {
-  res.json({ 
-    status: 'gateway_ok', 
-    timestamp: new Date(), 
-    env: env.NODE_ENV, 
-    service: 'lattice_gateway'
+  res.json({
+    status: 'gateway_ok',
+    timestamp: new Date(),
+    env: env.NODE_ENV,
+    service: 'lattice_gateway',
   });
 };
 
@@ -70,7 +107,7 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
             message: errorMsg,
             code: err.code,
             url: req.originalUrl,
-            target
+            target,
           });
         }
         if (res && res.writeHead) {
@@ -88,7 +125,9 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
       },
       proxyReq: (proxyReq: any, req: any) => {
         if (env.NODE_ENV !== 'test') {
-          console.log(`[Gateway -> ${label}] Proxying: ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`);
+          console.log(
+            `[Gateway -> ${label}] Proxying: ${req.method} ${req.originalUrl} -> ${target}${proxyReq.path}`
+          );
         }
       },
       proxyRes: (proxyRes: any, req: any) => {
@@ -109,6 +148,7 @@ const createServiceProxy = (target: string, label: string, paths: string[]) => {
 };
 
 // Mount Service Proxies
+router.use(authRateLimiter); // Apply to all for now or more specifically
 router.use(createServiceProxy(AUTH_SERVICE_URL, 'Auth', ['/auth', '/users']));
 router.use(
   createServiceProxy(GEO_SERVICE_URL, 'Geo', [
@@ -136,7 +176,8 @@ router.use('*', (req: Request, res: Response) => {
   });
 });
 
-app.use('/', router);
+const baseMountPath = env.GATEWAY_BASE_PATH || '/';
+app.use(baseMountPath, router);
 app.use(errorHandler);
 
 if (env.NODE_ENV !== 'test') {

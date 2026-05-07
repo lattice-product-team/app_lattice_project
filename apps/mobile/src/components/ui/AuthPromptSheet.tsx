@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  interpolate, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
@@ -13,7 +13,6 @@ import { PremiumButton } from './PremiumButton';
 import { useAuthStore } from '../../store/useAuthStore';
 import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
-import { SafeBlurView } from './SafeBlurView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -24,9 +23,9 @@ interface AuthPromptSheetProps {
   subtitle?: string;
 }
 
-export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({ 
-  title = "Unlock the full experience",
-  subtitle = "Sign in to Lattice to access this feature and personalize your urban discovery."
+export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
+  title = 'Unlock the full experience',
+  subtitle = 'Sign in to Lattice to access this feature and personalize your urban discovery.',
 }) => {
   const theme = useAppTheme();
   const router = useRouter();
@@ -62,8 +61,8 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
   const containerStyle = useAnimatedStyle(() => {
     const bottom = interpolate(
-      animState.value, 
-      [0, 1], 
+      animState.value,
+      [0, 1],
       [-SCREEN_HEIGHT, insets.bottom + 5], // Identical to EventDetailSheet MID position
       Extrapolation.CLAMP
     );
@@ -83,32 +82,23 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
   // Critical: Only block touches if the prompt is explicitly open
   return (
-    <View 
-      style={StyleSheet.absoluteFill} 
-      pointerEvents={isAuthPromptOpen ? "auto" : "none"}
-    >
+    <View style={StyleSheet.absoluteFill} pointerEvents={isAuthPromptOpen ? 'auto' : 'none'}>
       {/* Dimmer Backdrop */}
-      <Pressable 
-        onPress={handleClose}
-        style={StyleSheet.absoluteFill}
-      >
+      <Pressable onPress={handleClose} style={StyleSheet.absoluteFill}>
         <Animated.View style={[styles.backdrop, backdropStyle]} />
       </Pressable>
 
       {/* Floating Card */}
       <Animated.View style={[styles.floatingCard, containerStyle]}>
-        <SafeBlurView 
-          tint={theme.colors.glass.tint} 
-          intensity={90}
+        <View
           style={[
             styles.blurBackground,
-            { 
-              backgroundColor: 'transparent',
-              borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'
-            }
+            {
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border,
+            },
           ]}
         >
-          <View style={styles.innerGlowBorder} />
           {/* Header Actions */}
           <View style={styles.headerActions}>
             <View style={{ flex: 1 }} />
@@ -120,18 +110,16 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
           <View style={styles.content}>
             <View style={styles.textContainer}>
               <Text style={[styles.title, { color: theme.colors.text.primary }]}>{title}</Text>
-              <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>{subtitle}</Text>
+              <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+                {subtitle}
+              </Text>
             </View>
 
             <View style={styles.actions}>
-              <PremiumButton 
-                label="GET STARTED" 
-                variant="primary" 
-                onPress={handleAction}
-              />
+              <PremiumButton label="GET STARTED" variant="primary" onPress={handleAction} />
             </View>
           </View>
-        </SafeBlurView>
+        </View>
       </Animated.View>
     </View>
   );
@@ -153,13 +141,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
-  },
   headerActions: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -169,7 +150,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -200,5 +180,5 @@ const styles = StyleSheet.create({
   actions: {
     width: '100%',
     marginTop: 12,
-  }
+  },
 });

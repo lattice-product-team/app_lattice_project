@@ -12,10 +12,12 @@ The mobile app development environment is currently unstable due to broken impor
 ## Capabilities
 
 ### New Capabilities
+
 - `mobile-bundling-integrity`: Ensuring the mobile application correctly resolves all internal and shared dependencies for successful Metro bundling.
 - `shared-theme-integration`: Ensuring all mobile UI components consume design tokens exclusively from the `@app/theme` package.
 
 ### Modified Capabilities
+
 <!-- No requirement changes to existing capabilities, only implementation fixes. -->
 
 ## Impact

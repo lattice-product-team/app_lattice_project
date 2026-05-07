@@ -1,154 +1,235 @@
-<!DOCTYPE html>
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Login &amp; Ticket Sync</title>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#FF3B30", // Changed to Racing Red
-                        "background-light": "#f5f7f8",
-                        "background-dark": "#0A0A0B", 
-                        "surface-dark": "#18181B",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-                    backdropBlur: {
-                        'xs': '2px',
-                    }
-                },
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login &amp; Ticket Sync</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#FF3B30', // Changed to Racing Red
+              'background-light': '#f5f7f8',
+              'background-dark': '#0A0A0B',
+              'surface-dark': '#18181B',
             },
-        }
+            fontFamily: {
+              display: ['Inter', 'sans-serif'],
+            },
+            borderRadius: { DEFAULT: '0.25rem', lg: '0.5rem', xl: '0.75rem', full: '9999px' },
+            backdropBlur: {
+              xs: '2px',
+            },
+          },
+        },
+      };
     </script>
-<style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }input[type="radio"]:checked + span {
-            color: white;
-        }
-        .tab-indicator {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    <style>
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif,
+          'Apple Color Emoji',
+          'Segoe UI Emoji',
+          'Segoe UI Symbol';
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      input[type='radio']:checked + span {
+        color: white;
+      }
+      .tab-indicator {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
     </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
   </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col items-center justify-center relative overflow-hidden selection:bg-primary selection:text-white">
-<div class="absolute inset-0 pointer-events-none overflow-hidden">
-<div class="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen opacity-40 animate-pulse"></div>
-<div class="absolute bottom-0 right-0 w-[800px] h-[600px] bg-red-900/10 rounded-full blur-[100px] mix-blend-screen opacity-30"></div>
-<div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"></div>
-</div>
-<div class="w-full max-w-md h-full min-h-screen sm:min-h-0 sm:h-auto flex flex-col justify-between sm:justify-center p-6 relative z-10">
-<div class="pt-8 sm:pt-0 pb-6 flex flex-col items-center">
-<div class="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-tr from-primary to-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(255,59,48,0.4)]">
-<span class="material-symbols-outlined text-white text-4xl">sports_motorsports</span>
-</div>
-<h1 class="text-3xl font-bold tracking-tight text-center text-white mb-2">Welcome to the Grid</h1>
-<p class="text-slate-400 text-sm text-center">Sync your pass or login to access race data.</p>
-</div>
-<div class="flex-1 flex flex-col justify-center sm:block">
-<div class="glass-panel rounded-2xl p-1 mb-6 shadow-2xl">
-<div class="grid grid-cols-2 p-1 gap-1 bg-black/20 rounded-xl relative">
-<label class="cursor-pointer relative z-10">
-<input checked="" class="peer sr-only" name="auth-mode" type="radio" value="ticket"/>
-<div class="py-3 px-4 text-sm font-medium text-center rounded-lg text-slate-400 peer-checked:text-white peer-checked:bg-primary peer-checked:shadow-lg transition-all duration-300">
-                        Fast Ticket Sync
-                    </div>
-</label>
-<label class="cursor-pointer relative z-10">
-<input class="peer sr-only" name="auth-mode" type="radio" value="account"/>
-<div class="py-3 px-4 text-sm font-medium text-center rounded-lg text-slate-400 peer-checked:text-white peer-checked:bg-primary peer-checked:shadow-lg transition-all duration-300">
-                        Account Sync
-                    </div>
-</label>
-</div>
-<div class="p-5 pt-8 space-y-8">
-<div class="space-y-4">
-<div class="relative group">
-<input autocomplete="off" class="block py-4 px-0 w-full text-lg text-white bg-transparent border-0 border-b border-slate-700 appearance-none focus:outline-none focus:ring-0 focus:border-primary peer transition-colors" id="ticketId" placeholder=" " type="text"/>
-<label class="peer-focus:font-medium absolute text-sm text-slate-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6" for="ticketId">
-                            Enter Ticket ID
-                        </label>
-<button aria-label="Scan QR Code" class="absolute right-0 bottom-3 text-primary hover:text-white transition-colors p-1 rounded-md hover:bg-white/10">
-<span class="material-symbols-outlined text-2xl">qr_code_scanner</span>
-</button>
-</div>
-<div class="flex items-start gap-3 mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
-<span class="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
-<p class="text-xs text-primary/80 leading-relaxed">
-                            Use the 8-digit code found on your physical pass or email confirmation.
-                        </p>
-</div>
-</div>
-<button class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-primary hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-[#0A0A0B] transition-all shadow-[0_4px_14px_0_rgba(255,59,48,0.39)] hover:shadow-[0_6px_20px_rgba(255,59,48,0.23)] hover:-translate-y-0.5 active:translate-y-0">
-<span class="absolute left-0 inset-y-0 flex items-center pl-3">
-<span class="material-symbols-outlined h-5 w-5 text-red-200 group-hover:text-white animate-pulse">bolt</span>
-</span>
-                    SYNC ACCESS
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen flex flex-col items-center justify-center relative overflow-hidden selection:bg-primary selection:text-white"
+  >
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div
+        class="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen opacity-40 animate-pulse"
+      ></div>
+      <div
+        class="absolute bottom-0 right-0 w-[800px] h-[600px] bg-red-900/10 rounded-full blur-[100px] mix-blend-screen opacity-30"
+      ></div>
+      <div
+        class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]"
+      ></div>
+    </div>
+    <div
+      class="w-full max-w-md h-full min-h-screen sm:min-h-0 sm:h-auto flex flex-col justify-between sm:justify-center p-6 relative z-10"
+    >
+      <div class="pt-8 sm:pt-0 pb-6 flex flex-col items-center">
+        <div
+          class="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-tr from-primary to-red-600 flex items-center justify-center shadow-[0_0_20px_rgba(255,59,48,0.4)]"
+        >
+          <span class="material-symbols-outlined text-white text-4xl">sports_motorsports</span>
+        </div>
+        <h1 class="text-3xl font-bold tracking-tight text-center text-white mb-2">
+          Welcome to the Grid
+        </h1>
+        <p class="text-slate-400 text-sm text-center">
+          Sync your pass or login to access race data.
+        </p>
+      </div>
+      <div class="flex-1 flex flex-col justify-center sm:block">
+        <div class="glass-panel rounded-2xl p-1 mb-6 shadow-2xl">
+          <div class="grid grid-cols-2 p-1 gap-1 bg-black/20 rounded-xl relative">
+            <label class="cursor-pointer relative z-10">
+              <input checked="" class="peer sr-only" name="auth-mode" type="radio" value="ticket" />
+              <div
+                class="py-3 px-4 text-sm font-medium text-center rounded-lg text-slate-400 peer-checked:text-white peer-checked:bg-primary peer-checked:shadow-lg transition-all duration-300"
+              >
+                Fast Ticket Sync
+              </div>
+            </label>
+            <label class="cursor-pointer relative z-10">
+              <input class="peer sr-only" name="auth-mode" type="radio" value="account" />
+              <div
+                class="py-3 px-4 text-sm font-medium text-center rounded-lg text-slate-400 peer-checked:text-white peer-checked:bg-primary peer-checked:shadow-lg transition-all duration-300"
+              >
+                Account Sync
+              </div>
+            </label>
+          </div>
+          <div class="p-5 pt-8 space-y-8">
+            <div class="space-y-4">
+              <div class="relative group">
+                <input
+                  autocomplete="off"
+                  class="block py-4 px-0 w-full text-lg text-white bg-transparent border-0 border-b border-slate-700 appearance-none focus:outline-none focus:ring-0 focus:border-primary peer transition-colors"
+                  id="ticketId"
+                  placeholder=" "
+                  type="text"
+                />
+                <label
+                  class="peer-focus:font-medium absolute text-sm text-slate-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-primary peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                  for="ticketId"
+                >
+                  Enter Ticket ID
+                </label>
+                <button
+                  aria-label="Scan QR Code"
+                  class="absolute right-0 bottom-3 text-primary hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
+                >
+                  <span class="material-symbols-outlined text-2xl">qr_code_scanner</span>
                 </button>
-</div>
-</div>
-<div class="text-center space-y-4">
-<button class="text-sm text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 mx-auto">
-<span>Need help finding your ticket?</span>
-<span class="material-symbols-outlined text-base">arrow_forward</span>
-</button>
-<div class="relative py-2">
-<div aria-hidden="true" class="absolute inset-0 flex items-center">
-<div class="w-full border-t border-slate-800"></div>
-</div>
-<div class="relative flex justify-center">
-<span class="px-2 bg-[#0A0A0B] text-xs text-slate-500 uppercase tracking-widest">Or continue with</span>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-3">
-<button class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all group">
-<svg class="h-5 w-5 text-white fill-current" viewBox="0 0 24 24">
-<path d="M17.3002 16.9999C16.4952 18.1565 15.6133 19.313 14.3703 19.3444C13.1593 19.3756 12.7554 18.6277 11.3551 18.6277C9.9392 18.6277 9.50367 19.3444 8.35334 19.3756C7.14171 19.4067 6.13111 18.0628 5.32233 16.9064C3.67389 14.5447 2.44521 10.2592 4.10825 7.39958C4.93188 5.98379 6.42611 5.09591 8.04221 5.06477C9.22384 5.03362 10.3433 5.85923 11.0593 5.85923C11.7753 5.85923 13.1127 4.90906 14.5413 5.03362C15.1478 5.06477 16.8573 5.26732 17.9378 6.83864C17.8445 6.89979 15.7533 8.12933 15.7844 10.6019C15.8156 13.0483 17.8756 14.0767 17.969 14.1235C17.9223 14.2325 17.7045 14.9959 17.3002 16.9999ZM11.2307 5.08035C11.8372 4.34803 12.2572 3.32898 12.1484 2.30066C11.2307 2.33181 10.1256 2.90827 9.47228 3.68735C8.88126 4.35738 8.35334 5.40755 8.49337 6.38914C9.51893 6.46705 10.6396 5.82807 11.2307 5.08035Z"></path>
-</svg>
-<span class="text-sm font-medium text-slate-300 group-hover:text-white">Apple</span>
-</button>
-<button class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all group">
-<svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-<path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"></path>
-</svg>
-<span class="text-sm font-medium text-slate-300 group-hover:text-white">Google</span>
-</button>
-</div>
-</div>
-</div>
-<div class="mt-8 pt-4 pb-2 flex justify-center items-center opacity-60">
-<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
-<span class="material-symbols-outlined text-xs text-primary animate-spin" style="animation-duration: 3s;">view_in_ar</span>
-<span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400">AR Experience Ready</span>
-</div>
-</div>
-<div class="hidden">
-<img data-alt="Abstract racing car motion blur" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8rOJWJivZengixwdU_HGzKwTmZTth1oyH-Avvst7s5JJjzXHZfBN5figGg0x0Gn-1ILyqicGcxd_k8FLVxxXIWrqg-hGGSmuwc1C3NXaEZpx_2qbGP63-Qsoo1z51UQlksgIqoFTlBhwwbxVk_volYFnt5TNCF1KaPE6RQl7e9TT2Sq3tk1XqnZzgOtEqwPT5QVK7L5QOxLkp0EepyjgtpkOaPtOgOOsqyYbB6AgbcYr98g-z4z_3-dIFiFy2bIvirv55RfGdJVfz"/>
-</div>
-</div>
-
-</body></html>
+              </div>
+              <div
+                class="flex items-start gap-3 mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20"
+              >
+                <span class="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
+                <p class="text-xs text-primary/80 leading-relaxed">
+                  Use the 8-digit code found on your physical pass or email confirmation.
+                </p>
+              </div>
+            </div>
+            <button
+              class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-primary hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-[#0A0A0B] transition-all shadow-[0_4px_14px_0_rgba(255,59,48,0.39)] hover:shadow-[0_6px_20px_rgba(255,59,48,0.23)] hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                <span
+                  class="material-symbols-outlined h-5 w-5 text-red-200 group-hover:text-white animate-pulse"
+                  >bolt</span
+                >
+              </span>
+              SYNC ACCESS
+            </button>
+          </div>
+        </div>
+        <div class="text-center space-y-4">
+          <button
+            class="text-sm text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-1 mx-auto"
+          >
+            <span>Need help finding your ticket?</span>
+            <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </button>
+          <div class="relative py-2">
+            <div aria-hidden="true" class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-slate-800"></div>
+            </div>
+            <div class="relative flex justify-center">
+              <span class="px-2 bg-[#0A0A0B] text-xs text-slate-500 uppercase tracking-widest"
+                >Or continue with</span
+              >
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
+            >
+              <svg class="h-5 w-5 text-white fill-current" viewBox="0 0 24 24">
+                <path
+                  d="M17.3002 16.9999C16.4952 18.1565 15.6133 19.313 14.3703 19.3444C13.1593 19.3756 12.7554 18.6277 11.3551 18.6277C9.9392 18.6277 9.50367 19.3444 8.35334 19.3756C7.14171 19.4067 6.13111 18.0628 5.32233 16.9064C3.67389 14.5447 2.44521 10.2592 4.10825 7.39958C4.93188 5.98379 6.42611 5.09591 8.04221 5.06477C9.22384 5.03362 10.3433 5.85923 11.0593 5.85923C11.7753 5.85923 13.1127 4.90906 14.5413 5.03362C15.1478 5.06477 16.8573 5.26732 17.9378 6.83864C17.8445 6.89979 15.7533 8.12933 15.7844 10.6019C15.8156 13.0483 17.8756 14.0767 17.969 14.1235C17.9223 14.2325 17.7045 14.9959 17.3002 16.9999ZM11.2307 5.08035C11.8372 4.34803 12.2572 3.32898 12.1484 2.30066C11.2307 2.33181 10.1256 2.90827 9.47228 3.68735C8.88126 4.35738 8.35334 5.40755 8.49337 6.38914C9.51893 6.46705 10.6396 5.82807 11.2307 5.08035Z"
+                ></path>
+              </svg>
+              <span class="text-sm font-medium text-slate-300 group-hover:text-white">Apple</span>
+            </button>
+            <button
+              class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg transition-all group"
+            >
+              <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+                ></path>
+              </svg>
+              <span class="text-sm font-medium text-slate-300 group-hover:text-white">Google</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-4 pb-2 flex justify-center items-center opacity-60">
+        <div
+          class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm"
+        >
+          <span
+            class="material-symbols-outlined text-xs text-primary animate-spin"
+            style="animation-duration: 3s"
+            >view_in_ar</span
+          >
+          <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400"
+            >AR Experience Ready</span
+          >
+        </div>
+      </div>
+      <div class="hidden">
+        <img
+          data-alt="Abstract racing car motion blur"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8rOJWJivZengixwdU_HGzKwTmZTth1oyH-Avvst7s5JJjzXHZfBN5figGg0x0Gn-1ILyqicGcxd_k8FLVxxXIWrqg-hGGSmuwc1C3NXaEZpx_2qbGP63-Qsoo1z51UQlksgIqoFTlBhwwbxVk_volYFnt5TNCF1KaPE6RQl7e9TT2Sq3tk1XqnZzgOtEqwPT5QVK7L5QOxLkp0EepyjgtpkOaPtOgOOsqyYbB6AgbcYr98g-z4z_3-dIFiFy2bIvirv55RfGdJVfz"
+        />
+      </div>
+    </div>
+  </body>
+</html>

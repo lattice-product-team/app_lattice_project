@@ -12,9 +12,11 @@ El uso de colores variados por categoría en los elementos de eventos (pines, ta
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-event-branding`: Define el estándar visual para todos los elementos de eventos en la plataforma, eliminando variaciones cromáticas por categoría.
 
 ### Modified Capabilities
+
 - `event-detail-sheet`: Se ajusta la especificación para reflejar el uso de colores neutros/brand en lugar de dinámicos.
 - `map-pin-components`: Se especifica que los pines de eventos DEBEN ser cromáticamente uniformes.
 

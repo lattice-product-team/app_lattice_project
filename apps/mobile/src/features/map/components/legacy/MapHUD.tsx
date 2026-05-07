@@ -27,7 +27,7 @@ interface MapHUDProps {
   isLoading?: boolean;
   rawPoisData?: any;
   onProfilePress?: () => void;
-  
+
   // Event Props
   currentEventId?: number | null;
   selectedEvent?: LatticeEvent | null;
@@ -79,14 +79,9 @@ export const MapHUD = React.memo(function MapHUD({
         }
         onFocusSearch={() => setIsSearching(true)}
         searchResults={searchResults}
-        poiCarousel={
-          <POICarousel 
-            pois={carouselPois} 
-            onSelectPoi={onSelectPoi} 
-          />
-        }
+        poiCarousel={<POICarousel pois={carouselPois} onSelectPoi={onSelectPoi} />}
         savedContent={
-          <SavedListContent 
+          <SavedListContent
             savedItems={savedPois}
             onSelectItem={(poi) => {
               onSelectPoi(poi);
@@ -97,26 +92,26 @@ export const MapHUD = React.memo(function MapHUD({
         discoveryContent={
           <View>
             {currentEventId && selectedEvent ? (
-              <EventSummaryCard 
-                event={selectedEvent} 
-                onClear={() => setCurrentEvent?.(null)} 
-              />
-            ) : eventsData && eventsData.length > 0 && (
-              <EventCarousel 
-                title="Próximos eventos"
-                events={eventsData}
-                onSelectEvent={(event) => {
-                  setCurrentEvent?.(event);
-                  onClearCategory?.();
-                }}
-              />
+              <EventSummaryCard event={selectedEvent} onClear={() => setCurrentEvent?.(null)} />
+            ) : (
+              eventsData &&
+              eventsData.length > 0 && (
+                <EventCarousel
+                  title="Próximos eventos"
+                  events={eventsData}
+                  onSelectEvent={(event) => {
+                    setCurrentEvent?.(event);
+                    onClearCategory?.();
+                  }}
+                />
+              )
             )}
-            <POICarousel 
-              title={currentEventId ? "Puntos de interés" : "Cerca de ti"}
+            <POICarousel
+              title={currentEventId ? 'Puntos de interés' : 'Cerca de ti'}
               pois={rawPoisData?.features?.map((f: any) => normalizePOI(f)) || []}
               onSelectPoi={onSelectPoi}
             />
-            
+
             <GuidesSection
               onSeeAll={() => setUIState(MapUIState.SAVED_LIST)}
               onSelectMarker={(coords, id) => {

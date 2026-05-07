@@ -5,6 +5,10 @@
 export * from './src/config.js';
 
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { loadConfig } from './src/config.js';
+
+const config = loadConfig();
 
 export const logger = (req: Request, res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -23,7 +27,7 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer mock_jwt_token_for_')) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       error: {
         code: 'UNAUTHORIZED',
@@ -32,5 +36,19 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
       },
     });
   }
-  next();
+
+  const token = authHeader.substring(7);
+  try {
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    (req as any).user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      error: {
+        code: 'INVALID_TOKEN',
+        message: 'Invalid or expired token',
+        status: 401,
+      },
+    });
+  }
 };

@@ -13,6 +13,7 @@ The current map marker system is fragmented between high-performance but low-fid
 ## Capabilities
 
 ### Modified Capabilities
+
 - `hybrid-map-rendering`: Transition from a hybrid GL/Native approach to a unified native view approach optimized via state throttling.
 - `map-pin-components`: Complete redesign and reimplementation of all map pin visual components.
 - `spatial-hierarchy-logic`: Update the logic that determines marker visibility and level-of-detail to work with the new unified system.

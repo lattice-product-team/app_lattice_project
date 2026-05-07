@@ -1,6 +1,7 @@
 ## Why
 
 The main discovery sheet (Island UI) has several UX friction points:
+
 1. Level 3 (Full Screen) often shows a legacy "Select point" placeholder instead of useful search content.
 2. Level 3 lacks intuitive drag-down interaction from the content area (blocked by ScrollView).
 3. Gesture physics are too sensitive/fast, lacking a premium "heavy" feel.
@@ -16,6 +17,7 @@ The main discovery sheet (Island UI) has several UX friction points:
 ## Capabilities
 
 ### Modified Capabilities
+
 - `map-discovery-platform`: Update interaction requirements for the Level 3 state.
 - `premium-sheet-interaction`: New requirements for gesture physics and scroll-synchronization.
 

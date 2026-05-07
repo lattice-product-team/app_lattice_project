@@ -15,18 +15,26 @@ describe('Gateway Service', () => {
     expect(response.body).toHaveProperty('error');
   });
 
-  describe('API Routing', () => {
-    it('should attempt to proxy /api/v1/auth routes', async () => {
-      // Even if the auth service is down, the gateway should try to proxy it
-      // and return a 502 (Bad Gateway) since the target is unreachable in test env
-      const response = await request(app).get('/api/v1/auth/health');
-      expect([404, 502]).toContain(response.status);
+  describe('Security Hardening', () => {
+    it('should include Helmet security headers', async () => {
+      const response = await request(app).get('/status');
+      expect(response.headers).toHaveProperty('x-frame-options', 'SAMEORIGIN');
+      expect(response.headers).toHaveProperty('x-content-type-options', 'nosniff');
+      expect(response.headers).toHaveProperty('content-security-policy');
     });
 
-    it('should return 404 for api routes not matched by any service', async () => {
-      const response = await request(app).get('/api/v1/nonexistent-service');
-      expect(response.status).toBe(404);
-      expect(response.body.error).toContain('Route not found');
+    it('should permit requests from allowed origins', async () => {
+      const response = await request(app).get('/status').set('Origin', 'http://localhost:3004');
+      expect(response.headers['access-control-allow-origin']).toBe('http://localhost:3004');
+    });
+
+    it('should block requests from unauthorized origins', async () => {
+      // We force NODE_ENV to production to test the restriction
+      // Or we just accept that in 'test' env it's also restricted if not in allowedOrigins
+      const response = await request(app).get('/status').set('Origin', 'http://evil.com');
+
+      expect(response.status).toBe(500);
+      expect(response.text).toContain('Not allowed by CORS');
     });
   });
 });
