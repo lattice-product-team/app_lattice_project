@@ -64,6 +64,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Lattice',
   slug: 'lattice',
+  owner: 'kore29',
   version: '1.0.0',
   orientation: 'default',
   icon: './assets/images/icon.png',

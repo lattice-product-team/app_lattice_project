@@ -39,7 +39,12 @@ export class AuthService {
     });
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Login failed');
+      const errorMsg = data.error?.user_friendly_message || 
+                       data.error?.message || 
+                       data.message || 
+                       data.error || 
+                       'Login failed';
+      throw new Error(typeof errorMsg === 'string' ? errorMsg : 'Login failed');
     }
     return data;
   }
@@ -52,7 +57,12 @@ export class AuthService {
     });
     const responseData = await response.json();
     if (!response.ok) {
-      throw new Error(responseData.message || responseData.error || 'Registration failed');
+      const errorMsg = responseData.error?.user_friendly_message || 
+                       responseData.error?.message || 
+                       responseData.message || 
+                       responseData.error || 
+                       'Registration failed';
+      throw new Error(typeof errorMsg === 'string' ? errorMsg : 'Registration failed');
     }
     return responseData;
   }

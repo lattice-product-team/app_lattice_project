@@ -44,7 +44,8 @@ export default function EmailRegisterScreen() {
       },
       onError: (error: any) => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert('Registration Failed', error.message);
+        const message = error instanceof Error ? error.message : (typeof error === 'string' ? error : 'An unexpected error occurred');
+        Alert.alert('Registration Failed', message);
       }
     });
   };

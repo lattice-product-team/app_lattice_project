@@ -5,6 +5,8 @@
   },
   "build": {
     "development": {
+      "node": "20.x",
+      "pnpm": "10.x",
       "developmentClient": true,
       "distribution": "internal",
       "android": {
