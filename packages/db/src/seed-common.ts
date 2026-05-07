@@ -21,10 +21,9 @@ export async function seedCommon(db: any) {
     console.log('Test user already exists.');
   }
 
-  // 2. Seeding additional tester accounts for QR flow
+  // 2. Seeding additional tester accounts
   const testerEmails = [
-    'tester_circuitvip2026@example.com',
-    'tester_circuitg2026@example.com'
+    'tester_tech2026@example.com'
   ];
 
   for (const email of testerEmails) {

@@ -57,6 +57,7 @@ export interface LatticeTheme {
   spacing: typeof baseTheme.spacing;
   borderRadius: typeof baseTheme.borderRadius;
   shadows: typeof baseTheme.shadows;
+  motion: typeof baseTheme.motion;
 }
 
 const baseTheme = {
@@ -91,7 +92,34 @@ const baseTheme = {
       shadowRadius: 16,
       elevation: 8,
     }
-  }
+  },
+  motion: {
+    physics: {
+      magnetic: {
+        damping: 55,
+        stiffness: 300,
+        mass: 1.0,
+        overshootClamping: true,
+        restDisplacementThreshold: 0.01,
+        restSpeedThreshold: 2,
+      },
+      responsive: {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.8,
+      },
+      snappy: {
+        damping: 25,
+        stiffness: 150,
+        mass: 0.5,
+      },
+      gentle: {
+        damping: 30,
+        stiffness: 100,
+        mass: 1.0,
+      },
+    },
+  },
 };
 
 export const lightTheme: LatticeTheme = {
@@ -121,10 +149,10 @@ export const lightTheme: LatticeTheme = {
       strong: primitiveColors.neutral.light['border-med'],
     },
     glass: {
-      background: 'rgba(248, 248, 246, 0.7)', // Reduced from 0.92 to allow blur visibility
-      border: 'rgba(0, 0, 0, 0.08)', // Increased from 0.04 for 1px sharpness
-      subtle: 'rgba(0, 0, 0, 0.03)',
-      subtleBorder: 'rgba(0, 0, 0, 0.05)',
+      background: 'rgba(248, 248, 246, 0.9)', // Standard Modern Solid Opacity
+      border: 'rgba(0, 0, 0, 0.1)', // Sharper border for definition
+      subtle: 'rgba(0, 0, 0, 0.04)',
+      subtleBorder: 'rgba(0, 0, 0, 0.08)',
       tint: 'light',
     },
     status: {
@@ -178,10 +206,10 @@ export const darkTheme: LatticeTheme = {
       strong: primitiveColors.neutral.dark['border-med'],
     },
     glass: {
-      background: 'rgba(20, 20, 18, 0.7)',
-      border: 'rgba(255, 255, 255, 0.12)',
-      subtle: 'rgba(255, 255, 255, 0.15)',
-      subtleBorder: 'rgba(255, 255, 255, 0.2)',
+      background: 'rgba(20, 20, 18, 0.9)', // Standard Modern Solid Opacity
+      border: 'rgba(255, 255, 255, 0.15)', // Sharper border for definition
+      subtle: 'rgba(255, 255, 255, 0.08)',
+      subtleBorder: 'rgba(255, 255, 255, 0.12)',
       tint: 'dark',
     },
     status: {

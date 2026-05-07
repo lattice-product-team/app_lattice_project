@@ -118,8 +118,9 @@ router.use(
     '/map',
     '/saved',
     '/events',
-    '/venues',
     '/stats',
+    '/resolve-address',
+    '/social',
   ])
 );
 router.use(createServiceProxy(SOCIAL_SERVICE_URL, 'Social', ['/groups', '/telemetry']));

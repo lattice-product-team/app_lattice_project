@@ -16,15 +16,14 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
 import { useEventDetails } from '../hooks/useEventDetails';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 
 interface EventDetailSheetProps {
   event: LatticeEvent | null;
@@ -37,10 +36,9 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
   
   const { 
-    activeCategoryFilters, 
-    toggleCategoryFilter, 
     getFilteredPOIs 
   } = usePOIStore();
+  const setNavigating = useNavigationStore((s) => s.setNavigating);
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
@@ -53,32 +51,35 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   };
 
   useEffect(() => {
-    if (event) {
-      islandState.value = withSpring(SNAP_POINTS.MID, { damping: 28, stiffness: 90 });
+    if (event?.id) {
+      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, { damping: 28, stiffness: 90 });
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
     }
-  }, [event]);
+  }, [event?.id]);
 
   const gesture = Gesture.Pan()
     .onStart(() => {
       startState.value = islandState.value;
     })
     .onUpdate((e) => {
-      const delta = -e.translationY / 300; // Natural divisor for height changes
+      // Dynamic divisor for 1:1 tracking
+      const fullTravel = (SCREEN_HEIGHT * 0.80) - (insets.bottom + 5);
+      const delta = -e.translationY / fullTravel;
       const newValue = startState.value + delta;
-      // Clamp to minimum 0.5 (Nivel 2) during active drag
-      islandState.value = Math.max(0.5, Math.min(1.2, newValue));
+      // Clamp to minimum 0.5 (Nivel 2) during active drag, and 1.0 max
+      islandState.value = Math.max(0.5, Math.min(1.0, newValue));
     })
     .onEnd((e) => {
-      const velocity = -e.velocityY / SCREEN_HEIGHT;
-      const finalValue = islandState.value + velocity * 0.1;
+      const fullTravel = (SCREEN_HEIGHT * 0.80) - (insets.bottom + 5);
+      const velocity = -e.velocityY / fullTravel;
+      const predictedPos = islandState.value + velocity * 0.12;
 
       // Never hide via drag, only snap between MID and FULL
-      if (finalValue < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID, { damping: 28, stiffness: 90 });
+      if (predictedPos < 0.75) {
+        islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, { damping: 28, stiffness: 90 });
+        islandState.value = withSpring(SNAP_POINTS.FULL, theme.motion.physics.magnetic);
       }
     });
 
@@ -110,16 +111,12 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       backgroundColor: interpolateColor(
         islandState.value,
         [0.7, 1],
-        ['transparent', theme.colors.bg.surface]
+        [theme.colors.glass.background, theme.colors.bg.surface]
       ),
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop for SafeBlurView to handle it correctly
-    };
-  });
+
 
   // Sync scroll enabled state to avoid render-time reads of islandState.value
   useAnimatedReaction(
@@ -137,156 +134,181 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <GestureDetector gesture={gesture}>
         <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
-          <AnimatedSafeBlurView 
-            tint={theme.colors.glass.tint}
-            intensity={90}
-            animatedProps={blurProps}
+          <Animated.View 
             style={[
               styles.background, 
               islandBackgroundStyle,
-              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+              { borderColor: theme.colors.glass.border }
             ]}
           >
-            <Animated.View style={[styles.innerGlowBorder, islandBackgroundStyle, { backgroundColor: 'transparent' }]} />
-            {/* Header / Drag Handle */}
-            <View style={styles.header}>
-              <View style={styles.handle} />
-              <View style={styles.headerActions}>
-                <Pressable style={styles.actionCircle}>
-                  <Feather name="share" size={20} color={theme.colors.text.primary} />
-                </Pressable>
-                <View style={{ flex: 1 }} />
-                <Pressable onPress={onClose} style={styles.actionCircle}>
-                  <Feather name="x" size={20} color={theme.colors.text.primary} />
-                </Pressable>
-              </View>
-              
-              <View style={styles.titleSection}>
-                <Text style={[styles.title, { color: theme.colors.text.primary }]}>{details?.name || event?.name}</Text>
-                <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>{details?.type || event?.type}</Text>
-              </View>
-            </View>
-
-            {loading ? (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <ActivityIndicator color={theme.colors.brand.primary} />
-              </View>
-            ) : (
-              <>
-
-            {/* Quick Actions */}
-            <View style={styles.quickActions}>
-              <Pressable 
-                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-                style={({ pressed }) => [
-                  styles.actionButton,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
-                ]}
-              >
-                <View style={[styles.actionIcon, { backgroundColor: theme.colors.brand.primary }]}>
-                  <MaterialCommunityIcons name="car" size={24} color="white" />
-                  <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder]} />
+            {/* Content Layer */}
+            <View style={StyleSheet.absoluteFill}>
+              {/* Header / Drag Handle */}
+              <View style={styles.header}>
+                <View style={styles.handle} />
+                <View style={styles.headerActions}>
+                  <Pressable 
+                    onPress={() => Haptics.selectionAsync()}
+                    style={[
+                      styles.actionCircle,
+                      { 
+                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: theme.colors.glass.border,
+                        ...theme.shadows.soft
+                      }
+                    ]}
+                  >
+                    <Feather name="share" size={20} color={theme.colors.text.primary} />
+                  </Pressable>
+                  <View style={{ flex: 1 }} />
+                  <Pressable 
+                    onPress={onClose} 
+                    style={[
+                      styles.actionCircle,
+                      { 
+                        backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                        borderColor: theme.colors.glass.border,
+                        ...theme.shadows.soft
+                      }
+                    ]}
+                  >
+                    <Feather name="x" size={20} color={theme.colors.text.primary} />
+                  </Pressable>
                 </View>
-                <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Directions</Text>
-              </Pressable>
-
-              <Pressable 
-                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-                style={({ pressed }) => [
-                  styles.actionButton,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
-                ]}
-              >
-                <View style={[styles.actionIcon, { backgroundColor: theme.colors.glass.subtle }]}>
-                  <Feather name="phone" size={22} color={theme.colors.brand.primary} />
-                  <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder, { borderColor: theme.colors.glass.border }]} />
+                
+                <View style={styles.titleSection}>
+                  <Text style={[styles.title, { color: theme.colors.text.primary }]}>{details?.name || event?.name}</Text>
+                  <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>{details?.type || event?.type}</Text>
                 </View>
-                <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Call</Text>
-              </Pressable>
+              </View>
 
-              <Pressable 
-                onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-                style={({ pressed }) => [
-                  styles.actionButton,
-                  pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
-                ]}
-              >
-                <View style={[styles.actionIcon, { backgroundColor: theme.colors.glass.subtle }]}>
-                  <Feather name="globe" size={22} color={theme.colors.brand.primary} />
-                  <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder, { borderColor: theme.colors.glass.border }]} />
+              {loading ? (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <ActivityIndicator color={theme.colors.brand.primary} />
                 </View>
-                <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Website</Text>
-              </Pressable>
-            </View>
-
-            {/* Quick Services Bar */}
-            <View style={styles.servicesContainer}>
-              <Text style={[styles.servicesTitle, { color: theme.colors.text.muted }]}>Services Available</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                contentContainerStyle={styles.servicesScroll}
-              >
-                {Array.from(new Set(getFilteredPOIs([]).map(p => p.category))).map(cat => {
-                  const metadata = getCategoryMetadata(cat);
-                  const isActive = activeCategoryFilters.includes(cat);
-                  return (
-                    <Pressable
-                      key={cat}
+              ) : (
+                <>
+                  {/* Quick Actions */}
+                  <View style={styles.quickActions}>
+                    <Pressable 
                       onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        toggleCategoryFilter(cat);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        setNavigating(true);
+                        onClose();
                       }}
-                      style={[
-                        styles.serviceItem,
-                        { backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.glass.subtle },
-                        isActive && styles.activeService
+                      style={({ pressed }) => [
+                        styles.actionButton,
+                        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
                       ]}
                     >
-                      <MaterialCommunityIcons 
-                        name={metadata.icon as any} 
-                        size={20} 
-                        color={isActive ? 'white' : theme.colors.text.primary} 
-                      />
+                      <View style={[styles.actionIcon, { backgroundColor: theme.colors.brand.primary }]}>
+                        <MaterialCommunityIcons name="car" size={24} color="white" />
+                        <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder]} />
+                      </View>
+                      <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Directions</Text>
                     </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
+ 
+                    <Pressable 
+                      onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+                      style={({ pressed }) => [
+                        styles.actionButton,
+                        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
+                      ]}
+                    >
+                      <View style={[styles.actionIcon, { backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)' }]}>
+                        <Feather name="phone" size={22} color={theme.colors.brand.primary} />
+                        <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder, { borderColor: theme.colors.glass.border }]} />
+                      </View>
+                      <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Call</Text>
+                    </Pressable>
+ 
+                    <Pressable 
+                      onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+                      style={({ pressed }) => [
+                        styles.actionButton,
+                        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }
+                      ]}
+                    >
+                      <View style={[styles.actionIcon, { backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)' }]}>
+                        <Feather name="globe" size={22} color={theme.colors.brand.primary} />
+                        <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.actionBorder, { borderColor: theme.colors.glass.border }]} />
+                      </View>
+                      <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>Website</Text>
+                    </Pressable>
+                  </View>
+ 
+                  {/* Quick Services Bar */}
+                  <View style={styles.servicesContainer}>
+                    <Text style={[styles.servicesTitle, { color: theme.colors.text.muted }]}>Services Available</Text>
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false} 
+                      contentContainerStyle={styles.servicesScroll}
+                    >
+                      {Array.from(new Set(getFilteredPOIs([]).map(p => p.category))).map(cat => {
+                        const metadata = getCategoryMetadata(cat);
+                        const isActive = activeCategoryFilters.includes(cat);
+                        return (
+                          <Pressable
+                            key={cat}
+                            onPress={() => {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              toggleCategoryFilter(cat);
+                            }}
+                            style={[
+                              styles.serviceItem,
+                              { 
+                                backgroundColor: isActive ? theme.colors.brand.primary : (theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)'),
+                                borderColor: isActive ? 'transparent' : theme.colors.glass.border
+                              },
+                              isActive && styles.activeService
+                            ]}
+                          >
+                            <MaterialCommunityIcons 
+                              name={metadata.icon as any} 
+                              size={20} 
+                              color={isActive ? 'white' : theme.colors.text.primary} 
+                            />
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
 
-            {/* Info Grid */}
-            <View style={styles.infoGrid}>
-              <View style={styles.infoItem}>
-                <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>Hours</Text>
-                <Text style={[styles.infoValue, { color: '#32D74B' }]}>{details?.openingHours || 'Open'}</Text>
-              </View>
-              <View style={styles.infoItem}>
-                <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>Rating</Text>
-                <View style={styles.ratingRow}>
-                  <MaterialCommunityIcons name="thumb-up" size={16} color={theme.colors.text.primary} />
-                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>{details?.rating ? `${details.rating * 20}%` : '88%'}</Text>
-                </View>
-              </View>
-              <View style={styles.infoItem}>
-                <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>Distance</Text>
-                <View style={styles.ratingRow}>
-                  <MaterialCommunityIcons name="map-marker-distance" size={16} color={theme.colors.text.primary} />
-                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>{details?.distance || '900m'}</Text>
-                </View>
-              </View>
-            </View>
+                  {/* Info Grid */}
+                  <View style={styles.infoGrid}>
+                    <View style={styles.infoItem}>
+                      <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>Hours</Text>
+                      <Text style={[styles.infoValue, { color: '#32D74B' }]}>{details?.openingHours || 'Open'}</Text>
+                    </View>
+                    <View style={styles.infoItem}>
+                      <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>Rating</Text>
+                      <View style={styles.ratingRow}>
+                        <MaterialCommunityIcons name="thumb-up" size={16} color={theme.colors.text.primary} />
+                        <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>{details?.rating ? `${details.rating * 20}%` : '88%'}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.infoItem}>
+                      <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>Distance</Text>
+                      <View style={styles.ratingRow}>
+                        <MaterialCommunityIcons name="map-marker-distance" size={16} color={theme.colors.text.primary} />
+                        <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>{details?.distance || '900m'}</Text>
+                      </View>
+                    </View>
+                  </View>
 
-            <ScrollView style={{ flex: 1 }} scrollEnabled={scrollEnabled}>
-              <View style={styles.content}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
-                <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
-                  {details?.description || 'Loading event description...'}
-                </Text>
-              </View>
-            </ScrollView>
-              </>
-            )}
-          </AnimatedSafeBlurView>
+                  <ScrollView style={{ flex: 1 }} scrollEnabled={scrollEnabled}>
+                    <View style={styles.content}>
+                      <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
+                      <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
+                        {details?.description || 'Loading event description...'}
+                      </Text>
+                    </View>
+                  </ScrollView>
+                </>
+              )}
+            </View>
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
     </View>
@@ -304,12 +326,6 @@ const styles = StyleSheet.create({
     flex: 1,
     overflow: 'hidden',
     borderWidth: 1,
-  },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
   },
   header: {
     paddingTop: 8,
@@ -332,9 +348,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   titleSection: {
     alignItems: 'center',
@@ -436,7 +452,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
   },
   activeService: {
     borderColor: 'transparent',

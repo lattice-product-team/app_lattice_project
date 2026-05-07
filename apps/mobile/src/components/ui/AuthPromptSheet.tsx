@@ -13,7 +13,6 @@ import { PremiumButton } from './PremiumButton';
 import { useAuthStore } from '../../store/useAuthStore';
 import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
-import { SafeBlurView } from './SafeBlurView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -37,8 +36,8 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
   const animState = useSharedValue(0);
 
-  // High performance spring config
-  const springConfig = { damping: 20, stiffness: 150, mass: 0.5 };
+  // Unified Motion Token
+  const springConfig = theme.motion.physics.snappy;
 
   useEffect(() => {
     if (isAuthPromptOpen) {
@@ -97,18 +96,15 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
 
       {/* Floating Card */}
       <Animated.View style={[styles.floatingCard, containerStyle]}>
-        <SafeBlurView 
-          tint={theme.colors.glass.tint} 
-          intensity={90}
+        <View 
           style={[
             styles.blurBackground,
             { 
-              backgroundColor: 'transparent',
-              borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border
             }
           ]}
         >
-          <View style={styles.innerGlowBorder} />
           {/* Header Actions */}
           <View style={styles.headerActions}>
             <View style={{ flex: 1 }} />
@@ -131,7 +127,7 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
               />
             </View>
           </View>
-        </SafeBlurView>
+        </View>
       </Animated.View>
     </View>
   );
@@ -153,13 +149,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 32,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
-  },
   headerActions: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -169,7 +158,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },

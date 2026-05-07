@@ -49,11 +49,8 @@ export const POIPin = React.memo(({
   }, []);
 
   useEffect(() => {
-    scale.value = withSpring(isSelected ? 1.3 : 1, {
-      damping: 15,
-      stiffness: 150,
-    });
-  }, [isSelected]);
+    scale.value = withSpring(isSelected ? 1.3 : 1, theme.motion.physics.snappy);
+  }, [isSelected, theme.motion.physics.snappy]);
 
   const animatedStyle = useAnimatedStyle(() => {
     // Zoom-based opacity (Fade out between 16.0 and 15.5)

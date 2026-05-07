@@ -17,23 +17,28 @@ export const isValidCoordinate = (coords?: number[] | null): boolean => {
 /**
  * Adapter to normalize raw GeoJSON data into a consistent UI model.
  */
-export const normalizePOI = (raw: POIGeoJSON): StandardUIPOI => {
-  const { properties, geometry } = raw;
-  const metadata = getCategoryMetadata(properties.category);
+export const normalizePOI = (raw: any): StandardUIPOI => {
+  const properties = raw?.properties || {};
+  const geometry = raw?.geometry || { coordinates: [0, 0] };
+  const category = properties.category || 'generic';
+  const metadata = getCategoryMetadata(category);
 
   return {
     id: String(properties.id || ''),
     displayName: properties.name || properties.label || 'Unknown Location',
-    category: properties.category || 'generic',
+    category: category,
     categoryLabel: metadata.label,
     categoryIcon: metadata.icon,
     iconFamily: metadata.iconFamily,
     mainColor: metadata.color,
-    coordinates: [geometry.coordinates[0], geometry.coordinates[1]],
+    coordinates: [
+      geometry.coordinates?.[0] || 0, 
+      geometry.coordinates?.[1] || 0
+    ],
     parentId: properties.parentId || properties.event_id,
     description: properties.description,
     images: properties.images,
-    raw: properties, // Preserve original properties
+    raw: properties,
   };
 };
 

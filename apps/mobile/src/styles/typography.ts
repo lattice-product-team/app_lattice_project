@@ -1,5 +1,4 @@
 export const typography = {
-  // Legacy
   primary: {
     regular: 'Outfit-Regular',
     medium: 'Outfit-Medium',
@@ -12,7 +11,6 @@ export const typography = {
     bold: 'PlusJakartaSans-Bold',
     extraBold: 'PlusJakartaSans-ExtraBold',
   },
-  // ElevenLabs
   sans: {
     regular: 'Inter-Regular',
     medium: 'Inter-Medium',

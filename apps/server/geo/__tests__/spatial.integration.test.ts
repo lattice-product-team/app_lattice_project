@@ -22,11 +22,11 @@ describe('Geo Service Spatial Endpoints', () => {
     vi.clearAllMocks();
   });
 
-  describe('GET /venues/:id/spatial', () => {
+  describe('GET /events/:id/spatial', () => {
     it('should return a FeatureCollection with boundary and POIs', async () => {
-      const mockVenue = {
+      const mockEvent = {
         id: 1,
-        name: 'Test Venue',
+        name: 'Test Event',
         boundary: JSON.stringify({ type: 'Polygon', coordinates: [[[0,0], [1,0], [1,1], [0,1], [0,0]]] }),
       };
 
@@ -36,7 +36,7 @@ describe('Geo Service Spatial Endpoints', () => {
 
       (dbLib.db.select as any).mockReturnValueOnce({
         from: vi.fn().mockReturnValueOnce({
-          where: vi.fn().mockResolvedValueOnce([mockVenue]),
+          where: vi.fn().mockResolvedValueOnce([mockEvent]),
         }),
       });
 
@@ -46,7 +46,7 @@ describe('Geo Service Spatial Endpoints', () => {
         }),
       });
 
-      const response = await request(app).get('/venues/1/spatial');
+      const response = await request(app).get('/events/1/spatial');
       expect(response.status).toBe(200);
       expect(response.body.type).toBe('FeatureCollection');
       expect(response.body.features).toHaveLength(2);
@@ -54,19 +54,19 @@ describe('Geo Service Spatial Endpoints', () => {
       expect(response.body.features[1].properties.type).toBe('bar');
     });
 
-    it('should return 404 if venue not found', async () => {
+    it('should return 404 if event not found', async () => {
       (dbLib.db.select as any).mockReturnValueOnce({
         from: vi.fn().mockReturnValueOnce({
           where: vi.fn().mockResolvedValueOnce([]),
         }),
       });
 
-      const response = await request(app).get('/venues/999/spatial');
+      const response = await request(app).get('/events/999/spatial');
       expect(response.status).toBe(404);
     });
   });
 
-  describe('POST /venues/:id/spatial', () => {
+  describe('POST /events/:id/spatial', () => {
     it('should save spatial data and return success', async () => {
       (dbLib.db.update as any).mockReturnValue({
         set: vi.fn().mockReturnValue({
@@ -89,7 +89,7 @@ describe('Geo Service Spatial Endpoints', () => {
         ]
       };
 
-      const response = await request(app).post('/venues/1/spatial').send(payload);
+      const response = await request(app).post('/events/1/spatial').send(payload);
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
     });

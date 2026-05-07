@@ -4,22 +4,24 @@ import { expand } from 'dotenv-expand';
 import path from 'path';
 import { z } from 'zod';
 
-// Load environment variables from the root .env
+// Load environment variables from the root .env if it exists
 const projectRoot = __dirname;
 const rootDir = path.resolve(projectRoot, '../../');
 const rootEnvPath = path.join(rootDir, '.env');
 
-const envOutput = dotenv.config({ path: rootEnvPath });
-expand(envOutput);
-
-if (envOutput.error) {
-  console.error('❌ [Config] Error loading .env file:', envOutput.error);
-} else {
+import * as fs from 'fs';
+if (fs.existsSync(rootEnvPath)) {
+  const envOutput = dotenv.config({ path: rootEnvPath });
+  expand(envOutput);
+  
   // Explicitly ensure LAN_IP is in process.env
   if (envOutput.parsed?.LAN_IP) {
     process.env.LAN_IP = envOutput.parsed.LAN_IP;
   }
+} else {
+  console.log('ℹ️ [Config] No .env file found at root, relying on environment variables.');
 }
+
 
 /**
  * Environment Variables Schema
@@ -30,6 +32,7 @@ const envSchema = z.object({
   API_URL: z.string().url(),
   GATEWAY_HOST: z.string().default('localhost'),
   GATEWAY_PORT: z.string().default('3000'),
+  VALHALLA_PORT: z.string().default('8002'),
   // Variables provided by scripts (overrides)
   TUNNEL_URL: z.string().url().optional(),
   LAN_IP: z.string().optional(),
@@ -58,12 +61,19 @@ const resolveApiUrl = () => {
   return env.API_URL;
 };
 
+const resolveValhallaUrl = () => {
+  // Temporary public instance for testing until local is ready
+  return 'https://valhalla1.openstreetmap.de';
+};
+
 const API_URL = resolveApiUrl();
+const VALHALLA_URL = resolveValhallaUrl();
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Lattice',
   slug: 'lattice',
+  owner: 'kore29',
   version: '1.0.0',
   orientation: 'default',
   icon: './assets/images/icon.png',
@@ -78,12 +88,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         NSAllowsArbitraryLoads: true,
       },
       NSCameraUsageDescription: 'Lattice uses the camera to display augmented reality navigation and points of interest.',
-      NSLocationWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through the venue.',
-      NSLocationAlwaysAndWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through the venue.',
+      NSLocationWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through events.',
+      NSLocationAlwaysAndWhenInUseUsageDescription: 'Allow Lattice to use your location to guide you through events.',
     },
   },
   android: {
-    package: 'com.cdc.lattice.dev',
+    package: 'com.lattice.app',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -93,6 +103,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     permissions: [
+      'INTERNET',
       'CAMERA',
       'RECORD_AUDIO',
       'android.permission.ACCESS_COARSE_LOCATION',
@@ -125,8 +136,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-location',
       {
-        locationAlwaysAndWhenInUsePermission: 'Allow Lattice to use your location to guide you through the venue.',
-        locationWhenInUsePermission: 'Allow Lattice to use your location to guide you through the venue.',
+        locationAlwaysAndWhenInUsePermission: 'Allow Lattice to use your location to guide you through events.',
+        locationWhenInUsePermission: 'Allow Lattice to use your location to guide you through events.',
         isAndroidBackgroundLocationEnabled: false,
       },
     ],
@@ -141,7 +152,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     ...config.extra,
     apiUrl: API_URL,
+    valhallaUrl: VALHALLA_URL,
     nodeEnv: env.NODE_ENV,
+    mapTilerKey: process.env.MAPTILER_KEY || 'iqk4irD5FCOr6M6VHVWZ',
     googleIosClientId: env.GOOGLE_IOS_CLIENT_ID || 'missing-ios-client-id',
     googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID || 'missing-android-client-id',
     eas: {

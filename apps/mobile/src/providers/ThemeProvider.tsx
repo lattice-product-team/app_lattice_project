@@ -19,16 +19,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // 1. Get base theme from system appearance
     const baseTheme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
-    // 2. Resolve brand color override from event context
-    let brandPrimary = baseTheme.colors.brand.primary;
-    
-    if (selectedEvent?.type) {
-      const type = selectedEvent.type as keyof typeof primitiveColors.category;
-      const eventColor = primitiveColors.category[type] || primitiveColors.brand.primary;
-      brandPrimary = eventColor;
-    }
+    // 2. We keep the base brand primary color as requested (removing dynamic override)
+    const brandPrimary = baseTheme.colors.brand.primary;
 
-    // 3. Construct the final theme object with overrides
+    // 3. Construct the final theme object
     return {
       ...baseTheme,
       colors: {
@@ -36,7 +30,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         brand: {
           ...baseTheme.colors.brand,
           primary: brandPrimary,
-          // We can also derive variants here if needed
         },
       },
     };

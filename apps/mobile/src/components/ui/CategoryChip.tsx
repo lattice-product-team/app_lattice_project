@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { typography } from '../../styles/typography';
-import { SafeBlurView } from './SafeBlurView';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface CategoryChipProps {
@@ -27,14 +26,12 @@ export const CategoryChip = ({
         pressed && { opacity: 0.9, transform: [{ scale: 0.96 }] }
       ]}
     >
-      <SafeBlurView 
-        intensity={isSelected ? 0 : 40} 
-        tint={theme.dark ? 'dark' : 'light'}
+      <View 
         style={[
           styles.blurContainer,
           { 
-            backgroundColor: isSelected ? activeColor : 'rgba(255,255,255,0.05)',
-            borderColor: isSelected ? activeColor : 'rgba(255,255,255,0.1)' 
+            backgroundColor: isSelected ? activeColor : (theme.dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'),
+            borderColor: isSelected ? activeColor : (theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)')
           }
         ]}
       >
@@ -47,7 +44,7 @@ export const CategoryChip = ({
         >
           {label}
         </Text>
-      </SafeBlurView>
+      </View>
     </Pressable>
   );
 };

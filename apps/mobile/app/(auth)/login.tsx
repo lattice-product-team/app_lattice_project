@@ -51,7 +51,20 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async (idToken: string) => {
     const result = await AuthService.signInWithGoogle(idToken);
-    if (result.error) {
+    if (result.success) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      const { intendedDestination, setGuestMode } = useAuthStore.getState();
+      
+      // Ensure guest mode is disabled on successful social login
+      setGuestMode(false);
+
+      if (intendedDestination) {
+        useAuthStore.getState().setIntendedDestination(null);
+        router.replace(intendedDestination as any);
+      } else {
+        router.replace('/(main)');
+      }
+    } else if (result.error) {
       Alert.alert('Error', result.error);
     }
   };
@@ -77,10 +90,10 @@ export default function LoginScreen() {
             />
           </View>
           
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
             Welcome back{'\n'}to Lattice.
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
             Log in to your account.
           </Text>
         </Animated.View>
@@ -93,7 +106,7 @@ export default function LoginScreen() {
               variant="google" 
               onPress={() => promptAsync()}
               disabled={!request}
-              style={styles.socialButton}
+              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
             />
             
             <PremiumButton 
@@ -103,7 +116,7 @@ export default function LoginScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(auth)/email-auth');
               }}
-              style={styles.socialButton}
+              style={[styles.socialButton, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}
             />
           </Animated.View>
         </View>
@@ -113,23 +126,10 @@ export default function LoginScreen() {
           entering={FadeIn.delay(800).duration(1200)}
           style={styles.footer}
         >
-          <View style={styles.switchLink}>
-            <Text style={styles.footerText}>
-              Don't have an account?{' '}
-            </Text>
-            <Link href="/(auth)/register" asChild>
-              <Pressable hitSlop={10}>
-                <Text style={styles.footerLink}>
-                  Register
-                </Text>
-              </Pressable>
-            </Link>
-          </View>
-
-          <Text style={styles.legalText}>
+          <Text style={[styles.legalText, { color: theme.colors.text.muted }]}>
             By continuing, you agree to our{' '}
-            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
-            <Text style={styles.legalLink} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
+            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Terms</Text> and{' '}
+            <Text style={[styles.legalLink, { color: theme.colors.text.secondary }]} onPress={() => Linking.openURL('#')}>Privacy Policy</Text>.
           </Text>
         </Animated.View>
       </View>
@@ -146,25 +146,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
+    width: 80, // Slightly larger logo
+    height: 80,
+    borderRadius: 22,
   },
   title: {
-    fontSize: 56,
+    fontSize: 64, // Larger title
     fontFamily: 'CormorantGaramond-Medium',
-    lineHeight: 60,
+    lineHeight: 68,
     letterSpacing: -1,
     textAlign: 'center',
-    color: '#000',
   },
   subtitle: {
     fontSize: 18,
     fontFamily: 'Inter-Medium',
-    marginTop: 8,
-    opacity: 0.5,
+    marginTop: 12,
+    opacity: 0.6,
     textAlign: 'center',
-    color: '#000',
   },
   actionsContainer: {
     width: '100%',
@@ -173,33 +171,15 @@ const styles = StyleSheet.create({
   socialButton: {
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FFF',
     borderWidth: 1.2,
-    borderColor: '#F0F0F0',
   },
   footer: {
     alignItems: 'center',
     gap: 16,
-    marginTop: 40,
-  },
-  switchLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  footerText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 15,
-    color: 'rgba(0,0,0,0.4)',
-  },
-  footerLink: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 15,
-    color: '#E2B042', // Lattice Orange
+    marginTop: 60,
   },
   legalText: {
     fontSize: 12,
-    color: 'rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
     lineHeight: 18,
     fontFamily: 'Inter-Regular',

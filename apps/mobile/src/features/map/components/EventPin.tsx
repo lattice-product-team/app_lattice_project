@@ -20,10 +20,12 @@ export const EventPin = ({
   color = '#FF3B30',
 }: EventPinProps) => {
   
-  const animatedPinStyle = useAnimatedStyle(() => {
+  const theme = useAppTheme();
+  const style = useAnimatedStyle(() => {
+    const { snappy } = theme.motion.physics;
     return {
       transform: [
-        { scale: withSpring(isSelected ? 1.15 : 1, { damping: 15, stiffness: 150 }) }
+        { scale: withSpring(isSelected ? 1.15 : 1, snappy) }
       ],
     };
   });

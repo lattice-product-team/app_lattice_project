@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Chip, Select, ListBox } from "@heroui/react";
 import { Icons } from "@/components/icons";
-import { ElevenButton } from "@/components/ui/eleven-button";
-import { ElevenCard } from "@/components/ui/eleven-card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const API_BASE = "http://localhost:3000/api/v1";
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
@@ -32,8 +32,8 @@ const POI_EMOJIS: Record<string, string> = {
 };
 
 export default function CrowdRadarPage() {
-  const [venues, setVenues] = useState<any[]>([]);
-  const [selectedVenueId, setSelectedVenueId] = useState<string>("");
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [viewState, setViewState] = useState({
     longitude: 2.2575,
     latitude: 41.5641,
@@ -49,18 +49,18 @@ export default function CrowdRadarPage() {
   const [boundary, setBoundary] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/venues`)
+    fetch(`${API_BASE}/events`)
       .then(res => res.json())
       .then(data => {
-        setVenues(data);
-        if (data.length > 0) setSelectedVenueId(data[0].id.toString());
+        setEvents(data);
+        if (data.length > 0) setSelectedEventId(data[0].id.toString());
       });
   }, []);
 
   useEffect(() => {
-    if (!selectedVenueId) return;
+    if (!selectedEventId) return;
 
-    fetch(`${API_BASE}/venues/${selectedVenueId}/spatial`)
+    fetch(`${API_BASE}/events/${selectedEventId}/spatial`)
       .then(res => res.json())
       .then(data => {
         const boundaryFeature = data.features.find((f: any) => f.properties.type === 'boundary');
@@ -80,7 +80,7 @@ export default function CrowdRadarPage() {
           setViewState(prev => ({ ...prev, longitude: lng, latitude: lat }));
         }
       });
-  }, [selectedVenueId]);
+  }, [selectedEventId]);
 
   useEffect(() => {
     const fetchHeatmap = () => {
@@ -106,43 +106,11 @@ export default function CrowdRadarPage() {
   }, [boundary]);
 
   return (
-    <div className="flex flex-col h-full bg-eggshell space-y-8">
-      <header className="flex justify-between items-start pt-4">
-        <div className="flex flex-col max-w-xl">
-          <p className="text-gravel text-[14px] font-medium mb-2 uppercase tracking-widest">Real-time Telemetry</p>
-          <h1 className="waldenburg-display text-[48px] text-obsidian leading-[1.08] mb-4">
-            Crowd Density Radar.
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <Select 
-              className="w-64"
-              selectedKey={selectedVenueId}
-              onSelectionChange={(key) => setSelectedVenueId(key as string)}
-            >
-              <Select.Trigger className="bg-white border-1 border-chalk rounded-full h-10 px-5 outline-none shadow-hairline">
-                <Select.Value className="text-[12px] font-bold text-obsidian uppercase tracking-wider" />
-              </Select.Trigger>
-              <Select.Popover>
-                <ListBox items={venues} className="bg-white border border-chalk rounded-xl p-1 min-w-64 shadow-subtle">
-                  {(v: any) => (
-                    <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-4 py-2 rounded-lg text-[13px] font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
-                      {v.name}
-                    </ListBox.Item>
-                  )}
-                </ListBox>
-              </Select.Popover>
-            </Select>
-            <div className="h-6 w-px bg-chalk mx-2" />
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-ember animate-pulse shadow-hairline" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-gravel">Live Stream Active</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex-1 relative rounded-2xl overflow-hidden border border-chalk shadow-hairline bg-white">
+    <div className="relative w-full h-screen bg-eggshell overflow-hidden">
+      {/* Full-screen Map Container */}
+      <div className="absolute inset-0 z-0">
         <Map
+
           {...viewState}
           onMove={evt => setViewState(evt.viewState)}
           mapStyle={MAP_STYLE}
@@ -192,28 +160,75 @@ export default function CrowdRadarPage() {
             <Marker key={poi.id} longitude={poi.lng} latitude={poi.lat} anchor="bottom">
               <div className="group relative">
                 <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-125 cursor-pointer">
-                  <span className="text-[14px]">{POI_EMOJIS[poi.type] || '📍'}</span>
+                  <span className="text-admin-base">{POI_EMOJIS[poi.type] || '📍'}</span>
                 </div>
               </div>
             </Marker>
           ))}
         </Map>
-
-        {/* Legend */}
-        <ElevenCard className="absolute right-6 bottom-6 w-64 bg-white/90 backdrop-blur-md p-6 border-chalk shadow-subtle">
-           <h4 className="text-[10px] font-black uppercase tracking-widest text-gravel mb-4 border-b border-chalk pb-2 text-center">Crowd Density</h4>
-           <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                 <span className="text-[10px] font-black text-slate uppercase tracking-tighter">Sparse</span>
-                 <div className="flex-1 mx-4 h-1.5 rounded-full bg-gradient-to-r from-signal-blue to-ember" />
-                 <span className="text-[10px] font-black text-slate uppercase tracking-tighter">Congested</span>
-              </div>
-              <p className="text-[11px] text-gravel leading-relaxed text-center italic border-t border-chalk/50 pt-3">
-                Architectural telemetry updated at 200ms intervals.
-              </p>
-           </div>
-        </ElevenCard>
       </div>
+
+      {/* Floating Header Overlay */}
+      <div className="absolute top-6 left-6 right-6 z-10 flex justify-between items-start pointer-events-none">
+        <Card className="p-4 bg-white/80 backdrop-blur-md border-chalk shadow-subtle pointer-events-auto max-w-sm">
+          <div className="flex flex-col">
+            <p className="text-gravel text-[9px] font-black uppercase tracking-[0.2em] mb-1">Real-time Telemetry</p>
+            <h1 className="waldenburg-display text-[22px] text-obsidian leading-none mb-3">
+              Crowd Density Radar.
+            </h1>
+            <div className="flex items-center gap-3">
+              <Select 
+                className="w-40"
+                aria-label="Select event"
+                selectedKey={selectedEventId}
+                onSelectionChange={(key) => {
+                  const newKey = (key && typeof key === 'object' && 'anchorKey' in key) 
+                    ? (key as any).anchorKey 
+                    : key as string;
+                    
+                  if (newKey && newKey !== selectedEventId) {
+                    setSelectedEventId(newKey);
+                  }
+                }}
+              >
+                <Select.Trigger className="bg-white border border-chalk rounded-full h-7 px-3 outline-none shadow-hairline">
+                  <Select.Value className="text-[9px] font-black text-obsidian uppercase tracking-wider" />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox items={events} className="bg-white border border-chalk rounded-xl p-1 min-w-40 shadow-subtle">
+                    {(v: any) => (
+                      <ListBox.Item id={v.id.toString()} textValue={v.name} className="flex items-center px-3 py-1.5 rounded-lg text-admin-xs font-medium text-gravel hover:bg-powder cursor-pointer outline-none focus:bg-powder">
+                        {v.name}
+                      </ListBox.Item>
+                    )}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+              <div className="h-3 w-px bg-chalk mx-2" />
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-ember animate-pulse shadow-hairline" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-gravel">Live Stream</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Legend */}
+      <Card className="absolute right-6 bottom-6 w-52 bg-white/80 backdrop-blur-md p-4 border-chalk shadow-subtle z-10">
+         <h4 className="text-[9px] font-black uppercase tracking-widest text-gravel mb-3 border-b border-chalk pb-2 text-center">Crowd Density</h4>
+         <div className="space-y-3">
+            <div className="flex items-center justify-between">
+               <span className="text-[9px] font-black text-slate uppercase tracking-tighter">Sparse</span>
+               <div className="flex-1 mx-3 h-1 rounded-full bg-linear-to-r from-signal-blue to-ember" />
+               <span className="text-[9px] font-black text-slate uppercase tracking-tighter">Congested</span>
+            </div>
+            <p className="text-[10px] text-gravel leading-relaxed text-center italic border-t border-chalk/50 pt-2">
+              Architectural telemetry updated at 200ms intervals.
+            </p>
+         </div>
+      </Card>
     </div>
   );
 }
+

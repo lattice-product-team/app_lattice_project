@@ -9,7 +9,7 @@ import { calculateDistance } from '../../../utils/geoUtils';
 export const useRoutingLogic = () => {
   const { selectedPoiId, selectedPoi, setRemote } = usePOIStore();
   const { selectedEvent } = useEventStore();
-  const { setRoute } = useNavigationStore();
+  const { setRoute, setNextInstruction } = useNavigationStore();
   
   const { 
     logicalCoords: userCoords, 
@@ -64,8 +64,18 @@ export const useRoutingLogic = () => {
         duration: routeData.properties.durationEstimate,
         destinationName: selectedPoi?.displayName || 'tu destino',
       });
+
+      // Set initial instruction if maneuvers exist
+      if ((routeData as any).maneuvers?.length > 0) {
+        const firstManeuver = (routeData as any).maneuvers[0];
+        setNextInstruction({
+          instruction: firstManeuver.instruction,
+          distance: firstManeuver.distance,
+          maneuverType: firstManeuver.type.toString()
+        });
+      }
     }
-  }, [routeData, selectedPoi, setRoute]);
+  }, [routeData, selectedPoi, setRoute, setNextInstruction]);
 
   return { routeData, isRemote };
 };

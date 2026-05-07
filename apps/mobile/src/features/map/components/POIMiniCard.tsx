@@ -12,12 +12,11 @@ import Animated, {
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import { typography } from '../../../styles/typography';
 import { StandardUIPOI } from '../../poi/types';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 
 interface POIMiniCardProps {
   poi: any | null;
@@ -28,14 +27,15 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const visibility = useSharedValue(0);
+  const setNavigating = useNavigationStore((s) => s.setNavigating);
 
   useEffect(() => {
-    if (poi) {
-      visibility.value = withSpring(1, { damping: 20, stiffness: 100 });
+    if (poi?.id) {
+      visibility.value = withSpring(1, theme.motion.physics.magnetic);
     } else {
-      visibility.value = withSpring(0, { damping: 20, stiffness: 100 });
+      visibility.value = withSpring(0, theme.motion.physics.magnetic);
     }
-  }, [poi]);
+  }, [poi?.id]);
 
   const animatedStyle = useAnimatedStyle(() => {
     const bottom = interpolate(visibility.value, [0, 1], [-200, insets.bottom + 12], Extrapolation.CLAMP);
@@ -45,29 +45,22 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop
-    };
-  });
+
 
   // No unmount based on visibility.value to avoid render-time reads
 
   return (
     <Animated.View style={[styles.container, theme.shadows.soft, animatedStyle]}>
-      <AnimatedSafeBlurView 
-        tint={theme.colors.glass.tint}
-        intensity={90}
-        animatedProps={blurProps}
+      <View 
         style={[
           styles.content,
           { 
-            backgroundColor: 'transparent',
-            borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' 
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border
           }
         ]}
       >
-        <View style={styles.innerGlowBorder} />
+        {/* Content Layer */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
             <MaterialCommunityIcons name={poi?.categoryIcon || 'map-marker'} size={24} color="white" />
@@ -78,18 +71,34 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
             <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>{poi?.categoryLabel}</Text>
           </View>
 
-          <Pressable onPress={onClose} style={styles.closeButton}>
-            <Feather name="x" size={20} color={theme.colors.text.muted} />
+          <Pressable 
+            onPress={onClose} 
+            style={[
+              styles.closeButton, 
+              { 
+                backgroundColor: theme.dark ? 'rgba(40, 40, 40, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                borderColor: theme.colors.glass.border,
+                ...theme.shadows.soft
+              }
+            ]}
+          >
+            <Feather name="x" size={20} color={theme.colors.text.primary} />
           </Pressable>
         </View>
 
         <View style={styles.footer}>
-          <Pressable style={[styles.mainAction, { backgroundColor: theme.colors.brand.primary }]}>
+          <Pressable 
+            onPress={() => {
+              setNavigating(true);
+              onClose();
+            }}
+            style={[styles.mainAction, { backgroundColor: theme.colors.brand.primary }]}
+          >
             <MaterialCommunityIcons name="directions" size={20} color="white" />
             <Text style={styles.actionText}>Go Now</Text>
           </Pressable>
         </View>
-      </AnimatedSafeBlurView>
+      </View>
     </Animated.View>
   );
 };
@@ -106,13 +115,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     gap: 16,
-  },
-  innerGlowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 24,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    pointerEvents: 'none',
   },
   header: {
     flexDirection: 'row',
@@ -142,9 +144,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   footer: {
     flexDirection: 'row',

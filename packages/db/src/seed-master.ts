@@ -27,42 +27,52 @@ async function seed() {
   // 3.1 Nitro GP (Sports)
   await db.insert(events).values({
     name: 'Nitro GP Barcelona',
-    description: 'The ultimate high-speed racing experience at the Circuit de Barcelona-Catalunya.',
+    description: 'The ultimate high-speed racing experience.',
     type: 'sports',
     startDate: new Date('2026-05-15'),
     endDate: new Date('2026-05-17'),
     locationName: 'Circuit de Barcelona-Catalunya',
+    address: 'Mas La Conca, s/n, 08160 Montmeló, Barcelona, Spain',
     location: [2.2611, 41.5701],
     boundary: [[[2.2530, 41.5750], [2.2650, 41.5750], [2.2650, 41.5650], [2.2530, 41.5650], [2.2530, 41.5750]]],
-    imageUrl: 'https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?auto=format&fit=crop&q=80&w=800',
+    imageUrl: 'https://images.unsplash.com/photo-1532906623266-0bb7ca053177?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#e10600',
+    metadata: JSON.stringify({ capacity: 140000, category: 'Sports' }),
   }).onConflictDoNothing();
   const [nitroGP] = await db.select().from(events).where(eq(events.name, 'Nitro GP Barcelona'));
 
   // 3.2 Neon Nights (Music)
   await db.insert(events).values({
     name: 'Neon Nights Festival',
-    description: 'An immersive electronic music journey by the sea with world-class DJs.',
+    description: 'An immersive electronic music journey by the sea.',
     type: 'music',
     startDate: new Date('2026-07-10'),
     endDate: new Date('2026-07-12'),
     locationName: 'Parc del Fòrum',
+    address: 'Carrer de la Pau, 12, 08930 Sant Adrià de Besòs, Barcelona, Spain',
     location: [2.2215, 41.4125],
     boundary: [[[2.2150, 41.4180], [2.2300, 41.4180], [2.2300, 41.4050], [2.2150, 41.4050], [2.2150, 41.4180]]],
     imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#bc00ff',
+    metadata: JSON.stringify({ capacity: 50000, category: 'Music' }),
   }).onConflictDoNothing();
   const [neonNights] = await db.select().from(events).where(eq(events.name, 'Neon Nights Festival'));
 
-  // 3.3 Quantum Conf (Tech)
+  // 3.3 Quantum Conf (Tech) - PERMANENT
   await db.insert(events).values({
     name: 'Quantum Tech Summit',
     description: 'Exploring the future of quantum computing, AI, and decentralized systems.',
     type: 'tech',
-    startDate: new Date('2026-11-05'),
-    endDate: new Date('2026-11-07'),
+    startDate: new Date('2024-01-01'),
+    endDate: new Date('2099-12-31'),
+    isPermanent: true,
     locationName: 'Fira Barcelona Gran Via',
+    address: 'Av. Joan Carles I, 64, 08908 L\'Hospitalet de Llobregat, Barcelona, Spain',
     location: [2.1315, 41.3545],
     boundary: [[[2.1250, 41.3600], [2.1400, 41.3600], [2.1400, 41.3500], [2.1250, 41.3500], [2.1250, 41.3600]]],
     imageUrl: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=800',
+    primaryColor: '#ff4704',
+    metadata: JSON.stringify({ capacity: 12000, currentOccupancy: 45, category: 'Technology' }),
   }).onConflictDoNothing();
   const [quantumConf] = await db.select().from(events).where(eq(events.name, 'Quantum Tech Summit'));
 
@@ -72,37 +82,17 @@ async function seed() {
   if (koreUser) {
     console.log('🎫 Seeding tickets for test user...');
     await db.insert(tickets).values([
-      {
-        userId: koreUser.id,
-        code: 'NITRO-GP-2026-VIP',
-        ownerEmail: koreUser.email,
-        gate: 'Gate 1 (Main)',
-        zoneName: 'VIP Paddock',
-        seatRow: 'A',
-        seatNumber: '12',
-        isActive: true,
-      },
-      {
-        userId: koreUser.id,
-        code: 'NEON-2026-GA',
-        ownerEmail: koreUser.email,
-        gate: 'Sea Gate',
-        zoneName: 'Main Floor',
-        isActive: true,
-      }
-    ]).onConflictDoNothing();
+      { userId: koreUser.id, eventId: nitroGP.id, zoneName: 'general' },
+      { userId: koreUser.id, eventId: neonNights.id, zoneName: 'vip' },
+      { userId: koreUser.id, eventId: quantumConf.id, zoneName: 'staff' },
+    ]);
 
     console.log('📍 Seeding saved locations for test user...');
     await db.insert(savedLocations).values([
       {
         userId: koreUser.id,
-        label: 'My Car (Nitro GP)',
-        location: [2.2580, 41.5710],
-      },
-      {
-        userId: koreUser.id,
-        label: 'Meeting Point (Neon)',
-        location: [2.2220, 41.4130],
+        label: 'Main Entrance (Quantum)',
+        location: [2.1310, 41.3540],
       }
     ]);
   }
@@ -112,9 +102,9 @@ async function seed() {
     {
       event: nitroGP,
       pois: [
-        { name: 'Main Grandstand', type: 'grandstand', coords: [2.2592, 41.5695] as [number, number] },
+        { name: 'Main Grandstand', type: 'meetup_point', coords: [2.2592, 41.5695] as [number, number] },
         { name: 'Paddock VIP', type: 'restaurant', coords: [2.2615, 41.5698] as [number, number] },
-        { name: 'Medical Center', type: 'medical', coords: [2.2635, 41.5708] as [number, number] },
+        { name: 'Medical Center', type: 'gate', coords: [2.2635, 41.5708] as [number, number] },
       ],
       nodeOffset: 100
     },
@@ -138,6 +128,7 @@ async function seed() {
     }
   ];
 
+
   for (const config of eventConfigs) {
     if (!config.event) continue;
     console.log(`📍 Seeding graph for: ${config.event.name}`);
@@ -150,6 +141,16 @@ async function seed() {
         location: poi.coords,
         eventId: config.event.id,
         description: `Experience the best of ${poi.name} at ${config.event.name}.`,
+        locationName: `${poi.name} Area`,
+        address: config.event.address || 'Event Location',
+        capacity: Math.floor(1000 + Math.random() * 4000),
+        currentOccupancy: Math.floor(Math.random() * 100),
+        status: 'open',
+        metadata: JSON.stringify({ 
+          website: 'https://lattice.app', 
+          rating: (4 + Math.random()).toFixed(1), 
+          openingHours: '09:00 - 23:00' 
+        }),
       }).onConflictDoNothing();
     }
 
@@ -200,4 +201,3 @@ seed().catch(err => {
   console.error('❌ Seeding failed:', err);
   process.exit(1);
 });
-

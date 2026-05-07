@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { SafeBlurView } from '../../../components/ui/SafeBlurView';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -14,7 +13,13 @@ export const RemoteModeWarning = () => {
       exiting={FadeOutDown.duration(300)}
       style={styles.container}
     >
-      <SafeBlurView intensity={60} tint="dark" style={styles.card}>
+      <View style={[
+        styles.card, 
+        { 
+          backgroundColor: 'rgba(28, 28, 30, 0.95)',
+          borderColor: 'rgba(255, 255, 255, 0.1)'
+        }
+      ]}>
         <View style={styles.content}>
           <View style={styles.iconContainer}>
             <Feather name="eye" size={20} color={theme.colors.brand.primary} />
@@ -26,7 +31,7 @@ export const RemoteModeWarning = () => {
             </Text>
           </View>
         </View>
-      </SafeBlurView>
+      </View>
     </Animated.View>
   );
 };

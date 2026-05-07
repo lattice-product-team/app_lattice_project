@@ -24,15 +24,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapContent } from '../../src/features/map/components/MapContent';
 import { AdaptiveControlOverlay } from '../../src/features/map/components/AdaptiveControlOverlay';
 import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
-import { SafeBlurView } from '../../src/components/ui/SafeBlurView';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
 import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
+import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
+import { NavigationInfo } from '../../src/features/map/components/NavigationInfo';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
-import { useVenueSpatial } from '../../src/features/map/hooks/useVenueSpatial';
+import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
 import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 
 // Stores & Hooks
@@ -42,6 +43,7 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
+import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -50,16 +52,7 @@ import { useLocationService } from '../../src/hooks/useLocationService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const AnimatedSafeBlurView = Animated.createAnimatedComponent(SafeBlurView);
 const SNAP_POINTS = [0, 0.5, 1];
-const SPRING_CONFIG = {
-  damping: 30,
-  stiffness: 150,
-  mass: 1.0,
-  overshootClamping: true,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 2,
-};
 
 export default function MapIndexPage() {
   const theme = useAppTheme();
@@ -86,23 +79,24 @@ export default function MapIndexPage() {
   
   const selectedEvent = useEventStore((s) => s.selectedEvent);
   const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
+  
+  const { isNavigating } = useNavigationStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   
   const { events } = useSearchEvents(searchQuery);
-  const venueId = selectedEvent?.venueId || (selectedEvent as any)?.venue_id;
-  const { spatialData: venueSpatial } = useVenueSpatial(venueId);
+  const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
   const { data: globalPois } = usePOIs(); // Load global POIs
   
-  // Merge global POIs with venue-specific spatial data
+  // Merge global POIs with event-specific spatial data
   const mergedPois = useMemo(() => {
     const features = [...(globalPois?.features || [])];
-    if (venueSpatial?.features) {
-      features.push(...venueSpatial.features);
+    if (eventSpatial?.features) {
+      features.push(...eventSpatial.features);
     }
     return { type: 'FeatureCollection', features };
-  }, [globalPois, venueSpatial]);
+  }, [globalPois, eventSpatial]);
   
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
@@ -126,15 +120,21 @@ export default function MapIndexPage() {
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
-    return withTiming(selectedEvent ? 0 : 1, { duration: 300 });
+    const isSomethingSelected = !!selectedEvent || !!selectedPoiId;
+    return withTiming(isSomethingSelected ? 0 : 1, { duration: 300 });
   });
 
-  // Effect to handle POI selection triggering Level 3
-  useEffect(() => {
-    if (selectedPoiId) {
-      islandState.value = withSpring(1, SPRING_CONFIG);
-    }
-  }, [selectedPoiId, islandState]);
+  const [isHeaderEditable, setIsHeaderEditable] = useState(false);
+ 
+   // Effect removed to prevent auto-expanding search on POI click
+   useAnimatedReaction(
+     () => islandState.value > 0.1,
+     (isReady, prev) => {
+       if (isReady !== prev) {
+         runOnJS(setIsHeaderEditable)(isReady);
+       }
+     }
+   );
 
   const handleEventSelect = useCallback((event: LatticeEvent) => {
     // Save current level before collapsing
@@ -143,7 +143,7 @@ export default function MapIndexPage() {
     setSelectedEvent(event.id);
     setCurrentEvent(event);
     selectPoi(null); // Clear any active POI selection
-    islandState.value = withSpring(0, SPRING_CONFIG); // Collapse search island
+    islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
 
@@ -154,7 +154,7 @@ export default function MapIndexPage() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     // Restore island if needed
     if (preSearchLevel.value > 0.1) {
-      islandState.value = withSpring(preSearchLevel.value, SPRING_CONFIG);
+      islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
     }
   }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState, preSearchLevel]);
 
@@ -189,6 +189,7 @@ export default function MapIndexPage() {
 
   const gesture = Gesture.Pan()
     .activeOffsetY([-10, 10])
+    .failOffsetX([-20, 20])
     .onStart(() => {
       isPanning.value = true;
       startState.value = islandState.value;
@@ -199,16 +200,32 @@ export default function MapIndexPage() {
       const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
       
       if (canDragSheet) {
-        const stateDelta = -event.translationY / (450 - 60); 
+        // Dynamic divisor for 1:1 tracking
+        // The distance from Level 1 (60px) to Level 3 (SCREEN_HEIGHT * 0.8)
+        const fullTravel = (SCREEN_HEIGHT * 0.8) - 60;
+        const stateDelta = -event.translationY / fullTravel; 
         let newPos = startState.value + stateDelta;
         islandState.value = Math.max(0, Math.min(1, newPos));
       }
     })
     .onEnd((event) => {
       isPanning.value = false;
-      const velocity = -event.velocityY / (450 - 60);
-      const predictedPos = islandState.value + velocity * 0.1;
+      // Increased inertia factor for "toque suave" (Apple-style response)
+      const fullTravel = (SCREEN_HEIGHT * 0.8) - 60;
+      const velocity = -event.velocityY / fullTravel;
+      let predictedPos = islandState.value + velocity * 0.12;
       
+      // ANTI-SKIP PROTECTION:
+      // If we start at Level 1 (0), don't allow snapping directly to Level 3 (1.0).
+      // This forces the user to pass through Level 2 (0.5) first as requested.
+      if (startState.value === 0) {
+        predictedPos = Math.min(predictedPos, 0.7);
+      }
+      // If we start at Level 2 (0.5), we can go to 1 or 3, but not hide the sheet.
+      if (startState.value === 0.5) {
+        predictedPos = Math.max(0.2, Math.min(predictedPos, 1.2));
+      }
+
       let closest = SNAP_POINTS[0];
       let minDiff = Math.abs(predictedPos - SNAP_POINTS[0]);
       
@@ -220,7 +237,7 @@ export default function MapIndexPage() {
         }
       });
 
-      islandState.value = withSpring(closest, SPRING_CONFIG, (finished) => {
+      islandState.value = withSpring(closest, theme.motion.physics.magnetic, (finished) => {
         if (finished && (closest === 0 || closest === 0.5)) {
           preSearchLevel.value = closest;
         }
@@ -257,16 +274,12 @@ export default function MapIndexPage() {
       backgroundColor: interpolateColor(
         islandState.value,
         [0.7, 0.95],
-        ['transparent', theme.colors.bg.surface]
+        [theme.colors.glass.background, theme.colors.bg.surface]
       ),
     };
   });
 
-  const blurProps = useAnimatedProps(() => {
-    return {
-      // intensity should be passed as a regular prop
-    };
-  });
+
 
   const dimmerStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
@@ -314,7 +327,7 @@ export default function MapIndexPage() {
     deselect();
     setIsSearching(false);
     if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel.value, SPRING_CONFIG);
+      islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
     }
   }, [deselect, selectedPoiId, preSearchLevel, islandState]);
 
@@ -325,7 +338,7 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
     
     // If we have coordinates, move map. For now just collapse.
-    islandState.value = withSpring(0.5, SPRING_CONFIG);
+    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
     
     if (coords) {
       console.log('Moving map to:', coords);
@@ -336,6 +349,8 @@ export default function MapIndexPage() {
   const handleSelectCategory = useCallback((id: string) => {
     console.log('Selected Category:', id);
   }, []);
+
+  const searchInputRef = useRef<TextInput>(null);
 
   return (
     <View style={styles.container}>
@@ -352,6 +367,8 @@ export default function MapIndexPage() {
           is3DActive={manualAR}
         />
       </View>
+
+      <InstructionBanner />
 
       <Pressable 
         style={StyleSheet.absoluteFill}
@@ -381,14 +398,11 @@ export default function MapIndexPage() {
           pointerEvents={selectedEvent ? 'none' : 'auto'}
           style={[styles.islandContainer, islandStyle]}
         >
-          <AnimatedSafeBlurView 
-            tint={theme.colors.glass.tint} 
-            intensity={90}
-            animatedProps={blurProps}
+          <Animated.View 
             style={[
               styles.islandBackground, 
               islandBackgroundStyle,
-              { borderColor: theme.dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)' }
+              { borderColor: theme.colors.glass.border }
             ]}
           >
             <View style={styles.handleContainer}>
@@ -400,6 +414,7 @@ export default function MapIndexPage() {
 
             <View style={styles.islandHeader}>
               <FloatingSearchBar 
+                ref={searchInputRef}
                 value={searchQuery}
                 onChangeText={(text) => {
                   setSearchQuery(text);
@@ -408,14 +423,23 @@ export default function MapIndexPage() {
                 onProfilePress={handleProfilePress}
                 onFocus={() => {
                   setIsSearching(true);
-                  islandState.value = withSpring(1, SPRING_CONFIG);
+                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
                 }}
                 onSubmit={() => {
                   saveSearch(searchQuery);
                   Keyboard.dismiss();
                 }}
+                onPress={() => {
+                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Wait for editable to become true before focusing
+                  setTimeout(() => {
+                    searchInputRef.current?.focus();
+                  }, 100);
+                }}
                 avatarUrl={user?.avatarUrl}
                 isGuest={isGuest}
+                editable={isHeaderEditable}
               />
             </View>
 
@@ -441,14 +465,22 @@ export default function MapIndexPage() {
                 <SearchExperience 
                   query={searchQuery}
                   onSelectResult={(q, coords) => {
-                    onSelectSearchResult(q, coords);
+                    // Clear search query when selecting from list to keep navigation clean
+                    setSearchQuery('');
+                    saveSearch(q);
+                    setIsSearching(false);
+                    Keyboard.dismiss();
+                    
+                    // If we have coordinates, move map.
+                    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+                    
                     const match = events.find(e => e.name.toLowerCase() === q.toLowerCase());
                     if (match) handleEventSelect(match);
                   }}
                 />
               </Animated.View>
             </Animated.ScrollView>
-          </AnimatedSafeBlurView>
+          </Animated.View>
         </Animated.View>
       </GestureDetector>
 
@@ -458,9 +490,11 @@ export default function MapIndexPage() {
       />
 
       <POIMiniCard 
-        poi={selectedPoi?.parentId ? selectedPoi : null}
+        poi={selectedPoi}
         onClose={deselect}
       />
+      
+      <NavigationInfo />
       
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>

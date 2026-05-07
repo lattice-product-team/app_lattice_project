@@ -43,10 +43,32 @@ If you want to build the IPA/APK on your own machine without using Expo's cloud:
 npx eas build --platform ios --local --profile development
 ```
 
+## 4. Android Cloud Builds (Recomendado)
+Ya no necesitas Android Studio instalado localmente. Usamos **EAS Build** para generar los APKs en la nube.
+
+Desde la **raíz del proyecto**:
+```bash
+# Build de Desarrollo (con expo-dev-client) - Genera APK
+pnpm mobile:android:build:dev
+
+# Build de Preview (Release APK) - Genera APK instalable
+pnpm mobile:android:build:preview
+
+# Build de Producción (Google Play) - Genera AAB
+pnpm mobile:android:build:prod
+```
+
+### Configuración de Secretos (EAS)
+Para que el mapa y el login funcionen en los builds de la nube, asegúrate de tener los secretos configurados en EAS:
+```bash
+eas secret:create --name MAPTILER_KEY --value TU_CLAVE --scope project --type string
+```
+The app will automatically map these secrets via `app.config.ts`.
+
 ---
 
 ## Connectivity Troubleshooting
 If your dev build cannot connect to the API:
-1. Run `npm run dev:lan`.
+1. Run `pnpm dev:lan`.
 2. Wait for the **Connectivity Diagnostics** to finish.
 3. If a port is marked as `NOT reachable`, check your macOS Firewall settings.

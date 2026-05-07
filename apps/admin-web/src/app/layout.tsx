@@ -34,22 +34,16 @@ export default function RootLayout({
       <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased text-foreground bg-eggshell`}>
         <Providers>
           <div className="flex h-screen overflow-hidden bg-eggshell">
-            {/* Sidebar - ElevenLabs Editorial Style */}
+            {/* Sidebar - Editorial Style */}
             <aside className="w-64 bg-eggshell border-r border-chalk flex flex-col z-50">
               <div className="p-8 pt-12">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-8 h-8 rounded-full bg-gradient-voice-spectrum shadow-hairline" />
-                  <span className="waldenburg-display text-[20px] tracking-pill uppercase font-bold text-obsidian">Lattice</span>
-                </div>
-
-                <div className="flex items-center gap-3 px-1 py-4 border-y border-chalk/50 mb-8">
+                <div className="flex items-center gap-3 px-1 pb-6 border-b border-chalk/50 mb-8">
                   <Avatar 
-                    name="Kate Moore" 
-                    className="bg-powder text-obsidian font-bold rounded-full w-10 h-10 border-1 border-chalk"
+                    className="bg-powder text-obsidian font-bold rounded-full w-10 h-10 border border-chalk"
                   />
                   <div className="flex flex-col">
-                    <span className="text-[14px] font-semibold text-obsidian leading-tight">Kate Moore</span>
-                    <span className="text-[12px] text-gravel font-medium">Administrator</span>
+                    <span className="text-admin-base font-semibold text-obsidian leading-tight">Kate Moore</span>
+                    <span className="text-admin-xs text-gravel font-medium">Administrator</span>
                   </div>
                 </div>
               </div>
@@ -57,12 +51,13 @@ export default function RootLayout({
               <SidebarNav />
             </aside>
 
-            {/* Main Content */}
             <main className="flex-1 flex flex-col min-h-0 bg-eggshell">
-              <div className="flex-1 overflow-y-auto px-8 py-12 max-w-[1200px] mx-auto w-full">
+              <div className="flex-1 overflow-y-auto w-full">
                 {children}
               </div>
             </main>
+
+
           </div>
         </Providers>
       </body>

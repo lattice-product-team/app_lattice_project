@@ -6,6 +6,6 @@ export const useRoute = (request: RouteRequest | null) => {
     queryKey: ['route', request],
     queryFn: () => (request ? navigationService.getRoute(request) : null),
     enabled: !!request,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0,
   });
 };

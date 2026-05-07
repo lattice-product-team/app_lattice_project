@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, Pressable } from 'react-native';
+import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { UserAvatar } from './UserAvatar';
@@ -10,22 +10,26 @@ interface FloatingSearchBarProps {
   onChangeText: (text: string) => void;
   onFocus?: () => void;
   onProfilePress?: () => void;
+  onPress?: () => void;
   onSubmit?: () => void;
   placeholder?: string;
   avatarUrl?: string | null;
   isGuest?: boolean;
+  editable?: boolean;
 }
 
-export const FloatingSearchBar = ({
+export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarProps>(({
   value,
   onChangeText,
   onFocus,
   onProfilePress,
+  onPress,
   onSubmit,
   placeholder = "Search events, stages, food...",
   avatarUrl,
-  isGuest
-}: FloatingSearchBarProps) => {
+  isGuest,
+  editable = true,
+}, ref) => {
   const theme = useAppTheme();
 
   return (
@@ -37,17 +41,26 @@ export const FloatingSearchBar = ({
         style={styles.icon} 
       />
       
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        onFocus={onFocus}
-        placeholder={placeholder}
-        placeholderTextColor={theme.colors.text.muted}
-        style={[styles.input, { color: theme.colors.text.primary }]}
-        selectionColor={theme.colors.brand.primary}
-        returnKeyType="search"
-        onSubmitEditing={onSubmit}
-      />
+      <Pressable 
+        style={{ flex: 1, justifyContent: 'center' }} 
+        onPress={onPress}
+        disabled={editable}
+      >
+        <TextInput
+          ref={ref}
+          value={value}
+          onChangeText={onChangeText}
+          onFocus={onFocus}
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.text.muted}
+          style={[styles.input, { color: theme.colors.text.primary }]}
+          selectionColor={theme.colors.brand.primary}
+          returnKeyType="search"
+          onSubmitEditing={onSubmit}
+          editable={editable}
+          pointerEvents={editable ? 'auto' : 'none'}
+        />
+      </Pressable>
 
       {value.length > 0 && (
         <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
@@ -71,7 +84,7 @@ export const FloatingSearchBar = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   innerContainer: {

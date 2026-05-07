@@ -29,11 +29,12 @@ export default function EmailAuthScreen() {
     login.mutate({ email, password }, {
       onSuccess: () => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        const { intendedDestination, hasSeenPasskeyPrompt } = useAuthStore.getState();
+        const { intendedDestination, setGuestMode } = useAuthStore.getState();
         
-        if (!hasSeenPasskeyPrompt) {
-          router.replace('/(auth)/passkey-intro');
-        } else if (intendedDestination) {
+        // Ensure guest mode is disabled on successful login
+        setGuestMode(false);
+
+        if (intendedDestination) {
           useAuthStore.getState().setIntendedDestination(null);
           router.replace(intendedDestination as any);
         } else {
@@ -42,7 +43,8 @@ export default function EmailAuthScreen() {
       },
       onError: (error: any) => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert('Login Failed', error.message);
+        const message = error instanceof Error ? error.message : (typeof error === 'string' ? error : 'An unexpected error occurred');
+        Alert.alert('Login Failed', message);
       }
     });
   };
@@ -62,7 +64,16 @@ export default function EmailAuthScreen() {
           entering={FadeInDown.delay(200).duration(600).springify()}
           style={styles.form}
         >
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle }]}>
+          {login.isError && (
+            <View style={styles.errorBanner}>
+              <Feather name="alert-circle" size={16} color={theme.colors.status.error} />
+              <Text style={[styles.errorText, { color: theme.colors.status.error }]}>
+                {login.error instanceof Error ? login.error.message : 'Login failed. Please check your credentials.'}
+              </Text>
+            </View>
+          )}
+
+          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: login.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
             <Feather name="mail" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Email"
@@ -75,7 +86,7 @@ export default function EmailAuthScreen() {
             />
           </View>
 
-          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle }]}>
+          <View style={[styles.inputGroup, { backgroundColor: theme.colors.glass.subtle, borderColor: login.isError ? theme.colors.status.error : theme.colors.border.subtle }]}>
             <Feather name="lock" size={20} color={theme.colors.text.muted} />
             <TextInput
               placeholder="Password"
@@ -147,6 +158,20 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 16,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    flex: 1,
   },
   inputGroup: {
     flexDirection: 'row',

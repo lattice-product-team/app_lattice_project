@@ -105,10 +105,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
     if (selectedTicketId) return; // Don't toggle stack if a ticket is selected
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
-    expandProgress.value = withSpring(newExpanded ? 1 : 0, {
-      damping: 15,
-      stiffness: 100,
-    });
+    expandProgress.value = withSpring(newExpanded ? 1 : 0, theme.motion.physics.snappy);
   };
 
   const handleSelectTicket = (ticket: Ticket) => {

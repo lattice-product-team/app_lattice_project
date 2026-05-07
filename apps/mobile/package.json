@@ -16,7 +16,8 @@
     "test": "npm run test:logic && npm run test:components",
     "test:components": "jest --passWithNoTests",
 
-    "test:logic": "vitest run"
+    "test:logic": "vitest run",
+    "eas-build-pre-install": "corepack enable && corepack prepare pnpm@10.0.0 --activate"
   },
   "dependencies": {
     "@app/theme": "workspace:*",
@@ -36,7 +37,6 @@
     "expo": "~54.0.34",
     "expo-application": "~7.0.8",
     "expo-auth-session": "^7.0.11",
-    "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "^6.0.21",
@@ -56,6 +56,7 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.11",
+    "lucide-react-native": "^0.575.0",
     "nativewind": "^4.2.1",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "react": "19.1.0",
@@ -64,7 +65,6 @@
     "react-native-gesture-handler": "~2.28.0",
     "react-native-mmkv": "^4.1.2",
     "react-native-nitro-modules": "0.35.4",
-    "react-native-passkey": "^3.3.3",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",

@@ -22,6 +22,34 @@
       "when": 1777966960169,
       "tag": "0002_big_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778047823147,
+      "tag": "0003_worried_lady_ursula",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778051520564,
+      "tag": "0004_sloppy_natasha_romanoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778054730391,
+      "tag": "0005_lovely_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778056057461,
+      "tag": "0006_panoramic_exodus",
+      "breakpoints": true
     }
   ]
 }
