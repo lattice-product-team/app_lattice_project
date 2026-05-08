@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Text, Pressable, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring, 
+  interpolate, 
+  Extrapolation,
+  SharedValue
+} from 'react-native-reanimated';
 
 // Hooks & State
 import { useNavigationStore } from '../store/useNavigationStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 
-export const RoutePlanningSheet = () => {
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+interface RoutePlanningSheetProps {
+  visibility: SharedValue<number>;
+}
+
+export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   
@@ -26,7 +40,28 @@ export const RoutePlanningSheet = () => {
   
   const { selectedPoi } = usePOIStore();
 
-  if (!isPlanning) return null;
+  const internalState = useSharedValue(0);
+
+  useEffect(() => {
+    internalState.value = withSpring(isPlanning ? 1 : 0, theme.motion.physics.magnetic);
+  }, [isPlanning]);
+
+  const rContainerStyle = useAnimatedStyle(() => {
+    const height = 340 + insets.bottom;
+    return {
+      transform: [
+        { 
+          translateY: interpolate(
+            internalState.value, 
+            [0, 1], 
+            [height, 0], 
+            Extrapolation.CLAMP
+          ) 
+        }
+      ],
+      opacity: interpolate(internalState.value, [0, 0.1], [0, 1], Extrapolation.CLAMP),
+    };
+  });
 
   const formatEta = (seconds: number | null | undefined) => {
     if (isFetching) return 'Calculating...';
@@ -46,18 +81,18 @@ export const RoutePlanningSheet = () => {
     setNavigating(true);
   };
 
-  // Use pre-loaded metadata from the store
   const activeDuration = isFetching ? null : (metadata[transportMode]?.duration || routeMetadata?.duration);
   const activeDistance = isFetching ? null : (metadata[transportMode]?.distance || routeMetadata?.distance);
 
   return (
-    <View style={[
+    <Animated.View style={[
       styles.container,
       { 
         backgroundColor: theme.colors.glass.background,
         borderColor: theme.colors.glass.border,
         paddingBottom: insets.bottom + 20
-      }
+      },
+      rContainerStyle
     ]}>
       <View style={styles.content}>
         <View style={styles.header}>
@@ -77,7 +112,6 @@ export const RoutePlanningSheet = () => {
             <Pressable
               key={mode}
               onPress={() => {
-                console.log(`[UI] 🔵 User clicked mode: ${mode}`);
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setTransportMode(mode);
               }}
@@ -128,7 +162,7 @@ export const RoutePlanningSheet = () => {
           <Text style={styles.startButtonText}>START NAVIGATION</Text>
         </Pressable>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

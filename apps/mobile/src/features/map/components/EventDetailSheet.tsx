@@ -63,16 +63,6 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
     mass: 1.5,
   };
 
-  useEffect(() => {
-    if (event?.id) {
-      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
-    } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
-        if (finished) runOnJS(onClose)();
-      });
-    }
-  }, [event?.id]);
-
   const gesture = Gesture.Pan()
     .onStart(() => {
       startState.value = islandState.value;
@@ -81,7 +71,6 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
       const delta = -e.translationY / fullTravel;
       const newValue = startState.value + delta;
-      // Allow dragging down to hide
       islandState.value = Math.max(0, Math.min(1.0, newValue));
     })
     .onEnd((e) => {
@@ -100,7 +89,31 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       }
     });
 
-  // Sync scroll enabled and external state
+  // Sync islandState with external visibility if provided
+  useAnimatedReaction(
+    () => externalState?.value,
+    (val) => {
+      if (val !== undefined) {
+        // If externalState is pulsing/active, move to MID point
+        islandState.value = withSpring(val > 0.5 ? SNAP_POINTS.MID : SNAP_POINTS.HIDDEN, liquidSpring);
+      }
+    }
+  );
+
+  // 1. Sync islandState with external visibility (Entrance)
+  useAnimatedReaction(
+    () => externalState?.value,
+    (val) => {
+      if (val !== undefined) {
+        const target = val > 0.5 ? SNAP_POINTS.MID : SNAP_POINTS.HIDDEN;
+        if (islandState.value !== target) {
+          islandState.value = withSpring(target, liquidSpring);
+        }
+      }
+    }
+  );
+
+  // 2. Sync scroll enabled state
   useAnimatedReaction(
     () => islandState.value,
     (curr) => {
@@ -108,11 +121,8 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       if (shouldEnable !== scrollEnabled) {
         runOnJS(setScrollEnabled)(shouldEnable);
       }
-      if (externalState) {
-        externalState.value = curr;
-      }
     },
-    [scrollEnabled, externalState]
+    [scrollEnabled]
   );
 
   const islandStyle = useAnimatedStyle(() => {
@@ -153,28 +163,6 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       ),
     };
   });
-
-  // Sync scroll enabled state to avoid render-time reads of islandState.value
-  useAnimatedReaction(
-    () => islandState.value,
-    (curr) => {
-      const shouldEnable = curr > 0.9;
-      if (shouldEnable !== scrollEnabled) {
-        runOnJS(setScrollEnabled)(shouldEnable);
-      }
-    },
-    [scrollEnabled]
-  );
-
-  // Sync internal state to external state for dimmer control
-  useAnimatedReaction(
-    () => islandState.value,
-    (curr) => {
-      if (externalState) {
-        externalState.value = curr;
-      }
-    }
-  );
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">

@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { FadeInRight, FadeOutRight } from 'react-native-reanimated';
+import Animated, { FadeInRight, FadeOutRight, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
@@ -14,24 +14,35 @@ import { typography } from '../../../styles/typography';
  * CenteringButton: Appears only during navigation when the user has manually
  * panned away from the active course tracking.
  */
-export const CenteringButton = () => {
+interface CenteringButtonProps {
+  uiLayer: Animated.SharedValue<number>;
+}
+
+export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { isFollowingUser, setIsFollowingUser } = useMapUIStore();
   const { isNavigating } = useNavigationStore();
-
-  if (!isNavigating || isFollowingUser) return null;
 
   const handleCenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsFollowingUser(true);
   };
 
+  const rStyle = useAnimatedStyle(() => {
+    const isLayerActive = uiLayer.value !== 0; // UILayer.BASE
+    const shouldShow = isNavigating && !isFollowingUser && !isLayerActive;
+
+    return {
+      opacity: withTiming(shouldShow ? 1 : 0, { duration: 150 }),
+      pointerEvents: shouldShow ? 'auto' : 'none',
+      transform: [{ translateX: withTiming(shouldShow ? 0 : 50) }],
+    };
+  });
+
   return (
     <Animated.View
-      entering={FadeInRight}
-      exiting={FadeOutRight}
-      style={[styles.container, { bottom: insets.bottom + 160 }]}
+      style={[styles.container, { bottom: insets.bottom + 160 }, rStyle]}
     >
       <Pressable
         onPress={handleCenter}

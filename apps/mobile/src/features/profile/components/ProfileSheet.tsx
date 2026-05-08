@@ -58,13 +58,15 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
     mass: 1.5,
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
-    } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
+  // Sync islandState with external visibility if provided
+  useAnimatedReaction(
+    () => externalState?.value,
+    (val) => {
+      if (val !== undefined) {
+        islandState.value = withSpring(val > 0.5 ? SNAP_POINTS.MID : SNAP_POINTS.HIDDEN, liquidSpring);
+      }
     }
-  }, [isOpen]);
+  );
 
   // Sync scroll enabled state
   useAnimatedReaction(
@@ -74,20 +76,16 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
       if (shouldEnable !== scrollEnabled) {
         runOnJS(setScrollEnabled)(shouldEnable);
       }
-      if (externalState) {
-        externalState.value = curr;
-      }
     },
-    [scrollEnabled, externalState]
+    [scrollEnabled]
   );
 
   const gesture = Gesture.Pan()
-    .activeOffsetY([-10, 10]) // Give it a small threshold
+    .activeOffsetY([-10, 10]) 
     .onStart(() => {
       startState.value = islandState.value;
     })
     .onUpdate((e) => {
-      // Allow dragging down from FULL if scroll is at top
       const isDraggingDown = e.translationY > 0;
       const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
 

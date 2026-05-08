@@ -57,12 +57,24 @@ import { ProfileSheet } from '../../src/features/profile/components/ProfileSheet
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const SNAP_POINTS = [0, 0.5, 1];
+// UI Layer Constants
+enum UILayer {
+  BASE = 0,
+  PROFILE = 1,
+  EVENT = 2,
+  PLANNING = 3,
+  NAVIGATING = 4,
+}
 
 export default function MapIndexPage() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  // Core UI State (UI Thread)
+  const uiLayer = useSharedValue(UILayer.BASE);
+  const islandState = useSharedValue(0); // 0: Level 1, 0.5: Level 2, 1: Level 3
+  const startState = useSharedValue(0);
 
   // Start location tracking
   useLocationService();
@@ -100,11 +112,12 @@ export default function MapIndexPage() {
   const selectedEvent = useEventStore((s) => s.selectedEvent);
   const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
 
-  const { isNavigating } = useNavigationStore();
+  const { isNavigating, isPlanning } = useNavigationStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { saveSearch } = useSearchHistory();
 
   const { events } = useSearchEvents(searchQuery);
   const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
@@ -120,11 +133,6 @@ export default function MapIndexPage() {
   }, [globalPois, eventSpatial]);
 
   const [manualAR, setManualAR] = useState(false);
-  const { saveSearch } = useSearchHistory();
-
-  // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
-  const islandState = useSharedValue(0);
-  const startState = useSharedValue(0);
 
   const handleProfilePress = useCallback(() => {
     Haptics.selectionAsync();
@@ -132,30 +140,69 @@ export default function MapIndexPage() {
       openAuthPrompt('/(main)/profile');
     } else {
       setIsProfileOpen(true);
-      // Hide main island when opening profile
+      // Collapse search island via UI thread
       islandState.value = withSpring(0, theme.motion.physics.magnetic);
     }
   }, [isGuest, theme.motion.physics.magnetic, islandState, openAuthPrompt]);
 
+  // Sync React/Store state to UI Thread Layers
+  useEffect(() => {
+    if (isNavigating) {
+      uiLayer.value = UILayer.NAVIGATING;
+    } else if (isPlanning) {
+      uiLayer.value = UILayer.PLANNING;
+    } else if (selectedEvent) {
+      uiLayer.value = UILayer.EVENT;
+    } else if (isProfileOpen) {
+      uiLayer.value = UILayer.PROFILE;
+    } else {
+      uiLayer.value = UILayer.BASE;
+    }
+  }, [isNavigating, isPlanning, !!selectedEvent, isProfileOpen]);
+
   const preSearchLevel = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
-  const shouldHideControls = isProfileOpen || !!selectedEvent || islandState.value > 0.8;
 
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const eventSheetState = useSharedValue(0);
-  const profileSheetState = useSharedValue(0); // Track profile sheet state
-  const screenMode = useSharedValue(1); // 0: Explore, 1: Map (Map as default)
+  const profileSheetState = useSharedValue(0); 
+  const screenMode = useSharedValue(1); // 0: Explore, 1: Map
   const [activeMode, setActiveMode] = useState(1);
+  
+  const SNAP_POINTS = [0, 0.5, 1];
+
   const islandOpacity = useDerivedValue(() => {
-    // Keep visible during profile/events, only hide if needed for Level 3 search
-    return withTiming(1, { duration: 100 });
+    if (uiLayer.value === UILayer.NAVIGATING) return withTiming(0);
+    return withTiming(1);
   });
+
+  // Derived Visibility for Overlays
+  const profileVisibility = useDerivedValue(() => {
+    return withTiming(uiLayer.value === UILayer.PROFILE ? 1 : 0);
+  });
+
+  const eventVisibility = useDerivedValue(() => {
+    return withTiming(uiLayer.value === UILayer.EVENT ? 1 : 0);
+  });
+
+  const planningVisibility = useDerivedValue(() => {
+    return withTiming(uiLayer.value === UILayer.PLANNING ? 1 : 0);
+  });
+
+  // Automatically collapse Island to Level 1 when any overlay is active
+  useAnimatedReaction(
+    () => uiLayer.value !== UILayer.BASE,
+    (isOverlayActive) => {
+      if (isOverlayActive && islandState.value > 0.1) {
+        islandState.value = withSpring(0, theme.motion.physics.magnetic);
+      }
+    }
+  );
 
   const [isHeaderEditable, setIsHeaderEditable] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(false);
 
-  // Effect removed to prevent auto-expanding search on POI click
   useAnimatedReaction(
     () => islandState.value > 0.1,
     (isReady, prev) => {
@@ -382,6 +429,10 @@ export default function MapIndexPage() {
     transform: [{ translateX: interpolate(screenMode.value, [0, 1], [0, -SCREEN_WIDTH], Extrapolation.CLAMP) }],
   }));
 
+  const mapOverlayStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: interpolate(screenMode.value, [0, 1], [SCREEN_WIDTH, 0], Extrapolation.CLAMP) }],
+  }));
+
   const topDimmerStyle = useAnimatedStyle(() => {
     return {
       opacity: 0, // Removed dark background as requested
@@ -389,13 +440,11 @@ export default function MapIndexPage() {
   });
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    // Determine visibility based on sheet positions and search level
-    // profileSheetState and eventSheetState are 0 when closed, > 0 when open
-    const isProfileVisible = profileSheetState.value > 0.05;
-    const isEventVisible = eventSheetState.value > 0.05;
+    // Hide if searching (Level 3) or if any overlay layer is active
     const isLevel3 = islandState.value > 0.8;
+    const isLayerActive = uiLayer.value !== UILayer.BASE;
     
-    const shouldHide = isProfileVisible || isEventVisible || isLevel3;
+    const shouldHide = isLevel3 || isLayerActive;
     
     return {
       opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
@@ -542,9 +591,8 @@ export default function MapIndexPage() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Unified Sliding Canvas to prevent black gaps */}
+      {/* 1. Unified Sliding Canvas (Z-Index: 0) */}
       <Animated.View style={[styles.canvas, canvasStyle]}>
-        {/* Screen 0: Exploration */}
         <View style={[styles.screen, { backgroundColor: theme.colors.bg.surface }]}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
             <Text style={{ fontSize: 32, fontFamily: typography.primary.bold, color: theme.colors.text.primary }}>
@@ -556,7 +604,6 @@ export default function MapIndexPage() {
           </View>
         </View>
 
-        {/* Screen 1: Map */}
         <View style={styles.screen}>
           <MapContent
             poisGeoJSON={mergedPois}
@@ -570,156 +617,35 @@ export default function MapIndexPage() {
         </View>
       </Animated.View>
 
-      {/* Persistent UI Overlays */}
-      <InstructionBanner />
+      {/* 2. Persistent HUD & Navigation Info (Z-Index: 500) */}
+      <Animated.View style={mapOverlayStyle}>
+        <InstructionBanner />
+        <NavigationInfo />
+      </Animated.View>
 
+      {/* 3. Global Dimmer (Z-Index: 900) */}
       <Pressable style={StyleSheet.absoluteFill} onPress={handleMapPress} pointerEvents="box-none">
         <Animated.View
           animatedProps={dimmerProps}
-          style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }, dimmerStyle]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'black', zIndex: 900 }, mapOverlayStyle, dimmerStyle]}
         />
       </Pressable>
 
-      <AdaptiveControlOverlay
-        islandHeight={islandHeight}
-        islandState={islandState}
-        bottomOffset={insets.bottom + 5}
-        onRecenter={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          triggerRecenter();
-        }}
-        onToggle3D={() => setManualAR(!manualAR)}
-        is3DActive={manualAR}
-        isVisible={activeMode === 1 && !isProfileOpen && !selectedEvent}
-      />
-
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: 'black', zIndex: 999 },
-          topDimmerStyle,
-        ]}
-      />
-
-      <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
-        <Animated.View
-          pointerEvents="box-none"
-          style={[styles.islandContainer, islandStyle]}
-        >
-          <Animated.View
-            pointerEvents="auto"
-            style={[
-              styles.islandBackground,
-              islandBackgroundStyle,
-              { borderColor: theme.colors.glass.border },
-            ]}
-          >
-
-            <Animated.View style={[styles.islandHeader, headerStyle]}>
-              <FloatingSearchBar
-                ref={searchInputRef}
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  if (text.length > 0) setIsSearching(true);
-                }}
-                onProfilePress={handleProfilePress}
-                onFocus={() => {
-                  setIsSearching(true);
-                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                }}
-                onSubmit={() => {
-                  saveSearch(searchQuery);
-                  Keyboard.dismiss();
-                }}
-                onPress={() => {
-                  if (selectedEvent) {
-                    setSelectedEvent(null);
-                    setCurrentEvent(null);
-                  }
-                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  // Wait for editable to become true before focusing
-                  setTimeout(() => {
-                    searchInputRef.current?.focus();
-                  }, 100);
-                }}
-                avatarUrl={user?.avatarUrl}
-                isGuest={isGuest}
-                editable={isHeaderEditable}
-              />
-            </Animated.View>
-
-            <Animated.ScrollView
-              style={{ flex: 1 }}
-              scrollEnabled={scrollEnabled}
-              contentContainerStyle={styles.islandScrollContent}
-              showsVerticalScrollIndicator={false}
-              bounces={true}
-              keyboardShouldPersistTaps="handled"
-              animatedProps={scrollProps}
-              onScroll={scrollHandler}
-              scrollEventThrottle={16}
-            >
-              <Animated.View style={level2ContentStyle}>
-                <DiscoveryDashboard
-                  islandState={islandState}
-                  onSelectCategory={handleSelectCategory}
-                  onSelectEvent={handleEventSelect}
-                />
-              </Animated.View>
-
-              <Animated.View style={[StyleSheet.absoluteFill, level3ContentStyle, { top: 0 }]}>
-                <SearchExperience
-                  query={searchQuery}
-                  onSelectResult={(q, coords) => {
-                    // Clear search query when selecting from list to keep navigation clean
-                    setSearchQuery('');
-                    saveSearch(q);
-                    setIsSearching(false);
-                    Keyboard.dismiss();
-
-                    // If we have coordinates, move map.
-                    islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-
-                    const match = events.find((e) => e.name.toLowerCase() === q.toLowerCase());
-                    if (match) handleEventSelect(match);
-                  }}
-                />
-              </Animated.View>
-            </Animated.ScrollView>
-          </Animated.View>
-
-        </Animated.View>
-      </GestureDetector>
-
-      {selectedEvent && (
-        <EventDetailSheet
-          event={selectedEvent}
-          onClose={handleCloseDetails}
-          externalState={eventSheetState}
-        />
-      )}
-
-      <POIMiniCard poi={selectedPoi} onClose={deselect} />
-
-        <ProfileSheet
-          isOpen={isProfileOpen}
-          onClose={() => {
-            setIsProfileOpen(false);
+      {/* 4. HUD Buttons & Controls (Z-Index: 1000) */}
+      <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]}>
+        <AdaptiveControlOverlay
+          uiLayer={uiLayer}
+          islandState={islandState}
+          bottomOffset={insets.bottom + 5}
+          onRecenter={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            triggerRecenter();
           }}
-          externalState={profileSheetState}
-          onSettings={() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            setIsProfileOpen(false);
-            useAuthStore.getState().logout();
-          }}
+          onToggle3D={() => setManualAR(!manualAR)}
+          is3DActive={manualAR}
         />
+      </Animated.View>
 
-      <NavigationInfo />
-
-      {/* Persistent Draggable Toggle */}
       <Animated.View style={[styles.modeToggleContainer, { bottom: insets.bottom + 20 }, controlsOpacityStyle]}>
         <GestureDetector gesture={toggleGesture}>
           <Pressable
@@ -764,6 +690,119 @@ export default function MapIndexPage() {
         </GestureDetector>
       </Animated.View>
 
+      <CenteringButton uiLayer={uiLayer} />
+
+      {/* 5. Bottom-up Sheets (Z-Index: 2000) */}
+      <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 2000 }]} pointerEvents="box-none">
+        {selectedEvent && (
+          <EventDetailSheet
+            event={selectedEvent}
+            onClose={handleCloseDetails}
+            externalState={eventVisibility}
+          />
+        )}
+
+        <RoutePlanningSheet visibility={planningVisibility} />
+
+        <ProfileSheet
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          externalState={profileVisibility}
+          onSettings={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            setIsProfileOpen(false);
+            useAuthStore.getState().logout();
+          }}
+        />
+      </Animated.View>
+
+      <POIMiniCard poi={selectedPoi} onClose={deselect} />
+
+      {/* 6. Top Island / Search (Z-Index: 3000) */}
+      <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 3000 }]} pointerEvents="box-none">
+        <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
+          <Animated.View
+            pointerEvents="box-none"
+            style={[styles.islandContainer, islandStyle]}
+          >
+            <Animated.View
+              pointerEvents="auto"
+              style={[
+                styles.islandBackground,
+                islandBackgroundStyle,
+                { borderColor: theme.colors.glass.border },
+              ]}
+            >
+              <Animated.View style={[styles.islandHeader, headerStyle]}>
+                <FloatingSearchBar
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    if (text.length > 0) setIsSearching(true);
+                  }}
+                  onProfilePress={handleProfilePress}
+                  onFocus={() => {
+                    setIsSearching(true);
+                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                  }}
+                  onSubmit={() => {
+                    saveSearch(searchQuery);
+                    Keyboard.dismiss();
+                  }}
+                  onPress={() => {
+                    if (selectedEvent) {
+                      setSelectedEvent(null);
+                      setCurrentEvent(null);
+                    }
+                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setTimeout(() => { searchInputRef.current?.focus(); }, 100);
+                  }}
+                  avatarUrl={user?.avatarUrl}
+                  isGuest={isGuest}
+                  editable={isHeaderEditable}
+                />
+              </Animated.View>
+
+              <Animated.ScrollView
+                style={{ flex: 1 }}
+                scrollEnabled={scrollEnabled}
+                contentContainerStyle={styles.islandScrollContent}
+                showsVerticalScrollIndicator={false}
+                animatedProps={scrollProps}
+                onScroll={scrollHandler}
+                scrollEventThrottle={16}
+              >
+                <Animated.View style={level2ContentStyle}>
+                  <DiscoveryDashboard
+                    islandState={islandState}
+                    onSelectCategory={handleSelectCategory}
+                    onSelectEvent={handleEventSelect}
+                  />
+                </Animated.View>
+
+                <Animated.View style={[StyleSheet.absoluteFill, level3ContentStyle, { top: 0 }]}>
+                  <SearchExperience
+                    query={searchQuery}
+                    onSelectResult={(q, coords) => {
+                      setSearchQuery('');
+                      saveSearch(q);
+                      setIsSearching(false);
+                      Keyboard.dismiss();
+                      islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+                      const match = events.find((e) => e.name.toLowerCase() === q.toLowerCase());
+                      if (match) handleEventSelect(match);
+                    }}
+                  />
+                </Animated.View>
+              </Animated.ScrollView>
+            </Animated.View>
+          </Animated.View>
+        </GestureDetector>
+      </Animated.View>
+
+      {/* 7. Loading Overlay (Z-Index: 4000) */}
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );

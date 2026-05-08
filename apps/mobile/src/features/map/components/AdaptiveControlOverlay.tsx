@@ -15,8 +15,8 @@ interface AdaptiveControlOverlayProps {
   onRecenter: () => void;
   onOpenBinoculars?: () => void;
   is3DActive: boolean;
-  isVisible: boolean;
-  islandState?: SharedValue<number>;
+  uiLayer: SharedValue<number>;
+  islandState: SharedValue<number>;
   bottomOffset?: number;
 }
 
@@ -25,7 +25,7 @@ export const AdaptiveControlOverlay = ({
   onRecenter,
   onOpenBinoculars,
   is3DActive,
-  isVisible,
+  uiLayer,
   islandState,
   bottomOffset = 0,
 }: AdaptiveControlOverlayProps) => {
@@ -33,13 +33,14 @@ export const AdaptiveControlOverlay = ({
   const iconColor = theme.colors.text.primary;
 
   const rOverlayStyle = useAnimatedStyle(() => {
-    // Internal visibility logic to avoid React render warnings
-    const isIslandHidden = islandState ? islandState.value < 0.8 : true;
-    const finalVisible = isVisible && isIslandHidden;
+    // Option B: Fade-out if any overlay layer is active or island is full-screen
+    const isLayerActive = uiLayer.value !== 0; // UILayer.BASE
+    const isIslandFull = islandState.value > 0.8;
+    const shouldHide = isLayerActive || isIslandFull;
 
     return {
-      opacity: withTiming(finalVisible ? 1 : 0, { duration: 150 }),
-      pointerEvents: finalVisible ? 'auto' : 'none',
+      opacity: withTiming(shouldHide ? 0 : 1, { duration: 150 }),
+      pointerEvents: shouldHide ? 'none' : 'auto',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
   });
