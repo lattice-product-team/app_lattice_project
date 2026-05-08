@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,9 +15,10 @@ import Animated, {
   Extrapolation,
   interpolateColor,
   runOnJS,
+  useAnimatedReaction,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,6 +41,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
   const SNAP_POINTS = {
     HIDDEN: 0,
@@ -55,6 +57,18 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
     }
   }, [isOpen]);
 
+  // Sync scroll enabled state
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      const shouldEnable = curr > 0.9;
+      if (shouldEnable !== scrollEnabled) {
+        runOnJS(setScrollEnabled)(shouldEnable);
+      }
+    },
+    [scrollEnabled]
+  );
+
   const gesture = Gesture.Pan()
     .onStart(() => {
       startState.value = islandState.value;
@@ -63,6 +77,8 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
       const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
       const delta = -e.translationY / fullTravel;
       const newValue = startState.value + delta;
+      
+      // Allow hiding by dragging down from MID
       islandState.value = Math.max(0, Math.min(1.0, newValue));
     })
     .onEnd((e) => {
@@ -94,7 +110,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
     const height = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [0, 450, SCREEN_HEIGHT * 0.8],
+      [0, 480, SCREEN_HEIGHT * 0.9],
       Extrapolation.CLAMP
     );
 
@@ -156,6 +172,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
               bounces={true}
+              scrollEnabled={scrollEnabled}
             >
               {profile && (
                 <>
@@ -234,6 +251,23 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
                        </View>
                      </View>
                   </View>
+
+                  {/* 6. Achievements Section (Visible at Nivel 3) */}
+                  <View style={styles.achievementsSection}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+                      Achievements
+                    </Text>
+                    <View style={styles.medalsGrid}>
+                      {profile.medals.map((medal) => (
+                        <View key={medal.id} style={styles.medalContainer}>
+                          <View style={[styles.medalIcon, { backgroundColor: theme.colors.bg.surface, opacity: medal.isLocked ? 0.4 : 1 }]}>
+                             <MaterialCommunityIcons name={medal.icon as any} size={28} color={theme.colors.brand.primary} />
+                          </View>
+                          <Text style={[styles.medalTitle, { color: theme.colors.text.primary }]}>{medal.title}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                 </>
               )}
             </ScrollView>
@@ -278,7 +312,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
   identitySection: {
     alignItems: 'center',
@@ -400,6 +434,7 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     gap: 12,
+    marginBottom: 32,
   },
   statItemLarge: {
     flexDirection: 'row',
@@ -427,5 +462,38 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 12,
     fontFamily: typography.primary.medium,
+  },
+  achievementsSection: {
+    paddingTop: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: typography.primary.bold,
+    marginBottom: 16,
+  },
+  medalsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'space-between',
+  },
+  medalContainer: {
+    width: '28%',
+    alignItems: 'center',
+    gap: 8,
+  },
+  medalIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  medalTitle: {
+    fontSize: 12,
+    fontFamily: typography.primary.medium,
+    textAlign: 'center',
   },
 });

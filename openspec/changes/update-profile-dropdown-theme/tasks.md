@@ -4,6 +4,7 @@
 - [x] 1.2 Implement `GamifiedHeader` (Avatar, Level progress bar, Confidence label) matching the reference style.
 - [x] 1.3 Create `StatsGrid` and `StatCard` components (Daily activities, Streak, Time spent).
 - [x] 1.4 Add `ProfileControlBar` with top-aligned Gear (Settings) and X (Close) icons integrated into the sheet header.
+- [ ] 1.5 Implement "Achievements" section with medals for the expanded Nivel 3 view.
 
 ## 2. Integration & State
 

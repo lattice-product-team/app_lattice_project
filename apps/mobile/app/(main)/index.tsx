@@ -44,6 +44,7 @@ import { useLocationStore } from '../../src/store/useLocationStore';
 import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
+import { useProfileStore } from '../../src/features/profile/store/useProfileStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -67,6 +68,27 @@ export default function MapIndexPage() {
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
   const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
+
+  const { setProfile } = useProfileStore();
+
+  // Sync Auth User to Profile Store
+  useEffect(() => {
+    if (user && !isGuest) {
+      setProfile({
+        id: String(user.id),
+        name: user.fullName,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        bio: user.bio || 'Urban explorer discovering the city.',
+        stats: user.stats || {
+          eventsAttended: 0,
+          savedEvents: 0,
+          latticePoints: 0,
+        },
+        medals: user.medals || [],
+      });
+    }
+  }, [user, isGuest, setProfile]);
 
   // Map & POI State
   const { selectedPoiId, selectedPoi, selectPoi, deselect, selectedEventId, setSelectedEvent } =
@@ -118,7 +140,7 @@ export default function MapIndexPage() {
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
-    const isSomethingSelected = !!selectedEvent || !!selectedPoiId;
+    const isSomethingSelected = !!selectedEvent || !!selectedPoiId || isProfileOpen;
     return withTiming(isSomethingSelected ? 0 : 1, { duration: 300 });
   });
 
@@ -176,12 +198,8 @@ export default function MapIndexPage() {
       if (val > 0.8 && !isSearching && isPanning.value) {
         runOnJS(setIsSearching)(true);
       }
-      // Reset profile state if island is closed
-      if (val < 0.1 && isProfileOpen) {
-        runOnJS(setIsProfileOpen)(false);
-      }
     },
-    [isSearching, dismissSearch, isProfileOpen]
+    [isSearching, dismissSearch]
   );
 
   const islandHeight = useDerivedValue(() => {

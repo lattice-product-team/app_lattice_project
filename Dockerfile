@@ -17,6 +17,8 @@ COPY apps/server/auth/package.json ./apps/server/auth/
 COPY apps/server/geo/package.json ./apps/server/geo/
 COPY apps/server/social/package.json ./apps/server/social/
 COPY apps/admin-web/package.json ./apps/admin-web/
+COPY apps/mobile/package.json ./apps/mobile/
+COPY packages/theme/package.json ./packages/theme/
 
 RUN pnpm install --frozen-lockfile
 
