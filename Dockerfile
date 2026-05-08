@@ -7,8 +7,8 @@ WORKDIR /app
 
 # --- Dependencies Stage (Shared) ---
 FROM base AS dependencies
-# Copy root config and ALL package.json files to optimize caching
-COPY package.json pnpm-lock.yaml* .npmrc ./
+# Copy root workspace and lockfile
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* .npmrc ./
 COPY packages/types-schema/package.json ./packages/types-schema/
 COPY packages/db/package.json ./packages/db/
 COPY packages/core/package.json ./packages/core/

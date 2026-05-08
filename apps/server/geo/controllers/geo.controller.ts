@@ -462,7 +462,7 @@ export const getEvents = async (req: Request, res: Response) => {
       .from(events)
       .orderBy(events.startDate);
 
-    const formattedEvents = results.map((event) => ({
+    const formattedEvents = results.map((event: any) => ({
       ...event,
       center: event.center ? JSON.parse(event.center) : null,
       boundary: event.boundary ? JSON.parse(event.boundary) : null,
