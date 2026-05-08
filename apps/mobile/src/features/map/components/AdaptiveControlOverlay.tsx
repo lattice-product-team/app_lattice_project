@@ -19,6 +19,7 @@ interface AdaptiveControlOverlayProps {
   onToggle3D: () => void;
   is3DActive: boolean;
   onOpenBinoculars?: () => void;
+  isVisible?: boolean;
 }
 
 /**
@@ -32,14 +33,17 @@ export const AdaptiveControlOverlay = ({
   onToggle3D,
   is3DActive,
   onOpenBinoculars,
+  isVisible = true,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const iconColor = theme.colors.text.primary;
 
   const rOverlayStyle = useAnimatedStyle(() => {
-    const opacity = islandState
+    const baseOpacity = islandState
       ? interpolate(islandState.value, [0.5, 0.6], [1, 0], Extrapolation.CLAMP)
       : 1;
+
+    const opacity = isVisible ? baseOpacity : 0;
 
     return {
       opacity,

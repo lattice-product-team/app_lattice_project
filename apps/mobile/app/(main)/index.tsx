@@ -141,7 +141,7 @@ export default function MapIndexPage() {
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const islandOpacity = useDerivedValue(() => {
     const isSomethingSelected = !!selectedEvent || !!selectedPoiId || isProfileOpen;
-    return withTiming(isSomethingSelected ? 0 : 1, { duration: 300 });
+    return withTiming(isSomethingSelected ? 0 : 1, { duration: 150 });
   });
 
   const [isHeaderEditable, setIsHeaderEditable] = useState(false);
@@ -426,6 +426,7 @@ export default function MapIndexPage() {
         }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
+        isVisible={!isProfileOpen && !selectedEvent && !selectedPoiId}
       />
 
       <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
@@ -538,7 +539,7 @@ export default function MapIndexPage() {
           setIsProfileOpen(false);
           // Restore island if it was previously at a level
           if (preSearchLevel.value > 0.1) {
-            islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
+            islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.responsive);
           }
         }}
         onSettings={() => {

@@ -16,8 +16,9 @@ import Animated, {
   interpolateColor,
   runOnJS,
   useAnimatedReaction,
+  useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { GestureDetector, Gesture, NativeGesture } from 'react-native-gesture-handler';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import * as Haptics from 'expo-haptics';
@@ -41,6 +42,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
+  const isScrollAtTop = useSharedValue(true);
   const [scrollEnabled, setScrollEnabled] = useState(false);
 
   const SNAP_POINTS = {
@@ -70,16 +72,21 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
   );
 
   const gesture = Gesture.Pan()
+    .activeOffsetY([-10, 10]) // Give it a small threshold
     .onStart(() => {
       startState.value = islandState.value;
     })
     .onUpdate((e) => {
-      const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
-      const delta = -e.translationY / fullTravel;
-      const newValue = startState.value + delta;
-      
-      // Allow hiding by dragging down from MID
-      islandState.value = Math.max(0, Math.min(1.0, newValue));
+      // Allow dragging down from FULL if scroll is at top
+      const isDraggingDown = e.translationY > 0;
+      const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
+
+      if (canDragSheet) {
+        const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+        const delta = -e.translationY / fullTravel;
+        const newValue = startState.value + delta;
+        islandState.value = Math.max(0, Math.min(1.0, newValue));
+      }
     })
     .onEnd((e) => {
       const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
@@ -138,11 +145,17 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
     };
   });
 
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      isScrollAtTop.value = event.contentOffset.y <= 0;
+    },
+  });
+
   if (!profile && !isOpen) return null;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      <GestureDetector gesture={gesture}>
+      <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
         <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
           <Animated.View
             style={[
@@ -168,11 +181,13 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
               </Pressable>
             </View>
 
-            <ScrollView 
+            <Animated.ScrollView 
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
               bounces={true}
               scrollEnabled={scrollEnabled}
+              onScroll={scrollHandler}
+              scrollEventThrottle={16}
             >
               {profile && (
                 <>
@@ -227,21 +242,21 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
 
                   <View style={styles.statsRow}>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="calendar-outline" size={18} color={theme.colors.brand.primary} style={styles.statIcon} />
+                      <Ionicons name="calendar-outline" size={24} color="#6366f1" style={styles.statIcon} />
                       <View style={styles.statTextContainer}>
                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Actividades</Text>
                       </View>
                     </View>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="flame" size={18} color="#ef4444" style={styles.statIcon} />
+                      <Ionicons name="flame" size={24} color="#ef4444" style={styles.statIcon} />
                       <View style={styles.statTextContainer}>
                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Racha</Text>
                       </View>
                     </View>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="trophy-outline" size={18} color="#eab308" style={styles.statIcon} />
+                      <Ionicons name="trophy-outline" size={24} color="#eab308" style={styles.statIcon} />
                       <View style={styles.statTextContainer}>
                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Tiempo</Text>
@@ -250,7 +265,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
                   </View>
                 </>
               )}
-            </ScrollView>
+            </Animated.ScrollView>
           </Animated.View>
         </Animated.View>
       </GestureDetector>
@@ -350,7 +365,6 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 14,
     fontFamily: typography.primary.bold,
-    color: theme.colors.brand.primary,
   },
   progressBarBg: {
     flex: 1,
@@ -361,13 +375,11 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: theme.colors.brand.primary,
     borderRadius: 4,
   },
   percentageText: {
     fontSize: 14,
     fontFamily: typography.primary.bold,
-    color: theme.colors.brand.primary,
     minWidth: 35,
   },
   actionCard: {
@@ -402,7 +414,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   actionButton: {
-    backgroundColor: theme.colors.brand.primary,
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
@@ -414,31 +425,33 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: 8,
     marginBottom: 20,
   },
   statItemSmall: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 16,
-    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    borderRadius: 24,
+    gap: 6,
   },
   statIcon: {
-    marginBottom: 2,
+    marginBottom: 4,
   },
   statTextContainer: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 14,
+    fontSize: 18,
     fontFamily: typography.primary.bold,
   },
   statLabel: {
-    fontSize: 9,
+    fontSize: 11,
     fontFamily: typography.primary.medium,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });
