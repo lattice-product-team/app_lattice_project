@@ -33,9 +33,10 @@ interface ProfileSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSettings: () => void;
+  externalState?: Animated.SharedValue<number>;
 }
 
-export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps) => {
+export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: ProfileSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { profile } = useProfileStore();
@@ -67,8 +68,11 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
       if (shouldEnable !== scrollEnabled) {
         runOnJS(setScrollEnabled)(shouldEnable);
       }
+      if (externalState) {
+        externalState.value = curr;
+      }
     },
-    [scrollEnabled]
+    [scrollEnabled, externalState]
   );
 
   const gesture = Gesture.Pan()
@@ -114,10 +118,11 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
       [-SCREEN_HEIGHT, insets.bottom + 5, 0],
       Extrapolation.CLAMP
     );
+    const fullHeight = SCREEN_HEIGHT - (insets.top + 65 + 20); // Respect top island (Level 1)
     const height = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [0, 480, SCREEN_HEIGHT * 0.9],
+      [0, 480, fullHeight],
       Extrapolation.CLAMP
     );
 

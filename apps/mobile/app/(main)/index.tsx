@@ -141,10 +141,12 @@ export default function MapIndexPage() {
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const eventSheetState = useSharedValue(0);
+  const profileSheetState = useSharedValue(0); // Track profile sheet state
   const screenMode = useSharedValue(1); // 0: Explore, 1: Map (Map as default)
   const [activeMode, setActiveMode] = useState(1);
   const islandOpacity = useDerivedValue(() => {
-    return withTiming(isProfileOpen ? 0 : 1, { duration: 150 });
+    // Keep visible during profile/events, only hide if needed for Level 3 search
+    return withTiming(1, { duration: 100 });
   });
 
   const [isHeaderEditable, setIsHeaderEditable] = useState(false);
@@ -409,6 +411,16 @@ export default function MapIndexPage() {
     };
   });
 
+  const controlsOpacityStyle = useAnimatedStyle(() => {
+    const isLevel3 = islandState.value > 0.9;
+    // Hide for profile, events, and Level 3 search
+    const shouldHide = isProfileOpen || !!selectedEvent || isLevel3;
+    return {
+      opacity: withTiming(shouldHide ? 0 : 1, { duration: 100 }),
+      pointerEvents: shouldHide ? 'none' : 'auto',
+    };
+  });
+
   const level2ContentStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.7, 0.85], [1, 0], Extrapolation.CLAMP);
     return {
@@ -510,7 +522,7 @@ export default function MapIndexPage() {
         }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
-        isVisible={!isProfileOpen && !selectedEvent && !selectedPoiId}
+        isVisible={activeMode === 1 && !isProfileOpen && !selectedEvent && islandState.value < 0.9}
       />
 
       <Animated.View
@@ -536,38 +548,34 @@ export default function MapIndexPage() {
           >
 
             <Animated.View style={[styles.islandHeader, headerStyle]}>
-              {!isProfileOpen ? (
-                <FloatingSearchBar
-                  ref={searchInputRef}
-                  value={searchQuery}
-                  onChangeText={(text) => {
-                    setSearchQuery(text);
-                    if (text.length > 0) setIsSearching(true);
-                  }}
-                  onProfilePress={handleProfilePress}
-                  onFocus={() => {
-                    setIsSearching(true);
-                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                  }}
-                  onSubmit={() => {
-                    saveSearch(searchQuery);
-                    Keyboard.dismiss();
-                  }}
-                  onPress={() => {
-                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    // Wait for editable to become true before focusing
-                    setTimeout(() => {
-                      searchInputRef.current?.focus();
-                    }, 100);
-                  }}
-                  avatarUrl={user?.avatarUrl}
-                  isGuest={isGuest}
-                  editable={isHeaderEditable}
-                />
-              ) : (
-                <View style={{ height: 10 }} /> // Small gap for profile top bar
-              )}
+              <FloatingSearchBar
+                ref={searchInputRef}
+                value={searchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  if (text.length > 0) setIsSearching(true);
+                }}
+                onProfilePress={handleProfilePress}
+                onFocus={() => {
+                  setIsSearching(true);
+                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                }}
+                onSubmit={() => {
+                  saveSearch(searchQuery);
+                  Keyboard.dismiss();
+                }}
+                onPress={() => {
+                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Wait for editable to become true before focusing
+                  setTimeout(() => {
+                    searchInputRef.current?.focus();
+                  }, 100);
+                }}
+                avatarUrl={user?.avatarUrl}
+                isGuest={isGuest}
+                editable={isHeaderEditable}
+              />
             </Animated.View>
 
             <Animated.ScrollView
@@ -623,21 +631,18 @@ export default function MapIndexPage() {
 
       <POIMiniCard poi={selectedPoi} onClose={deselect} />
 
-      <ProfileSheet
-        isOpen={isProfileOpen}
-        onClose={() => {
-          setIsProfileOpen(false);
-          // Restore island if it was previously at a level
-          if (preSearchLevel.value > 0.1) {
-            islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.responsive);
-          }
-        }}
-        onSettings={() => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setIsProfileOpen(false);
-          useAuthStore.getState().logout();
-        }}
-      />
+        <ProfileSheet
+          isOpen={isProfileOpen}
+          onClose={() => {
+            setIsProfileOpen(false);
+          }}
+          externalState={profileSheetState}
+          onSettings={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            setIsProfileOpen(false);
+            useAuthStore.getState().logout();
+          }}
+        />
 
       <NavigationInfo />
 
@@ -677,7 +682,7 @@ export default function MapIndexPage() {
       </Animated.View>
 
       {/* Persistent Toggle Button */}
-      <View style={[styles.modeToggleContainer, { bottom: insets.bottom + 20 }]}>
+      <Animated.View style={[styles.modeToggleContainer, { bottom: insets.bottom + 20 }, controlsOpacityStyle]}>
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -722,7 +727,7 @@ export default function MapIndexPage() {
             </View>
           </View>
         </Pressable>
-      </View>
+      </Animated.View>
 
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>

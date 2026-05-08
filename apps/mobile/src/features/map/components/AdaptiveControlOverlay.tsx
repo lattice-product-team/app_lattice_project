@@ -5,6 +5,7 @@ import Animated, {
   SharedValue,
   interpolate,
   Extrapolation,
+  withTiming,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -39,15 +40,9 @@ export const AdaptiveControlOverlay = ({
   const iconColor = theme.colors.text.primary;
 
   const rOverlayStyle = useAnimatedStyle(() => {
-    const baseOpacity = islandState
-      ? interpolate(islandState.value, [0.5, 0.6], [1, 0], Extrapolation.CLAMP)
-      : 1;
-
-    const opacity = isVisible ? baseOpacity : 0;
-
     return {
-      opacity,
-      pointerEvents: opacity === 0 ? 'none' : 'auto',
+      opacity: withTiming(isVisible ? 1 : 0, { duration: 200 }),
+      pointerEvents: isVisible ? 'auto' : 'none',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
   });
