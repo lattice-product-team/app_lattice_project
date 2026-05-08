@@ -108,7 +108,7 @@ export const getEventSpatial = async (req: Request, res: Response) => {
       });
     }
 
-    poisResults.forEach((poi) => {
+    poisResults.forEach((poi: any) => {
       features.push({
         type: 'Feature',
         geometry: JSON.parse(poi.geometry),
@@ -263,7 +263,7 @@ export const getPois = async (req: Request, res: Response) => {
 
     const results = await query;
 
-    const features = results.map((poi) => ({
+    const features = results.map((poi: any) => ({
       type: 'Feature',
       geometry: JSON.parse(poi.geometry as string),
       properties: {

@@ -23,7 +23,7 @@ export const getSavedLocations = async (req: Request, res: Response) => {
       .from(savedLocations)
       .where(eq(savedLocations.userId, userId));
 
-    const features = results.map((loc) => ({
+    const features = results.map((loc: any) => ({
       type: 'Feature',
       geometry: JSON.parse(loc.geometry),
       properties: {

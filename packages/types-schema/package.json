@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "description": "App Lattice Shared Types and Schemas",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.ts",
+  "types": "index.ts",
   "type": "module",
   "scripts": {
     "build": "tsc",

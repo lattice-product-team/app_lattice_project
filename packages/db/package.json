@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "App Lattice Database Library",
-  "main": "dist/index.js",
+  "main": "index.ts",
   "type": "module",
-  "types": "dist/index.d.ts",
+  "types": "index.ts",
   "scripts": {
     "build": "tsc",
     "db:check": "npx tsx src/check-db.ts",
