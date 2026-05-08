@@ -134,21 +134,33 @@ export const MapContent = function MapContent({
     const filteredList = getFilteredPOIs(allUIPois, currentZoom);
     return {
       type: 'FeatureCollection',
-      features: filteredList
-        .filter((poi) => poi.category !== 'event')
-        .map((poi) => ({
-          type: 'Feature',
+      features: Array.from(
+        new Map(
+          filteredList
+            .filter((poi) => 
+              poi.category !== 'event' && 
+              poi.coordinates && 
+              poi.coordinates.length === 2 &&
+              typeof poi.coordinates[0] === 'number' &&
+              typeof poi.coordinates[1] === 'number' &&
+              !isNaN(poi.coordinates[0]) &&
+              !isNaN(poi.coordinates[1])
+            )
+            .map((poi) => [poi.id, poi])
+        ).values()
+      ).map((poi) => ({
+        type: 'Feature',
+        id: `poi-f-${poi.id}`,
+        geometry: { type: 'Point', coordinates: poi.coordinates },
+        properties: {
           id: poi.id,
-          geometry: { type: 'Point', coordinates: poi.coordinates },
-          properties: {
-            id: poi.id,
-            name: poi.displayName,
-            icon: poi.categoryIcon,
-            category: poi.category,
-            color: poi.mainColor,
-            parentId: poi.parentId,
-          },
-        })),
+          name: poi.displayName,
+          icon: poi.categoryIcon,
+          category: poi.category,
+          color: poi.mainColor,
+          parentId: poi.parentId,
+        },
+      })),
     };
   }, [allUIPois, currentZoom, getFilteredPOIs]);
 
@@ -157,9 +169,22 @@ export const MapContent = function MapContent({
   const eventsGeoJSON = useMemo(
     () => ({
       type: 'FeatureCollection',
-      features: events.map((poi) => ({
+      features: Array.from(
+        new Map(
+          events
+            .filter((poi) => 
+              poi.coordinates && 
+              poi.coordinates.length === 2 &&
+              typeof poi.coordinates[0] === 'number' &&
+              typeof poi.coordinates[1] === 'number' &&
+              !isNaN(poi.coordinates[0]) &&
+              !isNaN(poi.coordinates[1])
+            )
+            .map((poi) => [poi.id, poi])
+        ).values()
+      ).map((poi) => ({
         type: 'Feature',
-        id: poi.id,
+        id: `ev-f-${poi.id}`,
         geometry: { type: 'Point', coordinates: poi.coordinates },
         properties: {
           id: poi.id,
@@ -319,6 +344,7 @@ export const MapContent = function MapContent({
 
         <MapLayers
           theme={theme}
+          allPoisGeoJSON={poisGeoJSON}
           poisGeoJSON={filteredPoisGeoJSON}
           eventsGeoJSON={eventsGeoJSON}
           selectedEventId={selectedEventId}

@@ -51,7 +51,14 @@ export const AuthLayout = ({
             if (onBack) onBack();
           }}
           hitSlop={20}
-          style={styles.backButton}
+          style={[
+            styles.backButton,
+            {
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border,
+              borderWidth: 1,
+            },
+          ]}
         >
           <Feather name="arrow-left" size={24} color={theme.colors.text.primary} />
         </Pressable>

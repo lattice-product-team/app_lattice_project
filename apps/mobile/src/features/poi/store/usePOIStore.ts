@@ -86,16 +86,8 @@ export const usePOIStore = create<POIState>((set) => ({
 
     const activeEventId = selectedEventId || userInsideEventId;
 
-    // 1. If an event is selected or we are inside one, show its children immediately
-    // This allows the SymbolLayer to start fading them in as the camera moves.
-    if (activeEventId) {
-      return allPOIs.filter(
-        (poi) =>
-          poi.parentId !== undefined &&
-          poi.parentId !== null &&
-          String(poi.parentId) === String(activeEventId)
-      );
-    }
+    // We no longer restrict to ONLY children when an event is selected.
+    // We want a global discovery experience.
 
     // 2. Global zoom-based logic (When NO event is selected)
     // We lower the threshold to 14.5 to allow for a very early and subtle fade-in

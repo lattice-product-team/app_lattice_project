@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
+import Animated, { useAnimatedStyle, withTiming, useDerivedValue } from 'react-native-reanimated';
 
 interface POIMarkerProps {
   poi: any;
@@ -12,68 +12,105 @@ interface POIMarkerProps {
   onPress: (poi: any) => void;
 }
 
+const CATEGORY_ICONS: Record<string, any> = {
+  coffee: require('../../../../assets/icons/coffee.png'),
+  restaurant: require('../../../../assets/icons/restaurant.png'),
+  parking: require('../../../../assets/icons/parking.png'),
+  wc: require('../../../../assets/icons/wc.png'),
+  medical: require('../../../../assets/icons/medical.png'),
+  info: require('../../../../assets/icons/info.png'),
+  shop: require('../../../../assets/icons/shop.png'),
+  gate: require('../../../../assets/icons/gate.png'),
+  museum: require('../../../../assets/icons/museum.png'),
+  park: require('../../../../assets/icons/park.png'),
+  hotel: require('../../../../assets/icons/hotel.png'),
+  pharmacy: require('../../../../assets/icons/pharmacy.png'),
+  gym: require('../../../../assets/icons/gym.png'),
+  bank: require('../../../../assets/icons/bank.png'),
+  default: require('../../../../assets/icons/marker.png'),
+};
+
 export const POIMarker: React.FC<POIMarkerProps> = React.memo(
   ({ poi, isSelected = false, theme, onPress }) => {
     const { properties } = poi;
+    // Resolve metadata and color
     const metadata = getCategoryMetadata(properties.category);
     const color = metadata.color || theme.colors.brand.primary;
-    const IconComponent = metadata.iconFamily === 'material' ? MaterialCommunityIcons : Feather;
+    
+    // Resolve icon asset
+    const iconSource = CATEGORY_ICONS[properties.category] || CATEGORY_ICONS.default;
+
+    const scale = useDerivedValue(() => {
+      return withTiming(isSelected ? 1.3 : 1, { duration: 250 });
+    }, [isSelected]);
+
+    const translateY = useDerivedValue(() => {
+      return withTiming(isSelected ? -10 : 0, { duration: 250 });
+    }, [isSelected]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+      return {
+        transform: [
+          { scale: scale.value },
+          { translateY: translateY.value },
+        ],
+      };
+    });
 
     return (
       <View style={mapPinStyles.container}>
         <TouchableOpacity
           onPress={() => onPress(poi)}
-          activeOpacity={0.8}
-          style={{
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            // Correct for scale-from-center with bottom anchor
-            transform: [
-              { scale: isSelected ? 1.2 : 1 },
-              { translateY: isSelected ? -4 : 0 }, // Fine-tuned offset
-            ],
-          }}
+          activeOpacity={0.9}
         >
-          <MapPinFrame
-            size="poi"
-            borderColor={isSelected ? color : '#FFFFFF'}
-            borderWidth={isSelected ? 2 : 1}
-            isSelected={isSelected}
-          >
-            <View
-              style={[
-                mapPinStyles.placeholder,
-                { backgroundColor: isSelected ? color : '#FFFFFF' },
-              ]}
-            >
-              <IconComponent
-                name={metadata.icon as any}
-                size={18}
-                color={isSelected ? '#FFFFFF' : color}
-              />
-            </View>
-          </MapPinFrame>
-
-          {/* Minimal Label for POIs */}
-          <View
+          <Animated.View
             style={[
-              mapPinStyles.labelBadge,
               {
-                backgroundColor: 'rgba(255,255,255,0.9)',
-                borderColor: 'rgba(0,0,0,0.05)',
-                paddingHorizontal: 6,
-                paddingVertical: 2,
-                marginTop: 4,
+                alignItems: 'center',
+                justifyContent: 'flex-end',
               },
+              animatedStyle,
             ]}
           >
-            <Text
-              style={[mapPinStyles.labelText, { color: '#000000', fontSize: 10 }]}
-              numberOfLines={1}
+            <MapPinFrame
+              size="poi"
+              borderColor="#FFFFFF"
+              borderWidth={1.5}
+              isSelected={isSelected}
             >
-              {properties.name}
-            </Text>
-          </View>
+              <View
+                style={[
+                  mapPinStyles.placeholder,
+                  { backgroundColor: color },
+                ]}
+              >
+                <Image
+                  source={iconSource}
+                  style={{ width: 18, height: 18, tintColor: '#FFFFFF' }}
+                  resizeMode="contain"
+                />
+              </View>
+            </MapPinFrame>
+
+            <View style={mapPinStyles.labelBadge}>
+              <Text
+                style={[
+                  mapPinStyles.labelText,
+                  {
+                    color: theme.colors.text.primary,
+                    fontSize: 10,
+                    // Simulate a thin white halo in light mode only
+                    textShadowColor: !theme.dark ? '#FFFFFF' : 'transparent',
+                    textShadowOffset: { width: 0, height: 0 },
+                    textShadowRadius: !theme.dark ? 2 : 0,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {properties.name}
+              </Text>
+            </View>
+          </Animated.View>
         </TouchableOpacity>
       </View>
     );

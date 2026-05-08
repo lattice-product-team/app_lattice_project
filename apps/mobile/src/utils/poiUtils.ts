@@ -134,8 +134,8 @@ export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 const DEFAULT_METADATA: CategoryMetadata = {
   icon: 'map-pin',
   iconFamily: 'feather',
-  color: colors.neutral.dark.overlay,
-  label: 'Point of Interest',
+  color: colors.brand.primary,
+  label: 'Punto de Interés',
 };
 
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {

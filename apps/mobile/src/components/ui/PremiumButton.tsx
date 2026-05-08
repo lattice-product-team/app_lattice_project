@@ -23,6 +23,7 @@ interface PremiumButtonProps {
   isLoading?: boolean;
   disabled?: boolean;
   className?: string;
+  noGradient?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -37,6 +38,7 @@ export const PremiumButton = ({
   isLoading = false,
   disabled = false,
   className = '',
+  noGradient = false,
   style,
 }: PremiumButtonProps) => {
   const theme = useAppTheme();
@@ -64,7 +66,7 @@ export const PremiumButton = ({
   const getGradientColors = () => {
     switch (variant) {
       case 'primary':
-        return [theme.colors.brand.primary, theme.colors.brand.primary] as const;
+        return theme.colors.gradient.premium;
       case 'apple':
       case 'dark':
         return ['#000000', '#000000'] as const;
@@ -99,6 +101,9 @@ export const PremiumButton = ({
     if (variant === 'glass') {
       return { ...base, borderWidth: 1, borderColor: theme.colors.glass.border };
     }
+    if (noGradient && variant === 'primary') {
+      return { ...base, backgroundColor: theme.colors.brand.primary };
+    }
     return base;
   };
 
@@ -111,7 +116,7 @@ export const PremiumButton = ({
 
     switch (variant) {
       case 'primary':
-        return { ...base, color: '#000000' };
+        return { ...base, color: theme.colors.text.inverse };
       case 'apple':
       case 'dark':
         return { ...base, color: '#FFFFFF' };
@@ -138,7 +143,7 @@ export const PremiumButton = ({
       className={`${disabled ? 'opacity-50' : ''} ${className}`}
     >
       <View style={getContainerStyle()} className="overflow-hidden">
-        {gradientColors && (
+        {gradientColors && !noGradient && (
           <LinearGradient colors={gradientColors as any} style={StyleSheet.absoluteFill} />
         )}
 

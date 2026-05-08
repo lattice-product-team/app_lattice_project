@@ -62,7 +62,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <AuthLayout transparent showBack onBack={() => router.replace('/(auth)/onboarding')}>
+    <AuthLayout midnight showBack onBack={() => router.replace('/(auth)/onboarding')}>
       <View style={{ flex: 1, paddingBottom: insets.bottom + 20, paddingHorizontal: 24 }}>
         {/* Header Section - Centered */}
         <Animated.View entering={FadeInDown.duration(1000).springify()} style={styles.header}>

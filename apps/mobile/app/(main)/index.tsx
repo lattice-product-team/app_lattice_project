@@ -556,7 +556,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      ['#000', theme.colors.text.muted]
+      [theme.dark ? theme.colors.text.primary : '#000', theme.colors.text.muted]
     ),
   }));
 
@@ -564,7 +564,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      [theme.colors.text.muted, '#000']
+      [theme.colors.text.muted, theme.dark ? theme.colors.text.primary : '#000']
     ),
   }));
 
@@ -572,7 +572,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      ['#000', theme.colors.text.muted]
+      [theme.dark ? theme.colors.text.primary : '#000', theme.colors.text.muted]
     ),
   }));
 
@@ -580,7 +580,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      [theme.colors.text.muted, '#000']
+      [theme.colors.text.muted, theme.dark ? theme.colors.text.primary : '#000']
     ),
   }));
 
@@ -668,7 +668,7 @@ export default function MapIndexPage() {
             <Animated.View
               style={[
                 styles.modePillActive,
-                { backgroundColor: 'rgba(255,255,255,0.9)' },
+                { backgroundColor: theme.dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)' },
                 modeIndicatorStyle,
               ]}
             />
@@ -682,7 +682,7 @@ export default function MapIndexPage() {
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <AnimatedFeather name="map" size={18} animatedProps={mapIconStyle as any} />
-                  <Animated.Text style={[styles.modeText, mapTextStyle]}>Mapa</Animated.Text>
+                  <Animated.Text style={[styles.modeText, mapTextStyle]}>Map</Animated.Text>
                 </Animated.View>
               </View>
             </View>
@@ -694,13 +694,10 @@ export default function MapIndexPage() {
 
       {/* 5. Bottom-up Sheets (Z-Index: 2000) */}
       <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 2000 }]} pointerEvents="box-none">
-        {selectedEvent && (
-          <EventDetailSheet
-            event={selectedEvent}
-            onClose={handleCloseDetails}
-            externalState={eventVisibility}
-          />
-        )}
+        <EventDetailSheet
+          event={selectedEvent}
+          onClose={handleCloseDetails}
+        />
 
         <RoutePlanningSheet visibility={planningVisibility} />
 

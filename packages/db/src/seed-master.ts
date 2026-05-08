@@ -54,7 +54,7 @@ async function seed() {
         ],
       ],
       imageUrl:
-        'https://images.unsplash.com/photo-1532906623266-0bb7ca053177?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1530648672449-81f6c723e2f1?auto=format&fit=crop&q=80&w=800',
       primaryColor: '#e10600',
       metadata: JSON.stringify({ capacity: 140000, category: 'Sports' }),
     })

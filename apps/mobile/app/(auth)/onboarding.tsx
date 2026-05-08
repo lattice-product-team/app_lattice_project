@@ -79,8 +79,15 @@ export default function OnboardingScreen() {
   };
 
   const renderBackground = (index: number) => {
-    const animatedStyle = useAnimatedStyle(() => {
+    const imageStyle = useAnimatedStyle(() => {
       const inputSize = width;
+      const scale = interpolate(
+        scrollX.value,
+        [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
+        [1.15, 1, 1.15],
+        Extrapolate.CLAMP
+      );
+
       const opacity = interpolate(
         scrollX.value,
         [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
@@ -90,11 +97,12 @@ export default function OnboardingScreen() {
 
       return {
         opacity,
+        transform: [{ scale }],
       };
     });
 
     return (
-      <Animated.View key={`bg-${index}`} style={[StyleSheet.absoluteFill, animatedStyle]}>
+      <Animated.View key={`bg-${index}`} style={[StyleSheet.absoluteFill, imageStyle]}>
         <Image
           source={ONBOARDING_DATA[index].image}
           style={styles.backgroundImage}
@@ -103,12 +111,12 @@ export default function OnboardingScreen() {
         <LinearGradient
           colors={[
             'transparent',
-            theme.dark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-            theme.dark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)',
-            theme.dark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
+            theme.dark ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)',
+            theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
+            theme.dark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)',
             theme.colors.bg.main,
           ]}
-          locations={[0, 0.4, 0.6, 0.8, 1]}
+          locations={[0, 0.35, 0.55, 0.75, 1]}
           style={styles.gradient}
         />
       </Animated.View>
@@ -188,7 +196,10 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <View style={styles.buttonContainer}>
+        <Animated.View 
+          entering={FadeInDown.delay(400).duration(1000).springify()}
+          style={styles.buttonContainer}
+        >
           <Pressable
             onPress={handleGetStarted}
             style={[styles.getStartedButton, { backgroundColor: theme.colors.text.primary }]}
@@ -206,10 +217,10 @@ export default function OnboardingScreen() {
             ]}
           >
             <Text style={[styles.guestText, { color: theme.colors.text.primary }]}>
-              Entrar como invitado
+              Continue as Guest
             </Text>
           </Pressable>
-        </View>
+        </Animated.View>
       </View>
     </View>
   );
@@ -298,6 +309,7 @@ const styles = StyleSheet.create({
   dot: {
     height: 4,
     borderRadius: 2,
+    marginHorizontal: 2,
   },
   buttonContainer: {
     flexDirection: 'row',

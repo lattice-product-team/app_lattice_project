@@ -145,6 +145,7 @@ export default function EmailAuthScreen() {
             variant="primary"
             onPress={handleLogin}
             disabled={login.isPending}
+            noGradient
           />
 
           <View style={styles.registerLink}>
@@ -187,8 +188,9 @@ const styles = StyleSheet.create({
     marginLeft: -10,
   },
   title: {
-    fontSize: 32,
+    fontSize: 40,
     fontFamily: 'CormorantGaramond-Bold',
+    lineHeight: 44,
     marginBottom: 8,
   },
   subtitle: {
@@ -217,12 +219,12 @@ const styles = StyleSheet.create({
   inputGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 64,
-    borderRadius: 20,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 20,
+    height: 60,
+    borderRadius: 18,
+    gap: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   input: {
     flex: 1,

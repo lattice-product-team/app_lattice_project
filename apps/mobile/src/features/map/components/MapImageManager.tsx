@@ -11,15 +11,21 @@ interface MapImageManagerProps {
  */
 export const MapImageManager = ({ events }: MapImageManagerProps) => {
   const categoryIcons = {
-    coffee: 'https://img.icons8.com/ios-filled/50/ffffff/coffee-to-go.png',
-    restaurant: 'https://img.icons8.com/ios-filled/50/ffffff/restaurant.png',
-    parking: 'https://img.icons8.com/ios-filled/50/ffffff/parking.png',
-    wc: 'https://img.icons8.com/ios-filled/50/ffffff/toilet.png',
-    medical: 'https://img.icons8.com/ios-filled/50/ffffff/first-aid-kit.png',
-    info: 'https://img.icons8.com/ios-filled/50/ffffff/info.png',
-    shop: 'https://img.icons8.com/ios-filled/50/ffffff/shopping-bag.png',
-    gate: 'https://img.icons8.com/ios-filled/50/ffffff/door-open.png',
-    default: 'https://img.icons8.com/ios-filled/50/ffffff/marker.png',
+    coffee: require('../../../../assets/icons/coffee.png'),
+    restaurant: require('../../../../assets/icons/restaurant.png'),
+    parking: require('../../../../assets/icons/parking.png'),
+    wc: require('../../../../assets/icons/wc.png'),
+    medical: require('../../../../assets/icons/medical.png'),
+    info: require('../../../../assets/icons/info.png'),
+    shop: require('../../../../assets/icons/shop.png'),
+    gate: require('../../../../assets/icons/gate.png'),
+    museum: require('../../../../assets/icons/museum.png'),
+    park: require('../../../../assets/icons/park.png'),
+    hotel: require('../../../../assets/icons/hotel.png'),
+    pharmacy: require('../../../../assets/icons/pharmacy.png'),
+    gym: require('../../../../assets/icons/gym.png'),
+    bank: require('../../../../assets/icons/bank.png'),
+    default: require('../../../../assets/icons/marker.png'),
   };
 
   const imageMap = useMemo(() => {

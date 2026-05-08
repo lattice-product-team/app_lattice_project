@@ -14,13 +14,7 @@ export const mapPinStyles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    // Elevation for Android
-    elevation: 4,
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    // No shadows as requested
   },
   eventPinSize: {
     width: 44,
@@ -46,18 +40,14 @@ export const mapPinStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
   labelBadge: {
-    marginTop: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 0.5,
+    marginTop: 4,
     maxWidth: 140,
     alignItems: 'center',
     justifyContent: 'center',
   },
   labelText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '400',
     textAlign: 'center',
   },
   // Stem (optional, for that pin look)

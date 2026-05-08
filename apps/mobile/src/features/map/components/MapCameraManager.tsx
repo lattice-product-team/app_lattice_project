@@ -103,7 +103,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
         cameraRef.current.setCamera({
           centerCoordinate: selectedCoords,
-          zoomLevel: 17.2,
+          zoomLevel: 13.0,
           animationDuration: 400,
           animationMode: 'flyTo',
           pitch: is3DActive ? 60 : 0,
@@ -132,35 +132,21 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         lastActionTimestamp.current = now;
 
         let targetCenter: [number, number] | null = null;
-        if (selectedEvent.boundary?.coordinates?.[0]) {
+        
+        // Prioritize direct center/coordinates over boundary centroid for better consistency
+        targetCenter =
+          selectedEvent.center?.coordinates ||
+          selectedEvent.geometry?.coordinates ||
+          selectedEvent.coordinates;
+
+        if (!targetCenter && selectedEvent.boundary?.coordinates?.[0]) {
           targetCenter = calculateCentroid(selectedEvent.boundary.coordinates[0]);
-        }
-
-        if (!targetCenter && poisGeoJSON?.features) {
-          const childPoiCoords = poisGeoJSON.features
-            .filter(
-              (f: any) =>
-                f.properties.parentId === selectedEvent.id ||
-                f.properties.event_id === selectedEvent.id
-            )
-            .map((f: any) => f.geometry.coordinates);
-
-          if (childPoiCoords.length > 0) {
-            targetCenter = calculateCentroid(childPoiCoords);
-          }
-        }
-
-        if (!targetCenter) {
-          targetCenter =
-            selectedEvent.center?.coordinates ||
-            selectedEvent.geometry?.coordinates ||
-            selectedEvent.coordinates;
         }
 
         if (targetCenter) {
           cameraRef.current.setCamera({
             centerCoordinate: targetCenter,
-            zoomLevel: 17.2,
+            zoomLevel: 10.0,
             animationDuration: 1200,
             animationMode: 'flyTo',
             pitch: 0,

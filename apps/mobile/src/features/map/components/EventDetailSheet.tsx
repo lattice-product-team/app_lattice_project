@@ -39,15 +39,16 @@ interface EventDetailSheetProps {
   externalState?: Animated.SharedValue<number>;
 }
 
-export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailSheetProps) => {
+export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
 
-  const { getFilteredPOIs } = usePOIStore();
+  const { getFilteredPOIs, activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
   const setPlanning = useNavigationStore((s) => s.setPlanning);
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
+  const isClosing = useSharedValue(false);
   const startState = useSharedValue(0);
   const [scrollEnabled, setScrollEnabled] = React.useState(false);
 
@@ -57,67 +58,57 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
     FULL: 1,
   };
 
-  const liquidSpring = {
-    damping: 30,
-    stiffness: 80,
-    mass: 1.5,
+  // 1. Sync islandState with event presence
+  useEffect(() => {
+    if (event) {
+      isClosing.value = false;
+      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
+    } else if (!isClosing.value) {
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
+    }
+  }, [event, theme.motion.physics.magnetic]);
+
+  const animateClose = () => {
+    isClosing.value = true;
+    islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic, (finished) => {
+      if (finished) {
+        runOnJS(onClose)();
+      }
+    });
   };
 
-  const gesture = Gesture.Pan()
+  const panGesture = Gesture.Pan()
     .onStart(() => {
+      if (isClosing.value) return;
       startState.value = islandState.value;
     })
     .onUpdate((e) => {
+      if (isClosing.value) return;
       const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
       const delta = -e.translationY / fullTravel;
       const newValue = startState.value + delta;
       islandState.value = Math.max(0, Math.min(1.0, newValue));
     })
     .onEnd((e) => {
+      if (isClosing.value) return;
       const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
       const velocity = -e.velocityY / fullTravel;
       const predictedPos = islandState.value + velocity * 0.12;
 
       if (predictedPos < 0.25) {
-        islandState.value = withSpring(0, liquidSpring, (finished) => {
-          if (finished) runOnJS(onClose)();
-        });
+        animateClose();
       } else if (predictedPos < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.FULL, theme.motion.physics.magnetic);
       }
     });
 
-  // Sync islandState with external visibility if provided
-  useAnimatedReaction(
-    () => externalState?.value,
-    (val) => {
-      if (val !== undefined) {
-        // If externalState is pulsing/active, move to MID point
-        islandState.value = withSpring(val > 0.5 ? SNAP_POINTS.MID : SNAP_POINTS.HIDDEN, liquidSpring);
-      }
-    }
-  );
-
-  // 1. Sync islandState with external visibility (Entrance)
-  useAnimatedReaction(
-    () => externalState?.value,
-    (val) => {
-      if (val !== undefined) {
-        const target = val > 0.5 ? SNAP_POINTS.MID : SNAP_POINTS.HIDDEN;
-        if (islandState.value !== target) {
-          islandState.value = withSpring(target, liquidSpring);
-        }
-      }
-    }
-  );
-
-  // 2. Sync scroll enabled state
+  // Enable/disable scroll based on expansion level
   useAnimatedReaction(
     () => islandState.value,
     (curr) => {
-      const shouldEnable = curr > 0.9;
+      const shouldEnable = curr > 0.95;
       if (shouldEnable !== scrollEnabled) {
         runOnJS(setScrollEnabled)(shouldEnable);
       }
@@ -132,11 +123,11 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       [-SCREEN_HEIGHT, insets.bottom + 5, 0],
       Extrapolation.CLAMP
     );
-    const fullHeight = SCREEN_HEIGHT - (insets.top + 65 + 20); // Respect top island (Level 1)
+    const fullHeight = SCREEN_HEIGHT - (insets.top + 65 + 20);
     const height = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [0, 350, fullHeight],
+      [0, 380, fullHeight],
       Extrapolation.CLAMP
     );
 
@@ -146,6 +137,7 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       height,
       bottom,
       marginHorizontal: margin,
+      opacity: islandState.value < 0.05 ? 0 : 1,
     };
   });
 
@@ -164,10 +156,22 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
     };
   });
 
+  const animatedProps = useAnimatedProps(() => {
+    return {
+      pointerEvents: islandState.value < 0.1 ? 'none' : 'auto',
+    } as any;
+  });
+
+  // Combine pan with native scroll gesture for smooth level 2 -> level 3 transition
+  const gesture = Gesture.Simultaneous(panGesture, Gesture.Native());
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
+        <Animated.View 
+          animatedProps={animatedProps}
+          style={[styles.container, theme.shadows.soft, islandStyle]}
+        >
           <Animated.View
             style={[
               styles.background,
@@ -198,7 +202,7 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
                   </Pressable>
                   <View style={{ flex: 1 }} />
                   <Pressable
-                    onPress={onClose}
+                    onPress={animateClose}
                     style={[
                       styles.actionCircle,
                       {
@@ -216,15 +220,15 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
 
                 <View style={styles.titleSection}>
                   <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-                    {details?.name || event?.name}
+                    {details?.name || event?.name || 'Event Details'}
                   </Text>
                   <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
-                    {details?.type || event?.type}
+                    {details?.type || event?.type || 'Activity'}
                   </Text>
                 </View>
               </View>
 
-              {loading ? (
+              {loading && !details ? (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                   <ActivityIndicator color={theme.colors.brand.primary} />
                 </View>
@@ -236,7 +240,7 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                         setPlanning(true);
-                        onClose();
+                        animateClose();
                       }}
                       style={({ pressed }) => [
                         styles.actionButton,
