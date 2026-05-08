@@ -5,14 +5,16 @@ import { decodePolyline } from '../../../utils/geoUtils';
 export interface RouteRequest {
   origin: { lat: number; lng: number };
   destination: { lat: number; lng: number };
-  mode?: 'driving' | 'walking';
+  mode?: 'driving' | 'walking' | 'cycling';
   avoidStairs?: boolean;
   wheelchairAccess?: boolean;
 }
 
 export const navigationService = {
   getRoute: async (request: RouteRequest): Promise<RouteGeoJSON> => {
-    const costing = request.mode === 'driving' ? 'auto' : 'pedestrian';
+    let costing = 'pedestrian';
+    if (request.mode === 'driving') costing = 'auto';
+    if (request.mode === 'cycling') costing = 'bicycle';
 
     const body = {
       locations: [
@@ -26,6 +28,10 @@ export const navigationService = {
           exclude_polygons: [],
           avoid_stairs: request.avoidStairs ? 1.0 : 0.0,
           walking_speed: 4.2,
+        },
+        bicycle: {
+          cycling_speed: 18.0,
+          bicycle_type: 'Road',
         },
       },
       directions_options: {

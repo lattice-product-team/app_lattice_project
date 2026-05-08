@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { RouteGeoJSON } from '../../../types';
 
-export type TransportMode = 'driving' | 'walking';
+export type TransportMode = 'driving' | 'walking' | 'cycling';
 
 interface RouteMetadata {
   distance: number;
@@ -19,12 +19,14 @@ interface NavigationState {
   currentRoute: RouteGeoJSON | null;
   routeMetadata: RouteMetadata | null;
   isNavigating: boolean;
+  isPlanning: boolean;
   transportMode: TransportMode;
   nextInstruction: Instruction | null;
 
   // Actions
   setRoute: (route: RouteGeoJSON | null, metadata?: RouteMetadata | null) => void;
   setNavigating: (navigating: boolean) => void;
+  setPlanning: (isPlanning: boolean) => void;
   setTransportMode: (mode: TransportMode) => void;
   setNextInstruction: (instruction: Instruction | null) => void;
   clearNavigation: () => void;
@@ -38,6 +40,7 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   currentRoute: null,
   routeMetadata: null,
   isNavigating: false,
+  isPlanning: false,
   transportMode: 'walking',
   nextInstruction: null,
 
@@ -56,6 +59,8 @@ export const useNavigationStore = create<NavigationState>((set) => ({
     }),
 
   setNavigating: (isNavigating) => set({ isNavigating }),
+
+  setPlanning: (isPlanning) => set({ isPlanning }),
 
   setTransportMode: (transportMode) => set({ transportMode }),
 
