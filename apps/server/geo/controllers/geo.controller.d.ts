@@ -1,0 +1,19 @@
+import { Request, Response } from 'express';
+export declare const resolveAddress: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const syncSocialData: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const healthCheck: (req: Request, res: Response) => void;
+export declare const getEventSpatial: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const saveEventSpatial: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getGlobalStats: (req: Request, res: Response) => Promise<void>;
+export declare const getEventStats: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getPois: (req: Request, res: Response) => Promise<void>;
+export declare const getCategories: (req: Request, res: Response) => void;
+export declare const getLocations: (req: Request, res: Response) => void;
+export declare const getRoute: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getPoi: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getPathNetwork: (req: Request, res: Response) => Promise<void>;
+export declare const getEvents: (req: Request, res: Response) => Promise<void>;
+export declare const createEvent: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const createPoi: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const getEvent: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
+//# sourceMappingURL=geo.controller.d.ts.map

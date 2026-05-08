@@ -1,8 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
-import app from '../app';
+import express from 'express';
+import authRouter from '../routes/auth.routes';
 import { db, users, truncateAllTables, eq } from '@app/db';
+
+const app = express();
+app.use(express.json());
+app.use(authRouter);
 
 describe('Auth Service REAL Integration Tests', () => {
   beforeEach(async () => {

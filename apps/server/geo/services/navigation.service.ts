@@ -92,7 +92,7 @@ async function reconstructPath(pathNodes: number[]) {
     .from(nodes)
     .where(sql`${nodes.id} IN (${sql.join(pathNodes, sql`, `)})`);
 
-  const nodeMap = new Map(resultNodes.map((n) => [n.id, JSON.parse(n.location)]));
+  const nodeMap = new Map(resultNodes.map((n: any) => [n.id, JSON.parse(n.location)]));
 
   return pathNodes.map((id) => {
     const nodeData = nodeMap.get(id);
@@ -100,7 +100,7 @@ async function reconstructPath(pathNodes: number[]) {
       console.error(`[NavigationService] Node ${id} missing from resolved results`);
       throw new Error(`Graph inconsistency: node ${id} lost during reconstruction`);
     }
-    return nodeData.coordinates;
+    return (nodeData as any).coordinates;
   });
 }
 
@@ -153,7 +153,7 @@ export async function findRoute(
   const previous: Record<number, number | null> = {};
   const queue: number[] = [];
 
-  allNodes.forEach((node) => {
+  allNodes.forEach((node: any) => {
     distances[node.id] = Infinity;
     previous[node.id] = null;
     queue.push(node.id);

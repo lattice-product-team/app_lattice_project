@@ -31,15 +31,8 @@ const backendEnvSchema = z.object({
   REDIS_PORT: z.string().transform(String).default('6379'),
 
   // Services
-  GATEWAY_PORT: z.string().transform(Number).default(3000),
-  AUTH_PORT: z.string().transform(Number).default(3001),
-  GEO_PORT: z.string().transform(Number).default(3002),
-  SOCIAL_PORT: z.string().transform(Number).default(3003),
-
-  AUTH_HOST: z.string().default('localhost'),
-  GEO_HOST: z.string().default('localhost'),
-  SOCIAL_HOST: z.string().default('localhost'),
-  GATEWAY_BASE_PATH: z.string().default(''),
+  API_PORT: z.string().transform(Number).default(3000),
+  API_BASE_PATH: z.string().default(''),
 
   // Security
   JWT_SECRET: z.string().default('development_secret_do_not_use_in_prod'),

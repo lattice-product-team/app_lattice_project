@@ -9,6 +9,9 @@
   "references": [
     { "path": "../../../packages/core" },
     { "path": "../../../packages/db" },
-    { "path": "../../../packages/types-schema" }
+    { "path": "../../../packages/types-schema" },
+    { "path": "../auth" },
+    { "path": "../geo" },
+    { "path": "../social" }
   ]
 }

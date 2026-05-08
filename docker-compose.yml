@@ -16,83 +16,23 @@ services:
       timeout: 5s
       retries: 5
 
-  gateway:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-      target: gateway-dev
+      target: api-dev
     ports:
-      - '${GATEWAY_PORT:-3000}:3000'
+      - '${API_PORT:-3000}:3000'
     volumes:
       - .:/app:z
       - /app/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - GATEWAY_PORT=3000
-      - AUTH_HOST=auth
-      - AUTH_PORT=3001
-      - GEO_HOST=geo
-      - GEO_PORT=3002
-      - SOCIAL_HOST=social
-      - SOCIAL_PORT=3003
-      - VALHALLA_HOST=valhalla
-      - VALHALLA_PORT=8002
-    depends_on:
-      - auth
-      - geo
-      - social
-
-  auth:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: auth-dev
-    ports:
-      - '${AUTH_PORT:-3001}:3001'
-    volumes:
-      - .:/app:z
-      - /app/node_modules
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - AUTH_PORT=3001
+      - API_PORT=3000
       - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-lattice_db}
       - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      db:
-        condition: service_healthy
-
-  geo:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: geo-dev
-    ports:
-      - '${GEO_PORT:-3002}:3002'
-    volumes:
-      - .:/app:z
-      - /app/node_modules
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - GEO_PORT=3002
-      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-lattice_db}
-    depends_on:
-      db:
-        condition: service_healthy
-
-  social:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: social-dev
-    ports:
-      - '${SOCIAL_PORT:-3003}:3003'
-    volumes:
-      - .:/app:z
-      - /app/node_modules
-    environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - SOCIAL_PORT=3003
-      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-lattice_db}
+      - VALHALLA_HOST=valhalla
+      - VALHALLA_PORT=8002
     depends_on:
       db:
         condition: service_healthy
@@ -112,9 +52,9 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3004
       - HOSTNAME=0.0.0.0
-      - NEXT_PUBLIC_API_URL=http://localhost:${GATEWAY_PORT:-3000}/api/v1
+      - NEXT_PUBLIC_API_URL=http://localhost:${API_PORT:-3000}/v1
     depends_on:
-      - gateway
+      - api
 
   redis:
     image: redis:7-alpine

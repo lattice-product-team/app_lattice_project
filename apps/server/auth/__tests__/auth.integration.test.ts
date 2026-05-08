@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
-import app from '../app';
+import express from 'express';
+import authRouter from '../routes/auth.routes';
 import * as dbLib from '@app/db';
+
+const app = express();
+app.use(express.json());
+app.use(authRouter);
 
 // Mock the entire DB library
 vi.mock('@app/db', async () => {
@@ -13,6 +18,7 @@ vi.mock('@app/db', async () => {
       select: vi.fn(),
       insert: vi.fn(),
       update: vi.fn(),
+      delete: vi.fn(),
     },
   };
 });

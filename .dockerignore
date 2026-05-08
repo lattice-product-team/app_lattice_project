@@ -6,7 +6,6 @@ npm-debug.log
 .git
 .vscode
 .turbo
-apps/mobile
 docs
 context
 *.md

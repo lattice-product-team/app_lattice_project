@@ -1,0 +1,473 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+  Text,
+  ScrollView,
+} from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
+  Extrapolation,
+  interpolateColor,
+  runOnJS,
+  useAnimatedReaction,
+} from 'react-native-reanimated';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAppTheme } from '../../../hooks/useAppTheme';
+import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { typography } from '../../../styles/typography';
+import { useProfileStore } from '../store/useProfileStore';
+import { UserAvatar } from '../../../components/ui/UserAvatar';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+interface ProfileSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSettings: () => void;
+}
+
+export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps) => {
+  const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const { profile } = useProfileStore();
+
+  const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
+  const startState = useSharedValue(0);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
+
+  const SNAP_POINTS = {
+    HIDDEN: 0,
+    MID: 0.5,
+    FULL: 1,
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
+    } else {
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
+    }
+  }, [isOpen]);
+
+  // Sync scroll enabled state
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      const shouldEnable = curr > 0.9;
+      if (shouldEnable !== scrollEnabled) {
+        runOnJS(setScrollEnabled)(shouldEnable);
+      }
+    },
+    [scrollEnabled]
+  );
+
+  const gesture = Gesture.Pan()
+    .onStart(() => {
+      startState.value = islandState.value;
+    })
+    .onUpdate((e) => {
+      const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+      const delta = -e.translationY / fullTravel;
+      const newValue = startState.value + delta;
+      
+      // Allow hiding by dragging down from MID
+      islandState.value = Math.max(0, Math.min(1.0, newValue));
+    })
+    .onEnd((e) => {
+      const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+      const velocity = -e.velocityY / fullTravel;
+      const predictedPos = islandState.value + velocity * 0.12;
+
+      let closest = SNAP_POINTS.HIDDEN;
+      if (predictedPos > 0.75) {
+        closest = SNAP_POINTS.FULL;
+      } else if (predictedPos > 0.25) {
+        closest = SNAP_POINTS.MID;
+      }
+
+      islandState.value = withSpring(closest, theme.motion.physics.magnetic, (finished) => {
+        if (finished && closest === SNAP_POINTS.HIDDEN) {
+          runOnJS(onClose)();
+        }
+      });
+    });
+
+  const islandStyle = useAnimatedStyle(() => {
+    const bottom = interpolate(
+      islandState.value,
+      [0, 0.5, 1],
+      [-SCREEN_HEIGHT, insets.bottom + 5, 0],
+      Extrapolation.CLAMP
+    );
+    const height = interpolate(
+      islandState.value,
+      [0, 0.5, 1],
+      [0, 480, SCREEN_HEIGHT * 0.9],
+      Extrapolation.CLAMP
+    );
+
+    const margin = interpolate(islandState.value, [0.5, 0.8], [12, 0], Extrapolation.CLAMP);
+
+    return {
+      height,
+      bottom,
+      marginHorizontal: margin,
+    };
+  });
+
+  const islandBackgroundStyle = useAnimatedStyle(() => {
+    const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
+    return {
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      borderBottomLeftRadius: radius,
+      borderBottomRightRadius: radius,
+      backgroundColor: interpolateColor(
+        islandState.value,
+        [0.7, 1],
+        [theme.colors.glass.background, theme.colors.bg.surface]
+      ),
+    };
+  });
+
+  if (!profile && !isOpen) return null;
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
+          <Animated.View
+            style={[
+              styles.background,
+              islandBackgroundStyle,
+              { borderColor: theme.colors.glass.border },
+            ]}
+          >
+            <View style={styles.handleContainer}>
+              <View style={styles.handle} />
+            </View>
+
+            <View style={styles.controlBar}>
+              <Pressable onPress={onSettings} style={styles.iconButton}>
+                <Ionicons name="settings-outline" size={24} color={theme.colors.text.primary} />
+              </Pressable>
+              <Pressable onPress={() => {
+                islandState.value = withSpring(0, theme.motion.physics.magnetic, () => {
+                  runOnJS(onClose)();
+                });
+              }} style={styles.iconButton}>
+                <Ionicons name="close" size={28} color={theme.colors.text.primary} />
+              </Pressable>
+            </View>
+
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              bounces={true}
+              scrollEnabled={scrollEnabled}
+            >
+              {profile && (
+                <>
+                  <View style={styles.identitySection}>
+                    <Text style={[styles.userName, { color: theme.colors.text.primary }]}>
+                      {profile.name}
+                    </Text>
+                    <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+                      Confidence
+                    </Text>
+                    
+                    <View style={styles.illustrationPlaceholder}>
+                      <UserAvatar size={120} url={profile.avatarUrl} />
+                    </View>
+                  </View>
+
+                  <View style={styles.progressCard}>
+                    <Text style={[styles.motivationalText, { color: theme.colors.text.secondary }]}>
+                      You're managing many moments better. Revise your signs to catch every moment.
+                    </Text>
+                    <View style={styles.divider} />
+                    <View style={styles.levelRow}>
+                      <View style={styles.levelBadge}>
+                        <Ionicons name="shield-checkmark" size={16} color="#6366f1" />
+                        <Text style={styles.levelText}>Lv. 4</Text>
+                      </View>
+                      <View style={styles.progressBarBg}>
+                        <View style={[styles.progressBarFill, { width: '68%' }]} />
+                      </View>
+                      <Text style={styles.percentageText}>68%</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.actionCard, { backgroundColor: theme.colors.bg.surface }]}>
+                    <View style={styles.actionHeader}>
+                       <View style={styles.hourglassIcon}>
+                         <Ionicons name="hourglass-outline" size={32} color={theme.colors.text.secondary} />
+                       </View>
+                       <View style={styles.actionTextContainer}>
+                         <Text style={[styles.actionTitle, { color: theme.colors.text.primary }]}>
+                           Waiting for hidden qualities...
+                         </Text>
+                         <Text style={[styles.actionSubtitle, { color: theme.colors.text.secondary }]}>
+                           See results here once friends/family answered questions
+                         </Text>
+                       </View>
+                    </View>
+                    <Pressable style={styles.actionButton}>
+                      <Text style={styles.actionButtonText}>Share with friends</Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.statsRow}>
+                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
+                      <Ionicons name="calendar-outline" size={18} color="#6366f1" style={styles.statIcon} />
+                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
+                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Activities</Text>
+                    </View>
+                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
+                      <Ionicons name="flame" size={18} color="#ef4444" style={styles.statIcon} />
+                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
+                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Streak</Text>
+                    </View>
+                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
+                      <Ionicons name="trophy-outline" size={18} color="#eab308" style={styles.statIcon} />
+                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
+                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Time</Text>
+                    </View>
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          </Animated.View>
+        </Animated.View>
+      </GestureDetector>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 2500,
+  },
+  background: {
+    flex: 1,
+    overflow: 'hidden',
+    borderWidth: 1,
+  },
+  handleContainer: {
+    paddingTop: 8,
+    alignItems: 'center',
+  },
+  handle: {
+    width: 36,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+  },
+  controlBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 60,
+  },
+  identitySection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  userName: {
+    fontSize: 24,
+    fontFamily: typography.primary.bold,
+  },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: typography.primary.medium,
+    marginBottom: 16,
+  },
+  illustrationPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressCard: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  motivationalText: {
+    fontSize: 14,
+    fontFamily: typography.primary.medium,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#f3f4f6',
+    marginBottom: 16,
+  },
+  levelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  levelBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  levelText: {
+    fontSize: 14,
+    fontFamily: typography.primary.bold,
+    color: '#4338ca',
+  },
+  progressBarBg: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#6366f1',
+    borderRadius: 4,
+  },
+  percentageText: {
+    fontSize: 14,
+    fontFamily: typography.primary.bold,
+    color: '#4338ca',
+    minWidth: 35,
+  },
+  actionCard: {
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
+  },
+  actionHeader: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 20,
+  },
+  hourglassIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#f9fafb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionTextContainer: {
+    flex: 1,
+  },
+  actionTitle: {
+    fontSize: 18,
+    fontFamily: typography.primary.bold,
+    marginBottom: 4,
+  },
+  actionSubtitle: {
+    fontSize: 13,
+    fontFamily: typography.primary.medium,
+    lineHeight: 18,
+  },
+  actionButton: {
+    backgroundColor: '#6366f1',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: typography.primary.bold,
+  },
+  statsGrid: {
+    gap: 12,
+    marginBottom: 32,
+  },
+  statItemLarge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 16,
+    borderRadius: 20,
+  },
+  statIcon: {
+    marginBottom: 4,
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  statItemSmall: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 20,
+  },
+  statValue: {
+    fontSize: 18,
+    fontFamily: typography.primary.bold,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontFamily: typography.primary.medium,
+  },
+  achievementsSection: {
+    paddingTop: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: typography.primary.bold,
+    marginBottom: 16,
+  },
+  medalsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    justifyContent: 'space-between',
+  },
+  medalContainer: {
+    width: '28%',
+    alignItems: 'center',
+    gap: 8,
+  },
+  medalIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  medalTitle: {
+    fontSize: 12,
+    fontFamily: typography.primary.medium,
+    textAlign: 'center',
+  },
+});
