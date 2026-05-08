@@ -1,21 +1,21 @@
 services:
   gateway:
     container_name: lattice_gateway
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: gateway-prod
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/app_lattice_project/gateway:latest
     restart: always
     environment:
       - NODE_ENV=production
       - GATEWAY_PORT=3000
-      - BASE_PATH=${BASE_PATH:-/lattice}
+      - BASE_PATH=${BASE_PATH:-/}
       - AUTH_HOST=auth
       - AUTH_PORT=3001
       - GEO_HOST=geo
       - GEO_PORT=3002
       - SOCIAL_HOST=social
       - SOCIAL_PORT=3003
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     depends_on:
       - auth
       - geo
@@ -25,10 +25,7 @@ services:
 
   auth:
     container_name: lattice_auth
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: auth-prod
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/app_lattice_project/auth:latest
     restart: always
     environment:
       - NODE_ENV=production
@@ -40,10 +37,7 @@ services:
 
   geo:
     container_name: lattice_geo
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: geo-prod
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/app_lattice_project/geo:latest
     restart: always
     environment:
       - NODE_ENV=production
@@ -54,10 +48,7 @@ services:
 
   social:
     container_name: lattice_social
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: social-prod
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/app_lattice_project/social:latest
     restart: always
     environment:
       - NODE_ENV=production
@@ -68,12 +59,7 @@ services:
 
   admin-web:
     container_name: lattice_admin_web
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: admin-web-prod
-      args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/app_lattice_project/admin-web:latest
     restart: always
     environment:
       - NODE_ENV=production
@@ -86,8 +72,6 @@ services:
     networks:
       - red_proxy
 
-
 networks:
   red_proxy:
     external: true
-
