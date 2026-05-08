@@ -30,5 +30,5 @@
 
 ## 5. Testing & Performance
 
-- [ ] 5.1 Verify all transitions are 60fps and bridge congestion is eliminated.
-- [ ] 5.2 Test edge cases: opening Profile while searching, starting navigation while a sheet is open.
+- [x] 5.1 Verify all transitions are 60fps and bridge congestion is eliminated.
+- [x] 5.2 Test edge cases: opening Profile while searching, starting navigation while a sheet is open.
