@@ -225,47 +225,21 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
                     </Pressable>
                   </View>
 
-                  <View style={styles.statsGrid}>
-                     <View style={[styles.statItemLarge, { backgroundColor: theme.colors.bg.surface }]}>
-                       <Ionicons name="calendar-outline" size={20} color="#6366f1" style={styles.statIcon} />
-                       <View>
-                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
-                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>Daily activities completed</Text>
-                       </View>
-                     </View>
-                     
-                     <View style={styles.statRow}>
-                       <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                         <Ionicons name="flame" size={20} color="#ef4444" style={styles.statIcon} />
-                         <View>
-                           <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
-                           <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>Daily streak</Text>
-                         </View>
-                       </View>
-                       <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                         <Ionicons name="trophy-outline" size={20} color="#eab308" style={styles.statIcon} />
-                         <View>
-                           <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
-                           <Text style={[styles.statLabel, { color: theme.colors.text.muted }]}>Time spent</Text>
-                         </View>
-                       </View>
-                     </View>
-                  </View>
-
-                  {/* 6. Achievements Section (Visible at Nivel 3) */}
-                  <View style={styles.achievementsSection}>
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
-                      Achievements
-                    </Text>
-                    <View style={styles.medalsGrid}>
-                      {profile.medals.map((medal) => (
-                        <View key={medal.id} style={styles.medalContainer}>
-                          <View style={[styles.medalIcon, { backgroundColor: theme.colors.bg.surface, opacity: medal.isLocked ? 0.4 : 1 }]}>
-                             <MaterialCommunityIcons name={medal.icon as any} size={28} color={theme.colors.brand.primary} />
-                          </View>
-                          <Text style={[styles.medalTitle, { color: theme.colors.text.primary }]}>{medal.title}</Text>
-                        </View>
-                      ))}
+                  <View style={styles.statsRow}>
+                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
+                      <Ionicons name="calendar-outline" size={18} color="#6366f1" style={styles.statIcon} />
+                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
+                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Activities</Text>
+                    </View>
+                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
+                      <Ionicons name="flame" size={18} color="#ef4444" style={styles.statIcon} />
+                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
+                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Streak</Text>
+                    </View>
+                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
+                      <Ionicons name="trophy-outline" size={18} color="#eab308" style={styles.statIcon} />
+                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
+                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Time</Text>
                     </View>
                   </View>
                 </>
