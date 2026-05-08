@@ -356,7 +356,7 @@ export default function MapIndexPage() {
     const paddingTop = interpolate(
       islandState.value,
       [0.5, 1],
-      [8, insets.top + 5],
+      [11, insets.top + 5], // 11px to center in 58px height
       Extrapolation.CLAMP
     );
     return {
@@ -400,23 +400,17 @@ export default function MapIndexPage() {
   });
 
   const topDimmerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      eventSheetState.value,
-      [0.5, 1],
-      [0, 0.6],
-      Extrapolation.CLAMP
-    );
     return {
-      opacity,
+      opacity: 0, // Removed dark background as requested
     };
   });
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    const isLevel3 = islandState.value > 0.9;
+    const isLevel3 = islandState.value > 0.8; // Trigger hide slightly earlier for Level 3
     // Hide for profile, events, and Level 3 search
     const shouldHide = isProfileOpen || !!selectedEvent || isLevel3;
     return {
-      opacity: withTiming(shouldHide ? 0 : 1, { duration: 100 }),
+      opacity: withTiming(shouldHide ? 0 : 1, { duration: 150 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
     };
   });
@@ -522,7 +516,7 @@ export default function MapIndexPage() {
         }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
-        isVisible={activeMode === 1 && !isProfileOpen && !selectedEvent && islandState.value < 0.9}
+        isVisible={activeMode === 1 && !isProfileOpen && !selectedEvent && islandState.value < 0.8}
       />
 
       <Animated.View
@@ -536,10 +530,11 @@ export default function MapIndexPage() {
 
       <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
         <Animated.View
-          pointerEvents={selectedEvent ? 'none' : 'auto'}
+          pointerEvents="box-none"
           style={[styles.islandContainer, islandStyle]}
         >
           <Animated.View
+            pointerEvents="auto"
             style={[
               styles.islandBackground,
               islandBackgroundStyle,
@@ -565,6 +560,10 @@ export default function MapIndexPage() {
                   Keyboard.dismiss();
                 }}
                 onPress={() => {
+                  if (selectedEvent) {
+                    setSelectedEvent(null);
+                    setCurrentEvent(null);
+                  }
                   islandState.value = withSpring(1, theme.motion.physics.magnetic);
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   // Wait for editable to become true before focusing
@@ -738,7 +737,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black' },
   islandContainer: { position: 'absolute', left: 0, right: 0, top: 0, zIndex: 1000 },
   islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
-  islandHeader: { paddingBottom: 12 },
+  islandHeader: { paddingBottom: 11 },
   islandScrollContent: { paddingBottom: 30 },
   placeholderContent: { padding: 20, alignItems: 'center' },
   modeToggleContainer: {

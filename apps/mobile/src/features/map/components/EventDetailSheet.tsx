@@ -82,7 +82,9 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       const predictedPos = islandState.value + velocity * 0.12;
 
       if (predictedPos < 0.25) {
-        runOnJS(onClose)();
+        islandState.value = withSpring(0, theme.motion.physics.magnetic, (finished) => {
+          if (finished) runOnJS(onClose)();
+        });
       } else if (predictedPos < 0.75) {
         islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
       } else {
