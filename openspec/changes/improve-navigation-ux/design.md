@@ -19,9 +19,8 @@ El sistema de navegación actual utiliza una integración directa entre la selec
 
 - **UI Isolation**: Se utilizará el estado `isNavigating` de `useNavigationStore` para condicionar la renderización de la barra de búsqueda y los controles HUD. Esto centraliza la lógica de "modo conducción" en el estado global.
 - **Centering Logic**: Se usará el estado `isFollowingUser` de `useMapUIStore`. El componente `MapContent` detectará interacciones del usuario y establecerá este flag a `false`. El botón `CenteringButton` será el único encargado de devolverlo a `true`.
-- **Route Planner**: Se implementará como un componente animado con `react-native-reanimated` que consumirá el `navigationService` para pre-cargar los tiempos estimados de los 3 modos de transporte.
-- **Heading Indicator**: Se aprovechará `showsUserHeadingIndicator` de `MapLibreGL.UserLocation` si es posible, o se implementará un `MarkerView` personalizado que escuche los cambios de orientación si se requiere un diseño más específico.
-- **Bicycle Support**: Se mapeará el modo `cycling` a la opción de coste `bicycle` de Valhalla en el `navigationService`.
+- **Route Planner**: Se implementará con un selector de modo (Car/Walk) en la parte superior de la pantalla. Al activarse, el mapa realizará automáticamente un `fitBounds` para mostrar tanto el origen (usuario) como el destino. La ruta se dibujará inmediatamente al entrar en modo planificación.
+- **Bicycle Support**: Eliminado por decisión del usuario.
 
 ## Risks / Trade-offs
 

@@ -5,16 +5,14 @@ import { decodePolyline } from '../../../utils/geoUtils';
 export interface RouteRequest {
   origin: { lat: number; lng: number };
   destination: { lat: number; lng: number };
-  mode?: 'driving' | 'walking' | 'cycling';
+  mode?: 'driving' | 'walking';
   avoidStairs?: boolean;
   wheelchairAccess?: boolean;
 }
 
 export const navigationService = {
   getRoute: async (request: RouteRequest): Promise<RouteGeoJSON> => {
-    let costing = 'pedestrian';
-    if (request.mode === 'driving') costing = 'auto';
-    if (request.mode === 'cycling') costing = 'bicycle';
+    const costing = request.mode === 'driving' ? 'auto' : 'pedestrian';
 
     const body = {
       locations: [
@@ -24,14 +22,14 @@ export const navigationService = {
       costing,
       costing_options: {
         pedestrian: {
+          walking_speed: 5.0,
+          use_ferry: 1.0,
           use_living_streets: 0.5,
-          exclude_polygons: [],
           avoid_stairs: request.avoidStairs ? 1.0 : 0.0,
-          walking_speed: 4.2,
         },
-        bicycle: {
-          cycling_speed: 18.0,
-          bicycle_type: 'Road',
+        auto: {
+          maneuver_penalty: 10,
+          country_crossing_penalty: 30.0,
         },
       },
       directions_options: {
@@ -39,6 +37,8 @@ export const navigationService = {
         language: 'en-US',
       },
     };
+
+    console.log(`[NavigationService] Fetching ${costing} route from ${request.origin.lat},${request.origin.lng} to ${request.destination.lat},${request.destination.lng}`);
 
     const response = await fetch(`${Env.valhallaUrl}/route`, {
       method: 'POST',
@@ -61,6 +61,8 @@ export const navigationService = {
 
     const leg = data.trip.legs[0];
     const coords = decodePolyline(leg.shape, 6);
+    
+    console.log(`[NavigationService] ${costing} route result: ${data.trip.summary.time}s, ${data.trip.summary.length}km`);
 
     return {
       type: 'Feature',

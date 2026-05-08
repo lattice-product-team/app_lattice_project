@@ -9,7 +9,7 @@ import { calculateDistance } from '../../../utils/geoUtils';
 export const useRoutingLogic = () => {
   const { selectedPoiId, selectedPoi, setRemote } = usePOIStore();
   const { selectedEvent } = useEventStore();
-  const { setRoute, setNextInstruction } = useNavigationStore();
+  const { setRoute, setNextInstruction, transportMode, isPlanning } = useNavigationStore();
 
   const { logicalCoords: userCoords, avoidStairs, wheelchairAccess } = useLocationStore();
 
@@ -30,12 +30,13 @@ export const useRoutingLogic = () => {
       return {
         origin: { lat, lng },
         destination,
+        mode: transportMode,
         avoidStairs,
         wheelchairAccess,
       };
     }
     return null;
-  }, [selectedPoiId, selectedPoi, userCoords, avoidStairs, wheelchairAccess]);
+  }, [selectedPoiId, selectedPoi, userCoords, transportMode, avoidStairs, wheelchairAccess]);
 
   const isRemote = useMemo(() => {
     if (!userCoords || !selectedEvent?.center) return false;

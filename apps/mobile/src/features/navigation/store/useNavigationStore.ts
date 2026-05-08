@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { RouteGeoJSON } from '../../../types';
 
-export type TransportMode = 'driving' | 'walking' | 'cycling';
+export type TransportMode = 'driving' | 'walking';
 
 interface RouteMetadata {
   distance: number;

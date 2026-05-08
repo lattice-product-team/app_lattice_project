@@ -4,21 +4,19 @@ El sistema de navegación actual es funcional pero carece de la fluidez y el con
 
 ## What Changes
 
-- **Planificador de Ruta (Route Planner)**: Introducción de un paso intermedio antes de iniciar la navegación para seleccionar el modo de transporte (Coche, Caminar, Bicicleta).
-- **Modo Conducción Aislado**: Ocultación dinámica de elementos de UI no esenciales (barra de búsqueda, controles adaptativos) durante la navegación activa para maximizar la visibilidad del mapa.
-- **Botón de Recentrado Inteligente**: Aparece dinámicamente cuando el usuario desplaza el mapa manualmente durante una ruta, permitiendo volver al modo de seguimiento con un solo toque.
+- **Planificador de Ruta (Route Planner)**: Introducción de un paso intermedio antes de iniciar la navegación para seleccionar el modo de transporte (Coche, Caminar). La selección se ubicará en la parte superior y la ruta se previsualizará en el mapa.
 - **Puntero de Dirección (Heading Indicator)**: Mejora visual del puntero de usuario para indicar la orientación real (brújula) del dispositivo.
 - **Formato de Tiempo Mejorado**: Ajuste de las etiquetas de duración para mostrar horas y minutos cuando el trayecto supera los 60 minutos.
 
 ## Capabilities
 
 ### New Capabilities
-- `route-planner`: Interfaz y lógica para previsualizar y seleccionar modos de transporte.
+- `route-planner`: Interfaz (superior) y lógica para previsualizar y seleccionar modos de transporte.
 - `navigation-ui-isolation`: Sistema de gestión de visibilidad de UI basado en el estado de navegación.
 - `dynamic-map-centering`: Control de recentrado basado en la interacción del usuario con el mapa durante la navegación.
 
 ### Modified Capabilities
-- `navigation-system`: Extensión para soportar el modo de transporte `bicycle` y mejorar el formato de los metadatos de la ruta (duración).
+- `navigation-system`: Mejora del formato de los metadatos de la ruta (duración) y ajuste de perfiles de transporte.
 - `map-aesthetic-control`: Actualización del puntero de usuario para incluir indicadores de orientación (heading).
 
 ## Impact
