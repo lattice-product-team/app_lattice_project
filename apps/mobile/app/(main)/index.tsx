@@ -230,7 +230,7 @@ export default function MapIndexPage() {
   const islandHeight = useDerivedValue(() => {
     const fullHeight = SCREEN_HEIGHT;
     if (islandState.value <= 0.5) {
-      return interpolate(islandState.value, [0, 0.5], [65, 380], Extrapolation.CLAMP);
+      return interpolate(islandState.value, [0, 0.5], [55, 380], Extrapolation.CLAMP);
     }
     return interpolate(islandState.value, [0.5, 1], [380, fullHeight], Extrapolation.CLAMP);
   });
@@ -299,8 +299,8 @@ export default function MapIndexPage() {
     const radius = 32;
     const top = interpolate(
       islandState.value,
-      [0.5, 1],
-      [insets.top + 10, 0],
+      [0, 0.5, 1],
+      [insets.top + 6, insets.top + 10, 0],
       Extrapolation.CLAMP
     );
 
@@ -356,7 +356,7 @@ export default function MapIndexPage() {
     const paddingTop = interpolate(
       islandState.value,
       [0.5, 1],
-      [12, insets.top + 5],
+      [8, insets.top + 5],
       Extrapolation.CLAMP
     );
     return {
