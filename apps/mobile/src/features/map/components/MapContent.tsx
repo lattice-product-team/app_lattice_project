@@ -314,6 +314,7 @@ export const MapContent = function MapContent({
           isNavigating={isNavigating}
           isPlanning={isPlanning}
           isFollowingUser={isFollowingUser}
+          currentRoute={currentRoute}
         />
 
         <MapLayers

@@ -20,6 +20,7 @@ interface MapCameraManagerProps {
   isNavigating: boolean;
   isPlanning: boolean;
   isFollowingUser: boolean;
+  currentRoute: any | null;
 }
 
 export interface MapCameraHandle {
@@ -28,8 +29,8 @@ export interface MapCameraHandle {
 }
 
 export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProps>(
-  (
-    {
+  (props, ref) => {
+    const {
       userCoords,
       selectedCoords,
       selectedEvent,
@@ -41,9 +42,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       isNavigating,
       isPlanning,
       isFollowingUser,
-    },
-    ref
-  ) => {
+      currentRoute,
+    } = props;
+
     const cameraRef = React.useRef<any>(null);
     const insets = useSafeAreaInsets();
     const lastTargetRef = React.useRef<string | null>(null);
@@ -191,16 +192,26 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
     // Planning fitBounds
     useEffect(() => {
-      if (isPlanning && userCoords && selectedCoords && cameraRef.current) {
-        const bbox = calculateBBox([userCoords, selectedCoords]);
+      if (isPlanning && cameraRef.current) {
+        let pointsToFit: number[][] = [];
+        
+        if (currentRoute?.geometry?.coordinates) {
+          pointsToFit = currentRoute.geometry.coordinates;
+        } else if (userCoords && selectedCoords) {
+          pointsToFit = [userCoords, selectedCoords];
+        }
+
+        if (pointsToFit.length < 2) return;
+
+        const bbox = calculateBBox(pointsToFit);
         cameraRef.current.fitBounds(
           [bbox[2], bbox[3]], // NE
           [bbox[0], bbox[1]], // SW
-          [100, 50, 250, 50], // Top, Right, Bottom, Left padding (leaving space for top selector and bottom sheet)
-          1000
+          [insets.top + 100, 60, 320, 60], // Top, Right, Bottom, Left padding
+          800
         );
       }
-    }, [isPlanning, userCoords, selectedCoords]);
+    }, [isPlanning, userCoords, selectedCoords, currentRoute, insets.top]);
 
     return (
       <MapLibreGL.Camera
