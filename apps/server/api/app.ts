@@ -43,7 +43,11 @@ app.use(
   })
 );
 
-// 3. Rate Limiting for Auth
+// 3. Body Parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 4. Rate Limiting for Auth
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
@@ -86,11 +90,11 @@ v1Router.use(authRateLimiter);
 
 /**
  * MOUNTING SERVICES
- * Note: Each router already contains its own prefix (e.g., /auth, /events, /groups)
- * because they were originally separate services. 
- * Mounting them at the root of v1Router preserves these paths.
+ * Note: authRouter needs an explicit '/auth' prefix because its routes 
+ * are defined relative to root (e.g., /login, /register).
+ * Geo and Social routers are mounted at root to support /events, /pois, etc.
  */
-v1Router.use(authRouter);
+v1Router.use('/auth', authRouter);
 v1Router.use(geoRouter);
 v1Router.use(socialRouter);
 
