@@ -13,5 +13,9 @@
   },
   "include": ["index.ts", "src/**/*"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../../../packages/db" }]
+  "references": [
+    { "path": "../../../packages/core" },
+    { "path": "../../../packages/db" },
+    { "path": "../../../packages/types-schema" }
+  ]
 }
