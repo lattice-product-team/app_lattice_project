@@ -53,7 +53,7 @@ export const MapContent = function MapContent({
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
-  const { currentRoute, isNavigating, isPlanning } = useNavigationStore();
+  const { currentRoute, isNavigating, isPlanning, transportMode } = useNavigationStore();
   const {
     recenterCount,
     forceCenterCount,

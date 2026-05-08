@@ -22,6 +22,7 @@ interface NavigationState {
   isPlanning: boolean;
   transportMode: TransportMode;
   nextInstruction: Instruction | null;
+  isFetching: boolean;
 
   // Actions
   setRoute: (route: RouteGeoJSON | null, metadata?: RouteMetadata | null) => void;
@@ -29,6 +30,7 @@ interface NavigationState {
   setPlanning: (isPlanning: boolean) => void;
   setTransportMode: (mode: TransportMode) => void;
   setNextInstruction: (instruction: Instruction | null) => void;
+  setFetching: (isFetching: boolean) => void;
   clearNavigation: () => void;
 }
 
@@ -43,34 +45,47 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   isPlanning: false,
   transportMode: 'walking',
   nextInstruction: null,
+  isFetching: false,
+  
+  routes: {
+    driving: null,
+    walking: null,
+  },
+  
+  metadata: {
+    driving: null,
+    walking: null,
+  },
 
-  setRoute: (route, metadata = null) =>
-    set({
-      currentRoute: route,
-      routeMetadata:
-        metadata ||
-        (route?.properties
-          ? {
-              distance: route.properties.distance,
-              duration: route.properties.durationEstimate,
-              destinationName: '',
-            }
-          : null),
-    }),
+  setRoutes: (routes, metadata) =>
+    set((state) => ({
+      routes,
+      metadata,
+      isFetching: false,
+      currentRoute: routes[state.transportMode],
+      routeMetadata: metadata[state.transportMode],
+    })),
+
+  setTransportMode: (transportMode) =>
+    set((state) => ({
+      transportMode,
+      currentRoute: state.routes[transportMode],
+      routeMetadata: state.metadata[transportMode],
+    })),
 
   setNavigating: (isNavigating) => set({ isNavigating }),
-
   setPlanning: (isPlanning) => set({ isPlanning }),
-
-  setTransportMode: (transportMode) => set({ transportMode }),
-
   setNextInstruction: (nextInstruction) => set({ nextInstruction }),
+  setFetching: (isFetching) => set({ isFetching }),
 
   clearNavigation: () =>
     set({
       currentRoute: null,
       routeMetadata: null,
+      routes: { driving: null, walking: null },
+      metadata: { driving: null, walking: null },
       isNavigating: false,
       nextInstruction: null,
+      isFetching: false,
     }),
 }));

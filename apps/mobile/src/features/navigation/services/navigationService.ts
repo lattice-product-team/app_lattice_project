@@ -8,6 +8,7 @@ export interface RouteRequest {
   mode?: 'driving' | 'walking';
   avoidStairs?: boolean;
   wheelchairAccess?: boolean;
+  timestamp?: number;
 }
 
 export const navigationService = {
@@ -38,7 +39,12 @@ export const navigationService = {
       },
     };
 
-    console.log(`[NavigationService] Fetching ${costing} route from ${request.origin.lat},${request.origin.lng} to ${request.destination.lat},${request.destination.lng}`);
+    console.log(`[NavigationService] 🛰 Requesting ${costing} route:`, {
+      from: `${request.origin.lat},${request.origin.lng}`,
+      to: `${request.destination.lat},${request.destination.lng}`,
+      mode: request.mode,
+      avoidStairs: request.avoidStairs,
+    });
 
     const response = await fetch(`${Env.valhallaUrl}/route`, {
       method: 'POST',
