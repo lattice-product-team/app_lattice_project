@@ -23,22 +23,18 @@ RUN pnpm install --frozen-lockfile
 # --- Builder Stage (Shared logic for common packages) ---
 FROM dependencies AS builder
 COPY . .
-# Build common packages once
-RUN pnpm build --filter=@app/types-schema || true
-RUN pnpm build --filter=@app/db || true
-RUN pnpm build --filter=@app/core || true
+# Build everything using TypeScript Project References (Solution Style)
+RUN pnpm tsc --build
 
 # --- GATEWAY Support ---
 FROM builder AS gateway-dev
 ENV NODE_ENV=development
 CMD ["pnpm", "dev", "--filter=@app/gateway"]
 
-FROM builder AS gateway-builder
-RUN pnpm build --filter=@app/gateway
-FROM node:20-alpine AS gateway-prod
+FROM builder AS gateway-prod
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=gateway-builder /app /app
+COPY --from=builder /app /app
 RUN corepack enable
 CMD ["npx", "tsx", "apps/server/gateway/index.ts"]
 
@@ -47,12 +43,10 @@ FROM builder AS auth-dev
 ENV NODE_ENV=development
 CMD ["pnpm", "dev", "--filter=@app/auth"]
 
-FROM builder AS auth-builder
-RUN pnpm build --filter=@app/auth
-FROM node:20-alpine AS auth-prod
+FROM builder AS auth-prod
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=auth-builder /app /app
+COPY --from=builder /app /app
 RUN corepack enable
 CMD ["npx", "tsx", "apps/server/auth/index.ts"]
 
@@ -61,12 +55,10 @@ FROM builder AS geo-dev
 ENV NODE_ENV=development
 CMD ["pnpm", "dev", "--filter=@app/geo"]
 
-FROM builder AS geo-builder
-RUN pnpm build --filter=@app/geo
-FROM node:20-alpine AS geo-prod
+FROM builder AS geo-prod
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=geo-builder /app /app
+COPY --from=builder /app /app
 RUN corepack enable
 CMD ["npx", "tsx", "apps/server/geo/index.ts"]
 
@@ -75,12 +67,10 @@ FROM builder AS social-dev
 ENV NODE_ENV=development
 CMD ["pnpm", "dev", "--filter=@app/social"]
 
-FROM builder AS social-builder
-RUN pnpm build --filter=@app/social
-FROM node:20-alpine AS social-prod
+FROM builder AS social-prod
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=social-builder /app /app
+COPY --from=builder /app /app
 RUN corepack enable
 CMD ["npx", "tsx", "apps/server/social/index.ts"]
 
@@ -92,6 +82,7 @@ CMD ["pnpm", "dev", "--filter=admin-web"]
 FROM builder AS admin-web-builder
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Next.js still needs its own build process
 RUN pnpm build --filter=admin-web
 FROM node:20-alpine AS admin-web-prod
 WORKDIR /app

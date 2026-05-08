@@ -1,12 +1,20 @@
 {
+  "files": [],
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "baseUrl": ".",
+    "paths": {
+      "@app/core": ["packages/core/index.ts"],
+      "@app/db": ["packages/db/src/index.ts"],
+      "@app/types-schema": ["packages/types-schema/index.ts"]
+    }
   },
-  "extends": "expo/tsconfig.base"
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/db" },
+    { "path": "packages/types-schema" },
+    { "path": "apps/server/gateway" },
+    { "path": "apps/server/auth" },
+    { "path": "apps/server/geo" },
+    { "path": "apps/server/social" }
+  ]
 }

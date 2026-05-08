@@ -6,7 +6,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 config({ path: resolve(__dirname, '../../../.env') }); // from packages/db/src to root
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { sql } from 'drizzle-orm';
-import { db, pool } from './index.js';
+import { db, pool } from './index';
 
 console.log('DATABASE_URL:', process.env.DATABASE_URL);
 

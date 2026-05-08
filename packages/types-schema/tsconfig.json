@@ -1,13 +1,11 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.server.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": ".",
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true
+    "rootDir": "."
   },
   "include": ["src/**/*", "index.ts"],
+  "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../db" }
   ]
