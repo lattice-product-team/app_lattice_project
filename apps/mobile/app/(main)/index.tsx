@@ -31,6 +31,8 @@ import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
 import { NavigationInfo } from '../../src/features/map/components/NavigationInfo';
+import { RoutePlanningSheet } from '../../src/features/navigation/components/RoutePlanningSheet';
+import { CenteringButton } from '../../src/features/navigation/components/CenteringButton';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
@@ -426,13 +428,13 @@ export default function MapIndexPage() {
         }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
-        isVisible={!isProfileOpen && !selectedEvent && !selectedPoiId}
+        isVisible={!isProfileOpen && !selectedEvent && !selectedPoiId && !isNavigating}
       />
 
       <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
         <Animated.View
-          pointerEvents={selectedEvent ? 'none' : 'auto'}
-          style={[styles.islandContainer, islandStyle]}
+          pointerEvents={(selectedEvent || isNavigating) ? 'none' : 'auto'}
+          style={[styles.islandContainer, islandStyle, isNavigating && { opacity: 0 }]}
         >
           <Animated.View
             style={[
@@ -550,6 +552,10 @@ export default function MapIndexPage() {
       />
 
       <NavigationInfo />
+
+      <RoutePlanningSheet />
+
+      <CenteringButton />
 
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>

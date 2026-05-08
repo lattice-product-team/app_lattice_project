@@ -292,7 +292,12 @@ export const MapContent = function MapContent({
           }
         }}
       >
-        <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
+        <MapLibreGL.UserLocation
+          visible={true}
+          animated={true}
+          showsUserHeadingIndicator={true}
+          androidRenderMode="gps"
+        />
 
         <MapImageManager events={events} />
 

@@ -27,7 +27,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const visibility = useSharedValue(0);
-  const setNavigating = useNavigationStore((s) => s.setNavigating);
+  const setPlanning = useNavigationStore((s) => s.setPlanning);
 
   useEffect(() => {
     if (poi?.id) {
@@ -104,7 +104,7 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
         <View style={styles.footer}>
           <Pressable
             onPress={() => {
-              setNavigating(true);
+              setPlanning(true);
               onClose();
             }}
             style={[styles.mainAction, { backgroundColor: theme.colors.brand.primary }]}

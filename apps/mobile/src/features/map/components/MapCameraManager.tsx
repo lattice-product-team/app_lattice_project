@@ -4,6 +4,7 @@ import { Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
 import { calculateBBox, calculateCentroid } from '../../../utils/geoUtils';
+import { useMapUIStore } from '../store/useMapUIStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -46,6 +47,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const lastTargetRef = React.useRef<string | null>(null);
     const lastActionTimestamp = React.useRef<number>(0);
     const CAMERA_ACTION_THROTTLE = 500; // ms
+    const { setIsFollowingUser } = useMapUIStore();
 
     useImperativeHandle(ref, () => ({
       setCamera: (config: any) => cameraRef.current?.setCamera(config),
@@ -56,9 +58,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // Initial fix on user location
     const hasFixedOnUser = React.useRef(false);
     useEffect(() => {
-      // Si ya tenemos userCoords (vía persistencia o señal rápida) y no hemos fijado,
-      // y no hay una posición de cámara previa (que ganaría por ser más específica del usuario),
-      // forzamos el salto inmediato.
       if (userCoords && !hasFixedOnUser.current && cameraRef.current && !lastCameraPosition) {
         hasFixedOnUser.current = true;
         cameraRef.current.setCamera({
@@ -82,13 +81,12 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
         });
       }
-    }, [recenterCount, userCoords]);
+    }, [recenterCount, userCoords, is3DActive]);
 
     // Focus on selected POI
     useEffect(() => {
       const now = Date.now();
       if (selectedCoords && cameraRef.current && !isNavigating) {
-        // Prevent redundant updates to the same location unless forced
         const targetKey = `poi-${selectedCoords.join(',')}`;
         if (
           lastTargetRef.current === targetKey &&
@@ -113,7 +111,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           },
         });
       }
-    }, [selectedCoords, isNavigating, insets.top, forceCenterCount]);
+    }, [selectedCoords, isNavigating, insets.top, forceCenterCount, is3DActive]);
 
     // Focus on selected event or its children
     useEffect(() => {
@@ -130,13 +128,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         lastActionTimestamp.current = now;
 
         let targetCenter: [number, number] | null = null;
-
-        // 1. Try to use event boundary centroid
         if (selectedEvent.boundary?.coordinates?.[0]) {
           targetCenter = calculateCentroid(selectedEvent.boundary.coordinates[0]);
         }
 
-        // 2. Fallback to child POIs centroid if no boundary
         if (!targetCenter && poisGeoJSON?.features) {
           const childPoiCoords = poisGeoJSON.features
             .filter(
@@ -151,7 +146,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           }
         }
 
-        // 3. Last fallback to primary coordinate
         if (!targetCenter) {
           targetCenter =
             selectedEvent.center?.coordinates ||
@@ -162,10 +156,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         if (targetCenter) {
           cameraRef.current.setCamera({
             centerCoordinate: targetCenter,
-            zoomLevel: 17.2, // Standard Gold Zoom for perfect legibility
+            zoomLevel: 17.2,
             animationDuration: 1200,
             animationMode: 'flyTo',
-            pitch: 0, // Stay 2D as requested
+            pitch: 0,
             padding: {
               paddingBottom: SCREEN_HEIGHT * 0.45,
               paddingTop: insets.top + 60,
@@ -175,7 +169,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           });
         }
       } else if (!selectedEvent) {
-        // Clear last target so re-selecting the same event triggers the animation again
         lastTargetRef.current = null;
       }
     }, [selectedEvent, poisGeoJSON, isNavigating, insets.top, forceCenterCount]);
@@ -183,6 +176,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // Navigation camera behavior
     useEffect(() => {
       if (isNavigating && cameraRef.current) {
+        setIsFollowingUser(true);
         cameraRef.current.setCamera({
           zoomLevel: 18,
           pitch: 45,
@@ -190,7 +184,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           animationMode: 'flyTo',
         });
       }
-    }, [isNavigating]);
+    }, [isNavigating, setIsFollowingUser]);
 
     return (
       <MapLibreGL.Camera
@@ -201,7 +195,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM,
           pitch: lastCameraPosition?.pitch || 0,
         }}
-        followUserLocation={isNavigating || isFollowingUser}
+        followUserLocation={isFollowingUser}
         followUserMode={(isNavigating ? 'course' : 'normal') as any}
         followZoomLevel={isNavigating ? 18 : undefined}
         followPitch={isNavigating ? 45 : undefined}
