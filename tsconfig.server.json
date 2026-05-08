@@ -12,11 +12,6 @@
     "declarationMap": true,
     "composite": true,
     "incremental": true,
-    "baseUrl": ".",
-    "paths": {
-      "@app/core": ["./packages/core/index.ts"],
-      "@app/db": ["./packages/db/index.ts"],
-      "@app/types-schema": ["./packages/types-schema/index.ts"]
-    }
+    "ignoreDeprecations": "5.0"
   }
 }

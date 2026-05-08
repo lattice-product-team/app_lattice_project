@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+const nextConfig: any = {
   transpilePackages: ['@heroui/react', '@heroui/styles'],
   basePath: '/lattice/web-admin',
   eslint: {
