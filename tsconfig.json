@@ -6,7 +6,13 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@app/core": ["packages/core/index.ts"],
+      "@app/db": ["packages/db/src/index.ts"],
+      "@app/types-schema": ["packages/types-schema/src/index.ts"]
+    }
   },
   "extends": "expo/tsconfig.base"
 }
