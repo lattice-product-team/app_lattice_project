@@ -48,7 +48,7 @@ export const AdaptiveControlOverlay = ({
     return {
       opacity,
       pointerEvents: opacity === 0 ? 'none' : 'auto',
-      transform: [{ translateY: -(bottomOffset + islandHeight.value + 16) }],
+      transform: [{ translateY: -bottomOffset - 12 }],
     };
   });
 

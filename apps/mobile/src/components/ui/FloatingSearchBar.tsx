@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 40,
+    height: 36,
     paddingHorizontal: 20,
     backgroundColor: 'transparent',
   },
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   verticalDivider: {
     width: 1,
-    height: 24,
+    height: 20,
     marginHorizontal: 4,
   },
   profileButton: {

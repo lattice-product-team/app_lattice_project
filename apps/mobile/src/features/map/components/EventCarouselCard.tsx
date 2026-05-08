@@ -53,7 +53,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [
-          { width: 260, height: 280 },
+          { width: 260, height: 220 },
           pressed && { transform: [{ scale: 0.97 }] },
         ]}
       >
@@ -141,12 +141,12 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
 const styles = StyleSheet.create({
   shadowWrapper: {
     width: 260,
-    height: 280,
+    height: 220,
     marginRight: 16,
   },
   container: {
     width: 260,
-    height: 280,
+    height: 220,
     borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#1a1a1a',
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: 260,
-    height: 280,
+    height: 220,
     position: 'absolute',
   },
   topRow: {

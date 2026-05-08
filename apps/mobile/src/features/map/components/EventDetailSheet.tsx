@@ -36,9 +36,10 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface EventDetailSheetProps {
   event: LatticeEvent | null;
   onClose: () => void;
+  externalState?: Animated.SharedValue<number>;
 }
 
-export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
+export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
@@ -69,20 +70,20 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       startState.value = islandState.value;
     })
     .onUpdate((e) => {
-      // Dynamic divisor for 1:1 tracking
-      const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+      const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
       const delta = -e.translationY / fullTravel;
       const newValue = startState.value + delta;
-      // Clamp to minimum 0.5 (Nivel 2) during active drag, and 1.0 max
-      islandState.value = Math.max(0.5, Math.min(1.0, newValue));
+      // Allow dragging down to hide
+      islandState.value = Math.max(0, Math.min(1.0, newValue));
     })
     .onEnd((e) => {
-      const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+      const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
       const velocity = -e.velocityY / fullTravel;
       const predictedPos = islandState.value + velocity * 0.12;
 
-      // Never hide via drag, only snap between MID and FULL
-      if (predictedPos < 0.75) {
+      if (predictedPos < 0.25) {
+        runOnJS(onClose)();
+      } else if (predictedPos < 0.75) {
         islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
       } else {
         islandState.value = withSpring(SNAP_POINTS.FULL, theme.motion.physics.magnetic);
@@ -96,10 +97,11 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       [-SCREEN_HEIGHT, insets.bottom + 5, 0],
       Extrapolation.CLAMP
     );
+    const fullHeight = SCREEN_HEIGHT - (insets.top + 65 + 20); // Respect top island (Level 1)
     const height = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [0, 450, SCREEN_HEIGHT * 0.8],
+      [0, 350, fullHeight],
       Extrapolation.CLAMP
     );
 
@@ -137,6 +139,16 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       }
     },
     [scrollEnabled]
+  );
+
+  // Sync internal state to external state for dimmer control
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      if (externalState) {
+        externalState.value = curr;
+      }
+    }
   );
 
   return (
@@ -423,7 +435,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   handle: {
-    width: 36,
+    width: 80,
     height: 5,
     borderRadius: 2.5,
     backgroundColor: 'rgba(0,0,0,0.15)',

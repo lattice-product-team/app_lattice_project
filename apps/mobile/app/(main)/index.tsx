@@ -19,6 +19,7 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 
 // Core Components
 import { MapContent } from '../../src/features/map/components/MapContent';
@@ -52,7 +53,7 @@ import { LatticeEvent } from '../../src/types';
 import { useLocationService } from '../../src/hooks/useLocationService';
 import { ProfileSheet } from '../../src/features/profile/components/ProfileSheet';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const SNAP_POINTS = [0, 0.5, 1];
 
@@ -139,12 +140,15 @@ export default function MapIndexPage() {
 
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
+  const eventSheetState = useSharedValue(0);
+  const screenMode = useSharedValue(1); // 0: Explore, 1: Map (Map as default)
+  const [activeMode, setActiveMode] = useState(1);
   const islandOpacity = useDerivedValue(() => {
-    const isSomethingSelected = !!selectedEvent || !!selectedPoiId || isProfileOpen;
-    return withTiming(isSomethingSelected ? 0 : 1, { duration: 150 });
+    return withTiming(isProfileOpen ? 0 : 1, { duration: 150 });
   });
 
   const [isHeaderEditable, setIsHeaderEditable] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
   // Effect removed to prevent auto-expanding search on POI click
   useAnimatedReaction(
@@ -154,6 +158,17 @@ export default function MapIndexPage() {
         runOnJS(setIsHeaderEditable)(isReady);
       }
     }
+  );
+
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      const shouldEnable = curr > 0.98;
+      if (shouldEnable !== scrollEnabled) {
+        runOnJS(setScrollEnabled)(shouldEnable);
+      }
+    },
+    [scrollEnabled]
   );
 
   const handleEventSelect = useCallback(
@@ -175,11 +190,8 @@ export default function MapIndexPage() {
     setCurrentEvent(null);
     selectPoi(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Restore island if needed
-    if (preSearchLevel.value > 0.1) {
-      islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
-    }
-  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState, preSearchLevel]);
+    islandState.value = withSpring(0, theme.motion.physics.magnetic);
+  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -202,12 +214,23 @@ export default function MapIndexPage() {
     [isSearching, dismissSearch]
   );
 
+  // Automatically close event details if the top island is expanded to Level 2
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr, prev) => {
+      if (curr > 0.1 && (prev || 0) <= 0.1 && selectedEvent) {
+        runOnJS(handleCloseDetails)();
+      }
+    },
+    [selectedEvent, handleCloseDetails]
+  );
+
   const islandHeight = useDerivedValue(() => {
-    const fullHeight = SCREEN_HEIGHT * 0.8;
+    const fullHeight = SCREEN_HEIGHT;
     if (islandState.value <= 0.5) {
-      return interpolate(islandState.value, [0, 0.5], [60, 450], Extrapolation.CLAMP);
+      return interpolate(islandState.value, [0, 0.5], [65, 380], Extrapolation.CLAMP);
     }
-    return interpolate(islandState.value, [0.5, 1], [450, fullHeight], Extrapolation.CLAMP);
+    return interpolate(islandState.value, [0.5, 1], [380, fullHeight], Extrapolation.CLAMP);
   });
 
   const gesture = Gesture.Pan()
@@ -218,24 +241,22 @@ export default function MapIndexPage() {
       startState.value = islandState.value;
     })
     .onUpdate((event) => {
-      // Allow dragging down if at Level 3 and scroll is at top
-      const isDraggingDown = event.translationY > 0;
-      const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
+      // Allow dragging up (collapse) if at Level 3 and scroll is at top
+      const isDraggingUp = event.translationY < 0;
+      const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingUp);
 
       if (canDragSheet) {
         // Dynamic divisor for 1:1 tracking
-        // The distance from Level 1 (60px) to Level 3 (SCREEN_HEIGHT * 0.8)
-        const fullTravel = SCREEN_HEIGHT * 0.8 - 60;
-        const stateDelta = -event.translationY / fullTravel;
+        const fullTravel = SCREEN_HEIGHT - 65;
+        const stateDelta = event.translationY / fullTravel;
         let newPos = startState.value + stateDelta;
         islandState.value = Math.max(0, Math.min(1, newPos));
       }
     })
     .onEnd((event) => {
       isPanning.value = false;
-      // Increased inertia factor for "toque suave" (Apple-style response)
-      const fullTravel = SCREEN_HEIGHT * 0.8 - 60;
-      const velocity = -event.velocityY / fullTravel;
+      const fullTravel = SCREEN_HEIGHT - 65;
+      const velocity = event.velocityY / fullTravel;
       let predictedPos = islandState.value + velocity * 0.12;
 
       // ANTI-SKIP PROTECTION:
@@ -274,10 +295,10 @@ export default function MapIndexPage() {
   const islandStyle = useAnimatedStyle(() => {
     const margin = interpolate(islandState.value, [0.5, 1], [12, 0], Extrapolation.CLAMP);
     const radius = 32;
-    const bottom = interpolate(
+    const top = interpolate(
       islandState.value,
       [0.5, 1],
-      [insets.bottom + 5, 0],
+      [insets.top + 10, 0],
       Extrapolation.CLAMP
     );
 
@@ -285,9 +306,11 @@ export default function MapIndexPage() {
       height: islandHeight.value,
       left: margin,
       right: margin,
-      bottom,
-      borderTopLeftRadius: radius,
-      borderTopRightRadius: radius,
+      top,
+      borderBottomLeftRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
+      borderBottomRightRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
+      borderTopLeftRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
+      borderTopRightRadius: interpolate(islandState.value, [0.5, 1], [radius, 0], Extrapolation.CLAMP),
       opacity: islandOpacity.value,
     };
   });
@@ -295,15 +318,25 @@ export default function MapIndexPage() {
   const islandBackgroundStyle = useAnimatedStyle(() => {
     const radius = 32;
     return {
-      borderTopLeftRadius: radius,
-      borderTopRightRadius: radius,
       borderBottomLeftRadius: interpolate(
+        islandState.value,
+        [0.8, 1],
+        [radius, 0],
+        Extrapolation.CLAMP
+      ),
+      borderBottomRightRadius: interpolate(
+        islandState.value,
+        [0.8, 1],
+        [radius, 0],
+        Extrapolation.CLAMP
+      ),
+      borderTopLeftRadius: interpolate(
         islandState.value,
         [0.5, 1],
         [radius, 0],
         Extrapolation.CLAMP
       ),
-      borderBottomRightRadius: interpolate(
+      borderTopRightRadius: interpolate(
         islandState.value,
         [0.5, 1],
         [radius, 0],
@@ -317,8 +350,60 @@ export default function MapIndexPage() {
     };
   });
 
+  const headerStyle = useAnimatedStyle(() => {
+    const paddingTop = interpolate(
+      islandState.value,
+      [0.5, 1],
+      [12, insets.top + 5],
+      Extrapolation.CLAMP
+    );
+    return {
+      paddingTop,
+    };
+  });
+
   const dimmerStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
+    return {
+      opacity,
+    };
+  });
+
+  const mainTranslateX = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: withSpring(screenMode.value === 1 ? 0 : SCREEN_WIDTH, {
+            damping: 20,
+            stiffness: 120,
+            mass: 1,
+          }),
+        },
+      ],
+    };
+  });
+
+  const exploreTranslateX = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: withSpring(screenMode.value === 0 ? 0 : -SCREEN_WIDTH, {
+            damping: 20,
+            stiffness: 120,
+            mass: 1,
+          }),
+        },
+      ],
+    };
+  });
+
+  const topDimmerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      eventSheetState.value,
+      [0.5, 1],
+      [0, 0.6],
+      Extrapolation.CLAMP
+    );
     return {
       opacity,
     };
@@ -395,7 +480,7 @@ export default function MapIndexPage() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={StyleSheet.absoluteFill}>
+      <Animated.View style={[StyleSheet.absoluteFill, mainTranslateX]}>
         <MapContent
           poisGeoJSON={mergedPois}
           allEvents={events}
@@ -405,7 +490,6 @@ export default function MapIndexPage() {
           onSelectEvent={handleEventSelect}
           is3DActive={manualAR}
         />
-      </View>
 
       <InstructionBanner />
 
@@ -429,6 +513,15 @@ export default function MapIndexPage() {
         isVisible={!isProfileOpen && !selectedEvent && !selectedPoiId}
       />
 
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: 'black', zIndex: 999 },
+          topDimmerStyle,
+        ]}
+      />
+
       <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
         <Animated.View
           pointerEvents={selectedEvent ? 'none' : 'auto'}
@@ -441,16 +534,8 @@ export default function MapIndexPage() {
               { borderColor: theme.colors.glass.border },
             ]}
           >
-            <View style={styles.handleContainer}>
-              <View
-                style={[
-                  styles.handle,
-                  { backgroundColor: theme.dark ? 'rgba(255, 255, 255, 0.25)' : '#C6C6C8' },
-                ]}
-              />
-            </View>
 
-            <View style={styles.islandHeader}>
+            <Animated.View style={[styles.islandHeader, headerStyle]}>
               {!isProfileOpen ? (
                 <FloatingSearchBar
                   ref={searchInputRef}
@@ -483,10 +568,11 @@ export default function MapIndexPage() {
               ) : (
                 <View style={{ height: 10 }} /> // Small gap for profile top bar
               )}
-            </View>
+            </Animated.View>
 
             <Animated.ScrollView
               style={{ flex: 1 }}
+              scrollEnabled={scrollEnabled}
               contentContainerStyle={styles.islandScrollContent}
               showsVerticalScrollIndicator={false}
               bounces={true}
@@ -523,13 +609,17 @@ export default function MapIndexPage() {
               </Animated.View>
             </Animated.ScrollView>
           </Animated.View>
+
         </Animated.View>
       </GestureDetector>
 
-      <EventDetailSheet
-        event={selectedPoi?.parentId ? null : selectedEvent}
-        onClose={handleCloseDetails}
-      />
+      {selectedEvent && (
+        <EventDetailSheet
+          event={selectedEvent}
+          onClose={handleCloseDetails}
+          externalState={eventSheetState}
+        />
+      )}
 
       <POIMiniCard poi={selectedPoi} onClose={deselect} />
 
@@ -551,6 +641,89 @@ export default function MapIndexPage() {
 
       <NavigationInfo />
 
+      </Animated.View>
+
+      {/* Exploration Mode Placeholder */}
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: theme.colors.bg.surface, zIndex: 1 },
+          exploreTranslateX,
+        ]}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text
+            style={{
+              fontSize: 32,
+              fontFamily: typography.primary.bold,
+              color: theme.colors.text.primary,
+              textAlign: 'center',
+            }}
+          >
+            Exploración
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: typography.primary.regular,
+              color: theme.colors.text.muted,
+              textAlign: 'center',
+              marginTop: 12,
+            }}
+          >
+            Aquí aparecerán los próximos eventos y tus colecciones personales.
+          </Text>
+        </View>
+      </Animated.View>
+
+      {/* Persistent Toggle Button */}
+      <View style={[styles.modeToggleContainer, { bottom: insets.bottom + 20 }]}>
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            const nextMode = screenMode.value === 0 ? 1 : 0;
+            screenMode.value = nextMode;
+            setActiveMode(nextMode);
+          }}
+          style={[
+            styles.modePill,
+            {
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border,
+              ...theme.shadows.soft,
+            },
+          ]}
+        >
+          <Animated.View
+            style={[
+              styles.modePillActive,
+              { backgroundColor: 'rgba(255,255,255,0.9)' }, // Neutral Apple-like glass active state
+              useAnimatedStyle(() => ({
+                transform: [{ translateX: withSpring(screenMode.value * 96, { damping: 20, stiffness: 150 }) }],
+              })),
+            ]}
+          />
+          <View style={styles.modePillLabels}>
+            <View style={styles.modeLabel}>
+              <Feather
+                name="compass"
+                size={18}
+                color={activeMode === 0 ? '#000' : theme.colors.text.muted}
+              />
+              <Text style={[styles.modeText, { color: activeMode === 0 ? '#000' : theme.colors.text.muted }]}>Explore</Text>
+            </View>
+            <View style={styles.modeLabel}>
+              <Feather
+                name="map"
+                size={18}
+                color={activeMode === 1 ? '#000' : theme.colors.text.muted}
+              />
+              <Text style={[styles.modeText, { color: activeMode === 1 ? '#000' : theme.colors.text.muted }]}>Mapa</Text>
+            </View>
+          </View>
+        </Pressable>
+      </View>
+
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );
@@ -558,11 +731,48 @@ export default function MapIndexPage() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black' },
-  islandContainer: { position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000 },
+  islandContainer: { position: 'absolute', left: 0, right: 0, top: 0, zIndex: 1000 },
   islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
-  handleContainer: { paddingTop: 5, alignItems: 'center', zIndex: 10 },
-  handle: { width: 50, height: 4, borderRadius: 2 },
-  islandHeader: { paddingBottom: 9 },
-  islandScrollContent: { paddingBottom: 10 },
+  islandHeader: { paddingBottom: 12 },
+  islandScrollContent: { paddingBottom: 30 },
   placeholderContent: { padding: 20, alignItems: 'center' },
+  modeToggleContainer: {
+    position: 'absolute',
+    left: 12,
+    zIndex: 2000,
+  },
+  modePill: {
+    flexDirection: 'row',
+    width: 200,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    padding: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  modePillActive: {
+    position: 'absolute',
+    left: 4,
+    top: 4,
+    width: 96,
+    height: 42,
+    borderRadius: 21,
+  },
+  modePillLabels: {
+    flex: 1,
+    flexDirection: 'row',
+    zIndex: 1,
+  },
+  modeLabel: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  modeText: {
+    fontSize: 12,
+    fontFamily: typography.primary.bold,
+  },
 });

@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   carouselScrollContainer: {
-    height: 320,
+    height: 260,
   },
   carouselScroll: {
     paddingHorizontal: 16,
