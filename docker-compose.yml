@@ -131,8 +131,7 @@ services:
     volumes:
       - ./.docker/valhalla:/custom_files
     environment:
-      # Descargamos Cataluña para cubrir Barcelona y alrededores
-      - tile_urls=https://download.geofabrik.de/europe/spain/catalonia-latest.osm.pbf
+      # Usamos el archivo local cataluna-260507.osm.pbf que ya está en .docker/valhalla
       - build_tiles=True
       - build_admins=True
       - build_timezones=True

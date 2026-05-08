@@ -41,3 +41,13 @@ coverage/
 # OS Specific
 .DS_Store
 Thumbs.db
+
+# Valhalla data
+.docker/valhalla/*.pbf
+.docker/valhalla/*.tar
+.docker/valhalla/valhalla_tiles/
+.docker/valhalla/admin_data/
+.docker/valhalla/timezone_data/
+.docker/valhalla/elevation_data/
+.docker/valhalla/valhalla.json
+.docker/valhalla/file_hashes.txt
