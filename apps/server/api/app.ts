@@ -50,7 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 // 4. Rate Limiting for Auth
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: env.NODE_ENV === 'development' ? 1000 : 100, // Be more lenient in dev for polling
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -86,7 +86,9 @@ app.get('/health', healthHandler);
 // --- API ROUTING (v1) ---
 const v1Router = express.Router();
 
-v1Router.use(authRateLimiter);
+// 4. Rate Limiting Scoping
+// Only apply strict auth limits to actual auth routes to avoid blocking polling (e.g. /events)
+v1Router.use(['/login', '/register', '/google', '/apple', '/passkey*'], authRateLimiter);
 
 /**
  * MOUNTING SERVICES

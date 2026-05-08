@@ -9,7 +9,6 @@ import Map, {
   MapLayerMouseEvent,
 } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Icons } from '@/components/icons';
 
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
@@ -75,9 +74,41 @@ const getBBox = (coordinates: [number, number][][]) => {
   return [minLng, minLat, maxLng, maxLat] as [number, number, number, number];
 };
 
+const DEFAULT_VIEW_STATE = { longitude: 2.2575, latitude: 41.5641, zoom: 15 };
+
+const POIMarkers = React.memo(({ pois, onAssetClick }: { pois: any[]; onAssetClick?: (asset: any) => void }) => {
+  return (
+    <>
+      {pois.map((poi: any) => (
+        <Marker
+          key={poi.id}
+          longitude={poi.geometry.coordinates[0]}
+          latitude={poi.geometry.coordinates[1]}
+          anchor="bottom"
+          onClick={(e) => {
+            e.originalEvent.stopPropagation();
+            onAssetClick?.(poi);
+          }}
+        >
+          <div className="group relative cursor-pointer">
+            <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-110">
+              <span className="text-sm">{POI_TYPES[poi.category] || '📍'}</span>
+            </div>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              {poi.name}
+            </div>
+          </div>
+        </Marker>
+      ))}
+    </>
+  );
+});
+
+POIMarkers.displayName = 'POIMarkers';
+
 export const AdminMap: React.FC<AdminMapProps> = ({
   mode,
-  initialViewState = { longitude: 2.2575, latitude: 41.5641, zoom: 15 },
+  initialViewState = DEFAULT_VIEW_STATE,
   events = [],
   pois = [],
   boundaryPoints = [],
@@ -88,9 +119,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   activeEventBoundary,
 }) => {
   const mapRef = React.useRef<any>(null);
-  const [viewState, setViewState] = useState(initialViewState);
+  const [_internalViewState, setInternalViewState] = useState(initialViewState);
 
-  // Sync view state when initialViewState or activeEventBoundary changes
   React.useEffect(() => {
     if (activeEventBoundary?.geometry?.coordinates) {
       const bbox = getBBox(activeEventBoundary.geometry.coordinates);
@@ -102,27 +132,17 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         { padding: 40, duration: 1000 }
       );
     } else if (initialViewState) {
-      // Only update if actually different to avoid cascading render warnings
-      const timerId = setTimeout(() => {
-        setViewState((prev) => {
-          if (
-            prev.longitude === initialViewState.longitude &&
-            prev.latitude === initialViewState.latitude &&
-            prev.zoom === initialViewState.zoom
-          ) {
-            return prev;
-          }
-          return initialViewState;
-        });
-      }, 0);
-      return () => clearTimeout(timerId);
+      mapRef.current?.flyTo({
+        center: [initialViewState.longitude, initialViewState.latitude],
+        zoom: initialViewState.zoom,
+        duration: 1000,
+      });
     }
   }, [
     initialViewState.longitude,
     initialViewState.latitude,
     initialViewState.zoom,
     activeEventBoundary?.geometry,
-    initialViewState,
   ]);
 
   const handleMapClick = useCallback(
@@ -132,11 +152,9 @@ export const AdminMap: React.FC<AdminMapProps> = ({
       if (mode === 'DRAW_BOUNDARY' && onBoundaryChange) {
         onBoundaryChange([...boundaryPoints, [lng, lat]]);
       } else if (mode === 'PICK_COORDINATE' && onPoiSelect) {
-        // If we have an active event boundary, validate the click is inside
         if (activeEventBoundary?.geometry?.coordinates) {
           const isInside = isPointInPolygon([lng, lat], activeEventBoundary.geometry.coordinates);
           if (!isInside) {
-            // You might want to show a toast here, but for now we just ignore the click
             console.warn('Click outside event boundary');
             return;
           }
@@ -175,15 +193,14 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     <div className="w-full h-full relative">
       <Map
         ref={mapRef}
-        {...viewState}
-        onMove={(evt) => setViewState(evt.viewState)}
+        initialViewState={initialViewState}
+        onMoveEnd={(evt) => setInternalViewState(evt.viewState)}
         mapStyle={MAP_STYLE}
         onClick={handleMapClick}
         style={{ width: '100%', height: '100%' }}
       >
         <NavigationControl position="top-right" />
 
-        {/* Global Boundaries */}
         {mode === 'GLOBAL_VIEW' && (
           <Source type="geojson" data={allBoundariesGeoJSON}>
             <Layer
@@ -205,7 +222,6 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           </Source>
         )}
 
-        {/* Contextual Boundary for POI selection */}
         {mode === 'PICK_COORDINATE' && activeEventBoundary && (
           <Source type="geojson" data={activeEventBoundary}>
             <Layer
@@ -221,7 +237,6 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           </Source>
         )}
 
-        {/* Current Boundary being drawn */}
         {mode === 'DRAW_BOUNDARY' && boundaryGeoJSON && (
           <Source type="geojson" data={boundaryGeoJSON}>
             <Layer
@@ -238,28 +253,9 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         )}
 
         {/* Global POIs */}
-        {mode === 'GLOBAL_VIEW' &&
-          pois.map((poi: any) => (
-            <Marker
-              key={poi.id}
-              longitude={poi.geometry.coordinates[0]}
-              latitude={poi.geometry.coordinates[1]}
-              anchor="bottom"
-              onClick={(e) => {
-                e.originalEvent.stopPropagation();
-                onAssetClick?.(poi);
-              }}
-            >
-              <div className="group relative cursor-pointer">
-                <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-110">
-                  <span className="text-sm">{POI_TYPES[poi.category] || '📍'}</span>
-                </div>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {poi.name}
-                </div>
-              </div>
-            </Marker>
-          ))}
+        {mode === 'GLOBAL_VIEW' && (
+          <POIMarkers pois={pois} onAssetClick={onAssetClick} />
+        )}
 
         {/* Selected POI Marker */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
