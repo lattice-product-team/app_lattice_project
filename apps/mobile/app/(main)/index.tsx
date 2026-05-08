@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView, Keyboard } from 'react-native';
+import { View, StyleSheet, Dimensions, Pressable, Text, ScrollView, Keyboard, TextInput } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import * as Haptics from 'expo-haptics';
@@ -49,6 +49,7 @@ import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
 import { LatticeEvent } from '../../src/types';
 import { useLocationService } from '../../src/hooks/useLocationService';
+import { ProfileSheet } from '../../src/features/profile/components/ProfileSheet';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -78,6 +79,7 @@ export default function MapIndexPage() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const { events } = useSearchEvents(searchQuery);
   const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
@@ -95,18 +97,20 @@ export default function MapIndexPage() {
   const [manualAR, setManualAR] = useState(false);
   const { saveSearch } = useSearchHistory();
 
+  // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
+  const islandState = useSharedValue(0);
+  const startState = useSharedValue(0);
+
   const handleProfilePress = useCallback(() => {
     Haptics.selectionAsync();
     if (isGuest) {
       openAuthPrompt('/(main)/profile');
     } else {
-      router.push('/(main)/profile');
+      setIsProfileOpen(true);
+      // Hide main island when opening profile
+      islandState.value = withSpring(0, theme.motion.physics.magnetic);
     }
-  }, [isGuest, router, openAuthPrompt]);
-
-  // Island State (0 = Compact, 0.5 = Medium, 1 = Full)
-  const islandState = useSharedValue(0);
-  const startState = useSharedValue(0);
+  }, [isGuest, theme.motion.physics.magnetic, islandState, openAuthPrompt]);
 
   const preSearchLevel = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
@@ -172,8 +176,12 @@ export default function MapIndexPage() {
       if (val > 0.8 && !isSearching && isPanning.value) {
         runOnJS(setIsSearching)(true);
       }
+      // Reset profile state if island is closed
+      if (val < 0.1 && isProfileOpen) {
+        runOnJS(setIsProfileOpen)(false);
+      }
     },
-    [isSearching, dismissSearch]
+    [isSearching, dismissSearch, isProfileOpen]
   );
 
   const islandHeight = useDerivedValue(() => {
@@ -424,34 +432,38 @@ export default function MapIndexPage() {
             </View>
 
             <View style={styles.islandHeader}>
-              <FloatingSearchBar
-                ref={searchInputRef}
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  if (text.length > 0) setIsSearching(true);
-                }}
-                onProfilePress={handleProfilePress}
-                onFocus={() => {
-                  setIsSearching(true);
-                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                }}
-                onSubmit={() => {
-                  saveSearch(searchQuery);
-                  Keyboard.dismiss();
-                }}
-                onPress={() => {
-                  islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  // Wait for editable to become true before focusing
-                  setTimeout(() => {
-                    searchInputRef.current?.focus();
-                  }, 100);
-                }}
-                avatarUrl={user?.avatarUrl}
-                isGuest={isGuest}
-                editable={isHeaderEditable}
-              />
+              {!isProfileOpen ? (
+                <FloatingSearchBar
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    if (text.length > 0) setIsSearching(true);
+                  }}
+                  onProfilePress={handleProfilePress}
+                  onFocus={() => {
+                    setIsSearching(true);
+                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                  }}
+                  onSubmit={() => {
+                    saveSearch(searchQuery);
+                    Keyboard.dismiss();
+                  }}
+                  onPress={() => {
+                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    // Wait for editable to become true before focusing
+                    setTimeout(() => {
+                      searchInputRef.current?.focus();
+                    }, 100);
+                  }}
+                  avatarUrl={user?.avatarUrl}
+                  isGuest={isGuest}
+                  editable={isHeaderEditable}
+                />
+              ) : (
+                <View style={{ height: 10 }} /> // Small gap for profile top bar
+              )}
             </View>
 
             <Animated.ScrollView
@@ -501,6 +513,20 @@ export default function MapIndexPage() {
       />
 
       <POIMiniCard poi={selectedPoi} onClose={deselect} />
+
+      <ProfileSheet
+        isOpen={isProfileOpen}
+        onClose={() => {
+          setIsProfileOpen(false);
+          // Restore island if it was previously at a level
+          if (preSearchLevel.value > 0.1) {
+            islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
+          }
+        }}
+        onSettings={() => {
+          router.push('/(main)/profile');
+        }}
+      />
 
       <NavigationInfo />
 

@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import app from '../app';
+import express from 'express';
+import geoRouter from '../routes/geo.routes';
 import * as dbLib from '@app/db';
+
+const app = express();
+app.use(express.json());
+app.use(geoRouter);
 
 // Mock the DB library
 vi.mock('@app/db', async () => {

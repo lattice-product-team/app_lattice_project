@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import app from '../app';
+import express from 'express';
+import socialRouter from '../routes/social.routes';
+
+const app = express();
+app.use(express.json());
+app.use(socialRouter);
 
 describe('Social Service Integration Tests', () => {
   beforeEach(() => {

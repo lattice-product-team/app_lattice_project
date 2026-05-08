@@ -1,0 +1,117 @@
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
+import { logger, errorHandler, loadConfig } from '@app/core';
+
+// Import Service Routers directly for the Monolith
+import authRouter from '../auth/routes/auth.routes';
+import geoRouter from '../geo/routes/geo.routes';
+import socialRouter from '../social/routes/social.routes';
+
+// Load validated config (SSOT)
+const env = loadConfig();
+
+export const app = express();
+
+/**
+ * Professional Proxy Configuration
+ * Required for rate-limiting and secure IP identification when behind NGINX
+ */
+app.set('trust proxy', 1);
+
+// --- SECURITY MIDDLEWARE ---
+
+// 1. Helmet for security headers
+app.use(helmet());
+
+// 2. Restricted CORS
+const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// 3. Rate Limiting for Auth
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many authentication attempts, please try again later',
+    code: 'TOO_MANY_REQUESTS',
+  },
+  skip: () => env.NODE_ENV === 'test',
+});
+
+app.use(logger);
+
+// Log incoming requests for debugging
+app.use((req, _res, next) => {
+  if (env.NODE_ENV !== 'test') {
+    console.log(`[API Monolith] Incoming: ${req.method} ${req.originalUrl}`);
+  }
+  next();
+});
+
+// Root Health Checks (Outside any prefix)
+const healthHandler = (req: Request, res: Response) => {
+  res.json({
+    status: 'api_ok',
+    timestamp: new Date(),
+    env: env.NODE_ENV,
+    service: 'lattice_api',
+  });
+};
+
+app.get('/status', healthHandler);
+app.get('/health', healthHandler);
+
+// --- API ROUTING (v1) ---
+const v1Router = express.Router();
+
+v1Router.use(authRateLimiter);
+
+/**
+ * MOUNTING SERVICES
+ * Note: Each router already contains its own prefix (e.g., /auth, /events, /groups)
+ * because they were originally separate services. 
+ * Mounting them at the root of v1Router preserves these paths.
+ */
+v1Router.use(authRouter);
+v1Router.use(geoRouter);
+v1Router.use(socialRouter);
+
+// --- MOUNTING STRATEGY ---
+// Support all common prefixes used by clients
+app.use('/api/v1', v1Router);
+app.use('/v1', v1Router);
+app.use('/api', v1Router);
+app.use('/', v1Router);
+
+// Fallback for unhandled API routes
+app.use('*', (req: Request, res: Response) => {
+  if (env.NODE_ENV !== 'test') {
+    console.log(`[API Monolith] 404 Fallback reached for: ${req.method} ${req.originalUrl}`);
+  }
+  res.status(404).json({
+    error: 'Route not found at API Monolith level',
+    requestedUrl: req.originalUrl,
+  });
+});
+
+app.use(errorHandler);
+
+export default app;

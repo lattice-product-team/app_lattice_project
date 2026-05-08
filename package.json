@@ -28,6 +28,8 @@
     "mobile:pods": "pnpm --filter @app/mobile pods",
     "mobile:lan": "pnpm --filter @app/mobile dev:lan",
     "mobile:tunnel": "pnpm --filter @app/mobile dev:tunnel",
+    "dev:api": "pnpm --filter @app/api dev",
+    "dev:web": "pnpm --filter admin-web dev",
     "clean": "rm -rf node_modules && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.turbo' -type d -prune -exec rm -rf '{}' + && find . -name 'build' -type d -prune -exec rm -rf '{}' + && pnpm install",
     "db:migrate": "turbo run db:migrate",
     "db:check": "npx tsx scripts/check-db.ts",
