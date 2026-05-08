@@ -542,7 +542,9 @@ export default function MapIndexPage() {
           }
         }}
         onSettings={() => {
-          router.push('/(main)/profile');
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setIsProfileOpen(false);
+          useAuthStore.getState().logout();
         }}
       />
 

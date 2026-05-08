@@ -56,4 +56,4 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=admin-web-builder /app /app
 WORKDIR /app/apps/admin-web
-CMD ["npx", "next", "start", "-p", "3000"]
+CMD ["sh", "-c", "npx next start -p ${PORT:-3000}"]

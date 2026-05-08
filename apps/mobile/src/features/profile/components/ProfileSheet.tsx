@@ -157,7 +157,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
 
             <View style={styles.controlBar}>
               <Pressable onPress={onSettings} style={styles.iconButton}>
-                <Ionicons name="settings-outline" size={24} color={theme.colors.text.primary} />
+                <Ionicons name="log-out-outline" size={24} color={theme.colors.text.primary} />
               </Pressable>
               <Pressable onPress={() => {
                 islandState.value = withSpring(0, theme.motion.physics.magnetic, () => {
@@ -181,7 +181,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
                       {profile.name}
                     </Text>
                     <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-                      Confidence
+                      Confianza
                     </Text>
                     
                     <View style={styles.illustrationPlaceholder}>
@@ -196,13 +196,13 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
                     <View style={styles.divider} />
                     <View style={styles.levelRow}>
                       <View style={styles.levelBadge}>
-                        <Ionicons name="shield-checkmark" size={16} color="#6366f1" />
-                        <Text style={styles.levelText}>Lv. 4</Text>
+                        <Ionicons name="shield-checkmark" size={16} color={theme.colors.brand.primary} />
+                        <Text style={[styles.levelText, { color: theme.colors.brand.primary }]}>Lv. 4</Text>
                       </View>
                       <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: '68%' }]} />
+                        <View style={[styles.progressBarFill, { width: '68%', backgroundColor: theme.colors.brand.primary }]} />
                       </View>
-                      <Text style={styles.percentageText}>68%</Text>
+                      <Text style={[styles.percentageText, { color: theme.colors.brand.primary }]}>68%</Text>
                     </View>
                   </View>
 
@@ -212,34 +212,40 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps)
                          <Ionicons name="hourglass-outline" size={32} color={theme.colors.text.secondary} />
                        </View>
                        <View style={styles.actionTextContainer}>
-                         <Text style={[styles.actionTitle, { color: theme.colors.text.primary }]}>
-                           Waiting for hidden qualities...
-                         </Text>
-                         <Text style={[styles.actionSubtitle, { color: theme.colors.text.secondary }]}>
-                           See results here once friends/family answered questions
-                         </Text>
+                          <Text style={[styles.actionTitle, { color: theme.colors.text.primary }]}>
+                            Esperando cualidades ocultas...
+                          </Text>
+                          <Text style={[styles.actionSubtitle, { color: theme.colors.text.secondary }]}>
+                            Verás los resultados cuando tus amigos/familia respondan
+                          </Text>
                        </View>
                     </View>
-                    <Pressable style={styles.actionButton}>
-                      <Text style={styles.actionButtonText}>Share with friends</Text>
+                    <Pressable style={[styles.actionButton, { backgroundColor: theme.colors.brand.primary }]}>
+                      <Text style={styles.actionButtonText}>Compartir con amigos</Text>
                     </Pressable>
                   </View>
 
                   <View style={styles.statsRow}>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="calendar-outline" size={18} color="#6366f1" style={styles.statIcon} />
-                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
-                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Activities</Text>
+                      <Ionicons name="calendar-outline" size={18} color={theme.colors.brand.primary} style={styles.statIcon} />
+                      <View style={styles.statTextContainer}>
+                        <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
+                        <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Actividades</Text>
+                      </View>
                     </View>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
                       <Ionicons name="flame" size={18} color="#ef4444" style={styles.statIcon} />
-                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
-                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Streak</Text>
+                      <View style={styles.statTextContainer}>
+                        <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
+                        <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Racha</Text>
+                      </View>
                     </View>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
                       <Ionicons name="trophy-outline" size={18} color="#eab308" style={styles.statIcon} />
-                      <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
-                      <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Time</Text>
+                      <View style={styles.statTextContainer}>
+                        <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
+                        <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Tiempo</Text>
+                      </View>
                     </View>
                   </View>
                 </>
@@ -344,7 +350,7 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 14,
     fontFamily: typography.primary.bold,
-    color: '#4338ca',
+    color: theme.colors.brand.primary,
   },
   progressBarBg: {
     flex: 1,
@@ -355,13 +361,13 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.brand.primary,
     borderRadius: 4,
   },
   percentageText: {
     fontSize: 14,
     fontFamily: typography.primary.bold,
-    color: '#4338ca',
+    color: theme.colors.brand.primary,
     minWidth: 35,
   },
   actionCard: {
@@ -396,7 +402,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   actionButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: theme.colors.brand.primary,
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
@@ -413,17 +419,26 @@ const styles = StyleSheet.create({
   },
   statItemSmall: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 20,
+    borderRadius: 16,
+    gap: 8,
+  },
+  statIcon: {
+    marginBottom: 2,
+  },
+  statTextContainer: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: typography.primary.bold,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 9,
     fontFamily: typography.primary.medium,
+    textTransform: 'uppercase',
   },
 });

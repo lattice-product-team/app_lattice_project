@@ -16,4 +16,4 @@ The system SHALL use consistent service names across development and production 
 #### Scenario: Environment Consistency
 
 - **WHEN** comparing `docker-compose.yml` and `docker-compose.prod.yml`
-- **THEN** the core service identifiers (e.g., `auth`, `gateway`) MUST be identical or mapped via a consistent host variable pattern.
+- **THEN** the core service identifiers (`api`, `admin-web`, `db`) MUST be identical to ensure stable host resolution across environments.
