@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { FadeInRight, FadeOutRight } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -30,7 +31,7 @@ export const CenteringButton = () => {
     <Animated.View
       entering={FadeInRight}
       exiting={FadeOutRight}
-      style={[styles.container, { bottom: insets.bottom + 120 }]}
+      style={[styles.container, { bottom: insets.bottom + 160 }]}
     >
       <Pressable
         onPress={handleCenter}
@@ -39,12 +40,16 @@ export const CenteringButton = () => {
           {
             backgroundColor: theme.colors.brand.primary,
             opacity: pressed ? 0.9 : 1,
-            ...theme.shadows.soft,
+            shadowColor: theme.colors.brand.primary,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.4,
+            shadowRadius: 10,
+            elevation: 10,
           },
         ]}
       >
-        <Feather name="navigation" size={20} color="white" />
-        <Text style={styles.text}>CENTRAR</Text>
+        <MaterialCommunityIcons name="navigation-variant" size={22} color="#000000" />
+        <Text style={[styles.text, { color: '#000000' }]}>CENTRAR</Text>
       </Pressable>
     </Animated.View>
   );

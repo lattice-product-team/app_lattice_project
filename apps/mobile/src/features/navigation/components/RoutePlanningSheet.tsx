@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeOutDown, withSpring } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutDown, FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useNavigationStore, TransportMode } from '../store/useNavigationStore';
@@ -12,13 +12,14 @@ import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
 /**
- * RoutePlanningSheet: Advanced mode selector before starting navigation.
- * Features predictive ETAs for Car, Walk, and Cycle.
+ * RoutePlanningSheet: Redesigned Planning UI.
+ * - Transport selector moved to the top.
+ * - Start button at the bottom.
  */
 export const RoutePlanningSheet = () => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { isPlanning, setPlanning, setNavigating, transportMode, setTransportMode, setRoute } =
+  const { isPlanning, setPlanning, setNavigating, transportMode, setTransportMode, setRoute, routeMetadata } =
     useNavigationStore();
   const { selectedPoi } = usePOIStore();
   const userCoords = useLocationStore((s) => s.logicalCoords);
@@ -26,7 +27,6 @@ export const RoutePlanningSheet = () => {
   const [etas, setEtas] = useState<Record<TransportMode, number | null>>({
     driving: null,
     walking: null,
-    cycling: null,
   });
   const [loading, setLoading] = useState(false);
 
@@ -47,18 +47,23 @@ export const RoutePlanningSheet = () => {
     };
 
     try {
-      const modes: TransportMode[] = ['driving', 'walking', 'cycling'];
-      const results = await Promise.all(
+      const modes: TransportMode[] = ['driving', 'walking'];
+      const results = await Promise.allSettled(
         modes.map((m) => navigationService.getRoute({ origin, destination, mode: m }))
       );
 
-      const newEtas: any = {};
-      results.forEach((res, i) => {
-        newEtas[modes[i]] = res.properties.durationEstimate;
+      const newEtas: any = { ...etas };
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled') {
+          newEtas[modes[i]] = result.value.properties.durationEstimate;
+        } else {
+          console.warn(`[RoutePlanning] Failed to fetch ETA for ${modes[i]}:`, result.reason);
+          newEtas[modes[i]] = null;
+        }
       });
       setEtas(newEtas);
     } catch (error) {
-      console.error('[RoutePlanning] Failed to fetch ETAs:', error);
+      console.error('[RoutePlanning] Unexpected error fetching ETAs:', error);
     } finally {
       setLoading(false);
     }
@@ -66,172 +71,235 @@ export const RoutePlanningSheet = () => {
 
   if (!isPlanning) return null;
 
-  const formatEta = (seconds: number | null) => {
-    if (seconds === null) return '--';
+  const formatEta = (seconds: number | null | undefined) => {
+    if (loading) return 'Calculating...';
+    if (seconds === null || seconds === undefined || seconds === 0) return 'Tap to refresh';
     const mins = Math.round(seconds / 60);
     if (mins >= 60) {
       const h = Math.floor(mins / 60);
       const m = mins % 60;
       return m > 0 ? `${h}h ${m}m` : `${h}h`;
     }
-    return `${mins}m`;
+    return `${mins} min`;
   };
 
-  const handleStart = async () => {
+  const handleStart = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
-    // Ensure the current route in the store matches the selected mode
-    if (selectedPoi && userCoords) {
-        const origin = { lat: userCoords[1], lng: userCoords[0] };
-        const destination = { lat: selectedPoi.coordinates[1], lng: selectedPoi.coordinates[0] };
-        const finalRoute = await navigationService.getRoute({ origin, destination, mode: transportMode });
-        setRoute(finalRoute);
-    }
-    
     setPlanning(false);
     setNavigating(true);
   };
 
-  const renderModeOption = (mode: TransportMode, icon: string, label: string) => {
-    const isActive = transportMode === mode;
-    return (
-      <Pressable
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          setTransportMode(mode);
-        }}
-        style={[
-          styles.modeOption,
-          {
-            backgroundColor: isActive ? theme.colors.brand.primary : 'rgba(0,0,0,0.05)',
-          },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name={icon as any}
-          size={28}
-          color={isActive ? 'white' : theme.colors.text.muted}
-        />
-        <Text style={[styles.modeLabel, { color: isActive ? 'white' : theme.colors.text.primary }]}>
-          {label}
-        </Text>
-        <Text style={[styles.etaText, { color: isActive ? 'rgba(255,255,255,0.8)' : theme.colors.text.muted }]}>
-          {loading ? <ActivityIndicator size="small" color={isActive ? 'white' : theme.colors.brand.primary} /> : formatEta(etas[mode])}
-        </Text>
-      </Pressable>
-    );
-  };
+  const activeDuration = etas[transportMode] || routeMetadata?.duration;
 
   return (
-    <Animated.View
-      entering={FadeInDown.springify()}
-      exiting={FadeOutDown}
-      style={[styles.container, { paddingBottom: insets.bottom + 20 }]}
-    >
-      <View style={[styles.card, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
-        <View style={styles.handle} />
-        
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>Plan your route</Text>
-          <Pressable onPress={() => setPlanning(false)} style={styles.closeBtn}>
-            <Feather name="x" size={20} color={theme.colors.text.muted} />
+    <>
+      {/* Top Selector - Mode Switcher */}
+      <Animated.View 
+        entering={FadeInUp.duration(400).springify()} 
+        exiting={FadeOutUp} 
+        style={[styles.topContainer, { top: insets.top + 10 }]}
+      >
+        <View style={[styles.topPill, { 
+          backgroundColor: theme.colors.glass.background, 
+          borderColor: theme.colors.glass.border,
+        }]}>
+          {(['driving', 'walking'] as TransportMode[]).map((mode) => {
+            const isActive = transportMode === mode;
+            return (
+              <Pressable
+                key={mode}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setTransportMode(mode);
+                }}
+                style={[
+                  styles.topModeBtn,
+                  isActive && { 
+                    backgroundColor: '#000000', // Black for active mode in selector
+                  }
+                ]}
+              >
+                <MaterialCommunityIcons 
+                  name={mode === 'driving' ? "car" : "walk"} 
+                  size={24} 
+                  color={isActive ? 'white' : theme.colors.text.primary} 
+                />
+                <View style={styles.modeTextContainer}>
+                  <Text style={[styles.topModeLabel, { color: isActive ? 'white' : theme.colors.text.primary }]}>
+                    {mode === 'driving' ? 'Drive' : 'Walk'}
+                  </Text>
+                  <Text style={[styles.topEtaText, { color: isActive ? 'rgba(255,255,255,0.9)' : theme.colors.text.muted }]}>
+                    {formatEta(etas[mode])}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Animated.View>
+
+      {/* Bottom Start Card */}
+      <Animated.View
+        entering={FadeInDown.duration(400).springify()}
+        exiting={FadeOutDown}
+        style={[styles.bottomContainer, { paddingBottom: insets.bottom + 20 }]}
+      >
+        <View style={[styles.bottomCard, { 
+          backgroundColor: theme.colors.glass.background, 
+          borderColor: theme.colors.glass.border, 
+          ...theme.shadows.soft 
+        }]}>
+          <View style={styles.routeInfo}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.destTitle, { color: theme.colors.text.primary }]} numberOfLines={1}>
+                {selectedPoi?.displayName}
+              </Text>
+              <View style={styles.metricsRow}>
+                <Text style={[styles.destSub, { color: theme.colors.text.muted }]}>
+                  {routeMetadata ? `${(routeMetadata.distance / 1000).toFixed(1)} km` : '...'}
+                </Text>
+                <View style={[styles.dot, { backgroundColor: theme.colors.text.muted }]} />
+                <Text style={[styles.destSub, { 
+                  color: theme.colors.brand.primary, 
+                  fontFamily: typography.primary.bold,
+                  fontSize: 18
+                }]}>
+                  {formatEta(activeDuration)}
+                </Text>
+              </View>
+            </View>
+            <Pressable onPress={() => setPlanning(false)} style={styles.closeCircle}>
+              <Feather name="x" size={20} color={theme.colors.text.muted} />
+            </Pressable>
+          </View>
+
+          <Pressable
+            onPress={handleStart}
+            style={({ pressed }) => [
+              styles.startBtn,
+              { 
+                backgroundColor: theme.colors.brand.primary,
+                opacity: pressed ? 0.9 : 1,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 10,
+                elevation: 6,
+              },
+            ]}
+          >
+            <Text style={[styles.startBtnText, { color: '#000000' }]}>START NAVIGATION</Text>
+            <MaterialCommunityIcons name="navigation-variant" size={24} color="black" />
           </Pressable>
         </View>
-
-        <View style={styles.modesRow}>
-          {renderModeOption('driving', 'car', 'Drive')}
-          {renderModeOption('walking', 'walk', 'Walk')}
-          {renderModeOption('cycling', 'bicycle', 'Cycle')}
-        </View>
-
-        <Pressable
-          onPress={handleStart}
-          style={({ pressed }) => [
-            styles.startBtn,
-            { backgroundColor: theme.colors.brand.primary, opacity: pressed ? 0.9 : 1 },
-          ]}
-        >
-          <Text style={styles.startBtnText}>START NAVIGATION</Text>
-          <MaterialCommunityIcons name="navigation" size={20} color="white" />
-        </Pressable>
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  topContainer: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    zIndex: 5000,
+    alignItems: 'center',
+  },
+  topPill: {
+    flexDirection: 'row',
+    borderRadius: 32,
+    padding: 6,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  topModeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 26,
+    gap: 12,
+    minWidth: 130,
+  },
+  modeTextContainer: {
+    flexDirection: 'column',
+  },
+  topModeLabel: {
+    fontSize: 16,
+    fontFamily: typography.primary.bold,
+    lineHeight: 18,
+  },
+  topEtaText: {
+    fontSize: 13,
+    fontFamily: typography.primary.medium,
+    marginTop: 0,
+  },
+  bottomContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     zIndex: 5000,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
   },
-  card: {
-    borderRadius: 32,
-    borderWidth: 1,
-    padding: 20,
-    paddingTop: 12,
+  bottomCard: {
+    borderRadius: 36,
+    borderWidth: 1.5,
+    padding: 24,
+    gap: 20,
   },
-  handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  header: {
+  routeInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
   },
-  title: {
-    fontSize: 20,
+  destTitle: {
+    fontSize: 26,
     fontFamily: typography.primary.bold,
+    letterSpacing: -0.8,
   },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modesRow: {
+  metricsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  modeOption: {
-    flex: 1,
-    borderRadius: 20,
-    padding: 12,
     alignItems: 'center',
-    gap: 4,
+    gap: 10,
+    marginTop: 4,
   },
-  modeLabel: {
-    fontSize: 14,
-    fontFamily: typography.primary.bold,
-  },
-  etaText: {
-    fontSize: 12,
+  destSub: {
+    fontSize: 17,
     fontFamily: typography.primary.medium,
   },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    opacity: 0.2,
+  },
+  closeCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+  },
   startBtn: {
-    height: 56,
-    borderRadius: 18,
+    height: 68,
+    borderRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 14,
   },
   startBtnText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 19,
     fontFamily: typography.primary.bold,
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
 });

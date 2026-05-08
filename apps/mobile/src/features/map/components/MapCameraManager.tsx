@@ -18,6 +18,7 @@ interface MapCameraManagerProps {
   forceCenterCount: number;
   lastCameraPosition: any;
   isNavigating: boolean;
+  isPlanning: boolean;
   isFollowingUser: boolean;
 }
 
@@ -38,6 +39,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       forceCenterCount,
       lastCameraPosition,
       isNavigating,
+      isPlanning,
       isFollowingUser,
     },
     ref
@@ -72,6 +74,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // Recenter on user (manual trigger)
     useEffect(() => {
       if (recenterCount > 0 && cameraRef.current && userCoords) {
+        setIsFollowingUser(true); // Ensure following is re-enabled on manual recenter
         cameraRef.current.setCamera({
           centerCoordinate: userCoords,
           zoomLevel: DEFAULT_ZOOM,
@@ -81,7 +84,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
         });
       }
-    }, [recenterCount, userCoords, is3DActive]);
+    }, [recenterCount, userCoords, is3DActive, setIsFollowingUser]);
 
     // Focus on selected POI
     useEffect(() => {
@@ -186,6 +189,19 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       }
     }, [isNavigating, setIsFollowingUser]);
 
+    // Planning fitBounds
+    useEffect(() => {
+      if (isPlanning && userCoords && selectedCoords && cameraRef.current) {
+        const bbox = calculateBBox([userCoords, selectedCoords]);
+        cameraRef.current.fitBounds(
+          [bbox[2], bbox[3]], // NE
+          [bbox[0], bbox[1]], // SW
+          [100, 50, 250, 50], // Top, Right, Bottom, Left padding (leaving space for top selector and bottom sheet)
+          1000
+        );
+      }
+    }, [isPlanning, userCoords, selectedCoords]);
+
     return (
       <MapLibreGL.Camera
         ref={cameraRef}
@@ -196,7 +212,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           pitch: lastCameraPosition?.pitch || 0,
         }}
         followUserLocation={isFollowingUser}
-        followUserMode={(isNavigating ? 'course' : 'normal') as any}
+        followUserMode={(isNavigating ? 'compass' : 'normal') as any}
         followZoomLevel={isNavigating ? 18 : undefined}
         followPitch={isNavigating ? 45 : undefined}
       />

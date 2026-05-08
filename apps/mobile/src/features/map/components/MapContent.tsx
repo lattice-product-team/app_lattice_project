@@ -53,7 +53,7 @@ export const MapContent = function MapContent({
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
-  const { currentRoute, isNavigating } = useNavigationStore();
+  const { currentRoute, isNavigating, isPlanning } = useNavigationStore();
   const {
     recenterCount,
     forceCenterCount,
@@ -312,6 +312,7 @@ export const MapContent = function MapContent({
           forceCenterCount={forceCenterCount}
           lastCameraPosition={lastCameraPosition}
           isNavigating={isNavigating}
+          isPlanning={isPlanning}
           isFollowingUser={isFollowingUser}
         />
 
@@ -324,6 +325,7 @@ export const MapContent = function MapContent({
           pathNetwork={pathNetwork}
           currentRoute={currentRoute}
           isNavigating={isNavigating}
+          isPlanning={isPlanning}
           onPoiPress={handlePoiPress}
         />
       </MapLibreGL.MapView>

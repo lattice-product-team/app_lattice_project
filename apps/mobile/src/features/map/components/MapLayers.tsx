@@ -15,6 +15,7 @@ interface MapLayersProps {
   pathNetwork: any;
   currentRoute: any;
   isNavigating: boolean;
+  isPlanning?: boolean;
   onPoiPress: (data: any) => void;
 }
 
@@ -27,6 +28,7 @@ export const MapLayers = ({
   pathNetwork,
   currentRoute,
   isNavigating,
+  isPlanning,
   onPoiPress,
 }: MapLayersProps) => {
   const currentZoom = useMapUIStore((s) => s.lastCameraPosition?.zoom || 15);
@@ -141,12 +143,12 @@ export const MapLayers = ({
       )}
 
       {/* 5. ROUTE VISUALS (Stays in GL) */}
-      {!!(isNavigating && currentRoute) && (
+      {!!((isNavigating || isPlanning) && currentRoute) && (
         <MapLibreGL.ShapeSource id="routeSource" shape={currentRoute}>
           <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
           <MapLibreGL.LineLayer
             id="routeGlow"
-            style={{ ...mapLayerStyles.routeGlow, lineBlur: 4 }}
+            style={{ ...mapLayerStyles.routeGlow, lineBlur: 6, lineOpacity: 0.4 }}
           />
         </MapLibreGL.ShapeSource>
       )}
