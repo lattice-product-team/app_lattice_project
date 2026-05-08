@@ -406,68 +406,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: typography.primary.bold,
   },
-  statsGrid: {
-    gap: 12,
-    marginBottom: 32,
-  },
-  statItemLarge: {
+  statsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    padding: 16,
-    borderRadius: 20,
-  },
-  statIcon: {
-    marginBottom: 4,
-  },
-  statRow: {
-    flexDirection: 'row',
-    gap: 12,
+    gap: 8,
+    marginBottom: 20,
   },
   statItemSmall: {
     flex: 1,
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 20,
+    alignItems: 'center',
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: typography.primary.bold,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: typography.primary.medium,
-  },
-  achievementsSection: {
-    paddingTop: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontFamily: typography.primary.bold,
-    marginBottom: 16,
-  },
-  medalsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    justifyContent: 'space-between',
-  },
-  medalContainer: {
-    width: '28%',
-    alignItems: 'center',
-    gap: 8,
-  },
-  medalIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
-  },
-  medalTitle: {
-    fontSize: 12,
-    fontFamily: typography.primary.medium,
-    textAlign: 'center',
   },
 });
