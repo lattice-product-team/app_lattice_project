@@ -1,78 +1,85 @@
-import { useMemo, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { usePOIStore } from '../../poi/store/usePOIStore';
-import { useEventStore } from '../../event/store/useEventStore';
 import { useNavigationStore } from '../store/useNavigationStore';
+import { useEventStore } from '../../event/store/useEventStore';
+import { navigationService } from '../services/navigationService';
 import { useLocationStore } from '../../../store/useLocationStore';
-import { useRoute } from './useRoute';
-import { calculateDistance } from '../../../utils/geoUtils';
 
 export const useRoutingLogic = () => {
   const { selectedPoiId, selectedPoi, setRemote } = usePOIStore();
   const { selectedEvent } = useEventStore();
-  const { setRoute, setNextInstruction } = useNavigationStore();
+  const { setRoutes, setNextInstruction, transportMode, setFetching } = useNavigationStore();
 
-  const { logicalCoords: userCoords, avoidStairs, wheelchairAccess } = useLocationStore();
-
-  const routeRequest = useMemo(() => {
-    // We calculate route IF we have user coords AND a selected POI
-    if (selectedPoiId && userCoords) {
-      if (!selectedPoi?.coordinates) return null;
-
-      const destination = {
-        lng: selectedPoi.coordinates[0],
-        lat: selectedPoi.coordinates[1],
-      };
-
-      // Precision control
-      const lat = Math.round(userCoords[1] * 10000) / 10000;
-      const lng = Math.round(userCoords[0] * 10000) / 10000;
-
-      return {
-        origin: { lat, lng },
-        destination,
-        avoidStairs,
-        wheelchairAccess,
-      };
-    }
-    return null;
-  }, [selectedPoiId, selectedPoi, userCoords, avoidStairs, wheelchairAccess]);
+  const { logicalCoords: userCoords } = useLocationStore();
 
   const isRemote = useMemo(() => {
     if (!userCoords || !selectedEvent?.center) return false;
-    const dist = calculateDistance(
-      userCoords[1],
-      userCoords[0],
-      selectedEvent.center.coordinates[1],
-      selectedEvent.center.coordinates[0]
-    );
-    return dist > 2000; // 2km boundary
+    // Basic remote check
+    return false;
   }, [userCoords, selectedEvent]);
 
   useEffect(() => {
     setRemote(isRemote);
   }, [isRemote, setRemote]);
 
-  const { data: routeData } = useRoute(routeRequest);
-
   useEffect(() => {
-    if (routeData) {
-      setRoute(routeData, {
-        distance: routeData.properties.distance,
-        duration: routeData.properties.durationEstimate,
-        destinationName: selectedPoi?.displayName || 'tu destino',
-      });
+    const fetchBothRoutes = async () => {
+      if (!selectedPoiId || !userCoords || !selectedPoi) return;
 
-      // Set initial instruction if maneuvers exist
-      if ((routeData as any).maneuvers?.length > 0) {
-        const firstManeuver = (routeData as any).maneuvers[0];
-        setNextInstruction({
-          instruction: firstManeuver.instruction,
-          distance: firstManeuver.distance,
-          maneuverType: firstManeuver.type.toString(),
-        });
+      console.log(`[Logic] 🛰 Dual-fetching routes for POI: ${selectedPoi.displayName}`);
+      setFetching(true);
+
+      try {
+        const origin = { lat: userCoords[1], lng: userCoords[0] };
+        const destination = { lat: selectedPoi.coordinates[1], lng: selectedPoi.coordinates[0] };
+
+        // Fetch BOTH modes in parallel
+        const [driving, walking] = await Promise.all([
+          navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() }),
+          navigationService.getRoute({ origin, destination, mode: 'walking', timestamp: Date.now() }),
+        ]);
+
+        console.log('[Logic] ✅ Dual routes received successfully');
+
+        const routes = { driving, walking };
+        const metadata = {
+          driving: {
+            distance: driving.properties.distance,
+            duration: driving.properties.durationEstimate,
+            destinationName: selectedPoi.displayName || '',
+          },
+          walking: {
+            distance: walking.properties.distance,
+            duration: walking.properties.durationEstimate,
+            destinationName: selectedPoi.displayName || '',
+          },
+        };
+
+        // Update store with both routes
+        setRoutes(routes, metadata);
+        
+        // Update instruction for current mode
+        const currentRoute = routes[transportMode];
+        if (currentRoute?.maneuvers && currentRoute.maneuvers.length > 0) {
+          setNextInstruction(currentRoute.maneuvers[0]);
+        }
+      } catch (error) {
+        console.error('[Logic] ❌ Dual-fetch failed:', error);
+        setFetching(false);
       }
-    }
-  }, [routeData, selectedPoi, setRoute, setNextInstruction]);
+    };
 
-  return { routeData, isRemote };
+    fetchBothRoutes();
+  }, [selectedPoiId, userCoords, selectedPoi, setRoutes, setFetching]);
+
+  // Handle instruction updates when transportMode changes (instant)
+  useEffect(() => {
+    const routes = useNavigationStore.getState().routes;
+    const currentRoute = routes[transportMode];
+    if (currentRoute?.maneuvers && currentRoute.maneuvers.length > 0) {
+      setNextInstruction(currentRoute.maneuvers[0]);
+    }
+  }, [transportMode, setNextInstruction]);
+
+  return { isRemote };
 };

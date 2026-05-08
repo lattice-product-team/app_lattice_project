@@ -45,7 +45,7 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
   const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
 
   const { getFilteredPOIs } = usePOIStore();
-  const setNavigating = useNavigationStore((s) => s.setNavigating);
+  const setPlanning = useNavigationStore((s) => s.setPlanning);
 
   const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
   const startState = useSharedValue(0);
@@ -247,7 +247,7 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
                     <Pressable
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        setNavigating(true);
+                        setPlanning(true);
                         onClose();
                       }}
                       style={({ pressed }) => [

@@ -53,7 +53,7 @@ export const MapContent = function MapContent({
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
-  const { currentRoute, isNavigating } = useNavigationStore();
+  const { currentRoute, isNavigating, isPlanning, transportMode } = useNavigationStore();
   const {
     recenterCount,
     forceCenterCount,
@@ -292,7 +292,12 @@ export const MapContent = function MapContent({
           }
         }}
       >
-        <MapLibreGL.UserLocation visible={true} animated={true} showsUserHeadingIndicator={true} />
+        <MapLibreGL.UserLocation
+          visible={true}
+          animated={true}
+          showsUserHeadingIndicator={true}
+          androidRenderMode="gps"
+        />
 
         <MapImageManager events={events} />
 
@@ -307,7 +312,9 @@ export const MapContent = function MapContent({
           forceCenterCount={forceCenterCount}
           lastCameraPosition={lastCameraPosition}
           isNavigating={isNavigating}
+          isPlanning={isPlanning}
           isFollowingUser={isFollowingUser}
+          currentRoute={currentRoute}
         />
 
         <MapLayers
@@ -319,6 +326,7 @@ export const MapContent = function MapContent({
           pathNetwork={pathNetwork}
           currentRoute={currentRoute}
           isNavigating={isNavigating}
+          isPlanning={isPlanning}
           onPoiPress={handlePoiPress}
         />
       </MapLibreGL.MapView>

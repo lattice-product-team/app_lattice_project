@@ -27,9 +27,15 @@ export const NavigationInfo = () => {
   };
 
   const formatDuration = (s: number) => {
-    const mins = Math.round(s / 60);
-    if (mins < 1) return '< 1 min';
-    return `${mins}`;
+    const totalMins = Math.round(s / 60);
+    if (totalMins < 1) return { value: '< 1', label: 'min' };
+    if (totalMins < 60) return { value: `${totalMins}`, label: 'min' };
+
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+
+    if (mins === 0) return { value: `${hours}`, label: 'h' };
+    return { value: `${hours}h ${mins}`, label: 'min' };
   };
 
   const getArrivalTime = (seconds: number) => {
@@ -37,6 +43,8 @@ export const NavigationInfo = () => {
     arrivalDate.setSeconds(arrivalDate.getSeconds() + seconds);
     return arrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const durationData = formatDuration(routeMetadata.duration);
 
   return (
     <Animated.View
@@ -63,8 +71,10 @@ export const NavigationInfo = () => {
           <View style={styles.divider} />
 
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{formatDuration(routeMetadata.duration)}</Text>
-            <Text style={styles.statLabel}>min</Text>
+            <Text style={[styles.statValue, durationData.value.includes('h') && { fontSize: 24 }]}>
+              {durationData.value}
+            </Text>
+            <Text style={styles.statLabel}>{durationData.label}</Text>
           </View>
 
           <View style={styles.divider} />

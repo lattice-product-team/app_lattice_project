@@ -32,6 +32,8 @@ import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
 import { NavigationInfo } from '../../src/features/map/components/NavigationInfo';
+import { RoutePlanningSheet } from '../../src/features/navigation/components/RoutePlanningSheet';
+import { CenteringButton } from '../../src/features/navigation/components/CenteringButton';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
 import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
 import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';

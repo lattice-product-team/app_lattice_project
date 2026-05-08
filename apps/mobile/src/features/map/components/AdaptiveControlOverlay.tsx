@@ -74,7 +74,11 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onRecenter();
           }}
-          style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [
+            styles.action, 
+            pressed && { opacity: 0.7 },
+            { backgroundColor: theme.colors.brand.primary, borderRadius: 22 }
+          ]}
         >
           <Feather name="navigation" size={20} color={iconColor} />
         </Pressable>
