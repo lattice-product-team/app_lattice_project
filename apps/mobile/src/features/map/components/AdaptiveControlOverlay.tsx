@@ -3,8 +3,6 @@ import { View, StyleSheet, Pressable, Text } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   SharedValue,
-  interpolate,
-  Extrapolation,
   withTiming,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
@@ -13,54 +11,52 @@ import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
 interface AdaptiveControlOverlayProps {
-  islandHeight: SharedValue<number>;
-  islandState?: SharedValue<number>;
-  bottomOffset: number;
-  onRecenter: () => void;
   onToggle3D: () => void;
-  is3DActive: boolean;
+  onRecenter: () => void;
   onOpenBinoculars?: () => void;
-  isVisible?: boolean;
+  is3DActive: boolean;
+  isVisible: boolean;
+  islandState?: SharedValue<number>;
+  bottomOffset?: number;
 }
 
-/**
- * HUD with true space-between distribution and symmetrical sizing.
- */
 export const AdaptiveControlOverlay = ({
-  islandHeight,
-  islandState,
-  bottomOffset,
-  onRecenter,
   onToggle3D,
-  is3DActive,
+  onRecenter,
   onOpenBinoculars,
-  isVisible = true,
+  is3DActive,
+  isVisible,
+  islandState,
+  bottomOffset = 0,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const iconColor = theme.colors.text.primary;
 
   const rOverlayStyle = useAnimatedStyle(() => {
+    // Internal visibility logic to avoid React render warnings
+    const isIslandHidden = islandState ? islandState.value < 0.8 : true;
+    const finalVisible = isVisible && isIslandHidden;
+
     return {
-      opacity: withTiming(isVisible ? 1 : 0, { duration: 200 }),
-      pointerEvents: isVisible ? 'auto' : 'none',
+      opacity: withTiming(finalVisible ? 1 : 0, { duration: 150 }),
+      pointerEvents: finalVisible ? 'auto' : 'none',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
   });
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
+      {/* 1. Top Vertical Pill (3D & Recenter) */}
       <View
         style={[
-          styles.pill,
+          styles.verticalPill,
           {
             backgroundColor: theme.colors.glass.background,
             borderColor: theme.colors.glass.border,
-            borderWidth: 1,
-            ...theme.shadows.soft,
+            marginBottom: 12,
           },
         ]}
       >
-        {/* 1. 3D Toggle */}
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -71,7 +67,8 @@ export const AdaptiveControlOverlay = ({
           <Text style={[styles.text3D, { color: iconColor }]}>{is3DActive ? '2D' : '3D'}</Text>
         </Pressable>
 
-        {/* 2. Recenter */}
+        <View style={[styles.horizontalDivider, { backgroundColor: theme.colors.glass.border }]} />
+
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -79,18 +76,28 @@ export const AdaptiveControlOverlay = ({
           }}
           style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
-          <Feather name="navigation" size={22} color={iconColor} />
+          <Feather name="navigation" size={20} color={iconColor} />
         </Pressable>
+      </View>
 
-        {/* 3. Binoculars */}
+      {/* 2. Bottom Circle (AR / Binoculars) */}
+      <View
+        style={[
+          styles.circle,
+          {
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border,
+          },
+        ]}
+      >
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onOpenBinoculars?.();
           }}
-          style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}
         >
-          <MaterialCommunityIcons name="binoculars" size={22} color={iconColor} />
+          <MaterialCommunityIcons name="binoculars" size={20} color={iconColor} />
         </Pressable>
       </View>
     </Animated.View>
@@ -103,23 +110,40 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 12,
     zIndex: 1000,
-  },
-  pill: {
-    width: 50,
-    height: 150,
-    borderRadius: 25,
-    overflow: 'visible',
-    // Border handled by SafeBlurView overlay
-    // Distribution logic
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12, // Space from the top and bottom edges
+  },
+  verticalPill: {
+    width: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    paddingVertical: 12, // Increased for more space
+    alignItems: 'center',
+    gap: 8, // Added gap between items
+  },
+  circle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   action: {
-    width: 44, // Consistent circular/square base
+    width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  circleAction: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  horizontalDivider: {
+    width: 20,
+    height: 1,
+    marginVertical: 2,
   },
   text3D: {
     fontSize: 14,

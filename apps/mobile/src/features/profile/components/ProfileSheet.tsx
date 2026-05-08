@@ -49,14 +49,20 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
   const SNAP_POINTS = {
     HIDDEN: 0,
     MID: 0.5,
-    FULL: 1,
+    FULL: 1.0,
+  };
+
+  const liquidSpring = {
+    damping: 30,
+    stiffness: 80,
+    mass: 1.5,
   };
 
   useEffect(() => {
     if (isOpen) {
-      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
+      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
     }
   }, [isOpen]);
 
@@ -97,18 +103,15 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
       const velocity = -e.velocityY / fullTravel;
       const predictedPos = islandState.value + velocity * 0.12;
 
-      let closest = SNAP_POINTS.HIDDEN;
-      if (predictedPos > 0.75) {
-        closest = SNAP_POINTS.FULL;
-      } else if (predictedPos > 0.25) {
-        closest = SNAP_POINTS.MID;
+      if (predictedPos < 0.25) {
+        islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
+          if (finished) runOnJS(onClose)();
+        });
+      } else if (predictedPos < 0.75) {
+        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+      } else {
+        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
       }
-
-      islandState.value = withSpring(closest, theme.motion.physics.magnetic, (finished) => {
-        if (finished && closest === SNAP_POINTS.HIDDEN) {
-          runOnJS(onClose)();
-        }
-      });
     });
 
   const islandStyle = useAnimatedStyle(() => {

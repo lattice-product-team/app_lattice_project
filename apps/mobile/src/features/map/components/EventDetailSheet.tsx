@@ -57,11 +57,19 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
     FULL: 1,
   };
 
+  const liquidSpring = {
+    damping: 30,
+    stiffness: 80,
+    mass: 1.5,
+  };
+
   useEffect(() => {
     if (event?.id) {
-      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
+      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
+        if (finished) runOnJS(onClose)();
+      });
     }
   }, [event?.id]);
 
@@ -82,15 +90,30 @@ export const EventDetailSheet = ({ event, onClose, externalState }: EventDetailS
       const predictedPos = islandState.value + velocity * 0.12;
 
       if (predictedPos < 0.25) {
-        islandState.value = withSpring(0, theme.motion.physics.magnetic, (finished) => {
+        islandState.value = withSpring(0, liquidSpring, (finished) => {
           if (finished) runOnJS(onClose)();
         });
       } else if (predictedPos < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
+        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, theme.motion.physics.magnetic);
+        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
       }
     });
+
+  // Sync scroll enabled and external state
+  useAnimatedReaction(
+    () => islandState.value,
+    (curr) => {
+      const shouldEnable = curr > 0.9;
+      if (shouldEnable !== scrollEnabled) {
+        runOnJS(setScrollEnabled)(shouldEnable);
+      }
+      if (externalState) {
+        externalState.value = curr;
+      }
+    },
+    [scrollEnabled, externalState]
+  );
 
   const islandStyle = useAnimatedStyle(() => {
     const bottom = interpolate(

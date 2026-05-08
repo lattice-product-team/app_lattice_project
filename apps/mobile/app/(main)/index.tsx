@@ -137,6 +137,7 @@ export default function MapIndexPage() {
 
   const preSearchLevel = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
+  const shouldHideControls = isProfileOpen || !!selectedEvent || islandState.value > 0.8;
 
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
@@ -192,7 +193,11 @@ export default function MapIndexPage() {
     setCurrentEvent(null);
     selectPoi(null);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    islandState.value = withSpring(0, theme.motion.physics.magnetic);
+    islandState.value = withSpring(0, {
+      damping: 30,
+      stiffness: 80,
+      mass: 1.5,
+    });
   }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
 
   const dismissSearch = useCallback(() => {
@@ -371,33 +376,9 @@ export default function MapIndexPage() {
     };
   });
 
-  const mainTranslateX = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: withSpring(screenMode.value === 1 ? 0 : SCREEN_WIDTH, {
-            damping: 20,
-            stiffness: 120,
-            mass: 1,
-          }),
-        },
-      ],
-    };
-  });
-
-  const exploreTranslateX = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: withSpring(screenMode.value === 0 ? 0 : -SCREEN_WIDTH, {
-            damping: 20,
-            stiffness: 120,
-            mass: 1,
-          }),
-        },
-      ],
-    };
-  });
+  const canvasStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: interpolate(screenMode.value, [0, 1], [0, -SCREEN_WIDTH], Extrapolation.CLAMP) }],
+  }));
 
   const topDimmerStyle = useAnimatedStyle(() => {
     return {
@@ -406,11 +387,16 @@ export default function MapIndexPage() {
   });
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    const isLevel3 = islandState.value > 0.8; // Trigger hide slightly earlier for Level 3
-    // Hide for profile, events, and Level 3 search
-    const shouldHide = isProfileOpen || !!selectedEvent || isLevel3;
+    // Determine visibility based on sheet positions and search level
+    // profileSheetState and eventSheetState are 0 when closed, > 0 when open
+    const isProfileVisible = profileSheetState.value > 0.05;
+    const isEventVisible = eventSheetState.value > 0.05;
+    const isLevel3 = islandState.value > 0.8;
+    
+    const shouldHide = isProfileVisible || isEventVisible || isLevel3;
+    
     return {
-      opacity: withTiming(shouldHide ? 0 : 1, { duration: 150 }),
+      opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
     };
   });
@@ -480,23 +466,109 @@ export default function MapIndexPage() {
     console.log('Selected Category:', id);
   }, []);
 
+  // Mode Toggle Drag Logic
+  const toggleDrag = useSharedValue(activeMode); // Independent visual state for the toggle
+  const startMode = useSharedValue(0);
+  
+  const toggleGesture = Gesture.Pan()
+    .onStart(() => {
+      startMode.value = toggleDrag.value;
+    })
+    .onUpdate((e) => {
+      // Move only the toggle indicator
+      const delta = e.translationX / 96;
+      toggleDrag.value = Math.max(0, Math.min(1, startMode.value + delta));
+    })
+    .onEnd((e) => {
+      const velocity = e.velocityX / 96;
+      const target = toggleDrag.value + velocity * 0.15 > 0.5 ? 1 : 0;
+      
+      // 1. Snap the toggle indicator
+      toggleDrag.value = withSpring(target, theme.motion.physics.magnetic);
+      
+      // 2. Commit the screen transition only on release
+      screenMode.value = withSpring(target, theme.motion.physics.magnetic, (finished) => {
+        if (finished) {
+          runOnJS(setActiveMode)(target);
+          if (target !== activeMode) {
+            runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
+          }
+        }
+      });
+    });
+
+  const modeIndicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: toggleDrag.value * 96 }],
+  }));
+
+  const exploreTextStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      toggleDrag.value,
+      [0.4, 0.6],
+      ['#000', theme.colors.text.muted]
+    ),
+  }));
+
+  const mapTextStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      toggleDrag.value,
+      [0.4, 0.6],
+      [theme.colors.text.muted, '#000']
+    ),
+  }));
+
+  const exploreIconStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      toggleDrag.value,
+      [0.4, 0.6],
+      ['#000', theme.colors.text.muted]
+    ),
+  }));
+
+  const mapIconStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      toggleDrag.value,
+      [0.4, 0.6],
+      [theme.colors.text.muted, '#000']
+    ),
+  }));
+
+  const AnimatedFeather = Animated.createAnimatedComponent(Feather);
   const searchInputRef = useRef<TextInput>(null);
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <Animated.View style={[StyleSheet.absoluteFill, mainTranslateX]}>
-        <MapContent
-          poisGeoJSON={mergedPois}
-          allEvents={events}
-          sheetPosition={sheetPosition}
-          islandState={islandState}
-          onDeselect={handleMapPress}
-          onSelectEvent={handleEventSelect}
-          is3DActive={manualAR}
-        />
+      {/* Unified Sliding Canvas to prevent black gaps */}
+      <Animated.View style={[styles.canvas, canvasStyle]}>
+        {/* Screen 0: Exploration */}
+        <View style={[styles.screen, { backgroundColor: theme.colors.bg.surface }]}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+            <Text style={{ fontSize: 32, fontFamily: typography.primary.bold, color: theme.colors.text.primary }}>
+              Exploración
+            </Text>
+            <Text style={{ fontSize: 16, fontFamily: typography.primary.regular, color: theme.colors.text.muted, textAlign: 'center', marginTop: 12 }}>
+              Aquí aparecerán los próximos eventos y tus colecciones personales.
+            </Text>
+          </View>
+        </View>
 
+        {/* Screen 1: Map */}
+        <View style={styles.screen}>
+          <MapContent
+            poisGeoJSON={mergedPois}
+            allEvents={events}
+            sheetPosition={sheetPosition}
+            islandState={islandState}
+            onDeselect={handleMapPress}
+            onSelectEvent={handleEventSelect}
+            is3DActive={manualAR}
+          />
+        </View>
+      </Animated.View>
+
+      {/* Persistent UI Overlays */}
       <InstructionBanner />
 
       <Pressable style={StyleSheet.absoluteFill} onPress={handleMapPress} pointerEvents="box-none">
@@ -516,7 +588,7 @@ export default function MapIndexPage() {
         }}
         onToggle3D={() => setManualAR(!manualAR)}
         is3DActive={manualAR}
-        isVisible={activeMode === 1 && !isProfileOpen && !selectedEvent && islandState.value < 0.8}
+        isVisible={activeMode === 1 && !isProfileOpen && !selectedEvent}
       />
 
       <Animated.View
@@ -645,87 +717,49 @@ export default function MapIndexPage() {
 
       <NavigationInfo />
 
-      </Animated.View>
-
-      {/* Exploration Mode Placeholder */}
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: theme.colors.bg.surface, zIndex: 1 },
-          exploreTranslateX,
-        ]}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Text
-            style={{
-              fontSize: 32,
-              fontFamily: typography.primary.bold,
-              color: theme.colors.text.primary,
-              textAlign: 'center',
-            }}
-          >
-            Exploración
-          </Text>
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: typography.primary.regular,
-              color: theme.colors.text.muted,
-              textAlign: 'center',
-              marginTop: 12,
-            }}
-          >
-            Aquí aparecerán los próximos eventos y tus colecciones personales.
-          </Text>
-        </View>
-      </Animated.View>
-
-      {/* Persistent Toggle Button */}
+      {/* Persistent Draggable Toggle */}
       <Animated.View style={[styles.modeToggleContainer, { bottom: insets.bottom + 20 }, controlsOpacityStyle]}>
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            const nextMode = screenMode.value === 0 ? 1 : 0;
-            screenMode.value = nextMode;
-            setActiveMode(nextMode);
-          }}
-          style={[
-            styles.modePill,
-            {
-              backgroundColor: theme.colors.glass.background,
-              borderColor: theme.colors.glass.border,
-              ...theme.shadows.soft,
-            },
-          ]}
-        >
-          <Animated.View
+        <GestureDetector gesture={toggleGesture}>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              const nextMode = toggleDrag.value > 0.5 ? 0 : 1;
+              toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
+              screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
+              setActiveMode(nextMode);
+            }}
             style={[
-              styles.modePillActive,
-              { backgroundColor: 'rgba(255,255,255,0.9)' }, // Neutral Apple-like glass active state
-              useAnimatedStyle(() => ({
-                transform: [{ translateX: withSpring(screenMode.value * 96, { damping: 20, stiffness: 150 }) }],
-              })),
+              styles.modePill,
+              {
+                backgroundColor: theme.colors.glass.background,
+                borderColor: theme.colors.glass.border,
+                ...theme.shadows.soft,
+              },
             ]}
-          />
-          <View style={styles.modePillLabels}>
-            <View style={styles.modeLabel}>
-              <Feather
-                name="compass"
-                size={18}
-                color={activeMode === 0 ? '#000' : theme.colors.text.muted}
-              />
-              <Text style={[styles.modeText, { color: activeMode === 0 ? '#000' : theme.colors.text.muted }]}>Explore</Text>
+          >
+            <Animated.View
+              style={[
+                styles.modePillActive,
+                { backgroundColor: 'rgba(255,255,255,0.9)' },
+                modeIndicatorStyle,
+              ]}
+            />
+            <View style={styles.modePillLabels}>
+              <View style={styles.modeLabel}>
+                <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <AnimatedFeather name="compass" size={18} animatedProps={exploreIconStyle as any} />
+                  <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
+                </Animated.View>
+              </View>
+              <View style={styles.modeLabel}>
+                <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <AnimatedFeather name="map" size={18} animatedProps={mapIconStyle as any} />
+                  <Animated.Text style={[styles.modeText, mapTextStyle]}>Mapa</Animated.Text>
+                </Animated.View>
+              </View>
             </View>
-            <View style={styles.modeLabel}>
-              <Feather
-                name="map"
-                size={18}
-                color={activeMode === 1 ? '#000' : theme.colors.text.muted}
-              />
-              <Text style={[styles.modeText, { color: activeMode === 1 ? '#000' : theme.colors.text.muted }]}>Mapa</Text>
-            </View>
-          </View>
-        </Pressable>
+          </Pressable>
+        </GestureDetector>
       </Animated.View>
 
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
@@ -735,6 +769,15 @@ export default function MapIndexPage() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'black' },
+  canvas: {
+    flexDirection: 'row',
+    width: SCREEN_WIDTH * 2,
+    height: SCREEN_HEIGHT,
+  },
+  screen: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+  },
   islandContainer: { position: 'absolute', left: 0, right: 0, top: 0, zIndex: 1000 },
   islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
   islandHeader: { paddingBottom: 11 },
