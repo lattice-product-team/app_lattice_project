@@ -16,13 +16,12 @@ export const useRoutingLogic = () => {
   const routeRequest = useMemo(() => {
     // We calculate route IF we have user coords AND a selected POI
     if (selectedPoiId && userCoords) {
-      const isSaved = selectedPoiId.toString().startsWith('saved_');
-      const destination =
-        isSaved && selectedPoi?.coordinates
-          ? { lng: selectedPoi.coordinates[0], lat: selectedPoi.coordinates[1] }
-          : { poiId: Number(selectedPoiId.replace('saved_', '')) };
+      if (!selectedPoi?.coordinates) return null;
 
-      if (isSaved && !selectedPoi?.coordinates) return null;
+      const destination = {
+        lng: selectedPoi.coordinates[0],
+        lat: selectedPoi.coordinates[1],
+      };
 
       // Precision control
       const lat = Math.round(userCoords[1] * 10000) / 10000;

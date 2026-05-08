@@ -66,11 +66,15 @@ export const POIMiniCard = ({ poi, onClose }: POIMiniCardProps) => {
         {/* Content Layer */}
         <View style={styles.header}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.brand.primary }]}>
-            <MaterialCommunityIcons
-              name={poi?.categoryIcon || 'map-marker'}
-              size={24}
-              color="white"
-            />
+            {poi?.iconFamily === 'material' ? (
+              <MaterialCommunityIcons
+                name={poi?.categoryIcon || 'map-marker'}
+                size={24}
+                color="white"
+              />
+            ) : (
+              <Feather name={(poi?.categoryIcon || 'map-pin') as any} size={24} color="white" />
+            )}
           </View>
 
           <View style={styles.textContainer}>

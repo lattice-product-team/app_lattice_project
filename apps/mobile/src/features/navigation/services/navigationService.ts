@@ -6,6 +6,8 @@ export interface RouteRequest {
   origin: { lat: number; lng: number };
   destination: { lat: number; lng: number };
   mode?: 'driving' | 'walking';
+  avoidStairs?: boolean;
+  wheelchairAccess?: boolean;
 }
 
 export const navigationService = {
@@ -19,8 +21,11 @@ export const navigationService = {
       ],
       costing,
       costing_options: {
-        [costing]: {
+        pedestrian: {
           use_living_streets: 0.5,
+          exclude_polygons: [],
+          avoid_stairs: request.avoidStairs ? 1.0 : 0.0,
+          walking_speed: 4.2,
         },
       },
       directions_options: {
