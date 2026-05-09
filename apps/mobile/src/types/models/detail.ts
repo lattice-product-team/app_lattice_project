@@ -26,4 +26,10 @@ export interface DetailModel {
   categoryIcon?: string;
   metrics: DetailMetric[];
   actions: DetailAction[];
+  social?: {
+    rating: number;
+    reviewsCount: number;
+    snippets: string[];
+    sourceUrl?: string;
+  };
 }

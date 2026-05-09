@@ -28,6 +28,7 @@ import { SheetHeader } from './SheetHeader';
 import { ActionPillBar } from './ActionPillBar';
 import { MetricGrid } from './MetricGrid';
 import { GalleryCarousel } from './GalleryCarousel';
+import { ReviewSection } from './ReviewSection';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -209,6 +210,16 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                 >
                   <ActionPillBar actions={displayModel.actions} />
                   <MetricGrid metrics={displayModel.metrics} />
+                  
+                  {displayModel.social && (
+                    <ReviewSection 
+                      rating={displayModel.social.rating}
+                      reviewsCount={displayModel.social.reviewsCount}
+                      snippets={displayModel.social.snippets}
+                      sourceUrl={displayModel.social.sourceUrl}
+                    />
+                  )}
+
                   {displayModel.imageUrl && (
                     <GalleryCarousel 
                       images={[

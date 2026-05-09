@@ -36,32 +36,49 @@ export class SocialService {
       console.log(`[SocialService] Syncing ${type} ${id} from DataForSEO...`);
 
       // Use asset location if available
-      const lat = 41.3851,
-        lng = 2.1734; // Default BCN
+      let lat = 41.3851;
+      let lng = 2.1734; // Default BCN
 
-      // 2. Perform Search
-      // Use manual override if available, otherwise search by name
-      const searchKeyword =
-        existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
-      const business = await dataForSEO.searchBusiness(searchKeyword, { lat, lng });
+      if (asset.location) {
+        // PostGIS point format "POINT(lng lat)" or binary
+        // Drizzle might return it differently depending on setup
+        if (typeof asset.location === 'string') {
+          const match = asset.location.match(/POINT\((.+) (.+)\)/);
+          if (match) {
+            lng = parseFloat(match[1]);
+            lat = parseFloat(match[2]);
+          }
+        }
+      }
 
-      if (!business) {
-        console.log(`[SocialService] No match found for ${asset.name}`);
-        return null;
+      // 2. Perform Search (Optimized: only if we don't have a place identifier)
+      const existingPlaceId = existingMetadata.social?.place_id;
+      let business = null;
+      let targetId = existingPlaceId;
+
+      if (!targetId) {
+        // Use manual override if available, otherwise search by name
+        const searchKeyword = existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
+        business = await dataForSEO.searchBusiness(searchKeyword, { lat, lng });
+        
+        if (!business) {
+          console.log(`[SocialService] No match found for ${asset.name}`);
+          return null;
+        }
+        targetId = business.place_id || business.cid;
       }
 
       // 3. Prepare social metadata
       const socialData = {
-        rating: business.rating?.value || business.rating || 0,
-        reviews_count: business.rating?.votes_count || business.reviews_count || 0,
-        source_url: business.url || business.website,
-        place_id: business.place_id || business.cid,
+        rating: business ? (business.rating?.value || business.rating || 0) : (existingMetadata.social?.rating || 0),
+        reviews_count: business ? (business.rating?.votes_count || business.reviews_count || 0) : (existingMetadata.social?.reviews_count || 0),
+        source_url: business ? (business.url || business.website) : existingMetadata.social?.source_url,
+        place_id: targetId,
         last_sync: new Date().toISOString(),
         snippets: [] as string[],
       };
 
       // 4. Fetch reviews if place_id/cid found
-      const targetId = business.place_id || business.cid;
       if (targetId) {
         const reviews = await dataForSEO.getReviews(targetId);
         socialData.snippets = reviews

@@ -47,6 +47,9 @@ export const useDetailModel = (): DetailModel | null => {
     // 1. Handle Event Case
     if (selectedEvent) {
       const data = eventDetails || selectedEvent;
+      const metadata = typeof data.metadata === 'string' ? JSON.parse(data.metadata) : data.metadata || {};
+      const social = metadata.social;
+
       return {
         id: String(data.id),
         type: 'event',
@@ -55,6 +58,12 @@ export const useDetailModel = (): DetailModel | null => {
         description: (data as any).description || 'Explore this event and discover unique experiences in the city.',
         imageUrl: data.imageUrl || (data as any).images?.[0],
         logoUrl: (data as any).logoUrl,
+        social: social ? {
+          rating: social.rating,
+          reviewsCount: social.reviews_count,
+          snippets: social.snippets || [],
+          sourceUrl: social.source_url,
+        } : undefined,
         metrics: [
           { 
             label: 'Hours', 
@@ -63,9 +72,10 @@ export const useDetailModel = (): DetailModel | null => {
             color: '#32D74B' 
           },
           { 
-            label: 'Rating', 
-            value: (data as any).rating ? `${Math.round((data as any).rating * 20)}%` : '88%', 
-            icon: 'thumb-up-outline' 
+            label: 'Popular', 
+            value: 'Trending', 
+            icon: 'fire',
+            color: '#FF9F0A'
           },
           { 
             label: 'Distance', 
@@ -110,7 +120,10 @@ export const useDetailModel = (): DetailModel | null => {
 
     // 2. Handle POI Case
     if (selectedPoi) {
-      const metadata = getCategoryMetadata(selectedPoi.category);
+      const catMetadata = getCategoryMetadata(selectedPoi.category);
+      const metadata = typeof selectedPoi.metadata === 'string' ? JSON.parse(selectedPoi.metadata) : selectedPoi.metadata || {};
+      const social = metadata.social;
+
       return {
         id: selectedPoi.id,
         type: 'poi',
@@ -118,7 +131,13 @@ export const useDetailModel = (): DetailModel | null => {
         subtitle: selectedPoi.categoryLabel,
         description: selectedPoi.description || 'A notable point of interest in the area.',
         imageUrl: selectedPoi.images?.[0],
-        categoryIcon: metadata.icon,
+        categoryIcon: catMetadata.icon,
+        social: social ? {
+          rating: social.rating,
+          reviewsCount: social.reviews_count,
+          snippets: social.snippets || [],
+          sourceUrl: social.source_url,
+        } : undefined,
         metrics: [
           { 
             label: 'Hours', 
@@ -127,9 +146,10 @@ export const useDetailModel = (): DetailModel | null => {
             color: '#32D74B' 
           },
           { 
-            label: 'Rating', 
-            value: '83%', 
-            icon: 'thumb-up-outline' 
+            label: 'Popular', 
+            value: 'Top Choice', 
+            icon: 'fire',
+            color: '#FF9F0A'
           },
           { 
             label: 'Accepts', 
