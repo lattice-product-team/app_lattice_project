@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
   Dimensions,
   Pressable,
   Text,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import Animated, {
@@ -14,107 +13,107 @@ import Animated, {
   withSpring,
   interpolate,
   Extrapolation,
-  useAnimatedProps,
   interpolateColor,
-  useAnimatedReaction,
   runOnJS,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
-import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { typography } from '../../../styles/typography';
-import { LatticeEvent } from '../../../types';
-import { useEventDetails } from '../hooks/useEventDetails';
-import { usePOIStore } from '../../poi/store/usePOIStore';
-import { getCategoryMetadata } from '../../../utils/poiUtils';
-import { useNavigationStore } from '../../navigation/store/useNavigationStore';
+import { useDetailModel } from '../hooks/useDetailModel';
+import { PremiumSheetHeader } from './PremiumSheetHeader';
+import { ActionPillBar } from './ActionPillBar';
+import { MetricGrid } from './MetricGrid';
+import { CustomRouteCard } from './CustomRouteCard';
+import { GalleryCarousel } from './GalleryCarousel';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface EventDetailSheetProps {
-  event: LatticeEvent | null;
+  islandState: Animated.SharedValue<number>;
   onClose: () => void;
-  externalState?: Animated.SharedValue<number>;
 }
 
-export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
+export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { details, loading } = useEventDetails(event?.id ? String(event.id) : null);
+  const model = useDetailModel();
 
-  const { getFilteredPOIs, activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
-  const setPlanning = useNavigationStore((s) => s.setPlanning);
+  // Data persistence during closing
+  const lastModelRef = useRef(model);
+  if (model) lastModelRef.current = model;
+  const displayModel = model || lastModelRef.current;
 
-  const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
-  const isClosing = useSharedValue(false);
   const startState = useSharedValue(0);
-  const [scrollEnabled, setScrollEnabled] = React.useState(false);
+  const isScrollAtTop = useSharedValue(true);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
   const SNAP_POINTS = {
     HIDDEN: 0,
     MID: 0.5,
-    FULL: 1,
+    FULL: 1.0,
   };
 
-  // 1. Sync islandState with event presence
+  const liquidSpring = {
+    damping: 30,
+    stiffness: 80,
+    mass: 1.5,
+  };
+
+  // Sync state with model selection
   useEffect(() => {
-    if (event) {
-      isClosing.value = false;
-      islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
-    } else if (!isClosing.value) {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic);
+    if (model) {
+      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+    } else {
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
     }
-  }, [event, theme.motion.physics.magnetic]);
+  }, [!!model]);
 
-  const animateClose = () => {
-    isClosing.value = true;
-    islandState.value = withSpring(SNAP_POINTS.HIDDEN, theme.motion.physics.magnetic, (finished) => {
-      if (finished) {
-        runOnJS(onClose)();
-      }
-    });
-  };
-
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      if (isClosing.value) return;
-      startState.value = islandState.value;
-    })
-    .onUpdate((e) => {
-      if (isClosing.value) return;
-      const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
-      const delta = -e.translationY / fullTravel;
-      const newValue = startState.value + delta;
-      islandState.value = Math.max(0, Math.min(1.0, newValue));
-    })
-    .onEnd((e) => {
-      if (isClosing.value) return;
-      const fullTravel = SCREEN_HEIGHT - (insets.bottom + 5);
-      const velocity = -e.velocityY / fullTravel;
-      const predictedPos = islandState.value + velocity * 0.12;
-
-      if (predictedPos < 0.25) {
-        animateClose();
-      } else if (predictedPos < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID, theme.motion.physics.magnetic);
-      } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, theme.motion.physics.magnetic);
-      }
-    });
-
-  // Enable/disable scroll based on expansion level
+  // Sync scroll enabled state
   useAnimatedReaction(
     () => islandState.value,
     (curr) => {
-      const shouldEnable = curr > 0.95;
+      const shouldEnable = curr > 0.9;
       if (shouldEnable !== scrollEnabled) {
         runOnJS(setScrollEnabled)(shouldEnable);
       }
     },
     [scrollEnabled]
   );
+
+  const gesture = Gesture.Pan()
+    .activeOffsetY([-10, 10]) 
+    .onStart(() => {
+      startState.value = islandState.value;
+    })
+    .onUpdate((e) => {
+      const isDraggingDown = e.translationY > 0;
+      const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
+
+      if (canDragSheet) {
+        const fullTravel = SCREEN_HEIGHT * 0.8;
+        const delta = -e.translationY / fullTravel;
+        islandState.value = Math.max(0, Math.min(1.0, startState.value + delta));
+      }
+    })
+    .onEnd((e) => {
+      const fullTravel = SCREEN_HEIGHT * 0.8;
+      const velocity = -e.velocityY / fullTravel;
+      const predictedPos = islandState.value + velocity * 0.12;
+
+      if (predictedPos < 0.25) {
+        islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
+          if (finished) runOnJS(onClose)();
+        });
+      } else if (predictedPos < 0.75) {
+        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+      } else {
+        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
+      }
+    });
 
   const islandStyle = useAnimatedStyle(() => {
     const bottom = interpolate(
@@ -123,11 +122,11 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       [-SCREEN_HEIGHT, insets.bottom + 5, 0],
       Extrapolation.CLAMP
     );
-    const fullHeight = SCREEN_HEIGHT - (insets.top + 65 + 20);
+    const fullHeight = SCREEN_HEIGHT - (insets.top + 80);
     const height = interpolate(
       islandState.value,
       [0, 0.5, 1],
-      [0, 380, fullHeight],
+      [0, 520, fullHeight],
       Extrapolation.CLAMP
     );
 
@@ -137,7 +136,6 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       height,
       bottom,
       marginHorizontal: margin,
-      opacity: islandState.value < 0.05 ? 0 : 1,
     };
   });
 
@@ -151,27 +149,27 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
       backgroundColor: interpolateColor(
         islandState.value,
         [0.7, 1],
-        [theme.colors.glass.background, theme.colors.bg.surface]
+        ['#0B1B32', theme.colors.bg.surface] // Deep navy background
       ),
     };
   });
 
-  const animatedProps = useAnimatedProps(() => {
-    return {
-      pointerEvents: islandState.value < 0.1 ? 'none' : 'auto',
-    } as any;
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      isScrollAtTop.value = event.contentOffset.y <= 0;
+    },
   });
 
-  // Combine pan with native scroll gesture for smooth level 2 -> level 3 transition
-  const gesture = Gesture.Simultaneous(panGesture, Gesture.Native());
+  const handleCloseInternal = () => {
+    islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
+      if (finished) runOnJS(onClose)();
+    });
+  };
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      <GestureDetector gesture={gesture}>
-        <Animated.View 
-          animatedProps={animatedProps}
-          style={[styles.container, theme.shadows.soft, islandStyle]}
-        >
+      <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
+        <Animated.View style={[styles.container, theme.shadows.soft, islandStyle]}>
           <Animated.View
             style={[
               styles.background,
@@ -179,254 +177,51 @@ export const EventDetailSheet = ({ event, onClose }: EventDetailSheetProps) => {
               { borderColor: theme.colors.glass.border },
             ]}
           >
-            {/* Content Layer */}
-            <View style={StyleSheet.absoluteFill}>
-              {/* Header / Drag Handle */}
-              <View style={styles.header}>
-                <View style={styles.handle} />
-                <View style={styles.headerActions}>
-                  <Pressable
-                    onPress={() => Haptics.selectionAsync()}
-                    style={[
-                      styles.actionCircle,
-                      {
-                        backgroundColor: theme.dark
-                          ? 'rgba(40, 40, 40, 0.8)'
-                          : 'rgba(255, 255, 255, 0.8)',
-                        borderColor: theme.colors.glass.border,
-                        ...theme.shadows.soft,
-                      },
-                    ]}
-                  >
-                    <Feather name="share" size={20} color={theme.colors.text.primary} />
-                  </Pressable>
-                  <View style={{ flex: 1 }} />
-                  <Pressable
-                    onPress={animateClose}
-                    style={[
-                      styles.actionCircle,
-                      {
-                        backgroundColor: theme.dark
-                          ? 'rgba(40, 40, 40, 0.8)'
-                          : 'rgba(255, 255, 255, 0.8)',
-                        borderColor: theme.colors.glass.border,
-                        ...theme.shadows.soft,
-                      },
-                    ]}
-                  >
-                    <Feather name="x" size={20} color={theme.colors.text.primary} />
-                  </Pressable>
-                </View>
-
-                <View style={styles.titleSection}>
-                  <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-                    {details?.name || event?.name || 'Event Details'}
-                  </Text>
-                  <Text style={[styles.subtitle, { color: theme.colors.text.muted }]}>
-                    {details?.type || event?.type || 'Activity'}
-                  </Text>
-                </View>
-              </View>
-
-              {loading && !details ? (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <ActivityIndicator color={theme.colors.brand.primary} />
-                </View>
-              ) : (
-                <>
-                  {/* Quick Actions */}
-                  <View style={styles.quickActions}>
-                    <Pressable
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        setPlanning(true);
-                        animateClose();
-                      }}
-                      style={({ pressed }) => [
-                        styles.actionButton,
-                        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] },
-                      ]}
-                    >
-                      <View
-                        style={[styles.actionIcon, { backgroundColor: theme.colors.brand.primary }]}
-                      >
-                        <MaterialCommunityIcons name="car" size={24} color="white" />
-                        <View
-                          pointerEvents="none"
-                          style={[StyleSheet.absoluteFill, styles.actionBorder]}
-                        />
-                      </View>
-                      <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>
-                        Directions
-                      </Text>
-                    </Pressable>
-
-                    <Pressable
-                      onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-                      style={({ pressed }) => [
-                        styles.actionButton,
-                        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.actionIcon,
-                          {
-                            backgroundColor: theme.dark
-                              ? 'rgba(40, 40, 40, 0.8)'
-                              : 'rgba(255, 255, 255, 0.8)',
-                          },
-                        ]}
-                      >
-                        <Feather name="phone" size={22} color={theme.colors.brand.primary} />
-                        <View
-                          pointerEvents="none"
-                          style={[
-                            StyleSheet.absoluteFill,
-                            styles.actionBorder,
-                            { borderColor: theme.colors.glass.border },
-                          ]}
-                        />
-                      </View>
-                      <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>
-                        Call
-                      </Text>
-                    </Pressable>
-
-                    <Pressable
-                      onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-                      style={({ pressed }) => [
-                        styles.actionButton,
-                        pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.actionIcon,
-                          {
-                            backgroundColor: theme.dark
-                              ? 'rgba(40, 40, 40, 0.8)'
-                              : 'rgba(255, 255, 255, 0.8)',
-                          },
-                        ]}
-                      >
-                        <Feather name="globe" size={22} color={theme.colors.brand.primary} />
-                        <View
-                          pointerEvents="none"
-                          style={[
-                            StyleSheet.absoluteFill,
-                            styles.actionBorder,
-                            { borderColor: theme.colors.glass.border },
-                          ]}
-                        />
-                      </View>
-                      <Text style={[styles.actionLabel, { color: theme.colors.brand.primary }]}>
-                        Website
-                      </Text>
-                    </Pressable>
-                  </View>
-
-                  {/* Quick Services Bar */}
-                  <View style={styles.servicesContainer}>
-                    <Text style={[styles.servicesTitle, { color: theme.colors.text.muted }]}>
-                      Services Available
+            {displayModel ? (
+              <>
+                <PremiumSheetHeader
+                  title={displayModel.name}
+                  subtitle={displayModel.subtitle}
+                  logoUrl={displayModel.logoUrl}
+                  categoryIcon={displayModel.categoryIcon}
+                  onClose={handleCloseInternal}
+                  onShare={() => {}}
+                />
+                
+                <Animated.ScrollView 
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                  bounces={true}
+                  scrollEnabled={scrollEnabled}
+                  onScroll={scrollHandler}
+                  scrollEventThrottle={16}
+                >
+                  <ActionPillBar actions={displayModel.actions} />
+                  <MetricGrid metrics={displayModel.metrics} />
+                  <CustomRouteCard />
+                  {displayModel.imageUrl && (
+                    <GalleryCarousel 
+                      images={[
+                        displayModel.imageUrl,
+                        'https://images.unsplash.com/photo-1546768292-fb12f6c92568?q=80&w=800',
+                        'https://images.unsplash.com/photo-1503174971373-b1f69850bbd6?q=80&w=800'
+                      ]} 
+                    />
+                  )}
+                  <View style={styles.content}>
+                    <Text style={[styles.sectionTitle, { color: 'white' }]}>About</Text>
+                    <Text style={[styles.description, { color: 'rgba(255,255,255,0.7)' }]}>
+                      {displayModel.description}
                     </Text>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.servicesScroll}
-                    >
-                      {Array.from(new Set(getFilteredPOIs([]).map((p) => p.category))).map(
-                        (cat) => {
-                          const metadata = getCategoryMetadata(cat);
-                          const isActive = activeCategoryFilters.includes(cat);
-                          return (
-                            <Pressable
-                              key={cat}
-                              onPress={() => {
-                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                toggleCategoryFilter(cat);
-                              }}
-                              style={[
-                                styles.serviceItem,
-                                {
-                                  backgroundColor: isActive
-                                    ? theme.colors.brand.primary
-                                    : theme.dark
-                                      ? 'rgba(40, 40, 40, 0.8)'
-                                      : 'rgba(255, 255, 255, 0.8)',
-                                  borderColor: isActive ? 'transparent' : theme.colors.glass.border,
-                                },
-                                isActive && styles.activeService,
-                              ]}
-                            >
-                              <MaterialCommunityIcons
-                                name={metadata.icon as any}
-                                size={20}
-                                color={isActive ? 'white' : theme.colors.text.primary}
-                              />
-                            </Pressable>
-                          );
-                        }
-                      )}
-                    </ScrollView>
                   </View>
-
-                  {/* Info Grid */}
-                  <View style={styles.infoGrid}>
-                    <View style={styles.infoItem}>
-                      <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>
-                        Hours
-                      </Text>
-                      <Text style={[styles.infoValue, { color: '#32D74B' }]}>
-                        {details?.openingHours || 'Open'}
-                      </Text>
-                    </View>
-                    <View style={styles.infoItem}>
-                      <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>
-                        Rating
-                      </Text>
-                      <View style={styles.ratingRow}>
-                        <MaterialCommunityIcons
-                          name="thumb-up"
-                          size={16}
-                          color={theme.colors.text.primary}
-                        />
-                        <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
-                          {details?.rating ? `${details.rating * 20}%` : '88%'}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.infoItem}>
-                      <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>
-                        Distance
-                      </Text>
-                      <View style={styles.ratingRow}>
-                        <MaterialCommunityIcons
-                          name="map-marker-distance"
-                          size={16}
-                          color={theme.colors.text.primary}
-                        />
-                        <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
-                          {details?.distance || '900m'}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  <ScrollView style={{ flex: 1 }} scrollEnabled={scrollEnabled}>
-                    <View style={styles.content}>
-                      <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
-                        About
-                      </Text>
-                      <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
-                        {details?.description || 'Loading event description...'}
-                      </Text>
-                    </View>
-                  </ScrollView>
-                </>
-              )}
-            </View>
+                  <View style={{ height: insets.bottom + 80 }} />
+                </Animated.ScrollView>
+              </>
+            ) : (
+              <View style={styles.loading}>
+                <ActivityIndicator color={theme.colors.brand.primary} />
+              </View>
+            )}
           </Animated.View>
         </Animated.View>
       </GestureDetector>
@@ -439,146 +234,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    zIndex: 2000,
+    zIndex: 2500,
   },
   background: {
     flex: 1,
     overflow: 'hidden',
     borderWidth: 1,
   },
-  header: {
-    paddingTop: 8,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  handle: {
-    width: 80,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-    marginBottom: 8,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    width: '100%',
-    marginBottom: 4,
-  },
-  actionCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  titleSection: {
-    alignItems: 'center',
-    marginTop: -4,
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: typography.primary.bold,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: typography.primary.medium,
-    marginTop: 2,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-  },
-  actionButton: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  actionBorder: {
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-  },
-  actionLabel: {
-    fontSize: 13,
-    fontFamily: typography.primary.bold,
-  },
-  infoGrid: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    justifyContent: 'space-between',
-  },
-  infoItem: {
-    gap: 4,
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: 12,
-    fontFamily: typography.primary.bold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  infoValue: {
-    fontSize: 18,
-    fontFamily: typography.primary.bold,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  scrollContent: {
+    paddingBottom: 60,
   },
   content: {
     padding: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: typography.primary.bold,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
     fontFamily: typography.primary.regular,
   },
-  servicesContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  servicesTitle: {
-    fontSize: 12,
-    fontFamily: typography.primary.bold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
-  },
-  servicesScroll: {
-    gap: 12,
-  },
-  serviceItem: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  loading: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  activeService: {
-    borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
 });

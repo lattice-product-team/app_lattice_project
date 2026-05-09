@@ -28,7 +28,6 @@ import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
-import { POIMiniCard } from '../../src/features/map/components/POIMiniCard';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
 import { NavigationInfo } from '../../src/features/map/components/NavigationInfo';
@@ -238,16 +237,19 @@ export default function MapIndexPage() {
   );
 
   const handleCloseDetails = useCallback(() => {
-    setSelectedEvent(null);
+    // 1. Clear Data (This triggers the sheet to close via useEffect)
     setCurrentEvent(null);
     selectPoi(null);
+    
+    if ((setSelectedEvent as any)) {
+      (setSelectedEvent as any)(null);
+    }
+    
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    islandState.value = withSpring(0, {
-      damping: 30,
-      stiffness: 80,
-      mass: 1.5,
-    });
-  }, [setSelectedEvent, setCurrentEvent, selectPoi, islandState]);
+
+    // 2. We don't animate eventSheetState here manually because the sheet's 
+    // useEffect will react to model becoming null and animate itself to 0.
+  }, [setCurrentEvent, selectPoi, setSelectedEvent]);
 
   const dismissSearch = useCallback(() => {
     setIsSearching(false);
@@ -290,6 +292,7 @@ export default function MapIndexPage() {
   });
 
   const gesture = Gesture.Pan()
+    .enabled(!selectedEvent && !selectedPoi) // DISABLE search gesture when details are open
     .activeOffsetY([-10, 10])
     .failOffsetX([-20, 20])
     .onStart(() => {
@@ -695,10 +698,12 @@ export default function MapIndexPage() {
       {/* 5. Bottom-up Sheets (Z-Index: 2000) */}
       <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 2000 }]} pointerEvents="box-none">
         <EventDetailSheet
-          event={selectedEvent}
+          islandState={eventSheetState}
           onClose={handleCloseDetails}
         />
+      </Animated.View>
 
+      <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 2001 }]} pointerEvents="box-none">
         <RoutePlanningSheet visibility={planningVisibility} />
 
         <ProfileSheet
@@ -713,7 +718,7 @@ export default function MapIndexPage() {
         />
       </Animated.View>
 
-      <POIMiniCard poi={selectedPoi} onClose={deselect} />
+
 
       {/* 6. Top Island / Search (Z-Index: 3000) */}
       <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 3000 }]} pointerEvents="box-none">
