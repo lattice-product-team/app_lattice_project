@@ -24,6 +24,7 @@ export interface DetailModel {
   imageUrl?: string;
   logoUrl?: string;
   categoryIcon?: string;
+  parentName?: string;
   metrics: DetailMetric[];
   actions: DetailAction[];
   social?: {

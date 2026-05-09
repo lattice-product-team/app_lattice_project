@@ -19,6 +19,8 @@ export interface StandardUIPOI {
   imageKey?: string;
   distance?: string;
   duration?: string;
+  rating?: number;
+  reviewsCount?: number;
   raw: any; // Original GeoJSON properties for backward compatibility
 }
 

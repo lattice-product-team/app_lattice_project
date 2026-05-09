@@ -159,6 +159,7 @@ export const MapContent = function MapContent({
           category: poi.category,
           color: poi.mainColor,
           parentId: poi.parentId,
+          rating: poi.rating,
         },
       })),
     };

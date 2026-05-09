@@ -9,20 +9,25 @@ export const mapPinStyles = StyleSheet.create({
   },
   pinFrame: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
+    borderRadius: 24,
     borderWidth: 1.5,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    // No shadows as requested
+    // Elevation for POIs
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 8,
   },
   eventPinSize: {
     width: 44,
     height: 44,
   },
   poiPinSize: {
-    width: 32,
-    height: 32,
+    width: 35,
+    height: 35,
   },
   image: {
     width: '100%',

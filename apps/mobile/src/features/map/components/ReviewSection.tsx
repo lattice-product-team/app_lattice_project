@@ -45,7 +45,7 @@ export const ReviewSection = ({ rating, reviewsCount, snippets, sourceUrl }: Rev
         </View>
         {sourceUrl && (
           <MaterialCommunityIcons 
-            name="tripadvisor" 
+            name="star-circle" 
             size={20} 
             color="#00AF87" 
             onPress={() => Linking.openURL(sourceUrl)}

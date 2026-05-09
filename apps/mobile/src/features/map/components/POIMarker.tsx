@@ -57,6 +57,8 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
       };
     });
 
+    const isHighRated = (properties.rating || 0) >= 4.0;
+
     return (
       <View style={mapPinStyles.container}>
         <TouchableOpacity
@@ -72,6 +74,21 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               animatedStyle,
             ]}
           >
+            {/* Premium Glow for high-rated POIs */}
+            {isHighRated && (
+              <View 
+                style={{
+                  position: 'absolute',
+                  width: 46,
+                  height: 46,
+                  borderRadius: 23,
+                  backgroundColor: color,
+                  opacity: 0.35,
+                  bottom: -2,
+                }} 
+              />
+            )}
+
             <MapPinFrame
               size="poi"
               borderColor="#FFFFFF"
@@ -86,7 +103,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               >
                 <Image
                   source={iconSource}
-                  style={{ width: 18, height: 18, tintColor: '#FFFFFF' }}
+                  style={{ width: 22, height: 22, tintColor: '#FFFFFF' }}
                   resizeMode="contain"
                 />
               </View>
@@ -99,6 +116,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
                   {
                     color: theme.colors.text.primary,
                     fontSize: 10,
+                    fontWeight: '700',
                     // Simulate a thin white halo in light mode only
                     textShadowColor: !theme.dark ? '#FFFFFF' : 'transparent',
                     textShadowOffset: { width: 0, height: 0 },

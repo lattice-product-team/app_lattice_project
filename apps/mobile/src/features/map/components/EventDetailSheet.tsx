@@ -230,6 +230,14 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                     />
                   )}
                   <View style={styles.content}>
+                    {displayModel.parentName && (
+                      <View style={[styles.eventBadge, { backgroundColor: theme.colors.brand.primary + '20' }]}>
+                        <Ionicons name="location-sharp" size={12} color={theme.colors.brand.primary} />
+                        <Text style={[styles.eventBadgeText, { color: theme.colors.brand.primary }]}>
+                          Located in {displayModel.parentName}
+                        </Text>
+                      </View>
+                    )}
                     <Text style={[styles.sectionTitle, { color: 'white' }]}>About</Text>
                     <Text style={[styles.description, { color: 'rgba(255,255,255,0.7)' }]}>
                       {displayModel.description}
@@ -272,6 +280,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: typography.primary.bold,
     marginBottom: 12,
+  },
+  eventBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+    gap: 6,
+  },
+  eventBadgeText: {
+    fontSize: 12,
+    fontFamily: typography.primary.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   description: {
     fontSize: 16,

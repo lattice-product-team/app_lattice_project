@@ -91,7 +91,7 @@ export const usePOIStore = create<POIState>((set) => ({
 
     // 2. Global zoom-based logic (When NO event is selected)
     // We lower the threshold to 14.5 to allow for a very early and subtle fade-in
-    if (zoom < 14.5) return [];
+    if (zoom < 13.0) return [];
 
     // Filter out events from the POI collection (they are handled by MarkerViews)
     return allPOIs.filter((p) => p.category !== 'event');

@@ -6,6 +6,7 @@ import { DetailModel } from '../../../types/models/detail';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
+import { useSearchEvents } from './useSearchEvents';
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -21,11 +22,11 @@ export const useDetailModel = (): DetailModel | null => {
     selectedEvent?.id ? String(selectedEvent.id) : null
   );
 
-  // Get navigation data (Driving for the button, Current for the metrics)
+  // Get navigation data
   const navMetadata = useNavigationStore((s) => s.metadata);
+  const { allEvents } = useSearchEvents('');
   const setPlanning = useNavigationStore((s) => s.setPlanning);
   const isFetching = useNavigationStore((s) => s.isFetching);
-  const deselect = usePOIStore((s) => s.deselect);
 
   const drivingDuration = navMetadata.driving?.duration;
   const drivingDistance = navMetadata.driving?.distance;
@@ -123,15 +124,19 @@ export const useDetailModel = (): DetailModel | null => {
       const catMetadata = getCategoryMetadata(selectedPoi.category);
       const metadata = typeof selectedPoi.metadata === 'string' ? JSON.parse(selectedPoi.metadata) : selectedPoi.metadata || {};
       const social = metadata.social;
+      
+      const parentEvent = allEvents?.find(e => String(e.id) === String(selectedPoi.parentId));
+      const parentName = parentEvent?.name;
 
       return {
         id: selectedPoi.id,
         type: 'poi',
         name: selectedPoi.displayName,
-        subtitle: selectedPoi.categoryLabel,
+        subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
         imageUrl: selectedPoi.images?.[0],
         categoryIcon: catMetadata.icon,
+        parentName,
         social: social ? {
           rating: social.rating,
           reviewsCount: social.reviews_count,
@@ -198,6 +203,5 @@ export const useDetailModel = (): DetailModel | null => {
     }
 
     return null;
-  }, [selectedEvent, eventDetails, selectedPoi, theme, navMetadata, isFetching]);
+  }, [selectedEvent, eventDetails, selectedPoi, theme, navMetadata, isFetching, allEvents]);
 };
-

@@ -33,6 +33,8 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
     parentId: properties.parentId || properties.event_id,
     description: properties.description,
     images: properties.images,
+    rating: properties.metadata?.social?.rating,
+    reviewsCount: properties.metadata?.social?.reviews_count,
     raw: properties,
   };
 };
