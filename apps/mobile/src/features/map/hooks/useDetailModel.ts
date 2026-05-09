@@ -11,6 +11,7 @@ import { useSearchEvents } from './useSearchEvents';
 /**
  * Normalization hook that converts Event or POI data into a unified
  * DetailModel for the redesigned DetailSheet.
+ * Now using Lucide icon naming conventions.
  */
 export const useDetailModel = (): DetailModel | null => {
   const theme = useAppTheme();
@@ -69,26 +70,26 @@ export const useDetailModel = (): DetailModel | null => {
           { 
             label: 'Hours', 
             value: (data as any).openingHours || 'Open', 
-            icon: 'clock-outline', 
+            icon: 'Clock', 
             color: '#32D74B' 
           },
           { 
             label: 'Popular', 
             value: 'Trending', 
-            icon: 'fire',
+            icon: 'Flame',
             color: '#FF9F0A'
           },
           { 
             label: 'Distance', 
             value: formatDistance(drivingDistance), 
-            icon: 'map-marker-distance' 
+            icon: 'MapPin' 
           },
         ],
         actions: [
           { 
             id: 'directions', 
             label: formatDuration(drivingDuration), 
-            icon: 'car', 
+            icon: 'Car', 
             variant: 'primary', 
             onPress: () => {
               setPlanning(true);
@@ -97,21 +98,21 @@ export const useDetailModel = (): DetailModel | null => {
           { 
             id: 'offline', 
             label: 'Offline', 
-            icon: 'check-circle-outline', 
+            icon: 'Download', 
             variant: 'subdued', 
             onPress: () => console.log('Download offline') 
           },
           { 
             id: 'website', 
             label: 'Website', 
-            icon: 'compass-outline', 
+            icon: 'Globe', 
             variant: 'subdued', 
             onPress: () => console.log('Open website') 
           },
           { 
             id: 'tickets', 
             label: 'Tickets', 
-            icon: 'ticket-outline', 
+            icon: 'Ticket', 
             variant: 'subdued', 
             onPress: () => console.log('Buy tickets') 
           },
@@ -147,31 +148,31 @@ export const useDetailModel = (): DetailModel | null => {
           { 
             label: 'Hours', 
             value: 'Open', 
-            icon: 'clock-outline', 
+            icon: 'Clock', 
             color: '#32D74B' 
           },
           { 
             label: 'Popular', 
             value: 'Top Choice', 
-            icon: 'fire',
+            icon: 'Flame',
             color: '#FF9F0A'
           },
           { 
             label: 'Accepts', 
             value: 'Pay', 
-            icon: 'apple',
+            icon: 'Smartphone',
           },
           { 
             label: 'Distance', 
             value: formatDistance(drivingDistance), 
-            icon: 'map-marker-distance' 
+            icon: 'MapPin' 
           },
         ],
         actions: [
           { 
             id: 'directions', 
             label: formatDuration(drivingDuration), 
-            icon: 'car', 
+            icon: 'Car', 
             variant: 'primary', 
             onPress: () => {
               setPlanning(true);
@@ -180,21 +181,21 @@ export const useDetailModel = (): DetailModel | null => {
           { 
             id: 'offline', 
             label: 'Offline', 
-            icon: 'check-circle-outline', 
+            icon: 'Download', 
             variant: 'subdued', 
             onPress: () => {} 
           },
           { 
             id: 'website', 
             label: 'Website', 
-            icon: 'compass-outline', 
+            icon: 'Globe', 
             variant: 'subdued', 
             onPress: () => {} 
           },
           { 
             id: 'tickets', 
             label: 'Tickets', 
-            icon: 'ticket-outline', 
+            icon: 'Ticket', 
             variant: 'subdued', 
             onPress: () => {} 
           },

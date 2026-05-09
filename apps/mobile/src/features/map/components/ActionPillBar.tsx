@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { DetailAction } from '../../../types/models/detail';
 import { Button } from '../../../components/ui/Button';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as LucideIcons from 'lucide-react-native';
 
 interface ActionPillBarProps {
   actions: DetailAction[];
@@ -23,13 +23,15 @@ export const ActionPillBar = ({ actions }: ActionPillBarProps) => {
           label={action.label}
           variant={action.variant}
           onPress={action.onPress}
-          leftIcon={
-            <MaterialCommunityIcons
-              name={action.icon as any}
-              size={20}
-              color={action.variant === 'primary' ? theme.colors.text.inverse : theme.colors.brand.primary}
-            />
-          }
+          leftIcon={(() => {
+            const IconComponent = (LucideIcons as any)[action.icon] || LucideIcons.HelpCircle;
+            return (
+              <IconComponent
+                size={20}
+                color={action.variant === 'primary' ? theme.colors.text.inverse : theme.colors.brand.primary}
+              />
+            );
+          })()}
           style={styles.pillOverride}
         />
       ))}

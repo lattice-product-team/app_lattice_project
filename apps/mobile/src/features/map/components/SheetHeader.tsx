@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Share, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useAnimatedStyle, 
@@ -127,14 +127,14 @@ export const SheetHeader = ({
             onPress={onShare} 
             style={[styles.actionCircle, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
           >
-            <Feather name="upload" size={20} color="white" />
+            <Share size={20} color="white" />
           </Pressable>
           <View style={{ flex: 1 }} />
           <Pressable 
             onPress={onClose} 
             style={[styles.actionCircle, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
           >
-            <Feather name="x" size={20} color="white" />
+            <X size={20} color="white" />
           </Pressable>
         </View>
 

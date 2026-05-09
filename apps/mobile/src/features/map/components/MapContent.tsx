@@ -282,9 +282,30 @@ export const MapContent = function MapContent({
   const mapStyle = useMemo(() => {
     const baseStyle = theme.dark ? styleDark : styleLight;
 
-    // Merge sources to keep essential layers while ensuring the main planet source is correct
+    // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
+    // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
+    const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
+      const isNativePOI = 
+        layer.id.includes('poi') || 
+        layer.id.includes('place') || 
+        layer.id.includes('transit') || 
+        layer.id.includes('infrastructure');
+        
+      if (isNativePOI) {
+        return {
+          ...layer,
+          layout: {
+            ...(layer.layout || {}),
+            visibility: 'none',
+          },
+        };
+      }
+      return layer;
+    });
+
     return {
       ...baseStyle,
+      layers: filteredLayers,
       sources: {
         ...(baseStyle.sources || {}),
         maptiler_planet: {

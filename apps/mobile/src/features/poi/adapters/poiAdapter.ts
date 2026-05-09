@@ -18,7 +18,9 @@ export const isValidCoordinate = (coords?: number[] | null): boolean => {
 export const normalizePOI = (raw: any): StandardUIPOI => {
   const properties = raw?.properties || {};
   const geometry = raw?.geometry || { coordinates: [0, 0] };
-  const category = properties.category || 'generic';
+  
+  // Robust category detection: check category, then type, then default
+  const category = (properties.category || properties.type || 'generic').toLowerCase();
   const metadata = getCategoryMetadata(category);
 
   return {

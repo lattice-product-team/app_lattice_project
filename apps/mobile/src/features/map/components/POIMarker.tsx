@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 import Animated, { useAnimatedStyle, withTiming, useDerivedValue } from 'react-native-reanimated';
+import * as LucideIcons from 'lucide-react-native';
 
 interface POIMarkerProps {
   poi: any;
@@ -12,52 +13,58 @@ interface POIMarkerProps {
   onPress: (poi: any) => void;
 }
 
-const CATEGORY_ICONS: Record<string, any> = {
-  coffee: require('../../../../assets/icons/coffee.png'),
-  restaurant: require('../../../../assets/icons/restaurant.png'),
-  parking: require('../../../../assets/icons/parking.png'),
-  wc: require('../../../../assets/icons/wc.png'),
-  medical: require('../../../../assets/icons/medical.png'),
-  info: require('../../../../assets/icons/info.png'),
-  shop: require('../../../../assets/icons/shop.png'),
-  gate: require('../../../../assets/icons/gate.png'),
-  museum: require('../../../../assets/icons/museum.png'),
-  park: require('../../../../assets/icons/park.png'),
-  hotel: require('../../../../assets/icons/hotel.png'),
-  pharmacy: require('../../../../assets/icons/pharmacy.png'),
-  gym: require('../../../../assets/icons/gym.png'),
-  bank: require('../../../../assets/icons/bank.png'),
-  default: require('../../../../assets/icons/marker.png'),
+/**
+ * Lucide icon mapping for POI categories.
+ * Using Lucide provides sharp, vector-based icons that match the premium chromatic style.
+ */
+const CATEGORY_LUCIDE_MAP: Record<string, keyof typeof LucideIcons> = {
+  restaurant: 'Utensils',
+  food: 'Utensils',
+  coffee: 'Coffee',
+  parking: 'ParkingCircle',
+  wc: 'Toilet',
+  toilet: 'Toilet',
+  restroom: 'Toilet',
+  medical: 'Plus',
+  hospital: 'Hospital',
+  info: 'Info',
+  shop: 'ShoppingBag',
+  shopping: 'ShoppingBag',
+  gate: 'LogIn',
+  entrance: 'LogIn',
+  grandstand: 'GalleryVertical',
+  meetup_point: 'Users',
+  museum: 'Landmark',
+  park: 'Trees',
+  hotel: 'Bed',
+  pharmacy: 'Pill',
+  gym: 'Dumbbell',
+  bank: 'Landmark',
+  generic: 'MapPin',
 };
 
 export const POIMarker: React.FC<POIMarkerProps> = React.memo(
   ({ poi, isSelected = false, theme, onPress }) => {
     const { properties } = poi;
-    // Resolve metadata and color
-    const metadata = getCategoryMetadata(properties.category);
+    
+    // Resolve category and color
+    const categoryKey = properties.category?.toLowerCase() || 'generic';
+    const metadata = getCategoryMetadata(categoryKey);
     const color = metadata.color || theme.colors.brand.primary;
     
-    // Resolve icon asset
-    const iconSource = CATEGORY_ICONS[properties.category] || CATEGORY_ICONS.default;
+    // Resolve Lucide Icon component
+    const IconName = CATEGORY_LUCIDE_MAP[categoryKey] || 'MapPin';
+    const IconComponent = (LucideIcons[IconName] as any) || LucideIcons.MapPin;
 
     const scale = useDerivedValue(() => {
-      return withTiming(isSelected ? 1.3 : 1, { duration: 250 });
-    }, [isSelected]);
-
-    const translateY = useDerivedValue(() => {
-      return withTiming(isSelected ? -10 : 0, { duration: 250 });
+      return withTiming(isSelected ? 1.4 : 1, { duration: 250 });
     }, [isSelected]);
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
-        transform: [
-          { scale: scale.value },
-          { translateY: translateY.value },
-        ],
+        transform: [{ scale: scale.value }],
       };
     });
-
-    const isHighRated = (properties.rating || 0) >= 4.0;
 
     return (
       <View style={mapPinStyles.container}>
@@ -69,26 +76,11 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
             style={[
               {
                 alignItems: 'center',
-                justifyContent: 'flex-end',
+                justifyContent: 'center',
               },
               animatedStyle,
             ]}
           >
-            {/* Premium Glow for high-rated POIs */}
-            {isHighRated && (
-              <View 
-                style={{
-                  position: 'absolute',
-                  width: 46,
-                  height: 46,
-                  borderRadius: 23,
-                  backgroundColor: color,
-                  opacity: 0.35,
-                  bottom: -2,
-                }} 
-              />
-            )}
-
             <MapPinFrame
               size="poi"
               borderColor="#FFFFFF"
@@ -101,10 +93,10 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
                   { backgroundColor: color },
                 ]}
               >
-                <Image
-                  source={iconSource}
-                  style={{ width: 22, height: 22, tintColor: '#FFFFFF' }}
-                  resizeMode="contain"
+                <IconComponent 
+                  size={16} 
+                  color="#FFFFFF" 
+                  strokeWidth={2.5} 
                 />
               </View>
             </MapPinFrame>
@@ -114,16 +106,13 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
                 style={[
                   mapPinStyles.labelText,
                   {
-                    color: theme.colors.text.primary,
-                    fontSize: 10,
-                    fontWeight: '700',
-                    // Simulate a thin white halo in light mode only
-                    textShadowColor: !theme.dark ? '#FFFFFF' : 'transparent',
-                    textShadowOffset: { width: 0, height: 0 },
-                    textShadowRadius: !theme.dark ? 2 : 0,
+                    color: color,
+                    textShadowColor: theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 1,
                   },
                 ]}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {properties.name}
               </Text>

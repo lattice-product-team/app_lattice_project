@@ -19,7 +19,7 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { MapPin as MapPinIcon } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { typography } from '../../../styles/typography';
@@ -232,7 +232,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                   <View style={styles.content}>
                     {displayModel.parentName && (
                       <View style={[styles.eventBadge, { backgroundColor: theme.colors.brand.primary + '20' }]}>
-                        <Ionicons name="location-sharp" size={12} color={theme.colors.brand.primary} />
+                        <MapPinIcon size={12} color={theme.colors.brand.primary} />
                         <Text style={[styles.eventBadgeText, { color: theme.colors.brand.primary }]}>
                           Located in {displayModel.parentName}
                         </Text>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as LucideIcons from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { DetailMetric } from '../../../types/models/detail';
@@ -20,11 +20,15 @@ export const MetricGrid = ({ metrics }: MetricGridProps) => {
             {metric.label}
           </Text>
           <View style={styles.valueRow}>
-            <MaterialCommunityIcons
-              name={metric.icon as any}
-              size={18}
-              color={metric.color || theme.colors.text.primary}
-            />
+            {(() => {
+              const IconComponent = (LucideIcons as any)[metric.icon] || LucideIcons.Info;
+              return (
+                <IconComponent
+                  size={18}
+                  color={metric.color || theme.colors.text.primary}
+                />
+              );
+            })()}
             <Text 
               style={[
                 styles.value, 

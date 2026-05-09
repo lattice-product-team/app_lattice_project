@@ -17,19 +17,12 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
     const color = theme.colors.brand.primary;
 
     const scale = useDerivedValue(() => {
-      return withTiming(isSelected ? 1.3 : 1, { duration: 250 });
-    }, [isSelected]);
-
-    const translateY = useDerivedValue(() => {
-      return withTiming(isSelected ? -10 : 0, { duration: 250 });
+      return withTiming(isSelected ? 1.4 : 1, { duration: 250 });
     }, [isSelected]);
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
-        transform: [
-          { scale: scale.value },
-          { translateY: translateY.value },
-        ],
+        transform: [{ scale: scale.value }],
       };
     });
 
@@ -43,7 +36,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
             style={[
               {
                 alignItems: 'center',
-                justifyContent: 'flex-end',
+                justifyContent: 'center',
               },
               animatedStyle,
             ]}
@@ -72,15 +65,14 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                 style={[
                   mapPinStyles.labelText,
                   {
-                    color: theme.colors.text.primary,
-                    fontSize: 11,
-                    // Simulate a thin white halo in light mode only
-                    textShadowColor: !theme.dark ? '#FFFFFF' : 'transparent',
-                    textShadowOffset: { width: 0, height: 0 },
-                    textShadowRadius: !theme.dark ? 2 : 0,
+                    color: color, // Chromatic style for events too
+                    // Flat look halo
+                    textShadowColor: theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 1,
                   },
                 ]}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {properties.name}
               </Text>

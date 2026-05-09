@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Linking } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Linking, TouchableOpacity } from 'react-native';
+import { Star, StarHalf, Quote, ExternalLink } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
@@ -16,14 +16,13 @@ export const ReviewSection = ({ rating, reviewsCount, snippets, sourceUrl }: Rev
 
   const renderStars = (score: number) => {
     const stars = [];
-    // DataForSEO rating can be 0-5
     for (let i = 1; i <= 5; i++) {
       if (i <= score) {
-        stars.push(<Ionicons key={i} name="star" size={16} color="#FFD700" />);
+        stars.push(<Star key={i} size={16} color="#FFD700" fill="#FFD700" />);
       } else if (i - 0.5 <= score) {
-        stars.push(<Ionicons key={i} name="star-half" size={16} color="#FFD700" />);
+        stars.push(<StarHalf key={i} size={16} color="#FFD700" fill="#FFD700" />);
       } else {
-        stars.push(<Ionicons key={i} name="star-outline" size={16} color="#FFD700" />);
+        stars.push(<Star key={i} size={16} color="#FFD700" />);
       }
     }
     return stars;
@@ -44,19 +43,16 @@ export const ReviewSection = ({ rating, reviewsCount, snippets, sourceUrl }: Rev
           </Text>
         </View>
         {sourceUrl && (
-          <MaterialCommunityIcons 
-            name="star-circle" 
-            size={20} 
-            color="#00AF87" 
-            onPress={() => Linking.openURL(sourceUrl)}
-          />
+          <TouchableOpacity onPress={() => Linking.openURL(sourceUrl)}>
+            <ExternalLink size={20} color="#00AF87" />
+          </TouchableOpacity>
         )}
       </View>
 
       <View style={styles.snippets}>
         {snippets.slice(0, 3).map((text, index) => (
           <View key={index} style={styles.snippetItem}>
-            <MaterialCommunityIcons name="format-quote-open" size={16} color="rgba(255,255,255,0.3)" />
+            <Quote size={16} color="rgba(255,255,255,0.3)" fill="rgba(255,255,255,0.1)" />
             <Text style={[styles.snippetText, { color: 'rgba(255,255,255,0.8)' }]} numberOfLines={2}>
               {text}
             </Text>

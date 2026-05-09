@@ -140,7 +140,23 @@ const DEFAULT_METADATA: CategoryMetadata = {
 
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {
   if (!category) return DEFAULT_METADATA;
-  return CATEGORY_MAP[category.toLowerCase()] || DEFAULT_METADATA;
+  
+  const normalized = category.toLowerCase().trim();
+  
+  // 1. Exact match
+  if (CATEGORY_MAP[normalized]) return CATEGORY_MAP[normalized];
+  
+  // 2. Fuzzy keyword matching for event-specific strings (e.g. "infrastructure_gate")
+  if (normalized.includes('gate') || normalized.includes('entrance')) return CATEGORY_MAP.gate;
+  if (normalized.includes('food') || normalized.includes('restaurant') || normalized.includes('drink')) return CATEGORY_MAP.restaurant;
+  if (normalized.includes('wc') || normalized.includes('toilet') || normalized.includes('restroom')) return CATEGORY_MAP.wc;
+  if (normalized.includes('parking')) return CATEGORY_MAP.parking;
+  if (normalized.includes('info')) return CATEGORY_MAP.info;
+  if (normalized.includes('medical') || normalized.includes('hospital')) return CATEGORY_MAP.medical;
+  if (normalized.includes('shop') || normalized.includes('store')) return CATEGORY_MAP.shop;
+  if (normalized.includes('grandstand') || normalized.includes('seat')) return CATEGORY_MAP.grandstand;
+  
+  return DEFAULT_METADATA;
 };
 
 export const getEventMetadata = (type?: string): CategoryMetadata => {
