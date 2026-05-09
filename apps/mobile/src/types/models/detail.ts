@@ -1,3 +1,5 @@
+import { ButtonVariant } from '../components/ui/Button';
+
 export interface DetailMetric {
   label: string;
   value: string;
@@ -9,7 +11,7 @@ export interface DetailAction {
   id: string;
   label: string;
   icon: string;
-  type: 'primary' | 'secondary' | 'outline';
+  variant: ButtonVariant;
   onPress: () => void;
 }
 

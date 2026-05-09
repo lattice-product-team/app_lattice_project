@@ -7,7 +7,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useRegister } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
-import { PremiumButton } from '../../src/components/ui/PremiumButton';
+import { Button } from '../../src/components/ui/Button';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 
 export default function EmailRegisterScreen() {
@@ -157,12 +157,12 @@ export default function EmailRegisterScreen() {
             </Pressable>
           </View>
 
-          <PremiumButton
+          <Button
             label={register.isPending ? 'Creating...' : 'CREATE ACCOUNT'}
             variant="primary"
             onPress={handleRegister}
-            disabled={register.isPending}
-            noGradient
+            isLoading={register.isPending}
+            disabled={!fullName || !email || !password || register.isPending}
           />
 
           <View style={styles.registerLink}>

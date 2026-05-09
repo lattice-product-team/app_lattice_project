@@ -55,28 +55,28 @@ export const useDetailModel = (): PremiumDetailModel | null => {
             id: 'directions', 
             label: '52 min', 
             icon: 'car', 
-            type: 'primary', 
+            variant: 'primary', 
             onPress: () => console.log('Navigate to event') 
           },
           { 
             id: 'offline', 
             label: 'Offline', 
             icon: 'check-circle-outline', 
-            type: 'secondary', 
+            variant: 'subdued', 
             onPress: () => console.log('Download offline') 
           },
           { 
             id: 'website', 
             label: 'Website', 
             icon: 'compass-outline', 
-            type: 'secondary', 
+            variant: 'subdued', 
             onPress: () => console.log('Open website') 
           },
           { 
             id: 'tickets', 
             label: 'Tickets', 
             icon: 'ticket-outline', 
-            type: 'secondary', 
+            variant: 'subdued', 
             onPress: () => console.log('Buy tickets') 
           },
         ],
@@ -122,28 +122,28 @@ export const useDetailModel = (): PremiumDetailModel | null => {
             id: 'directions', 
             label: '52 min', 
             icon: 'car', 
-            type: 'primary', 
+            variant: 'primary', 
             onPress: () => console.log('Navigate to POI') 
           },
           { 
             id: 'offline', 
             label: 'Offline', 
             icon: 'check-circle-outline', 
-            type: 'secondary', 
+            variant: 'subdued', 
             onPress: () => {} 
           },
           { 
             id: 'website', 
             label: 'Website', 
             icon: 'compass-outline', 
-            type: 'secondary', 
+            variant: 'subdued', 
             onPress: () => {} 
           },
           { 
             id: 'tickets', 
             label: 'Tickets', 
             icon: 'ticket-outline', 
-            type: 'secondary', 
+            variant: 'subdued', 
             onPress: () => {} 
           },
         ],

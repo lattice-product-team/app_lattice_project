@@ -7,7 +7,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useLogin } from '../../src/hooks/queries/useAuth';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
-import { PremiumButton } from '../../src/components/ui/PremiumButton';
+import { Button } from '../../src/components/ui/Button';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 
 export default function EmailAuthScreen() {
@@ -140,12 +140,12 @@ export default function EmailAuthScreen() {
             </Text>
           </View>
 
-          <PremiumButton
+          <Button
             label={login.isPending ? 'Connecting...' : 'SIGN IN'}
             variant="primary"
             onPress={handleLogin}
-            disabled={login.isPending}
-            noGradient
+            isLoading={login.isPending}
+            disabled={!email || !password || login.isPending}
           />
 
           <View style={styles.registerLink}>

@@ -8,7 +8,7 @@ import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Feather } from '@expo/vector-icons';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { AuthLayout } from '../../src/components/ui/AuthLayout';
-import { PremiumButton } from '../../src/components/ui/PremiumButton';
+import { Button } from '../../src/components/ui/Button';
 import { AuthDivider } from '../../src/components/ui/AuthDivider';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { Image } from 'expo-image';
@@ -55,33 +55,21 @@ export default function RegisterScreen() {
             entering={FadeInDown.delay(200).duration(1000).springify()}
             style={{ gap: 12 }}
           >
-            <PremiumButton
+            <Button
               label="Continue with Google"
-              variant="google"
+              variant="tertiary"
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
-              style={[
-                styles.socialButton,
-                {
-                  backgroundColor: theme.colors.bg.surface,
-                  borderColor: theme.colors.border.subtle,
-                },
-              ]}
+              style={styles.socialButton}
             />
 
-            <PremiumButton
+            <Button
               label="Continue with Email"
-              variant="outline"
+              variant="subdued"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(auth)/email-register');
               }}
-              style={[
-                styles.socialButton,
-                {
-                  backgroundColor: theme.colors.bg.surface,
-                  borderColor: theme.colors.border.subtle,
-                },
-              ]}
+              style={styles.socialButton}
             />
           </Animated.View>
         </View>

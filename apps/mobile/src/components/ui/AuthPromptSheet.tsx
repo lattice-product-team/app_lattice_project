@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../hooks/useAppTheme';
-import { PremiumButton } from './PremiumButton';
+import { Button } from './Button';
 import { useAuthStore } from '../../store/useAuthStore';
 import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
@@ -116,7 +116,12 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
             </View>
 
             <View style={styles.actions}>
-              <PremiumButton label="GET STARTED" variant="primary" onPress={handleAction} />
+              <Button 
+                label="GET STARTED" 
+                variant="primary" 
+                onPress={handleAction} 
+                rightIcon={<Feather name="arrow-right" size={20} color={theme.colors.text.inverse} />}
+              />
             </View>
           </View>
         </View>
