@@ -160,8 +160,11 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
     };
   });
 
+  const scrollY = useSharedValue(0);
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
       isScrollAtTop.value = event.contentOffset.y <= 0;
     },
   });
@@ -192,6 +195,8 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                   categoryIcon={displayModel.categoryIcon}
                   onClose={handleCloseInternal}
                   onShare={() => {}}
+                  scrollY={scrollY}
+                  islandState={islandState}
                 />
                 
                 <Animated.ScrollView 
