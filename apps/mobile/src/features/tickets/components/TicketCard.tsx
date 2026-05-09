@@ -21,7 +21,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
   const theme = useLatticeTheme();
   const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna');
 
-  // Premium gradient combinations
+  // Brand gradient combinations
   const gradientColors = isTribuna
     ? [theme.colors.brand.primary, theme.colors.brand.secondaryVariant]
     : [theme.colors.brand.secondary, theme.colors.brand.primaryVariant];

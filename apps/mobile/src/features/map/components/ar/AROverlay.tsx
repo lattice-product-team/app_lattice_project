@@ -141,15 +141,15 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
               transform: [{ rotate: '90deg' }],
             }}
           >
-            <View style={styles.premiumBubble}>
+            <View style={styles.brandBubble}>
               <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
                 <MaterialCommunityIcons name={metadata.icon as any} size={18} color="white" />
               </View>
               <View style={styles.textContainer}>
-                <Text style={styles.premiumLabelText} numberOfLines={1}>
+                <Text style={styles.brandLabelText} numberOfLines={1}>
                   {poi.properties.name}
                 </Text>
-                <Text style={styles.premiumDistanceText}>{Math.round(distance)}m • Ahead</Text>
+                <Text style={styles.brandDistanceText}>{Math.round(distance)}m • Ahead</Text>
               </View>
             </View>
             <View style={styles.horizontalStalk} />
@@ -171,15 +171,15 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
               alignItems: 'center',
             }}
           >
-            <View style={styles.premiumBubble}>
+            <View style={styles.brandBubble}>
               <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
                 <MaterialCommunityIcons name={metadata.icon as any} size={18} color="white" />
               </View>
               <View style={styles.textContainer}>
-                <Text style={styles.premiumLabelText} numberOfLines={1}>
+                <Text style={styles.brandLabelText} numberOfLines={1}>
                   {poi.properties.name}
                 </Text>
-                <Text style={styles.premiumDistanceText}>{Math.round(distance)}m • Ahead</Text>
+                <Text style={styles.brandDistanceText}>{Math.round(distance)}m • Ahead</Text>
               </View>
             </View>
             <View style={styles.verticalStalk} />
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#000',
   },
-  premiumBubble: {
+  brandBubble: {
     backgroundColor: 'rgba(20, 20, 20, 0.85)',
     flexDirection: 'row',
     alignItems: 'center',
@@ -274,12 +274,12 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
-  premiumLabelText: {
+  brandLabelText: {
     color: 'white',
     fontSize: 14,
     fontFamily: typography.primary.bold,
   },
-  premiumDistanceText: {
+  brandDistanceText: {
     color: 'rgba(255, 255, 255, 0.7)',
     fontSize: 11,
     fontFamily: typography.primary.medium,

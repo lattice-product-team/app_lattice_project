@@ -5,7 +5,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
-interface PremiumSheetHeaderProps {
+interface SheetHeaderProps {
   title: string;
   subtitle: string;
   logoUrl?: string;
@@ -14,14 +14,14 @@ interface PremiumSheetHeaderProps {
   onShare?: () => void;
 }
 
-export const PremiumSheetHeader = ({
+export const SheetHeader = ({
   title,
   subtitle,
   logoUrl,
   categoryIcon,
   onClose,
   onShare,
-}: PremiumSheetHeaderProps) => {
+}: SheetHeaderProps) => {
   const theme = useAppTheme();
   
   // Reference background: Dark navy/midnight

@@ -1,9 +1,9 @@
 export const colors = {
   brand: {
-    primary: '#E2B042',
-    secondary: '#C59837',
-    accent: '#F4C978',
-    deep: '#A67C27',
+    primary: '#F8D548',
+    secondary: '#D9B735',
+    accent: '#FAEA8B',
+    deep: '#B89A2D',
   },
   neutral: {
     light: {

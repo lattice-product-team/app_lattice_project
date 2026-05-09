@@ -2,15 +2,15 @@ import { useMemo } from 'react';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { useEventDetails } from './useEventDetails';
-import { PremiumDetailModel } from '../../../types/models/detail';
+import { DetailModel } from '../../../types/models/detail';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 
 /**
  * Normalization hook that converts Event or POI data into a unified
- * PremiumDetailModel for the redesigned DetailSheet.
+ * DetailModel for the redesigned DetailSheet.
  */
-export const useDetailModel = (): PremiumDetailModel | null => {
+export const useDetailModel = (): DetailModel | null => {
   const theme = useAppTheme();
   const selectedPoi = usePOIStore((s) => s.selectedPoi);
   const selectedEvent = useEventStore((s) => s.selectedEvent);
@@ -80,7 +80,7 @@ export const useDetailModel = (): PremiumDetailModel | null => {
             onPress: () => console.log('Buy tickets') 
           },
         ],
-      } as PremiumDetailModel;
+      } as DetailModel;
     }
 
     // 2. Handle POI Case
@@ -147,7 +147,7 @@ export const useDetailModel = (): PremiumDetailModel | null => {
             onPress: () => {} 
           },
         ],
-      } as PremiumDetailModel;
+      } as DetailModel;
     }
 
     return null;

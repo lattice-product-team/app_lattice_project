@@ -5,7 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface ThemeGradientProps {
-  variant?: 'auth' | 'premium' | 'surface' | 'midnight';
+  variant?: 'auth' | 'brand' | 'surface' | 'midnight';
   showBlob?: boolean;
   blobColor?: string;
   style?: StyleProp<ViewStyle>;
@@ -28,9 +28,9 @@ export const ThemeGradient = ({
 
   const getGradientConfig = () => {
     switch (variant) {
-      case 'premium':
+      case 'brand':
         return {
-          colors: theme.colors.gradient.premium,
+          colors: theme.colors.gradient.brand,
           locations: [0, 0.6] as [number, number],
           defaultBlob: primaryColor,
         };

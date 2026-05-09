@@ -32,6 +32,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   spinner: {
-    transform: [{ scale: 1.2 }], // Slightly larger for a premium feel
+    transform: [{ scale: 1.2 }], // Slightly larger for a refined feel
   },
 });

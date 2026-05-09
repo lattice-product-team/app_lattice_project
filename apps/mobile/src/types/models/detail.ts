@@ -15,7 +15,7 @@ export interface DetailAction {
   onPress: () => void;
 }
 
-export interface PremiumDetailModel {
+export interface DetailModel {
   id: string;
   type: 'event' | 'poi';
   name: string;

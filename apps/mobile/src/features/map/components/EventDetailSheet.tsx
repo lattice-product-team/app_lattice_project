@@ -24,7 +24,7 @@ import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { typography } from '../../../styles/typography';
 import { useDetailModel } from '../hooks/useDetailModel';
-import { PremiumSheetHeader } from './PremiumSheetHeader';
+import { SheetHeader } from './SheetHeader';
 import { ActionPillBar } from './ActionPillBar';
 import { MetricGrid } from './MetricGrid';
 import { CustomRouteCard } from './CustomRouteCard';
@@ -179,7 +179,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
           >
             {displayModel ? (
               <>
-                <PremiumSheetHeader
+                <SheetHeader
                   title={displayModel.name}
                   subtitle={displayModel.subtitle}
                   logoUrl={displayModel.logoUrl}

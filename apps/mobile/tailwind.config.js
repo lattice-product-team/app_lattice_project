@@ -1,7 +1,7 @@
 const themeColors = {
-  primary: '#E2B042',
-  secondary: '#C59837',
-  accent: '#F4C978',
+  primary: '#F8D548',
+  secondary: '#D9B735',
+  accent: '#FAEA8B',
   background: '#0A0A09',
   surface: '#141412',
   muted: '#666664',

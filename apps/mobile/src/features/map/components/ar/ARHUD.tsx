@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#E2B042', // primary gold
+    backgroundColor: theme.colors.brand.primary,
     marginRight: 8,
   },
   statusText: {

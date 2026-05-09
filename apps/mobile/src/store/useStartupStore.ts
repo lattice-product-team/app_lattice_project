@@ -8,7 +8,7 @@ interface StartupStore {
 }
 
 /**
- * Global store to coordinate the premium splash screen transition.
+ * Global store to coordinate the startup splash screen transition.
  * Ensures data is fetched and native components are ready before reveal.
  */
 export const useStartupStore = create<StartupStore>((set) => ({

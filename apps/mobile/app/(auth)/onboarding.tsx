@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     height: 120,
   },
   centralLogoShadow: {
-    shadowColor: '#E2B042',
+    shadowColor: '#F8D548',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.25,
     shadowRadius: 25,

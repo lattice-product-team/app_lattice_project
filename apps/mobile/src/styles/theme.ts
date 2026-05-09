@@ -50,7 +50,7 @@ export interface LatticeTheme {
     };
     gradient: {
       auth: readonly string[];
-      premium: readonly string[];
+      brand: readonly string[];
       midnight: readonly string[];
     };
   };
@@ -173,7 +173,7 @@ export const lightTheme: LatticeTheme = {
     },
     gradient: {
       auth: ['#FFFFFF', '#F0F0F0'] as const,
-      premium: ['#E2B042', '#A67C27'] as const,
+      brand: ['#F8D548', '#B89A2D'] as const,
       midnight: ['#F8F8F6', '#D1D1CF'] as const,
     },
   },
@@ -230,7 +230,7 @@ export const darkTheme: LatticeTheme = {
     },
     gradient: {
       auth: ['#1C1C1A', '#0A0A09'] as const,
-      premium: ['#A67C27', '#1C1C1A'] as const,
+      brand: ['#B89A2D', '#1C1C1A'] as const,
       midnight: ['#0A0A09', '#000000'] as const,
     },
   },

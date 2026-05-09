@@ -77,7 +77,7 @@ export const InstructionBanner = () => {
         ) : (
           <View style={styles.loadingContainer}>
             <Loader2 size={24} color="#FFFFFF" style={styles.loader} />
-            <Text style={styles.loadingText}>Calculating premium route...</Text>
+            <Text style={styles.loadingText}>Calculating optimal route...</Text>
           </View>
         )}
       </View>
