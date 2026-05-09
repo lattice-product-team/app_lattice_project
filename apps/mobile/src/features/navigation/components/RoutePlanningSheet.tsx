@@ -32,7 +32,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   const { 
     isPlanning, 
     setPlanning, 
-    setNavigating, 
+    startNavigation,
     transportMode, 
     setTransportMode, 
     routeMetadata,
@@ -83,8 +83,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
 
   const handleStart = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setPlanning(false);
-    setNavigating(true);
+    startNavigation();
   };
 
   const activeDuration = isFetching ? null : (metadata[transportMode]?.duration || routeMetadata?.duration);

@@ -89,8 +89,15 @@ export const MapLayers = ({
 
       {/* 5. ROUTE VISUALS (Stays in GL) */}
       {!!((isNavigating || isPlanning) && currentRoute) && (
-        <MapLibreGL.ShapeSource id="routeSource" shape={currentRoute}>
-          <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
+        <MapLibreGL.ShapeSource 
+          id="routeSource" 
+          key="active-route-source" 
+          shape={currentRoute}
+        >
+          <MapLibreGL.LineLayer 
+            id="routeFill" 
+            style={mapLayerStyles.routeFill} 
+          />
           <MapLibreGL.LineLayer
             id="routeGlow"
             style={{ ...mapLayerStyles.routeGlow, lineBlur: 6, lineOpacity: 0.4 }}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react-native';
 import { useNavigationStore } from '../../features/navigation/store/useNavigationStore';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * InstructionBanner: Top-mounted banner for turn-by-turn navigation instructions.
@@ -21,31 +22,23 @@ import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 export const InstructionBanner = () => {
   const nextInstruction = useNavigationStore((state) => state.nextInstruction);
   const isNavigating = useNavigationStore((state) => state.isNavigating);
+  const insets = useSafeAreaInsets();
 
   if (!isNavigating) return null;
 
-  const { instruction = '', distance = 0, maneuverType = '' } = nextInstruction || {};
+  const { text = '', distance = 0, maneuverType = '' } = nextInstruction || {};
 
   // Helper to get the correct icon based on maneuver type
   const renderIcon = () => {
-    const iconProps = { size: 48, color: '#FFFFFF', strokeWidth: 2.5 };
+    const iconProps = { size: 42, color: '#FFFFFF', strokeWidth: 2.5 };
 
-    switch (maneuverType) {
-      case 'straight':
-        return <ArrowUp {...iconProps} />;
-      case 'left':
-        return <CornerUpLeft {...iconProps} />;
-      case 'right':
-        return <CornerUpRight {...iconProps} />;
-      case 'slight_left':
-        return <ArrowUpLeft {...iconProps} />;
-      case 'slight_right':
-        return <ArrowUpRight {...iconProps} />;
-      case 'u_turn':
-        return <RotateCcw {...iconProps} />;
-      default:
-        return <ArrowUp {...iconProps} />;
-    }
+    const type = maneuverType?.toLowerCase() || '';
+    if (type.includes('left')) return <CornerUpLeft {...iconProps} />;
+    if (type.includes('right')) return <CornerUpRight {...iconProps} />;
+    if (type.includes('u_turn') || type.includes('uturn')) return <RotateCcw {...iconProps} />;
+    if (type.includes('straight') || type.includes('keep')) return <ArrowUp {...iconProps} />;
+    
+    return <ArrowUp {...iconProps} />;
   };
 
   const formatDistance = (meters: number) => {
@@ -54,7 +47,11 @@ export const InstructionBanner = () => {
   };
 
   return (
-    <Animated.View entering={FadeInUp} exiting={FadeOutUp} style={styles.outerContainer}>
+    <Animated.View 
+      entering={FadeInUp} 
+      exiting={FadeOutUp} 
+      style={[styles.outerContainer, { top: insets.top + 10 }]}
+    >
       <View
         style={[
           styles.container,
@@ -70,14 +67,14 @@ export const InstructionBanner = () => {
             <View style={styles.textContainer}>
               <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
               <Text style={styles.instructionText} numberOfLines={2}>
-                {instruction}
+                {text}
               </Text>
             </View>
           </>
         ) : (
           <View style={styles.loadingContainer}>
             <Loader2 size={24} color="#FFFFFF" style={styles.loader} />
-            <Text style={styles.loadingText}>Calculating optimal route...</Text>
+            <Text style={styles.loadingText}>Calculating next move...</Text>
           </View>
         )}
       </View>

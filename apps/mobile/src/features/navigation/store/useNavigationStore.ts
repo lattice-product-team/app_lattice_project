@@ -43,6 +43,7 @@ interface NavigationState {
   ) => void;
   setNavigating: (navigating: boolean) => void;
   setPlanning: (isPlanning: boolean) => void;
+  startNavigation: () => void;
   setTransportMode: (mode: TransportMode) => void;
   setNextInstruction: (instruction: Instruction | null) => void;
   setFetching: (isFetching: boolean) => void;
@@ -91,6 +92,12 @@ export const useNavigationStore = create<NavigationState>((set) => ({
 
   setNavigating: (isNavigating) => set({ isNavigating }),
   setPlanning: (isPlanning) => set({ isPlanning }),
+  
+  startNavigation: () => set({ 
+    isPlanning: false, 
+    isNavigating: true 
+  }),
+
   setNextInstruction: (nextInstruction) => set({ nextInstruction }),
   setFetching: (isFetching) => set({ isFetching }),
 

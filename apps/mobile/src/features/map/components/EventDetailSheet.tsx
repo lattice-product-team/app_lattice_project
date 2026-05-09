@@ -64,15 +64,16 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   };
 
   const isPlanning = useNavigationStore((s) => s.isPlanning);
+  const isNavigating = useNavigationStore((s) => s.isNavigating);
 
-  // Sync state with model selection and planning mode
+  // Sync state with model selection and navigation/planning modes
   useEffect(() => {
-    if (model && !isPlanning) {
+    if (model && !isPlanning && !isNavigating) {
       islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
     } else {
       islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
     }
-  }, [!!model, isPlanning]);
+  }, [!!model, isPlanning, isNavigating]);
 
   // Sync scroll enabled state
   useAnimatedReaction(
