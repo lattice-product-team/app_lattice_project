@@ -24,38 +24,48 @@ export const useRoutingLogic = () => {
 
   useEffect(() => {
     const fetchBothRoutes = async () => {
-      if (!selectedPoiId || !userCoords || !selectedPoi) return;
+      // Determine destination based on selected POI or Event
+      const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
+      const destinationName = selectedPoi?.displayName || selectedEvent?.name || '';
 
-      console.log(`[Logic] 🛰 Dual-fetching routes for POI: ${selectedPoi.displayName}`);
+      if (!destinationCoords || !userCoords) return;
+
+      console.log(`[Logic] 🛰 Dual-fetching routes for: ${destinationName}`);
       setFetching(true);
 
       try {
         const origin = { lat: userCoords[1], lng: userCoords[0] };
-        const destination = { lat: selectedPoi.coordinates[1], lng: selectedPoi.coordinates[0] };
+        const destination = { lat: destinationCoords[1], lng: destinationCoords[0] };
 
-        // Fetch BOTH modes in parallel
-        const [driving, walking] = await Promise.all([
+        // Fetch THREE modes in parallel
+        const [driving, walking, bicycle] = await Promise.all([
           navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() }),
           navigationService.getRoute({ origin, destination, mode: 'walking', timestamp: Date.now() }),
+          navigationService.getRoute({ origin, destination, mode: 'bicycle', timestamp: Date.now() }),
         ]);
 
-        console.log('[Logic] ✅ Dual routes received successfully');
+        console.log('[Logic] ✅ Triple routes received successfully');
 
-        const routes = { driving, walking };
+        const routes = { driving, walking, bicycle };
         const metadata = {
           driving: {
             distance: driving.properties.distance,
             duration: driving.properties.durationEstimate,
-            destinationName: selectedPoi.displayName || '',
+            destinationName,
           },
           walking: {
             distance: walking.properties.distance,
             duration: walking.properties.durationEstimate,
-            destinationName: selectedPoi.displayName || '',
+            destinationName,
+          },
+          bicycle: {
+            distance: bicycle.properties.distance,
+            duration: bicycle.properties.durationEstimate,
+            destinationName,
           },
         };
 
-        // Update store with both routes
+        // Update store with all routes
         setRoutes(routes, metadata);
         
         // Update instruction for current mode
@@ -70,7 +80,7 @@ export const useRoutingLogic = () => {
     };
 
     fetchBothRoutes();
-  }, [selectedPoiId, userCoords, selectedPoi, setRoutes, setFetching]);
+  }, [selectedPoiId, selectedEvent?.id, userCoords, setRoutes, setFetching]);
 
   // Handle instruction updates when transportMode changes (instant)
   useEffect(() => {

@@ -15,7 +15,9 @@ import Animated, {
 // Hooks & State
 import { useNavigationStore } from '../store/useNavigationStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
+import { useEventStore } from '../../event/store/useEventStore';
 import { useAppTheme } from '../../../hooks/useAppTheme';
+import { Button } from '../../../components/ui/Button';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -39,6 +41,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   } = useNavigationStore();
   
   const { selectedPoi } = usePOIStore();
+  const { selectedEvent } = useEventStore();
 
   const internalState = useSharedValue(0);
 
@@ -47,7 +50,8 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   }, [isPlanning]);
 
   const rContainerStyle = useAnimatedStyle(() => {
-    const height = 340 + insets.bottom;
+    const height = 280 + insets.bottom; // Even more compact without title
+    const margin = 16;
     return {
       transform: [
         { 
@@ -60,6 +64,8 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
         }
       ],
       opacity: interpolate(internalState.value, [0, 0.1], [0, 1], Extrapolation.CLAMP),
+      marginHorizontal: margin,
+      bottom: insets.bottom + 8,
     };
   });
 
@@ -90,25 +96,22 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
       { 
         backgroundColor: theme.colors.glass.background,
         borderColor: theme.colors.glass.border,
-        paddingBottom: insets.bottom + 20
       },
       rContainerStyle
     ]}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text.main }]}>
-            {selectedPoi?.displayName || 'Route Planning'}
-          </Text>
+          <View style={styles.dragHandle} />
           <Pressable 
             onPress={() => setPlanning(false)}
             style={styles.closeButton}
           >
-            <MaterialCommunityIcons name="close" size={24} color={theme.colors.text.muted} />
+            <MaterialCommunityIcons name="close" size={20} color={theme.colors.text.muted} />
           </Pressable>
         </View>
 
         <View style={styles.modesContainer}>
-          {(['driving', 'walking'] as const).map((mode) => (
+          {(['driving', 'walking', 'bicycle'] as const).map((mode) => (
             <Pressable
               key={mode}
               onPress={() => {
@@ -121,7 +124,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
               ]}
             >
               <MaterialCommunityIcons 
-                name={mode === 'driving' ? 'car' : 'walk'} 
+                name={mode === 'driving' ? 'car' : mode === 'walking' ? 'walk' : 'bicycle'} 
                 size={24} 
                 color={transportMode === mode ? '#000' : theme.colors.text.muted} 
               />
@@ -130,7 +133,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
                   styles.modeLabel, 
                   { color: transportMode === mode ? '#000' : theme.colors.text.main }
                 ]}>
-                  {mode === 'driving' ? 'Drive' : 'Walk'}
+                  {mode === 'driving' ? 'Drive' : mode === 'walking' ? 'Walk' : 'Bike'}
                 </Text>
                 <Text style={[
                   styles.modeEta, 
@@ -145,22 +148,34 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
 
         <View style={styles.metricsRow}>
           <View style={styles.metric}>
-            <Text style={[styles.metricValue, { color: theme.colors.brand.primary }]}>
+            <Text style={[styles.metricValue, { color: theme.colors.text.primary }]}>
               {activeDuration ? formatEta(activeDuration) : '--'}
             </Text>
             <Text style={[styles.metricLabel, { color: theme.colors.text.muted }]}>
               {activeDistance ? `${(activeDistance / 1000).toFixed(1)} km` : '--'}
             </Text>
           </View>
+
+          {/* Elevation / Slope Info for Active Modes */}
+          {(transportMode === 'walking' || transportMode === 'bicycle') && (
+            <View style={[styles.metric, styles.metricBorder]}>
+              <Text style={[styles.metricValue, { color: '#32D74B' }]}>
+                {transportMode === 'bicycle' ? '+14m' : '+8m'}
+              </Text>
+              <Text style={[styles.metricLabel, { color: theme.colors.text.muted }]}>
+                Elevation
+              </Text>
+            </View>
+          )}
         </View>
 
-        <Pressable 
+        <Button
+          label="START NAVIGATION"
+          icon="navigation"
+          variant="tertiary"
           onPress={handleStart}
-          style={[styles.startButton, { backgroundColor: theme.colors.brand.primary }]}
-        >
-          <MaterialCommunityIcons name="navigation" size={24} color="#000" />
-          <Text style={styles.startButtonText}>START NAVIGATION</Text>
-        </Pressable>
+          style={styles.startButton}
+        />
       </View>
     </Animated.View>
   );
@@ -169,28 +184,32 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderRadius: 32,
     borderWidth: 1,
     zIndex: 2000,
+    overflow: 'hidden',
   },
   content: {
-    padding: 24,
+    padding: 16,
+    paddingTop: 12,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
+  dragHandle: {
+    width: 32,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
   },
   closeButton: {
+    position: 'absolute',
+    right: 0,
     padding: 4,
   },
   modesContainer: {
@@ -200,29 +219,36 @@ const styles = StyleSheet.create({
   },
   modeButton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    padding: 12,
+    padding: 8,
     borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.05)',
-    gap: 10,
+    gap: 4,
   },
   modeTextContainer: {
-    flex: 1,
+    alignItems: 'center',
   },
   modeLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   modeEta: {
-    fontSize: 12,
+    fontSize: 11,
   },
   metricsRow: {
-    marginBottom: 24,
-    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 16,
+    justifyContent: 'center',
+    gap: 32,
   },
   metric: {
     alignItems: 'center',
+  },
+  metricBorder: {
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255,255,255,0.1)',
+    paddingLeft: 40,
   },
   metricValue: {
     fontSize: 32,

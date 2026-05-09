@@ -5,6 +5,7 @@ import { useEventDetails } from './useEventDetails';
 import { DetailModel } from '../../../types/models/detail';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -19,6 +20,28 @@ export const useDetailModel = (): DetailModel | null => {
   const { details: eventDetails } = useEventDetails(
     selectedEvent?.id ? String(selectedEvent.id) : null
   );
+
+  // Get navigation data (Driving for the button, Current for the metrics)
+  const navMetadata = useNavigationStore((s) => s.metadata);
+  const setPlanning = useNavigationStore((s) => s.setPlanning);
+  const isFetching = useNavigationStore((s) => s.isFetching);
+  const deselect = usePOIStore((s) => s.deselect);
+
+  const drivingDuration = navMetadata.driving?.duration;
+  const drivingDistance = navMetadata.driving?.distance;
+
+  const formatDistance = (m: number | undefined) => {
+    if (!m) return '--';
+    if (m < 1000) return `${Math.round(m)}m`;
+    return `${(m / 1000).toFixed(1)} km`;
+  };
+
+  const formatDuration = (s: number | undefined) => {
+    if (isFetching) return '...';
+    if (!s) return '--';
+    const mins = Math.round(s / 60);
+    return `${mins} min`;
+  };
 
   return useMemo(() => {
     // 1. Handle Event Case
@@ -46,17 +69,19 @@ export const useDetailModel = (): DetailModel | null => {
           },
           { 
             label: 'Distance', 
-            value: (data as any).distance || '900m', 
+            value: formatDistance(drivingDistance), 
             icon: 'map-marker-distance' 
           },
         ],
         actions: [
           { 
             id: 'directions', 
-            label: '52 min', 
+            label: formatDuration(drivingDuration), 
             icon: 'car', 
             variant: 'primary', 
-            onPress: () => console.log('Navigate to event') 
+            onPress: () => {
+              setPlanning(true);
+            } 
           },
           { 
             id: 'offline', 
@@ -113,17 +138,19 @@ export const useDetailModel = (): DetailModel | null => {
           },
           { 
             label: 'Distance', 
-            value: selectedPoi.distance || '41 km', 
+            value: formatDistance(drivingDistance), 
             icon: 'map-marker-distance' 
           },
         ],
         actions: [
           { 
             id: 'directions', 
-            label: '52 min', 
+            label: formatDuration(drivingDuration), 
             icon: 'car', 
             variant: 'primary', 
-            onPress: () => console.log('Navigate to POI') 
+            onPress: () => {
+              setPlanning(true);
+            } 
           },
           { 
             id: 'offline', 
@@ -151,6 +178,6 @@ export const useDetailModel = (): DetailModel | null => {
     }
 
     return null;
-  }, [selectedEvent, eventDetails, selectedPoi, theme]);
+  }, [selectedEvent, eventDetails, selectedPoi, theme, navMetadata, isFetching]);
 };
 

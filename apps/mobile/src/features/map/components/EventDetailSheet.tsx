@@ -27,8 +27,8 @@ import { useDetailModel } from '../hooks/useDetailModel';
 import { SheetHeader } from './SheetHeader';
 import { ActionPillBar } from './ActionPillBar';
 import { MetricGrid } from './MetricGrid';
-import { CustomRouteCard } from './CustomRouteCard';
 import { GalleryCarousel } from './GalleryCarousel';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -53,7 +53,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
 
   const SNAP_POINTS = {
     HIDDEN: 0,
-    MID: 0.5,
+    MID: 0.34,
     FULL: 1.0,
   };
 
@@ -63,14 +63,16 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
     mass: 1.5,
   };
 
-  // Sync state with model selection
+  const isPlanning = useNavigationStore((s) => s.isPlanning);
+
+  // Sync state with model selection and planning mode
   useEffect(() => {
-    if (model) {
+    if (model && !isPlanning) {
       islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
     } else {
       islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
     }
-  }, [!!model]);
+  }, [!!model, isPlanning]);
 
   // Sync scroll enabled state
   useAnimatedReaction(
@@ -104,11 +106,11 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
       const velocity = -e.velocityY / fullTravel;
       const predictedPos = islandState.value + velocity * 0.12;
 
-      if (predictedPos < 0.25) {
+      if (predictedPos < SNAP_POINTS.MID * 0.5) {
         islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
           if (finished) runOnJS(onClose)();
         });
-      } else if (predictedPos < 0.75) {
+      } else if (predictedPos < (SNAP_POINTS.MID + SNAP_POINTS.FULL) / 2) {
         islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
       } else {
         islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
@@ -118,19 +120,20 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   const islandStyle = useAnimatedStyle(() => {
     const bottom = interpolate(
       islandState.value,
-      [0, 0.5, 1],
+      [0, SNAP_POINTS.MID, 1],
       [-SCREEN_HEIGHT, insets.bottom + 5, 0],
       Extrapolation.CLAMP
     );
     const fullHeight = SCREEN_HEIGHT - (insets.top + 80);
+    const midHeight = 320; // Enough for header, pills, and metrics
     const height = interpolate(
       islandState.value,
-      [0, 0.5, 1],
-      [0, 520, fullHeight],
+      [0, SNAP_POINTS.MID, 1],
+      [0, midHeight, fullHeight],
       Extrapolation.CLAMP
     );
 
-    const margin = interpolate(islandState.value, [0.5, 0.8], [12, 0], Extrapolation.CLAMP);
+    const margin = interpolate(islandState.value, [SNAP_POINTS.MID, 0.8], [12, 0], Extrapolation.CLAMP);
 
     return {
       height,
@@ -141,16 +144,18 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
     const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
+    const backgroundColor = interpolateColor(
+      islandState.value,
+      [0.7, 1],
+      [theme.colors.glass.background, theme.colors.bg.surface]
+    );
+
     return {
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       borderBottomLeftRadius: radius,
       borderBottomRightRadius: radius,
-      backgroundColor: interpolateColor(
-        islandState.value,
-        [0.7, 1],
-        ['#0B1B32', theme.colors.bg.surface] // Deep navy background
-      ),
+      backgroundColor,
     };
   });
 
@@ -198,7 +203,6 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                 >
                   <ActionPillBar actions={displayModel.actions} />
                   <MetricGrid metrics={displayModel.metrics} />
-                  <CustomRouteCard />
                   {displayModel.imageUrl && (
                     <GalleryCarousel 
                       images={[

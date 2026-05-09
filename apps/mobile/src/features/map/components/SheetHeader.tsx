@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -24,15 +23,8 @@ export const SheetHeader = ({
 }: SheetHeaderProps) => {
   const theme = useAppTheme();
   
-  // Reference background: Dark navy/midnight
-  const bgColor = '#0B1B32';
-
   return (
-    <View style={[styles.container, { backgroundColor: bgColor }]}>
-      <LinearGradient
-        colors={[bgColor, 'rgba(11, 27, 50, 0.7)', 'transparent']}
-        style={StyleSheet.absoluteFill}
-      />
+    <View style={styles.container}>
       
       {/* Top Actions Bar */}
       <View style={styles.topActions}>
@@ -53,24 +45,6 @@ export const SheetHeader = ({
 
       {/* Main Branding Section */}
       <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          {logoUrl ? (
-            <Image 
-              source={{ uri: logoUrl }} 
-              style={styles.logo} 
-              resizeMode="contain" 
-            />
-          ) : (
-            <View style={styles.iconPlaceholder}>
-              <MaterialCommunityIcons 
-                name={(categoryIcon as any) || 'map-marker'} 
-                size={40} 
-                color="white" 
-              />
-            </View>
-          )}
-        </View>
-        
         <View style={styles.textContainer}>
           <Text style={styles.title} numberOfLines={1}>
             {title}
@@ -86,8 +60,8 @@ export const SheetHeader = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingTop: 8,
+    paddingBottom: 20,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     overflow: 'hidden',
@@ -109,34 +83,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  logoContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-    overflow: 'hidden',
-  },
-  logo: {
-    width: '80%',
-    height: '80%',
-  },
-  iconPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#1A73E8', // Brand blue fallback
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   textContainer: {
     alignItems: 'center',
+    marginTop: -8,
   },
   title: {
     fontSize: 26,

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { RouteGeoJSON } from '../../../types';
 
-export type TransportMode = 'driving' | 'walking';
+export type TransportMode = 'driving' | 'walking' | 'bicycle';
 
 interface RouteMetadata {
   distance: number;
@@ -24,8 +24,23 @@ interface NavigationState {
   nextInstruction: Instruction | null;
   isFetching: boolean;
 
+  routes: {
+    driving: RouteGeoJSON | null;
+    walking: RouteGeoJSON | null;
+    bicycle: RouteGeoJSON | null;
+  };
+
+  metadata: {
+    driving: RouteMetadata | null;
+    walking: RouteMetadata | null;
+    bicycle: RouteMetadata | null;
+  };
+
   // Actions
-  setRoute: (route: RouteGeoJSON | null, metadata?: RouteMetadata | null) => void;
+  setRoutes: (
+    routes: { driving: RouteGeoJSON | null; walking: RouteGeoJSON | null; bicycle: RouteGeoJSON | null },
+    metadata: { driving: RouteMetadata | null; walking: RouteMetadata | null; bicycle: RouteMetadata | null }
+  ) => void;
   setNavigating: (navigating: boolean) => void;
   setPlanning: (isPlanning: boolean) => void;
   setTransportMode: (mode: TransportMode) => void;
@@ -36,7 +51,6 @@ interface NavigationState {
 
 /**
  * Specialized store for handling active navigation and route calculation states.
- * Updated to support turn-by-turn navigation data from Valhalla.
  */
 export const useNavigationStore = create<NavigationState>((set) => ({
   currentRoute: null,
@@ -50,11 +64,13 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   routes: {
     driving: null,
     walking: null,
+    bicycle: null,
   },
   
   metadata: {
     driving: null,
     walking: null,
+    bicycle: null,
   },
 
   setRoutes: (routes, metadata) =>
@@ -82,8 +98,8 @@ export const useNavigationStore = create<NavigationState>((set) => ({
     set({
       currentRoute: null,
       routeMetadata: null,
-      routes: { driving: null, walking: null },
-      metadata: { driving: null, walking: null },
+      routes: { driving: null, walking: null, bicycle: null },
+      metadata: { driving: null, walking: null, bicycle: null },
       isNavigating: false,
       nextInstruction: null,
       isFetching: false,

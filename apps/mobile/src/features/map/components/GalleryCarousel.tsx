@@ -23,8 +23,10 @@ export const GalleryCarousel = ({ images }: GalleryCarouselProps) => {
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={ITEM_WIDTH + 16}
+        snapToAlignment="start"
         decelerationRate="fast"
         contentContainerStyle={styles.scrollContent}
+        scrollEventThrottle={16}
       >
         {images.map((img, index) => (
           <View key={index} style={styles.itemWrapper}>
@@ -36,6 +38,8 @@ export const GalleryCarousel = ({ images }: GalleryCarouselProps) => {
             />
           </View>
         ))}
+        {/* End padding for better snapping of the last item */}
+        <View style={{ width: 20 }} />
       </ScrollView>
     </View>
   );

@@ -5,7 +5,7 @@ import { decodePolyline } from '../../../utils/geoUtils';
 export interface RouteRequest {
   origin: { lat: number; lng: number };
   destination: { lat: number; lng: number };
-  mode?: 'driving' | 'walking';
+  mode?: 'driving' | 'walking' | 'bicycle';
   avoidStairs?: boolean;
   wheelchairAccess?: boolean;
   timestamp?: number;
@@ -13,7 +13,9 @@ export interface RouteRequest {
 
 export const navigationService = {
   getRoute: async (request: RouteRequest): Promise<RouteGeoJSON> => {
-    const costing = request.mode === 'driving' ? 'auto' : 'pedestrian';
+    let costing = 'pedestrian';
+    if (request.mode === 'driving') costing = 'auto';
+    if (request.mode === 'bicycle') costing = 'bicycle';
 
     const body = {
       locations: [
