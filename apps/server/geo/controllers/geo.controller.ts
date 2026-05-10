@@ -3,6 +3,7 @@ import { db, pointsOfInterest, sql, events, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 import { socialService } from '../services/social.service';
+import { notifyAdmin } from '../../api/socket';
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -520,6 +521,9 @@ export const createEvent = async (req: Request, res: Response) => {
       .returning();
 
     res.status(201).json(newEvent);
+
+    // Notify Admins
+    notifyAdmin('admin:events:new', { type: 'EVENT_CREATED', id: newEvent.id.toString() });
   } catch (error) {
     console.error('Error creating event:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -590,6 +594,9 @@ export const createPoi = async (req: Request, res: Response) => {
       .returning();
 
     res.status(201).json(newPoi);
+
+    // Notify Admins
+    notifyAdmin('admin:pois:updated', { type: 'POI_CREATED', id: newPoi.id.toString() });
   } catch (error) {
     console.error('Error creating POI:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });

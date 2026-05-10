@@ -42,6 +42,7 @@ import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
+import { useSocket } from '../../src/hooks/useSocket';
 import { useLocationStore } from '../../src/store/useLocationStore';
 import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
@@ -82,6 +83,7 @@ export default function MapIndexPage() {
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
   const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
+  const { isConnected } = useSocket();
 
   const { setProfile } = useProfileStore();
 
@@ -646,6 +648,7 @@ export default function MapIndexPage() {
           }}
           onToggle3D={() => setManualAR(!manualAR)}
           is3DActive={manualAR}
+          isConnected={isConnected}
         />
       </Animated.View>
 

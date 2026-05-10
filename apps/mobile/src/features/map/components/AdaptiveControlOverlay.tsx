@@ -17,6 +17,7 @@ interface AdaptiveControlOverlayProps {
   is3DActive: boolean;
   uiLayer: SharedValue<number>;
   islandState: SharedValue<number>;
+  isConnected?: boolean;
   bottomOffset?: number;
 }
 
@@ -82,6 +83,14 @@ export const AdaptiveControlOverlay = ({
           ]}
         >
           <Feather name="navigation" size={20} color={iconColor} />
+          {isConnected && (
+            <View 
+              style={[
+                styles.liveIndicator, 
+                { backgroundColor: '#4ADE80', borderColor: theme.colors.bg.surface }
+              ]} 
+            />
+          )}
         </Pressable>
       </View>
 
@@ -155,5 +164,14 @@ const styles = StyleSheet.create({
     fontFamily: typography.primary.bold,
     textAlign: 'center',
     includeFontPadding: false,
+  },
+  liveIndicator: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1.5,
   },
 });

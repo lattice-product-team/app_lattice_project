@@ -18,6 +18,7 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePOIs, useEvents } from '@/hooks/use-admin-data';
+import { useSocket } from '@/hooks/use-socket';
 import dynamic from 'next/dynamic';
 import { useMapInteractions } from '@/components/map/use-map-interactions';
 
@@ -45,6 +46,18 @@ const POI_TYPES = [
 export default function POIsPage() {
   const { pois, loading, refetch } = usePOIs();
   const { events } = useEvents();
+  const { subscribe, isConnected } = useSocket();
+
+  // Real-time synchronization
+  React.useEffect(() => {
+    if (isConnected) {
+      const unsubscribe = subscribe('admin:pois:updated', () => {
+        console.log('[Real-time] POIs updated, refetching...');
+        refetch();
+      });
+      return unsubscribe;
+    }
+  }, [isConnected, subscribe, refetch]);
 
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
