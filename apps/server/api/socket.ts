@@ -1,8 +1,8 @@
 import { Server } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
-import { createClient } from 'redis';
 import { Server as HttpServer } from 'http';
 import { loadConfig } from '@app/core';
+import { getRedisClient } from './redis';
 import jwt from 'jsonwebtoken';
 
 const config = loadConfig();
@@ -25,15 +25,15 @@ export const initSocket = async (httpServer: HttpServer) => {
   });
 
   // Redis Adapter Setup
-  const pubClient = createClient({ url: config.REDIS_URL });
-  const subClient = pubClient.duplicate();
-
   try {
-    await Promise.all([pubClient.connect(), subClient.connect()]);
+    const pubClient = await getRedisClient();
+    const subClient = pubClient.duplicate();
+    await subClient.connect();
+    
     io.adapter(createAdapter(pubClient, subClient));
-    console.log('[Socket] Redis Adapter integrated');
+    console.log('[Socket] Redis Adapter integrated (shared client)');
   } catch (error) {
-    console.error('[Socket] Redis connection failed, falling back to local adapter:', error);
+    console.error('[Socket] Redis adapter setup failed:', error);
   }
 
   // Authentication Middleware (Task 2.1)

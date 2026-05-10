@@ -10,6 +10,18 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - red_proxy
+    depends_on:
+      - redis
+
+  redis:
+    container_name: lattice_redis
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
     networks:
       - red_proxy
 
@@ -31,3 +43,6 @@ services:
 networks:
   red_proxy:
     external: true
+
+volumes:
+  redis_data:

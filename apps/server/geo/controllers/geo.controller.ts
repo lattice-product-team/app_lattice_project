@@ -4,6 +4,7 @@ import { db, pointsOfInterest, sql, events, eq } from '@app/db';
 import { findRoute } from '../services/navigation.service';
 import { socialService } from '../services/social.service';
 import { notifyAdmin } from '../../api/socket';
+import { getCache, setCache, deleteCache, deleteByPrefix } from '../../api/redis';
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -73,6 +74,16 @@ export const getEventSpatial = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
+    const cacheKey = `geo:event:${eventId}:spatial`;
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(JSON.parse(cachedData));
+    }
+
+    res.setHeader('X-Cache', 'MISS');
+
     const [event] = await db
       .select({
         id: events.id,
@@ -120,11 +131,14 @@ export const getEventSpatial = async (req: Request, res: Response) => {
         },
       });
     });
-
-    res.json({
+    const responseData = {
       type: 'FeatureCollection',
       features,
-    });
+    };
+
+    setCache(cacheKey, JSON.stringify(responseData)).catch(() => {});
+
+    res.json(responseData);
   } catch (error) {
     console.error('Error fetching event spatial data:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -171,6 +185,13 @@ export const saveEventSpatial = async (req: Request, res: Response) => {
         });
       }
     }
+
+    // Invalidate Cache
+    await deleteByPrefix('geo:pois:');
+    await deleteCache(`geo:event:${eventId}:spatial`);
+
+    // Notify Admins
+    notifyAdmin('admin:pois:updated', { type: 'EVENT_SPATIAL_UPDATED', id });
 
     res.json({ success: true, message: 'Event spatial data saved successfully' });
   } catch (error) {
@@ -226,6 +247,17 @@ export const getEventStats = async (req: Request, res: Response) => {
 export const getPois = async (req: Request, res: Response) => {
   try {
     const { category, eventId } = req.query;
+
+    // Cache Key Strategy
+    const cacheKey = `geo:pois:cat=${category || 'all'}:evt=${eventId || 'global'}`;
+    const cachedData = await getCache(cacheKey);
+
+    if (cachedData) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(JSON.parse(cachedData));
+    }
+
+    res.setHeader('X-Cache', 'MISS');
 
     const query = db
       .select({
@@ -287,10 +319,14 @@ export const getPois = async (req: Request, res: Response) => {
       },
     }));
 
-    res.json({
+    const responseData = {
       type: 'FeatureCollection',
       features,
-    });
+    };
+
+    setCache(cacheKey, JSON.stringify(responseData)).catch(() => {});
+
+    res.json(responseData);
   } catch (error) {
     console.error('Error fetching POIs:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -520,10 +556,13 @@ export const createEvent = async (req: Request, res: Response) => {
       })
       .returning();
 
-    res.status(201).json(newEvent);
+    // Invalidate Cache (All POIs might need refresh if new event contains them)
+    await deleteByPrefix('geo:pois:');
 
     // Notify Admins
     notifyAdmin('admin:events:new', { type: 'EVENT_CREATED', id: newEvent.id.toString() });
+
+    res.status(201).json(newEvent);
   } catch (error) {
     console.error('Error creating event:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -592,6 +631,12 @@ export const createPoi = async (req: Request, res: Response) => {
         location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`,
       })
       .returning();
+
+    // Invalidate Cache
+    await deleteByPrefix('geo:pois:');
+    if (parsedEventId) {
+      await deleteCache(`geo:event:${parsedEventId}:spatial`);
+    }
 
     res.status(201).json(newPoi);
 
