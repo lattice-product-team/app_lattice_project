@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
-import Animated, { useAnimatedStyle, withTiming, useDerivedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as LucideIcons from 'lucide-react-native';
 
 interface POIMarkerProps {
@@ -11,6 +11,9 @@ interface POIMarkerProps {
   isSelected?: boolean;
   theme: any;
   onPress: (poi: any) => void;
+  zoomLevel?: number;
+  spiderAngle?: number;
+  isSpiderfied?: boolean;
 }
 
 /**
@@ -44,8 +47,18 @@ const CATEGORY_LUCIDE_MAP: Record<string, keyof typeof LucideIcons> = {
 };
 
 export const POIMarker: React.FC<POIMarkerProps> = React.memo(
-  ({ poi, isSelected = false, theme, onPress }) => {
+  ({ 
+    poi, 
+    isSelected = false, 
+    theme, 
+    onPress, 
+    zoomLevel = 20,
+    spiderAngle = 0,
+    isSpiderfied = false
+  }) => {
     const { properties } = poi;
+    
+    const showLabel = isSelected || zoomLevel >= 17;
     
     // Resolve category and color
     const categoryKey = properties.category?.toLowerCase() || 'generic';
@@ -56,13 +69,16 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const IconName = CATEGORY_LUCIDE_MAP[categoryKey] || 'MapPin';
     const IconComponent = (LucideIcons[IconName] as any) || LucideIcons.MapPin;
 
-    const scale = useDerivedValue(() => {
-      return withTiming(isSelected ? 1.4 : 1, { duration: 250 });
-    }, [isSelected]);
-
     const animatedStyle = useAnimatedStyle(() => {
+      const targetX = isSpiderfied ? 45 * Math.cos(spiderAngle) : 0;
+      const targetY = isSpiderfied ? 45 * Math.sin(spiderAngle) : 0;
+
       return {
-        transform: [{ scale: scale.value }],
+        transform: [
+          { scale: withSpring(isSelected ? 1.4 : 1, theme.motion.physics.snappy) },
+          { translateX: withSpring(targetX, theme.motion.physics.snappy) },
+          { translateY: withSpring(targetY, theme.motion.physics.snappy) },
+        ],
       };
     });
 
@@ -101,19 +117,21 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               </View>
             </MapPinFrame>
 
-            <View style={mapPinStyles.labelBadge}>
-              <Text
-                style={[
-                  mapPinStyles.labelText,
-                  {
-                    color: color,
-                  },
-                ]}
-                numberOfLines={2}
-              >
-                {properties.name}
-              </Text>
-            </View>
+            {showLabel && (
+              <View style={mapPinStyles.labelBadge}>
+                <Text
+                  style={[
+                    mapPinStyles.labelText,
+                    {
+                      color: color,
+                    },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {properties.name}
+                </Text>
+              </View>
+            )}
           </Animated.View>
         </TouchableOpacity>
       </View>
