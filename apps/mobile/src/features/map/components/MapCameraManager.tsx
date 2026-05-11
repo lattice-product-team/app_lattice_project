@@ -86,7 +86,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
         });
       }
-    }, [recenterCount, userCoords, is3DActive]);
+    }, [recenterCount, userCoords]); // Removed is3DActive to prevent re-centering when toggling 3D
 
     // Focus on selected POI
     useEffect(() => {
@@ -121,7 +121,17 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           },
         });
       }
-    }, [selectedCoords, isNavigating, insets.top, forceCenterCount, is3DActive]);
+    }, [selectedCoords, isNavigating, insets.top, forceCenterCount]); // Removed is3DActive
+
+    // Toggle 3D Pitch
+    useEffect(() => {
+      if (cameraRef.current) {
+        cameraRef.current.setCamera({
+          pitch: is3DActive ? 60 : 0,
+          animationDuration: 600,
+        });
+      }
+    }, [is3DActive]);
 
     // Focus on selected event or its children
     useEffect(() => {

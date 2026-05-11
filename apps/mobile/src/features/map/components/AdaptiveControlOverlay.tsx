@@ -68,6 +68,7 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onToggle3D();
           }}
+          hitSlop={12}
           style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
           <Text style={[styles.text3D, { color: iconColor }]}>{is3DActive ? '2D' : '3D'}</Text>
@@ -80,6 +81,7 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onRecenter();
           }}
+          hitSlop={12}
           style={({ pressed }) => [
             styles.action, 
             pressed && { opacity: 0.7 },
@@ -120,6 +122,7 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onOpenBinoculars?.();
           }}
+          hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}
         >
           <MaterialCommunityIcons name="binoculars" size={20} color={iconColor} />
@@ -138,24 +141,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   verticalPill: {
-    width: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    paddingVertical: 12, // Increased for more space
+    width: 56, // Slightly wider
+    borderRadius: 28,
+    borderWidth: 1.5, // Thicker border for better visibility
+    paddingVertical: 12,
     alignItems: 'center',
-    gap: 8, // Added gap between items
+    gap: 8,
   },
   circle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
+    width: 56, // Slightly larger
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   action: {
-    width: 44,
-    height: 44,
+    width: 52, // Larger touch area
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
   },
