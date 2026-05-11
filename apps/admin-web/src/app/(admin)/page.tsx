@@ -53,15 +53,6 @@ export default function Dashboard() {
           <h1 className="waldenburg-display text-[56px] text-obsidian leading-[1] mb-8 text-pretty">
             Architecting real-time event operations with restraint.
           </h1>
-          <div className="flex items-center gap-4">
-            <Button variant="primary" className="h-12 px-8">
-              <Icons.Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-              Create New Event
-            </Button>
-            <Button variant="ghost" className="h-12 px-8">
-              System Logs
-            </Button>
-          </div>
         </div>
       </header>
 
@@ -79,7 +70,7 @@ export default function Dashboard() {
             value: stats?.activeEvents ?? '0',
             data: [2, 3, 2, 4, 3, 3, 3],
           },
-          { label: 'System Capacity*', value: '120K', data: [120, 120, 120, 120, 120, 120, 120] },
+          { label: 'System Capacity*', value: stats?.totalCapacity?.toLocaleString() ?? '0', data: [120, 120, 120, 120, 120, 120, 120] },
           { label: 'Active Alerts*', value: stats?.activeAlerts ?? '0', dark: true, alert: true },
         ].map((m, i) => (
           <Card
@@ -151,10 +142,10 @@ export default function Dashboard() {
               </p>
 
               <div className="flex gap-4">
-                <Button variant="primary" className="h-12 px-8">
+                <Button variant="primary" className="h-12 px-8" as="a" href={`/map?eventId=${activeEvent.id}`}>
                   View Map
                 </Button>
-                <Button variant="ghost" className="h-12 px-8">
+                <Button variant="ghost" className="h-12 px-8" as="a" href="/events">
                   Event Settings
                 </Button>
               </div>

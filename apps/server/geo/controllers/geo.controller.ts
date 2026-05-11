@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db, pointsOfInterest, sql, events, eq } from '@app/db';
+import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 import { socialService } from '../services/social.service';
@@ -205,14 +205,28 @@ export const getGlobalStats = async (req: Request, res: Response) => {
       .select({ count: sql<number>`count(*)::int` })
       .from(events)
       .where(sql`end_date > now()`);
-    // We can also count from users table if available in this context
-    const [usersCount] = await db.select({ count: sql<number>`count(*)::int` }).from(sql`users`);
+
+    const [activeUsers] = await db
+      .select({ count: sql<number>`count(DISTINCT user_id)::int` })
+      .from(telemetryLogs)
+      .where(sql`timestamp > now() - interval '5 minutes'`);
+
+    const [capacityResult] = await db
+      .select({ total: sql<number>`coalesce(sum(capacity), 0)::int` })
+      .from(pointsOfInterest)
+      .innerJoin(events, eq(pointsOfInterest.eventId, events.id))
+      .where(sql`end_date > now()`);
+
+    const [alertsCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(pointsOfInterest)
+      .where(sql`(status = 'closed' OR crowd_level = 'blocked') AND event_id IS NOT NULL`);
 
     res.json({
       activeEvents: eventsCount.count || 0,
-      totalCapacity: 120000, // Aggregate capacity across all events
-      liveUsers: (usersCount.count || 0) + 42,
-      activeAlerts: 2,
+      totalCapacity: capacityResult.total || 0,
+      liveUsers: activeUsers.count || 0,
+      activeAlerts: alertsCount.count || 0,
     });
   } catch (error) {
     console.error('Error fetching global stats:', error);
@@ -229,13 +243,35 @@ export const getEventStats = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
-    // Mocking telemetry based on event context
-    // In a real system, this would query the telemetry/social service
+    const [capacityResult] = await db
+      .select({ total: sql<number>`coalesce(sum(capacity), 0)::int` })
+      .from(pointsOfInterest)
+      .where(eq(pointsOfInterest.eventId, eventId));
+
+    const [entryCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(telemetryLogs)
+      .where(sql`event_id = ${eventId} AND timestamp > now() - interval '10 minutes'`);
+
+    const [staffCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(pointsOfInterest)
+      .where(
+        sql`event_id = ${eventId} AND type IN ('security', 'medical') AND status = 'open'`
+      );
+
+    const [alertsCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(pointsOfInterest)
+      .where(
+        sql`event_id = ${eventId} AND (status = 'closed' OR crowd_level = 'blocked')`
+      );
+
     res.json({
-      estimatedCapacity: 45000 + (eventId % 5) * 5000,
-      entryRate: 120 + (eventId % 3) * 15,
-      staffOnline: 12 + (eventId % 4),
-      activeAlerts: eventId % 2,
+      estimatedCapacity: capacityResult.total || 0,
+      entryRate: Math.round((entryCount.count || 0) / 10),
+      staffOnline: staffCount.count || 0,
+      activeAlerts: alertsCount.count || 0,
     });
   } catch (error) {
     console.error('Error fetching event stats:', error);

@@ -100,11 +100,21 @@ export function useStats() {
 }
 
 export function useEventStats(eventId?: string) {
-  const { data, loading, error, refetch } = useAdminFetch<{
-    estimatedCapacity: number;
-    entryRate: number;
-  }>(eventId ? `/events/${eventId}/stats` : '/stats');
-  return { stats: data, loading, error, refetch };
+  const { data, loading, error, refetch } = useAdminFetch<any>(
+    eventId ? `/events/${eventId}/stats` : '/stats'
+  );
+
+  // Map global stats to event stats structure if needed
+  const stats = data
+    ? {
+        estimatedCapacity: data.estimatedCapacity ?? data.totalCapacity ?? 0,
+        entryRate: data.entryRate ?? 0,
+        staffOnline: data.staffOnline ?? 0,
+        activeAlerts: data.activeAlerts ?? 0,
+      }
+    : null;
+
+  return { stats, loading, error, refetch };
 }
 
 export function usePOIs(eventId?: string) {
