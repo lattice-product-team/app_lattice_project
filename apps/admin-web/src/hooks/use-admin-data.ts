@@ -10,6 +10,15 @@ interface FetchState<T> {
   error: string | null;
 }
 
+export interface LatticeEvent {
+  id: string | number;
+  name: string;
+  description?: string;
+  status?: string;
+  capacity?: number;
+  [key: string]: any;
+}
+
 /**
  * A centralized hook for fetching administrative data with
  * built-in validation and error handling.
@@ -80,7 +89,7 @@ export function useAdminFetch<T>(endpoint: string, interval = 5000) {
 }
 
 export function useEvents() {
-  const { data, loading, error, refetch } = useAdminFetch<Event[]>('/events');
+  const { data, loading, error, refetch } = useAdminFetch<LatticeEvent[]>('/events');
   const events = useMemo(() => data || [], [data]);
   return { events, loading, error, refetch };
 }
