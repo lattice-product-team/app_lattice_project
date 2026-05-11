@@ -2,37 +2,57 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolate, SharedValue } from 'react-native-reanimated';
 
 interface EventMarkerProps {
   event: any;
   isSelected?: boolean;
   theme: any;
   onPress: (event: any) => void;
+  zoomSharedValue: SharedValue<number>;
   spiderAngle?: number;
   isSpiderfied?: boolean;
 }
 
 export const EventMarker: React.FC<EventMarkerProps> = React.memo(
-  ({ event, isSelected = false, theme, onPress, spiderAngle = 0, isSpiderfied = false }) => {
+  ({ event, isSelected = false, theme, onPress, zoomSharedValue }) => {
     const { properties } = event;
     const color = theme.colors.brand.primary;
 
     const animatedStyle = useAnimatedStyle(() => {
-      const targetX = isSpiderfied ? 45 * Math.cos(spiderAngle) : 0;
-      const targetY = isSpiderfied ? 45 * Math.sin(spiderAngle) : 0;
+      // 1. Selection scale with spring
+      const baseScale = withSpring(isSelected ? 1.4 : 1, theme.motion.physics.snappy);
+      
+      // 2. Zoom-based scaling
+      const zoomScale = interpolate(
+        zoomSharedValue.value,
+        [13, 17],
+        [0.8, 1],
+        Extrapolate.CLAMP
+      );
 
       return {
         transform: [
-          { scale: withSpring(isSelected ? 1.4 : 1, theme.motion.physics.snappy) },
-          { translateX: withSpring(targetX, theme.motion.physics.snappy) },
-          { translateY: withSpring(targetY, theme.motion.physics.snappy) },
+          { scale: baseScale * zoomScale },
         ],
       };
     });
 
+    const labelAnimatedStyle = useAnimatedStyle(() => {
+      const labelOpacity = interpolate(
+        zoomSharedValue.value,
+        [14, 15],
+        [0, 1],
+        Extrapolate.CLAMP
+      );
+      
+      return {
+        opacity: isSelected ? 1 : labelOpacity,
+      };
+    });
+
     return (
-      <View style={mapPinStyles.container}>
+      <View style={mapPinStyles.markerWrapper}>
         <TouchableOpacity
           onPress={() => onPress(event)}
           activeOpacity={0.9}
@@ -65,19 +85,22 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
               )}
             </MapPinFrame>
 
-            <View style={mapPinStyles.labelBadge}>
+            <Animated.View style={[mapPinStyles.labelBadge, labelAnimatedStyle]}>
               <Text
                 style={[
                   mapPinStyles.labelText,
                   {
                     color: theme.colors.text.primary,
+                    textShadowColor: theme.colors.bg.surface,
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 3,
                   },
                 ]}
                 numberOfLines={2}
               >
                 {properties.name}
               </Text>
-            </View>
+            </Animated.View>
           </Animated.View>
         </TouchableOpacity>
       </View>

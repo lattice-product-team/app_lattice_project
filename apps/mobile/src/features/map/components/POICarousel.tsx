@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Navigation, ChevronRight } from 'lucide-react-native';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
@@ -40,6 +40,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
   const theme = useLatticeTheme();
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const metadata = getCategoryMetadata(poi.category);
+  const CategoryIcon = metadata.icon;
   const imageUrl =
     poi.images && poi.images.length > 0
       ? poi.images[0]
@@ -85,11 +86,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
             <View style={[styles.categoryBadge, { backgroundColor: `${metadata.color}EE` }]}>
-              {metadata.iconFamily === 'material' ? (
-                <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
-              ) : (
-                <Feather name={metadata.icon as any} size={12} color="white" />
-              )}
+              <CategoryIcon size={12} color="white" strokeWidth={2.5} />
               <Text style={styles.categoryText}>{metadata.label.toUpperCase()}</Text>
             </View>
 
@@ -103,7 +100,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
                   },
                 ]}
               >
-                <Feather name="navigation" size={10} color="white" />
+                <Navigation size={10} color="white" strokeWidth={2.5} />
                 <Text style={styles.distanceText}>{distanceText}</Text>
               </View>
             )}
@@ -168,7 +165,7 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
       {title && (
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: theme.colors.text.primary }]}>{title}</Text>
-          <Feather name="chevron-right" size={16} color={theme.colors.text.muted} />
+          <ChevronRight size={16} color={theme.colors.text.muted} strokeWidth={2.2} />
         </View>
       )}
       <ScrollView

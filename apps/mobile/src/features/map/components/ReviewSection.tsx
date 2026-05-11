@@ -52,8 +52,8 @@ export const ReviewSection = ({ rating, reviewsCount, snippets, sourceUrl }: Rev
       <View style={styles.snippets}>
         {snippets.slice(0, 3).map((text, index) => (
           <View key={index} style={styles.snippetItem}>
-            <Quote size={16} color="rgba(255,255,255,0.3)" fill="rgba(255,255,255,0.1)" />
-            <Text style={[styles.snippetText, { color: 'rgba(255,255,255,0.8)' }]} numberOfLines={2}>
+            <Quote size={16} color={theme.colors.text.muted} fill={theme.colors.glass.subtle} />
+            <Text style={[styles.snippetText, { color: theme.colors.text.secondary }]} numberOfLines={2}>
               {text}
             </Text>
           </View>

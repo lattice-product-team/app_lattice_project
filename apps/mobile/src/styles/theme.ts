@@ -142,7 +142,7 @@ export const lightTheme: LatticeTheme = {
       primary: '#000000',
       secondary: '#3A3A3C',
       muted: '#8E8E93', // Apple standard muted grey
-      inverse: '#FFFFFF',
+      inverse: '#1A1A19',
     },
     border: {
       subtle: primitiveColors.neutral.light['border-low'],

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Hand } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
@@ -19,7 +19,7 @@ export const CustomRouteCard = () => {
       ]}
     >
       <View style={[styles.iconContainer, { backgroundColor: '#34A853' }]}>
-        <MaterialCommunityIcons name="gesture-tap-hold" size={24} color="white" />
+        <Hand size={24} color="white" strokeWidth={2.2} />
       </View>
       <View style={styles.textContainer}>
         <Text style={[styles.title, { color: theme.colors.text.primary }]}>

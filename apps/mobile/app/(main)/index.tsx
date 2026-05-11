@@ -19,7 +19,7 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Compass, Map as MapIcon } from 'lucide-react-native';
 
 // Core Components
 import { MapContent } from '../../src/features/map/components/MapContent';
@@ -590,7 +590,8 @@ export default function MapIndexPage() {
     ),
   }));
 
-  const AnimatedFeather = Animated.createAnimatedComponent(Feather);
+  const AnimatedCompass = Animated.createAnimatedComponent(Compass);
+  const AnimatedMap = Animated.createAnimatedComponent(MapIcon);
   const searchInputRef = useRef<TextInput>(null);
 
   return (
@@ -683,13 +684,13 @@ export default function MapIndexPage() {
             <View style={styles.modePillLabels}>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedFeather name="compass" size={18} animatedProps={exploreIconStyle as any} />
+                  <AnimatedCompass size={18} animatedProps={exploreIconStyle as any} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
                 </Animated.View>
               </View>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedFeather name="map" size={18} animatedProps={mapIconStyle as any} />
+                  <AnimatedMap size={18} animatedProps={mapIconStyle as any} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, mapTextStyle]}>Map</Animated.Text>
                 </Animated.View>
               </View>

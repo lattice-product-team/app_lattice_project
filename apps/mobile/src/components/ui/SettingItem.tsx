@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, Pressable, Switch } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, Pressable, Switch, StyleSheet } from 'react-native';
+import { ChevronRight, LucideIcon } from 'lucide-react-native';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface SettingItemProps {
   label: string;
-  icon: keyof typeof Feather.glyphMap;
+  icon: LucideIcon;
   value?: boolean;
   onValueChange?: (value: boolean) => void;
   onPress?: () => void;
@@ -17,7 +17,7 @@ interface SettingItemProps {
 
 export const SettingItem = React.memo(function SettingItem({
   label,
-  icon,
+  icon: Icon,
   value,
   onValueChange,
   onPress,
@@ -43,45 +43,39 @@ export const SettingItem = React.memo(function SettingItem({
     <Pressable
       onPress={type === 'link' ? onPress : undefined}
       style={({ pressed }) => [
+        styles.container,
         {
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          itemsCenter: 'center',
-          paddingVertical: 16,
-          paddingHorizontal: 20,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.border.subtle,
           backgroundColor: pressed && type === 'link' ? theme.colors.bg.elevation : 'transparent',
+          borderBottomColor: theme.colors.border.subtle,
         },
       ]}
       accessibilityRole={type === 'link' ? 'button' : 'none'}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+      <View style={styles.leftSection}>
         <View
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: 16,
-            backgroundColor: bgColor,
-          }}
+          style={[
+            styles.iconWrapper,
+            {
+              backgroundColor: bgColor,
+            },
+          ]}
         >
-          <Feather name={icon} size={20} color={iconColor} />
+          <Icon size={20} color={iconColor} strokeWidth={2.2} />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={styles.textWrapper}>
           <Text
-            style={{
-              fontSize: 16,
-              fontWeight: destructive ? 'bold' : '500',
-              color: destructive ? theme.colors.status.error : theme.colors.text.primary,
-            }}
+            style={[
+              styles.label,
+              {
+                fontWeight: destructive ? 'bold' : '500',
+                color: destructive ? theme.colors.status.error : theme.colors.text.primary,
+              },
+            ]}
           >
             {label}
           </Text>
           {secondaryText ? (
-            <Text style={{ color: theme.colors.brand.primary, fontSize: 12, marginTop: 2 }}>
+            <Text style={[styles.secondaryText, { color: theme.colors.brand.primary }]}>
               {secondaryText}
             </Text>
           ) : null}
@@ -96,14 +90,48 @@ export const SettingItem = React.memo(function SettingItem({
           thumbColor={theme.colors.text.inverse}
         />
       ) : (
-        <Feather
-          name="chevron-right"
+        <ChevronRight
           size={24}
           color={destructive ? theme.colors.status.error : theme.colors.text.muted}
+          strokeWidth={2.2}
         />
       )}
     </Pressable>
   );
+});
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  iconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  textWrapper: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 16,
+  },
+  secondaryText: {
+    fontSize: 12,
+    marginTop: 2,
+  },
 });
 
 SettingItem.displayName = 'SettingItem';

@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Shield, Trash2 } from 'lucide-react-native';
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -221,7 +221,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
             <View style={styles.separator} />
 
             <View style={[styles.infoBox, { backgroundColor: theme.colors.status.successSurface }]}>
-              <Feather name="shield" size={16} color={theme.colors.status.success} />
+              <Shield size={16} color={theme.colors.status.success} strokeWidth={2} />
               <Text style={[styles.infoBoxText, { color: theme.colors.text.secondary }]}>
                 Entrada vinculada correctament al teu compte. Només tu pots utilitzar aquest QR per
                 a l&apos;accés.
@@ -235,7 +235,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
               ]}
               onPress={() => handleDelete(selectedTicket)}
             >
-              <Feather name="trash-2" size={18} color={theme.colors.status.error} />
+              <Trash2 size={18} color={theme.colors.status.error} strokeWidth={2} />
               <Text style={[styles.deleteOptionText, { color: theme.colors.status.error }]}>
                 Eliminar Entrada
               </Text>

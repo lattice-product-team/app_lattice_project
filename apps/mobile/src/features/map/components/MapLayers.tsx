@@ -1,15 +1,14 @@
 import React from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
+import { SharedValue } from 'react-native-reanimated';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
 import { EventMarker } from './EventMarker';
 import { POIMarker } from './POIMarker';
-import { applySpiderfication, SpiderfiedFeature } from '../utils/spatialUtils';
-import { usePOIStore } from '../../poi/store/usePOIStore';
+import { useStartupStore } from '../../../store/useStartupStore';
 
 interface MapLayersProps {
   theme: any;
-  allPoisGeoJSON: any;
   poisGeoJSON: any;
   eventsGeoJSON?: any;
   selectedEventId?: string | number | null;
@@ -20,11 +19,11 @@ interface MapLayersProps {
   isPlanning?: boolean;
   onPoiPress: (data: any) => void;
   zoomLevel: number;
+  zoomSharedValue: SharedValue<number>;
 }
 
 export const MapLayers = React.memo(({
   theme,
-  allPoisGeoJSON,
   poisGeoJSON,
   eventsGeoJSON,
   selectedEventId,
@@ -35,39 +34,25 @@ export const MapLayers = React.memo(({
   isPlanning,
   onPoiPress,
   zoomLevel,
+  zoomSharedValue,
 }: MapLayersProps) => {
-
-  // 1. Combine and Spiderfy features to handle overlaps between events and POIs
-  const spiderfiedItems = React.useMemo(() => {
-    const allFeatures = [
-      ...(eventsGeoJSON?.features || []).map((f: any) => ({ ...f, _isEvent: true })),
-      ...(poisGeoJSON?.features || []).map((f: any) => ({ ...f, _isEvent: false }))
-    ].filter((f: any) => {
-      const coords = f.geometry?.coordinates;
-      return coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
-    });
-
-    return applySpiderfication(allFeatures, zoomLevel);
-  }, [eventsGeoJSON, poisGeoJSON, zoomLevel]);
-
-  // 2. Separate back into Events and POIs for rendering using our explicit flag
-  const events = spiderfiedItems.filter(item => item.feature._isEvent);
-  const pois = spiderfiedItems.filter(item => !item.feature._isEvent);
-
   return (
     <>
       {/* 1. EVENTS LAYER - Always visible */}
-      {events.map((item: SpiderfiedFeature) => {
-        const { feature, angle, isSpiderfied } = item;
+      {eventsGeoJSON?.features?.map((feature: any) => {
         const isSelected = String(selectedEventId) === String(feature.properties?.id);
         
-        if (!feature.geometry?.coordinates) return null;
+        // STRICT VALIDATION
+        const coords = feature.geometry?.coordinates;
+        const isValidCoords = coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
+
+        if (!isValidCoords) return null;
 
         return (
           <MapLibreGL.MarkerView
-            key={`mv-ev-${feature.properties?.id || feature.id}`}
+            key={`mv-ev-v3-${feature.properties?.id || feature.id}`}
             id={`event-marker-${feature.properties?.id || feature.id}`}
-            coordinate={feature.geometry.coordinates}
+            coordinate={coords}
             anchor={{ x: 0.5, y: 1.0 }}
           >
             <EventMarker
@@ -75,29 +60,29 @@ export const MapLayers = React.memo(({
               theme={theme}
               isSelected={isSelected}
               onPress={onPoiPress}
-              spiderAngle={angle || 0}
-              isSpiderfied={isSpiderfied}
+              zoomSharedValue={zoomSharedValue}
             />
           </MapLibreGL.MarkerView>
         );
       })}
 
       {/* 2. POI LAYER (With Contextual Visibility) */}
-      {pois.map((item: SpiderfiedFeature) => {
-        const { feature, angle, isSpiderfied } = item;
+      {poisGeoJSON?.features?.map((feature: any) => {
         const isSelected = String(selectedPoiId) === String(feature.properties?.id);
         const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);
         
-        // Show POIs if zoom is high enough OR if the POI is selected OR if its parent event is selected
-        const isVisible = zoomLevel > 14.0 || isSelected || isLinkedToSelectedEvent;
-        
-        if (!isVisible || !feature.geometry?.coordinates) return null;
+        // Use React zoomLevel for mounting/unmounting (stable)
+        const isVisible = zoomLevel > 14.5 || isSelected || isLinkedToSelectedEvent;
+        const coords = feature.geometry?.coordinates;
+        const isValidCoords = coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
+
+        if (!isVisible || !isValidCoords) return null;
 
         return (
           <MapLibreGL.MarkerView
-            key={`mv-poi-${feature.properties?.id || feature.id}`}
+            key={`mv-poi-v4-${feature.properties?.id || feature.id}`}
             id={`poi-marker-${feature.properties?.id || feature.id}`}
-            coordinate={feature.geometry.coordinates}
+            coordinate={coords}
             anchor={{ x: 0.5, y: 1.0 }}
           >
             <POIMarker
@@ -105,17 +90,14 @@ export const MapLayers = React.memo(({
               theme={theme}
               isSelected={isSelected}
               onPress={onPoiPress}
+              zoomSharedValue={zoomSharedValue}
               zoomLevel={zoomLevel}
-              spiderAngle={angle || 0}
-              isSpiderfied={isSpiderfied}
             />
           </MapLibreGL.MarkerView>
         );
       })}
 
-      {/* 3. EVENT PERIMETER - REMOVED AS REQUESTED */}
-
-      {/* 4. PATH NETWORK (Stays in GL) */}
+      {/* 3. PATH NETWORK (Stays in GL) */}
       {!isNavigating && (
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
@@ -129,7 +111,7 @@ export const MapLayers = React.memo(({
         </MapLibreGL.ShapeSource>
       )}
 
-      {/* 5. ROUTE VISUALS (Stays in GL) */}
+      {/* 4. ROUTE VISUALS (Stays in GL) */}
       {!!((isNavigating || isPlanning) && currentRoute) && (
         <MapLibreGL.ShapeSource 
           id="routeSource" 

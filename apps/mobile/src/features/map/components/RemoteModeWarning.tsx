@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Eye } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -24,7 +24,7 @@ export const RemoteModeWarning = () => {
       >
         <View style={styles.content}>
           <View style={styles.iconContainer}>
-            <Feather name="eye" size={20} color={theme.colors.brand.primary} />
+            <Eye size={20} color={theme.colors.brand.primary} strokeWidth={2.2} />
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.title}>Modo Exploración Remota</Text>

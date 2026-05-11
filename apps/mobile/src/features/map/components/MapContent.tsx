@@ -68,6 +68,7 @@ export const MapContent = function MapContent({
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const initialZoom = 14;
   const [currentZoom, setCurrentZoom] = React.useState(initialZoom);
+  const [discreteZoom, setDiscreteZoom] = React.useState(Math.round(initialZoom));
   const { getFilteredPOIs } = usePOIStore();
 
   const zoomSharedValue = useSharedValue(initialZoom);
@@ -87,6 +88,12 @@ export const MapContent = function MapContent({
       if (properties?.zoomLevel) {
         // Shared value is cheap (running on UI thread via Reanimated), update it every frame
         zoomSharedValue.value = properties.zoomLevel;
+
+        // Update discrete zoom for list filtering only when crossing major thresholds
+        const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
+        if (newDiscreteZoom !== discreteZoom) {
+          setDiscreteZoom(newDiscreteZoom);
+        }
 
         // Throttle React state updates for zoom to prevent re-render loops
         if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
@@ -115,8 +122,9 @@ export const MapContent = function MapContent({
     [
       currentZoom,
       setCurrentZoom,
+      discreteZoom,
+      setDiscreteZoom,
       zoomSharedValue,
-      setLastCameraPosition,
       setLastCameraPosition,
       cameraMode,
       setCameraMode,
@@ -132,7 +140,7 @@ export const MapContent = function MapContent({
 
   // Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
-    const filteredList = getFilteredPOIs(allUIPois, currentZoom);
+    const filteredList = getFilteredPOIs(allUIPois, discreteZoom);
     return {
       type: 'FeatureCollection',
       features: Array.from(
@@ -164,7 +172,7 @@ export const MapContent = function MapContent({
         },
       })),
     };
-  }, [allUIPois, currentZoom, getFilteredPOIs]);
+  }, [allUIPois, discreteZoom, getFilteredPOIs]);
 
   const events = useMemo(() => normalizeEventList(allEvents || []), [allEvents]);
 
@@ -230,6 +238,8 @@ export const MapContent = function MapContent({
         }
       } else {
         // Normal POI selection
+        setSelectedEvent(null);
+        setGlobalCurrentEvent(null);
         selectPoi(normalizePOI(feature));
       }
     },
@@ -292,6 +302,9 @@ export const MapContent = function MapContent({
         layer.id.includes('poi') || 
         layer.id.includes('place') || 
         layer.id.includes('transit') || 
+        layer.id.includes('transport') ||
+        layer.id.includes('station') ||
+        layer.id.includes('rail') ||
         layer.id.includes('infrastructure');
         
       if (isNativePOI) {
@@ -379,7 +392,7 @@ export const MapContent = function MapContent({
           isNavigating={isNavigating}
           isPlanning={isPlanning}
           onPoiPress={handlePoiPress}
-          zoomLevel={currentZoom}
+          zoomSharedValue={zoomSharedValue}
         />
       </MapLibreGL.MapView>
     </View>

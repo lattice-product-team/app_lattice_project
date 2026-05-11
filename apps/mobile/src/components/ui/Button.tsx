@@ -90,14 +90,12 @@ export const Button = ({
       case 'subdued':
         return {
           container: {
-            backgroundColor: isDark 
-              ? 'rgba(226, 176, 66, 0.15)' // Brand tinted dark
-              : 'rgba(226, 176, 66, 0.1)',  // Brand tinted light
+            backgroundColor: theme.colors.brand.primarySurface,
           },
           text: {
-            color: theme.colors.brand.primary,
+            color: isDark ? theme.colors.brand.primary : theme.colors.text.primary,
           },
-          icon: theme.colors.brand.primary,
+          icon: isDark ? theme.colors.brand.primary : theme.colors.text.primary,
         };
       case 'tertiary':
         return {

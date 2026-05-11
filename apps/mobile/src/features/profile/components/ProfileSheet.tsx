@@ -19,7 +19,15 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture, NativeGesture } from 'react-native-gesture-handler';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { 
+  LogOut, 
+  X, 
+  ShieldCheck, 
+  Hourglass, 
+  Calendar, 
+  Flame, 
+  Trophy 
+} from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -176,14 +184,14 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
 
             <View style={styles.controlBar}>
               <Pressable onPress={onSettings} style={styles.iconButton}>
-                <Ionicons name="log-out-outline" size={24} color={theme.colors.text.primary} />
+                <LogOut size={24} color={theme.colors.text.primary} strokeWidth={2} />
               </Pressable>
               <Pressable onPress={() => {
                 islandState.value = withSpring(0, theme.motion.physics.magnetic, () => {
                   runOnJS(onClose)();
                 });
               }} style={styles.iconButton}>
-                <Ionicons name="close" size={28} color={theme.colors.text.primary} />
+                <X size={28} color={theme.colors.text.primary} strokeWidth={2.2} />
               </Pressable>
             </View>
 
@@ -217,7 +225,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
                     <View style={styles.divider} />
                     <View style={styles.levelRow}>
                       <View style={styles.levelBadge}>
-                        <Ionicons name="shield-checkmark" size={16} color={theme.colors.brand.primary} />
+                        <ShieldCheck size={16} color={theme.colors.brand.primary} strokeWidth={2.2} />
                         <Text style={[styles.levelText, { color: theme.colors.brand.primary }]}>Lv. 4</Text>
                       </View>
                       <View style={styles.progressBarBg}>
@@ -230,7 +238,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
                   <View style={[styles.actionCard, { backgroundColor: theme.colors.bg.surface }]}>
                     <View style={styles.actionHeader}>
                        <View style={styles.hourglassIcon}>
-                         <Ionicons name="hourglass-outline" size={32} color={theme.colors.text.secondary} />
+                         <Hourglass size={32} color={theme.colors.text.secondary} strokeWidth={2} />
                        </View>
                        <View style={styles.actionTextContainer}>
                           <Text style={[styles.actionTitle, { color: theme.colors.text.primary }]}>
@@ -248,21 +256,21 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
 
                   <View style={styles.statsRow}>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="calendar-outline" size={24} color="#6366f1" style={styles.statIcon} />
+                      <Calendar size={24} color="#6366f1" strokeWidth={2.2} style={styles.statIcon} />
                       <View style={styles.statTextContainer}>
                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Actividades</Text>
                       </View>
                     </View>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="flame" size={24} color="#ef4444" style={styles.statIcon} />
+                      <Flame size={24} color="#ef4444" strokeWidth={2.2} style={styles.statIcon} />
                       <View style={styles.statTextContainer}>
                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Racha</Text>
                       </View>
                     </View>
                     <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="trophy-outline" size={24} color="#eab308" style={styles.statIcon} />
+                      <Trophy size={24} color="#eab308" strokeWidth={2.2} style={styles.statIcon} />
                       <View style={styles.statTextContainer}>
                         <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
                         <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Tiempo</Text>

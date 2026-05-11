@@ -6,7 +6,7 @@ import Animated, {
   SharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { Navigation, Binoculars } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -91,10 +91,10 @@ export const AdaptiveControlOverlay = ({
             }
           ]}
         >
-          <Feather 
-            name="navigation" 
+          <Navigation 
             size={20} 
             color={cameraMode !== MapCameraMode.FREE ? 'white' : iconColor} 
+            strokeWidth={2.2}
           />
           {isConnected && (
             <View 
@@ -125,7 +125,7 @@ export const AdaptiveControlOverlay = ({
           hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}
         >
-          <MaterialCommunityIcons name="binoculars" size={20} color={iconColor} />
+          <Binoculars size={20} color={iconColor} strokeWidth={2.2} />
         </Pressable>
       </View>
     </Animated.View>

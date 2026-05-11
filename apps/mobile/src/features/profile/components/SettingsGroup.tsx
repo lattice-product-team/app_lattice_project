@@ -1,13 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import {
+  LucideIcon,
+  User,
+  Shield,
+  Bell,
+  HelpCircle,
+  Info,
+  LogOut,
+  ChevronRight,
+} from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useRouter } from 'expo-router';
 
 interface SettingsItemProps {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   value?: string;
   isLast?: boolean;
@@ -15,7 +24,14 @@ interface SettingsItemProps {
   destructive?: boolean;
 }
 
-const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: SettingsItemProps) => {
+const SettingsItem = ({
+  icon: Icon,
+  label,
+  value,
+  isLast,
+  onPress,
+  destructive,
+}: SettingsItemProps) => {
   const theme = useAppTheme();
 
   return (
@@ -27,10 +43,10 @@ const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: Sett
     >
       <View style={styles.itemContainer}>
         <View style={styles.iconBox}>
-          <Feather
-            name={icon as any}
+          <Icon
             size={20}
             color={destructive ? theme.colors.status.error : theme.colors.brand.primary}
+            strokeWidth={2.2}
           />
         </View>
 
@@ -47,7 +63,7 @@ const SettingsItem = ({ icon, label, value, isLast, onPress, destructive }: Sett
             {value && (
               <Text style={[styles.value, { color: theme.colors.text.muted }]}>{value}</Text>
             )}
-            <Feather name="chevron-right" size={18} color={theme.colors.text.muted} />
+            <ChevronRight size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
           </View>
         </View>
 
@@ -99,17 +115,17 @@ export const SettingsGroup = () => {
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
         <SettingsItem
-          icon="user"
+          icon={User}
           label="Información Personal"
           onPress={() => handlePress('Información Personal')}
         />
         <SettingsItem
-          icon="shield"
+          icon={Shield}
           label="Privacidad y Seguridad"
           onPress={() => handlePress('Privacidad y Seguridad')}
         />
         <SettingsItem
-          icon="bell"
+          icon={Bell}
           label="Notificaciones"
           isLast
           onPress={() => handlePress('Notificaciones')}
@@ -121,12 +137,12 @@ export const SettingsGroup = () => {
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
         <SettingsItem
-          icon="help-circle"
+          icon={HelpCircle}
           label="Centro de Ayuda"
           onPress={() => handlePress('Centro de Ayuda')}
         />
         <SettingsItem
-          icon="info"
+          icon={Info}
           label="Términos de Servicio"
           isLast
           onPress={() => handlePress('Términos de Servicio')}
@@ -136,7 +152,7 @@ export const SettingsGroup = () => {
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface, marginTop: 12 }]}>
         <SettingsItem
-          icon="log-out"
+          icon={LogOut}
           label="Cerrar Sesión"
           destructive
           isLast

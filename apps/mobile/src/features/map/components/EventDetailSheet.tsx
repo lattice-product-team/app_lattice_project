@@ -183,7 +183,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
             style={[
               styles.background,
               islandBackgroundStyle,
-              { borderColor: theme.colors.glass.border },
+              { borderColor: theme.dark ? theme.colors.glass.border : 'rgba(0,0,0,0.05)' },
             ]}
           >
             {displayModel ? (
@@ -237,10 +237,38 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                         </Text>
                       </View>
                     )}
-                    <Text style={[styles.sectionTitle, { color: 'white' }]}>About</Text>
-                    <Text style={[styles.description, { color: 'rgba(255,255,255,0.7)' }]}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
+                    <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
                       {displayModel.description}
                     </Text>
+
+                    {displayModel.info && displayModel.info.length > 0 && (
+                      <View style={styles.infoSection}>
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text.primary, marginTop: 24 }]}>
+                          Information
+                        </Text>
+                        <View style={styles.infoGrid}>
+                          {displayModel.info.map((item, idx) => {
+                            const Icon = (LucideIcons as any)[item.icon] || LucideIcons.InfoIcon;
+                            return (
+                              <View key={idx} style={styles.infoItem}>
+                                <View style={[styles.infoIconBox, { backgroundColor: theme.colors.glass.subtle }]}>
+                                  <Icon size={18} color={theme.colors.brand.primary} />
+                                </View>
+                                <View>
+                                  <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>
+                                    {item.label}
+                                  </Text>
+                                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
+                                    {item.value}
+                                  </Text>
+                                </View>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </View>
+                    )}
                   </View>
                   <View style={{ height: insets.bottom + 80 }} />
                 </Animated.ScrollView>
@@ -300,6 +328,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontFamily: typography.primary.regular,
+  },
+  infoSection: {
+    marginTop: 8,
+  },
+  infoGrid: {
+    gap: 16,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoLabel: {
+    fontSize: 12,
+    fontFamily: typography.primary.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 15,
+    fontFamily: typography.primary.medium,
   },
   loading: {
     flex: 1,

@@ -88,8 +88,18 @@ export const getIO = () => {
 };
 
 // Helper for broadcasting (Opción A: Invalidation only)
-export const notifyAdmin = (event: string, payload: { type: string, id: string }) => {
+export const notifyAdmin = (event: string, payload: { type: string; id: string }) => {
   if (io) {
     io.to('admin').emit(event, payload);
+  }
+};
+
+/**
+ * Broadcasts an event to all connected clients.
+ * Used for real-time UI synchronization (e.g. invalidating React Query caches)
+ */
+export const notifyAll = (event: string, payload: any) => {
+  if (io) {
+    io.emit(event, payload);
   }
 };

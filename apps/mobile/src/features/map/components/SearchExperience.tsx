@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, Image } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { History, X, Calendar, ChevronRight } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { useSearchHistory } from '../hooks/useSearchHistory';
@@ -21,11 +21,11 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
   const renderHistoryItem = ({ item }: { item: string }) => (
     <Pressable style={styles.itemRow} onPress={() => onSelectResult(item)}>
       <View style={styles.iconContainer}>
-        <Feather name="clock" size={18} color={theme.colors.text.muted} />
+        <History size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
       </View>
       <Text style={[styles.itemText, { color: theme.colors.text.primary }]}>{item}</Text>
       <Pressable onPress={() => removeSearch(item)} style={styles.removeButton}>
-        <Feather name="x" size={16} color={theme.colors.text.muted} />
+        <X size={16} color={theme.colors.text.muted} strokeWidth={2.2} />
       </Pressable>
     </Pressable>
   );
@@ -40,10 +40,10 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
           <Image source={{ uri: item.imageUrl }} style={styles.eventImage} />
         ) : (
           <View style={[styles.eventPlaceholder, { backgroundColor: theme.colors.glass.subtle }]}>
-            <MaterialCommunityIcons
-              name="calendar-star"
+            <Calendar
               size={20}
               color={theme.colors.brand.primary}
+              strokeWidth={2.2}
             />
           </View>
         )}
@@ -52,7 +52,7 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
         <Text style={[styles.itemText, { color: theme.colors.text.primary }]}>{item.name}</Text>
         <Text style={[styles.subText, { color: theme.colors.text.muted }]}>{item.type}</Text>
       </View>
-      <Feather name="chevron-right" size={18} color={theme.colors.text.muted} />
+      <ChevronRight size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
     </Pressable>
   );
 

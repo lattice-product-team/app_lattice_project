@@ -3,48 +3,18 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import * as LucideIcons from 'lucide-react-native';
+import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolate, SharedValue } from 'react-native-reanimated';
 
 interface POIMarkerProps {
   poi: any;
   isSelected?: boolean;
   theme: any;
   onPress: (poi: any) => void;
-  zoomLevel?: number;
+  zoomSharedValue: SharedValue<number>;
+  isLinkedToSelectedEvent?: boolean;
   spiderAngle?: number;
   isSpiderfied?: boolean;
 }
-
-/**
- * Lucide icon mapping for POI categories.
- * Using Lucide provides sharp, vector-based icons that match the premium chromatic style.
- */
-const CATEGORY_LUCIDE_MAP: Record<string, keyof typeof LucideIcons> = {
-  restaurant: 'Utensils',
-  food: 'Utensils',
-  coffee: 'Coffee',
-  parking: 'ParkingCircle',
-  wc: 'Toilet',
-  toilet: 'Toilet',
-  restroom: 'Toilet',
-  medical: 'Plus',
-  hospital: 'Hospital',
-  info: 'Info',
-  shop: 'ShoppingBag',
-  shopping: 'ShoppingBag',
-  gate: 'LogIn',
-  entrance: 'LogIn',
-  grandstand: 'GalleryVertical',
-  meetup_point: 'Users',
-  museum: 'Landmark',
-  park: 'Trees',
-  hotel: 'Bed',
-  pharmacy: 'Pill',
-  gym: 'Dumbbell',
-  bank: 'Landmark',
-  generic: 'MapPin',
-};
 
 export const POIMarker: React.FC<POIMarkerProps> = React.memo(
   ({ 
@@ -52,38 +22,62 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     isSelected = false, 
     theme, 
     onPress, 
-    zoomLevel = 20,
-    spiderAngle = 0,
-    isSpiderfied = false
+    zoomSharedValue,
+    isLinkedToSelectedEvent = false,
   }) => {
     const { properties } = poi;
     
-    const showLabel = isSelected || zoomLevel >= 17;
-    
-    // Resolve category and color
+    // Resolve category and metadata (now containing the Lucide component)
     const categoryKey = properties.category?.toLowerCase() || 'generic';
     const metadata = getCategoryMetadata(categoryKey);
     const color = metadata.color || theme.colors.brand.primary;
-    
-    // Resolve Lucide Icon component
-    const IconName = CATEGORY_LUCIDE_MAP[categoryKey] || 'MapPin';
-    const IconComponent = (LucideIcons[IconName] as any) || LucideIcons.MapPin;
+    const IconComponent = metadata.icon;
 
     const animatedStyle = useAnimatedStyle(() => {
-      const targetX = isSpiderfied ? 45 * Math.cos(spiderAngle) : 0;
-      const targetY = isSpiderfied ? 45 * Math.sin(spiderAngle) : 0;
+      // 1. Visibility & Scale logic based on zoom (Handled on UI thread)
+      const zoomOpacity = interpolate(
+        zoomSharedValue.value,
+        [14.2, 14.5],
+        [0, 1],
+        Extrapolate.CLAMP
+      );
+      
+      const finalOpacity = (isSelected || isLinkedToSelectedEvent) ? 1 : zoomOpacity;
+      
+      // 2. Base scale with selection bounce
+      const baseScale = withSpring(isSelected ? 1.4 : 1, theme.motion.physics.snappy);
+      
+      // 3. Zoom-based scaling (slightly smaller when zoomed out)
+      const zoomScale = interpolate(
+        zoomSharedValue.value,
+        [14.5, 17],
+        [0.8, 1],
+        Extrapolate.CLAMP
+      );
 
       return {
+        opacity: finalOpacity,
         transform: [
-          { scale: withSpring(isSelected ? 1.4 : 1, theme.motion.physics.snappy) },
-          { translateX: withSpring(targetX, theme.motion.physics.snappy) },
-          { translateY: withSpring(targetY, theme.motion.physics.snappy) },
+          { scale: baseScale * zoomScale },
         ],
       };
     });
 
+    const labelAnimatedStyle = useAnimatedStyle(() => {
+      const labelOpacity = interpolate(
+        zoomSharedValue.value,
+        [16.5, 17],
+        [0, 1],
+        Extrapolate.CLAMP
+      );
+      
+      return {
+        opacity: isSelected ? 1 : labelOpacity,
+      };
+    });
+
     return (
-      <View style={mapPinStyles.container}>
+      <View style={mapPinStyles.markerWrapper}>
         <TouchableOpacity
           onPress={() => onPress(poi)}
           activeOpacity={0.9}
@@ -116,22 +110,19 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
                 />
               </View>
             </MapPinFrame>
-
-            {showLabel && (
-              <View style={mapPinStyles.labelBadge}>
-                <Text
-                  style={[
-                    mapPinStyles.labelText,
-                    {
-                      color: color,
-                    },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {properties.name}
-                </Text>
-              </View>
-            )}
+            <Animated.View style={[mapPinStyles.labelBadge, labelAnimatedStyle]}>
+              <Text
+                style={[
+                  mapPinStyles.labelText,
+                  {
+                    color: color,
+                  },
+                ]}
+                numberOfLines={2}
+              >
+                {properties.name}
+              </Text>
+            </Animated.View>
           </Animated.View>
         </TouchableOpacity>
       </View>

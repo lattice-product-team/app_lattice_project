@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Feather } from '@expo/vector-icons';
+import { ArrowLeft } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { ThemeGradient } from './ThemeGradient';
 import { useAppTheme } from '../../hooks/useAppTheme';
@@ -60,7 +60,7 @@ export const AuthLayout = ({
             },
           ]}
         >
-          <Feather name="arrow-left" size={24} color={theme.colors.text.primary} />
+          <ArrowLeft size={24} color={theme.colors.text.primary} strokeWidth={2.2} />
         </Pressable>
       ) : null}
 

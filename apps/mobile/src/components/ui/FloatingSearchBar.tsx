@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Search, XCircle, Mic } from 'lucide-react-native';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { UserAvatar } from './UserAvatar';
 import { typography } from '../../styles/typography';
@@ -38,7 +38,7 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
 
     return (
       <View style={styles.innerContainer}>
-        <Feather name="search" size={22} color={theme.colors.text.primary} style={styles.icon} />
+        <Search size={20} color={theme.colors.text.primary} strokeWidth={2.2} style={styles.icon} />
 
         <Pressable
           style={{ flex: 1, justifyContent: 'center' }}
@@ -63,13 +63,13 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
 
         {value.length > 0 && (
           <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-            <Feather name="x-circle" size={18} color={theme.colors.text.muted} />
+            <XCircle size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
           </Pressable>
         )}
 
         <View style={styles.rightActions}>
           <Pressable style={styles.micButton}>
-            <MaterialCommunityIcons name="microphone" size={24} color={theme.colors.text.primary} />
+            <Mic size={22} color={theme.colors.text.primary} strokeWidth={2.2} />
           </Pressable>
 
           <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />

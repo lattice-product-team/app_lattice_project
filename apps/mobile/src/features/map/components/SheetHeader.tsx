@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { Share, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useAnimatedStyle, 
@@ -10,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { CircularActionButton } from '../../../components/ui/CircularActionButton';
 
 interface SheetHeaderProps {
   title: string;
@@ -123,28 +123,24 @@ export const SheetHeader = ({
         
         {/* Top Actions Bar */}
         <View style={styles.topActions}>
-          <Pressable 
-            onPress={onShare} 
-            style={[styles.actionCircle, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
-          >
-            <Share size={20} color="white" />
-          </Pressable>
+          <CircularActionButton 
+            icon="Share"
+            onPress={onShare || (() => {})} 
+          />
           <View style={{ flex: 1 }} />
-          <Pressable 
+          <CircularActionButton 
+            icon="X"
             onPress={onClose} 
-            style={[styles.actionCircle, { backgroundColor: 'rgba(255,255,255,0.1)' }]}
-          >
-            <X size={20} color="white" />
-          </Pressable>
+          />
         </View>
 
         {/* Main Branding Section */}
         <View style={styles.content}>
           <View style={styles.textContainer}>
-            <Animated.Text style={[styles.title, titleStyle]} numberOfLines={1}>
+            <Animated.Text style={[styles.title, titleStyle, { color: theme.colors.text.primary }]} numberOfLines={1}>
               {title}
             </Animated.Text>
-            <Animated.Text style={[styles.subtitle, subtitleStyle]} numberOfLines={1}>
+            <Animated.Text style={[styles.subtitle, subtitleStyle, { color: theme.colors.text.secondary }]} numberOfLines={1}>
               {subtitle}
             </Animated.Text>
           </View>
@@ -154,10 +150,10 @@ export const SheetHeader = ({
       <AnimatedLinearGradient
         colors={[
           theme.colors.bg.surface,
-          'rgba(0,0,0,0.4)',
-          'transparent'
+          theme.colors.bg.surface + 'CC', // ~80% opacity
+          theme.colors.bg.surface + '00'  // 0% opacity
         ]}
-        locations={[0, 0.3, 1]}
+        locations={[0, 0.4, 1]}
         style={gradientStyle}
       />
     </View>
@@ -179,13 +175,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     zIndex: 10,
   },
-  actionCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   content: {
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -195,15 +184,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: typography.primary.bold,
-    color: 'white',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
     fontFamily: typography.primary.medium,
-    color: 'rgba(255,255,255,0.6)',
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
 });

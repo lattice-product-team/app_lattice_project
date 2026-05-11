@@ -109,7 +109,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
         cameraRef.current.setCamera({
           centerCoordinate: selectedCoords,
-          zoomLevel: 13.0,
+          zoomLevel: 18.0,
           animationDuration: 400,
           animationMode: 'flyTo',
           pitch: is3DActive ? 60 : 0,
@@ -167,7 +167,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
           cameraRef.current.setCamera({
             centerCoordinate: targetCenter,
-            zoomLevel: 10.0,
+            zoomLevel: 15.5,
             animationDuration: 1200,
             animationMode: 'flyTo',
             pitch: 0,
@@ -182,7 +182,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       } else if (!selectedEvent) {
         lastTargetRef.current = null;
       }
-    }, [selectedEvent, poisGeoJSON, isNavigating, insets.top, forceCenterCount]);
+    }, [selectedEvent, isNavigating, insets.top, forceCenterCount]);
 
     // Navigation camera behavior
     useEffect(() => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Cpu } from 'lucide-react-native';
 import { Ticket } from '../../../types/models/auth';
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -55,10 +55,10 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
               </Text>
             </View>
             <View style={[styles.chipContainer, { backgroundColor: theme.colors.overlay.thin }]}>
-              <MaterialCommunityIcons
-                name="integrated-circuit-chip"
+              <Cpu
                 size={24}
                 color={theme.colors.text.inverse}
+                strokeWidth={2}
                 style={{ opacity: 0.7 }}
               />
             </View>

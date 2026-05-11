@@ -3,7 +3,13 @@ import { StyleSheet } from 'react-native';
 export const mapPinStyles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+  },
+  markerWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 120, // Enough space for pin + label
+    height: 80,  // Enough space for pin + label
   },
   pinFrame: {
     backgroundColor: '#FFFFFF',

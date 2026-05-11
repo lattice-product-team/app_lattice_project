@@ -7,7 +7,7 @@ import Animated, {
   SharedValue,
   Extrapolation,
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LucideIcon, Music, Utensils, Palette, Activity, Moon } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { EventCarouselCard } from './EventCarouselCard';
@@ -17,15 +17,15 @@ import { LatticeEvent } from '../../../types';
 interface Category {
   id: string;
   label: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: LucideIcon;
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'music', label: 'Música', icon: 'music' },
-  { id: 'gastro', label: 'Gastro', icon: 'food' },
-  { id: 'culture', label: 'Cultura', icon: 'palette' },
-  { id: 'sport', label: 'Deporte', icon: 'run' },
-  { id: 'night', label: 'Ocio', icon: 'weather-night' },
+  { id: 'music', label: 'Música', icon: Music },
+  { id: 'gastro', label: 'Gastro', icon: Utensils },
+  { id: 'culture', label: 'Cultura', icon: Palette },
+  { id: 'sport', label: 'Deporte', icon: Activity },
+  { id: 'night', label: 'Ocio', icon: Moon },
 ];
 
 interface DiscoveryDashboardProps {
@@ -64,41 +64,44 @@ export const DiscoveryDashboard = React.memo(
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoryScroll}
           >
-            {CATEGORIES.map((cat) => (
-              <Pressable
-                key={cat.id}
-                onPress={() => onSelectCategory?.(cat.id)}
-                style={({ pressed }) => [
-                  { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.categoryPill,
-                    {
-                      backgroundColor:
-                        theme.colors.glass.tint === 'dark'
-                          ? 'rgba(120, 120, 128, 0.36)'
-                          : 'rgba(120, 120, 128, 0.12)',
-                    },
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => onSelectCategory?.(cat.id)}
+                  style={({ pressed }) => [
+                    { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
                   ]}
                 >
-                  <MaterialCommunityIcons
-                    name={cat.icon}
-                    size={18}
-                    color={theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'}
-                  />
-                  <Text
+                  <View
                     style={[
-                      styles.categoryLabel,
-                      { color: theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' },
+                      styles.categoryPill,
+                      {
+                        backgroundColor:
+                          theme.colors.glass.tint === 'dark'
+                            ? 'rgba(120, 120, 128, 0.36)'
+                            : 'rgba(120, 120, 128, 0.12)',
+                      },
                     ]}
                   >
-                    {cat.label}
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
+                    <Icon
+                      size={18}
+                      color={theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'}
+                      strokeWidth={2.5}
+                    />
+                    <Text
+                      style={[
+                        styles.categoryLabel,
+                        { color: theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' },
+                      ]}
+                    >
+                      {cat.label}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
           </ScrollView>
         </View>
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { User, UserX } from 'lucide-react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface UserAvatarProps {
@@ -36,12 +37,14 @@ export const UserAvatar = ({ size = 32, url, isGuest }: UserAvatarProps) => {
     );
   }
 
+  const Icon = isGuest ? UserX : User;
+
   return (
     <View style={containerStyle}>
-      <Feather
-        name={isGuest ? 'user-x' : 'user'}
+      <Icon
         size={size * 0.6}
         color={isGuest ? theme.colors.text.muted : theme.colors.text.primary}
+        strokeWidth={2.2}
       />
     </View>
   );

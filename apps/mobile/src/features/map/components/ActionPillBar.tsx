@@ -24,7 +24,7 @@ export const ActionPillBar = ({ actions }: ActionPillBarProps) => {
           variant={action.variant}
           onPress={action.onPress}
           leftIcon={(() => {
-            const IconComponent = (LucideIcons as any)[action.icon] || LucideIcons.HelpCircle;
+            const IconComponent = (LucideIcons as any)[action.icon] || LucideIcons.HelpCircleIcon;
             return (
               <IconComponent
                 size={20}

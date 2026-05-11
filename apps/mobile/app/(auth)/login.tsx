@@ -96,7 +96,7 @@ export default function LoginScreen() {
                 promptAsync();
               }}
               disabled={!request}
-              style={styles.socialButton}
+              style={[styles.socialButton, { borderColor: theme.colors.border.subtle }]}
             />
 
             <Button
@@ -106,7 +106,7 @@ export default function LoginScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/(auth)/email-auth');
               }}
-              style={styles.socialButton}
+              style={[styles.socialButton, { borderColor: theme.colors.border.subtle }]}
             />
           </Animated.View>
         </View>
