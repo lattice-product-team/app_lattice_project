@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
@@ -81,7 +81,8 @@ export function useAdminFetch<T>(endpoint: string, interval = 5000) {
 
 export function useEvents() {
   const { data, loading, error, refetch } = useAdminFetch<Event[]>('/events');
-  return { events: data || [], loading, error, refetch };
+  const events = useMemo(() => data || [], [data]);
+  return { events, loading, error, refetch };
 }
 
 export function useStats() {
@@ -91,8 +92,12 @@ export function useStats() {
     activeAlerts: number;
     totalCapacity: number;
   }>('/stats');
+  const stats = useMemo(
+    () => data || { activeEvents: 0, liveUsers: 0, activeAlerts: 0, totalCapacity: 0 },
+    [data]
+  );
   return {
-    stats: data || { activeEvents: 0, liveUsers: 0, activeAlerts: 0, totalCapacity: 0 },
+    stats,
     loading,
     error,
     refetch,
@@ -105,14 +110,14 @@ export function useEventStats(eventId?: string) {
   );
 
   // Map global stats to event stats structure if needed
-  const stats = data
+  const stats = useMemo(() => data
     ? {
         estimatedCapacity: data.estimatedCapacity ?? data.totalCapacity ?? 0,
         entryRate: data.entryRate ?? 0,
         staffOnline: data.staffOnline ?? 0,
         activeAlerts: data.activeAlerts ?? 0,
       }
-    : null;
+    : null, [data]);
 
   return { stats, loading, error, refetch };
 }
@@ -120,13 +125,16 @@ export function useEventStats(eventId?: string) {
 export function usePOIs(eventId?: string) {
   const endpoint = eventId ? `/pois?eventId=${eventId}` : '/pois';
   const { data, loading, error, refetch } = useAdminFetch<any>(endpoint);
+  const pois = useMemo(() => 
+    data?.features?.map((f: { properties: any; geometry: { coordinates: [number, number] } }) => ({
+      id: f.properties.id,
+      ...f.properties,
+      geometry: f.geometry,
+    })) || [],
+    [data]
+  );
   return {
-    pois:
-      data?.features?.map((f: { properties: any; geometry: { coordinates: [number, number] } }) => ({
-        id: f.properties.id,
-        ...f.properties,
-        geometry: f.geometry,
-      })) || [],
+    pois,
     loading,
     error,
     refetch,

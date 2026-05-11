@@ -6,6 +6,7 @@ import { AdminMap } from '@/components/map/admin-map';
 import { useEvents, usePOIs } from '@/hooks/use-admin-data';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
+import { useSearchParams } from 'next/navigation';
 
 interface BaseAsset {
   id: string | number;
@@ -18,21 +19,78 @@ interface BaseAsset {
 }
 
 export default function GlobalMapPage() {
+  const searchParams = useSearchParams();
   const { events, loading: eventsLoading } = useEvents();
   const { pois, loading: poisLoading } = usePOIs();
 
   const [visibleEventIds, setVisibleEventIds] = useState<Set<string>>(new Set());
   const [selectedAsset, setSelectedAsset] = useState<BaseAsset | null>(null);
+  const [mapInitialView, setMapInitialView] = useState({ longitude: 2.2575, latitude: 41.5641, zoom: 15 });
 
-  // Initialize visibility when events load
+  const processedParams = React.useRef<string | null>(null);
+
+  // Handle initial focus from URL (poiId or eventId)
   useEffect(() => {
-    if (events.length > 0 && visibleEventIds.size === 0) {
+    if (eventsLoading || poisLoading) return;
+
+    const poiId = searchParams.get('poiId');
+    const eventId = searchParams.get('eventId');
+    const paramKey = `${poiId}-${eventId}`;
+
+    // Only run if params have changed and are not null
+    if ((poiId || eventId) && processedParams.current !== paramKey) {
+      if (poiId && pois.length > 0) {
+        const poi = pois.find((p: any) => p.id.toString() === poiId);
+        if (poi) {
+          processedParams.current = paramKey;
+          // 1. Ensure the event it belongs to is visible
+          if (poi.eventId) {
+            setVisibleEventIds((prev) => {
+              if (prev.has(poi.eventId.toString())) return prev;
+              return new Set([...Array.from(prev), poi.eventId.toString()]);
+            });
+          }
+          // 2. Select it to open detail panel
+          setSelectedAsset(poi);
+          // 3. Center map on it
+          if (poi.geometry?.coordinates) {
+            setMapInitialView({
+              longitude: poi.geometry.coordinates[0],
+              latitude: poi.geometry.coordinates[1],
+              zoom: 18,
+            });
+          }
+        }
+      } else if (eventId && events.length > 0) {
+        const event = events.find((e: any) => e.id.toString() === eventId);
+        if (event) {
+          processedParams.current = paramKey;
+          setVisibleEventIds((prev) => {
+            if (prev.has(event.id.toString())) return prev;
+            return new Set([...Array.from(prev), event.id.toString()]);
+          });
+          setSelectedAsset(event);
+          if (event.center?.coordinates) {
+            setMapInitialView({
+              longitude: event.center.coordinates[0],
+              latitude: event.center.coordinates[1],
+              zoom: 16,
+            });
+          }
+        }
+      }
+    }
+  }, [searchParams, events, pois, eventsLoading, poisLoading]);
+
+  // Initialize visibility when events load (only if no specific filters)
+  useEffect(() => {
+    if (events.length > 0 && visibleEventIds.size === 0 && !searchParams.get('eventId') && !searchParams.get('poiId')) {
       const timerId = setTimeout(() => {
         setVisibleEventIds(new Set(events.map((e) => e.id.toString())));
       }, 0);
       return () => clearTimeout(timerId);
     }
-  }, [events, visibleEventIds.size]);
+  }, [events, visibleEventIds.size, searchParams]);
 
   const toggleEventVisibility = (id: string) => {
     const next = new Set(visibleEventIds);
@@ -69,6 +127,7 @@ export default function GlobalMapPage() {
       <div className="absolute inset-0 z-0">
         <AdminMap
           mode="GLOBAL_VIEW"
+          initialViewState={mapInitialView}
           events={filteredEvents}
           pois={filteredPois}
           onAssetClick={setSelectedAsset}
