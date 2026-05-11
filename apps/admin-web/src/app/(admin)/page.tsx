@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Spinner } from '@heroui/react';
+import { Spinner, Select, ListBox } from '@heroui/react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useStats, useEvents, useEventStats } from '@/hooks/use-admin-data';
 import { Sparkline } from '@/components/sparkline';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 interface Event {
   id: string | number;
@@ -16,11 +17,11 @@ interface Event {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const { stats, loading: statsLoading } = useStats();
   const { events, loading: eventsLoading } = useEvents();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedEvent, _setSelectedEvent] = useState<string>('');
+  const [selectedEvent, setSelectedEvent] = useState<string>('');
   const { stats: eventStats, loading: eventStatsLoading } = useEventStats(selectedEvent);
 
   const loading = statsLoading || eventsLoading;
@@ -56,8 +57,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Global Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Global Metrics Row - Removed Active Alerts */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {
             label: 'Live Users*',
@@ -70,19 +71,14 @@ export default function Dashboard() {
             value: stats?.activeEvents ?? '0',
             data: [2, 3, 2, 4, 3, 3, 3],
           },
-          { label: 'System Capacity*', value: stats?.totalCapacity?.toLocaleString() ?? '0', data: [120, 120, 120, 120, 120, 120, 120] },
-          { label: 'Active Alerts*', value: stats?.activeAlerts ?? '0', dark: true, alert: true },
+          {
+            label: 'System Capacity*',
+            value: stats?.totalCapacity?.toLocaleString() ?? '0',
+            data: [120, 120, 120, 120, 120, 120, 120],
+          },
         ].map((m, i) => (
-          <Card
-            key={i}
-            className={cn('relative overflow-hidden', m.dark && 'bg-obsidian text-eggshell')}
-          >
-            <p
-              className={cn(
-                'text-admin-xs font-bold uppercase tracking-widest mb-6',
-                m.dark ? 'text-eggshell/50' : 'text-gravel'
-              )}
-            >
+          <Card key={i} className="relative overflow-hidden">
+            <p className="text-admin-xs font-bold uppercase tracking-widest mb-6 text-gravel">
               {m.label}
             </p>
             <div className="flex items-baseline justify-between gap-2">
@@ -94,13 +90,7 @@ export default function Dashboard() {
                   </span>
                 )}
               </div>
-              {!m.alert && <Sparkline data={m.data} color={m.dark ? 'white' : 'black'} />}
-              {m.alert && (
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-ember animate-ping" aria-hidden="true" />
-                  <span className="text-[10px] font-black uppercase text-ember">Critical</span>
-                </div>
-              )}
+              <Sparkline data={m.data} color="black" />
             </div>
             {/* Background Texture Effect */}
             <div
@@ -114,44 +104,94 @@ export default function Dashboard() {
       {/* Active Event Showcase */}
       {activeEvent && (
         <Card className="p-0 overflow-hidden border border-chalk shadow-subtle-3">
-          <div className="grid grid-cols-1 lg:grid-cols-5 min-h-[500px]">
-            <div className="lg:col-span-3 p-16 flex flex-col justify-center bg-white relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-5 min-h-[600px]">
+            {/* Left Column - Spanning full height top to bottom */}
+            <div className="lg:col-span-3 p-12 lg:p-16 flex flex-col justify-between bg-white relative overflow-hidden">
               {/* Ambient Background Glow */}
               <div
                 className="absolute -top-24 -left-24 w-64 h-64 bg-signal-blue/5 rounded-full blur-3xl"
                 aria-hidden="true"
               />
 
-              <div className="flex items-center gap-3 mb-8 relative">
-                <div className="relative">
-                  <div className="w-2 h-2 rounded-full bg-signal-blue" aria-hidden="true" />
-                  <div
-                    className="absolute inset-0 w-2 h-2 rounded-full bg-signal-blue animate-ping opacity-75"
-                    aria-hidden="true"
-                  />
+              {/* Top Section */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-2 h-2 rounded-full bg-signal-blue" aria-hidden="true" />
+                    <div
+                      className="absolute inset-0 w-2 h-2 rounded-full bg-signal-blue animate-ping opacity-75"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <span className="pill-label text-admin-xs text-obsidian">Live Environment</span>
                 </div>
-                <span className="pill-label text-admin-xs text-obsidian">Live Environment</span>
+
+                {/* Event Selector */}
+                <div className="w-full sm:w-64">
+                  <Select
+                    label="Switch Event"
+                    variant="bordered"
+                    size="sm"
+                    selectedKeys={selectedEvent ? [selectedEvent.toString()] : [activeEvent.id.toString()]}
+                    onSelectionChange={(keys) => {
+                      const selected = Array.from(keys)[0];
+                      if (selected) setSelectedEvent(selected.toString());
+                    }}
+                    className="max-w-xs"
+                    classNames={{
+                      trigger: "border-chalk hover:border-obsidian transition-colors rounded-full h-10",
+                      value: "text-admin-xs font-bold uppercase tracking-widest text-obsidian"
+                    }}
+                  >
+                    <Select.Trigger>
+                      <Select.Value />
+                      <Select.Indicator />
+                    </Select.Trigger>
+                    <Select.Popover>
+                      <ListBox>
+                        {events.map((event: Event) => (
+                          <ListBox.Item key={event.id} id={event.id.toString()} textValue={event.name}>
+                            <span className="text-admin-xs font-bold uppercase tracking-widest">{event.name}</span>
+                          </ListBox.Item>
+                        ))}
+                      </ListBox>
+                    </Select.Popover>
+                  </Select>
+                </div>
               </div>
 
-              <h2 className="waldenburg-display text-[48px] text-obsidian mb-6 leading-[1.1]">
-                {activeEvent.name}
-              </h2>
-              <p className="text-gravel text-admin-md leading-relaxed mb-10 max-w-lg">
-                {activeEvent.description ||
-                  'Comprehensive operational oversight for this event environment. Type-first monitoring and severe yet warm control systems.'}
-              </p>
+              {/* Middle Section - Title and Description */}
+              <div className="relative z-10 py-12">
+                <h2 className="waldenburg-display text-[56px] lg:text-[72px] text-obsidian mb-6 leading-[1.05]">
+                  {activeEvent.name}
+                </h2>
+                <p className="text-gravel text-admin-lg leading-relaxed max-w-xl">
+                  {activeEvent.description ||
+                    'Comprehensive operational oversight for this event environment. Type-first monitoring and severe yet warm control systems.'}
+                </p>
+              </div>
 
-              <div className="flex gap-4">
-                <Button variant="primary" className="h-12 px-8" as="a" href={`/map?eventId=${activeEvent.id}`}>
+              {/* Bottom Section - Buttons */}
+              <div className="flex gap-4 relative z-10">
+                <Button
+                  variant="primary"
+                  className="h-14 px-10 text-admin-base font-bold flex items-center justify-center no-underline"
+                  onPress={() => router.push(`/map?eventId=${activeEvent.id}`)}
+                >
                   View Map
                 </Button>
-                <Button variant="ghost" className="h-12 px-8" as="a" href="/events">
+                <Button 
+                  variant="ghost" 
+                  className="h-14 px-10 text-admin-base font-bold flex items-center justify-center no-underline text-obsidian"
+                  onPress={() => router.push('/events')}
+                >
                   Event Settings
                 </Button>
               </div>
             </div>
 
-            <div className="lg:col-span-2 p-16 bg-powder/40 flex flex-col justify-between border-l border-chalk relative">
+            {/* Right Column - Metrics and Personnel */}
+            <div className="lg:col-span-2 p-12 lg:p-16 bg-powder/40 flex flex-col justify-between border-l border-chalk relative">
               {/* Noise Overlay */}
               <div
                 className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"
