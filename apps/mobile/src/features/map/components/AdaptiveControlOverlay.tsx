@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
+import { MapCameraMode } from '../store/useMapUIStore';
 import Animated, {
   useAnimatedStyle,
   SharedValue,
@@ -18,6 +19,7 @@ interface AdaptiveControlOverlayProps {
   uiLayer: SharedValue<number>;
   islandState: SharedValue<number>;
   isConnected?: boolean;
+  cameraMode?: MapCameraMode;
   bottomOffset?: number;
 }
 
@@ -29,6 +31,7 @@ export const AdaptiveControlOverlay = ({
   uiLayer,
   islandState,
   isConnected = false,
+  cameraMode = MapCameraMode.FREE,
   bottomOffset = 0,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
@@ -80,10 +83,17 @@ export const AdaptiveControlOverlay = ({
           style={({ pressed }) => [
             styles.action, 
             pressed && { opacity: 0.7 },
-            { backgroundColor: theme.colors.brand.primary, borderRadius: 22 }
+            cameraMode !== MapCameraMode.FREE && { 
+              backgroundColor: theme.colors.brand.primary, 
+              borderRadius: 22 
+            }
           ]}
         >
-          <Feather name="navigation" size={20} color={iconColor} />
+          <Feather 
+            name="navigation" 
+            size={20} 
+            color={cameraMode !== MapCameraMode.FREE ? 'white' : iconColor} 
+          />
           {isConnected && (
             <View 
               style={[

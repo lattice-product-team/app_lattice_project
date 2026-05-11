@@ -4,7 +4,7 @@ import { Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
 import { calculateBBox, calculateCentroid } from '../../../utils/geoUtils';
-import { useMapUIStore } from '../store/useMapUIStore';
+import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -19,7 +19,7 @@ interface MapCameraManagerProps {
   lastCameraPosition: any;
   isNavigating: boolean;
   isPlanning: boolean;
-  isFollowingUser: boolean;
+  cameraMode: MapCameraMode;
   currentRoute: any | null;
 }
 
@@ -41,7 +41,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       lastCameraPosition,
       isNavigating,
       isPlanning,
-      isFollowingUser,
+      cameraMode,
       currentRoute,
     } = props;
 
@@ -50,7 +50,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const lastTargetRef = React.useRef<string | null>(null);
     const lastActionTimestamp = React.useRef<number>(0);
     const CAMERA_ACTION_THROTTLE = 500; // ms
-    const { setIsFollowingUser } = useMapUIStore();
+    const { setCameraMode } = useMapUIStore();
 
     useImperativeHandle(ref, () => ({
       setCamera: (config: any) => cameraRef.current?.setCamera(config),
@@ -75,17 +75,18 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // Recenter on user (manual trigger)
     useEffect(() => {
       if (recenterCount > 0 && cameraRef.current && userCoords) {
-        setIsFollowingUser(true); // Ensure following is re-enabled on manual recenter
+        // We DON'T set cameraMode to FOLLOW here anymore.
+        // It stays in FREE (set by triggerRecenter action)
         cameraRef.current.setCamera({
           centerCoordinate: userCoords,
           zoomLevel: DEFAULT_ZOOM,
-          animationDuration: 800,
+          animationDuration: 1000,
           animationMode: 'flyTo',
           pitch: is3DActive ? 60 : 0,
           padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
         });
       }
-    }, [recenterCount, userCoords, is3DActive, setIsFollowingUser]);
+    }, [recenterCount, userCoords, is3DActive]);
 
     // Focus on selected POI
     useEffect(() => {
@@ -100,6 +101,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
         lastTargetRef.current = targetKey;
         lastActionTimestamp.current = now;
+        
+        // Transition to FREE mode to allow moving away from user
+        if (cameraMode !== MapCameraMode.FREE) {
+          setCameraMode(MapCameraMode.FREE);
+        }
 
         cameraRef.current.setCamera({
           centerCoordinate: selectedCoords,
@@ -144,6 +150,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         }
 
         if (targetCenter) {
+          // Transition to FREE mode to allow moving away from user
+          if (cameraMode !== MapCameraMode.FREE) {
+            setCameraMode(MapCameraMode.FREE);
+          }
+
           cameraRef.current.setCamera({
             centerCoordinate: targetCenter,
             zoomLevel: 10.0,
@@ -166,15 +177,23 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // Navigation camera behavior
     useEffect(() => {
       if (isNavigating && cameraRef.current) {
-        setIsFollowingUser(true);
+        setCameraMode(MapCameraMode.NAVIGATION);
         cameraRef.current.setCamera({
           zoomLevel: 18,
           pitch: 45,
           animationDuration: 1500,
           animationMode: 'flyTo',
         });
+      } else if (!isNavigating && cameraMode === MapCameraMode.NAVIGATION) {
+        // Exit navigation mode: return to standard follow or free
+        setCameraMode(MapCameraMode.FOLLOW);
+        cameraRef.current.setCamera({
+          pitch: 0,
+          animationDuration: 1000,
+          animationMode: 'flyTo',
+        });
       }
-    }, [isNavigating, setIsFollowingUser]);
+    }, [isNavigating, setCameraMode, cameraMode]);
 
     // Planning fitBounds
     useEffect(() => {
@@ -208,10 +227,16 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM,
           pitch: lastCameraPosition?.pitch || 0,
         }}
-        followUserLocation={isFollowingUser}
-        followUserMode={(isNavigating ? 'compass' : 'normal') as any}
-        followZoomLevel={isNavigating ? 18 : undefined}
-        followPitch={isNavigating ? 45 : undefined}
+        followUserLocation={cameraMode !== MapCameraMode.FREE}
+        followUserMode={(cameraMode === MapCameraMode.NAVIGATION ? 'compass' : 'normal') as any}
+        followZoomLevel={cameraMode === MapCameraMode.NAVIGATION ? 18 : undefined}
+        followPitch={cameraMode === MapCameraMode.NAVIGATION ? 45 : undefined}
+        onUserTrackingModeChange={(e) => {
+          // If the native map stops following (due to user drag), sync our state to FREE
+          if (e.nativeEvent.payload.followUserLocation === false && cameraMode !== MapCameraMode.FREE) {
+            setCameraMode(MapCameraMode.FREE);
+          }
+        }}
       />
     );
   }

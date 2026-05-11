@@ -65,11 +65,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                 style={[
                   mapPinStyles.labelText,
                   {
-                    color: color, // Chromatic style for events too
-                    // Flat look halo
-                    textShadowColor: theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 1,
+                    color: theme.colors.text.primary,
                   },
                 ]}
                 numberOfLines={2}

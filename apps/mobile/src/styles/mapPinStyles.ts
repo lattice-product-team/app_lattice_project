@@ -50,7 +50,7 @@ export const mapPinStyles = StyleSheet.create({
   },
   labelText: {
     fontSize: 13, // Uniform size for both
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
   },
   // Stem no longer used

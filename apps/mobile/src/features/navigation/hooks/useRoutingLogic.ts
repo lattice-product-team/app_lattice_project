@@ -23,6 +23,8 @@ export const useRoutingLogic = () => {
   }, [isRemote, setRemote]);
 
   const lastFetchCoords = useRef<[number, number] | null>(null);
+  const lastDestinationId = useRef<string | null>(null);
+  const isFetchingRef = useRef(false);
   const REFETCH_THRESHOLD_METERS = 30; // Only re-route if moved significantly
 
   const calculateDistance = (c1: [number, number], c2: [number, number]) => {
@@ -40,32 +42,34 @@ export const useRoutingLogic = () => {
 
   useEffect(() => {
     const fetchBothRoutes = async () => {
+      const destId = selectedPoiId || selectedEvent?.id;
       const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
       const destinationName = selectedPoi?.displayName || selectedEvent?.name || '';
 
-      if (!destinationCoords || !userCoords) return;
+      if (!destinationCoords || !userCoords || !destId || isFetchingRef.current) return;
 
       // Professional Throttling: Only re-fetch if we are in planning or if we moved > threshold
-      const isInitialFetch = !lastFetchCoords.current;
+      const isInitialFetch = !lastFetchCoords.current || lastDestinationId.current !== destId;
       const distanceMoved = lastFetchCoords.current ? calculateDistance(userCoords, lastFetchCoords.current) : 0;
       
-      // If we are navigating, be more conservative with API calls
-      if (!isPlanning && !isInitialFetch && distanceMoved < REFETCH_THRESHOLD_METERS) {
+      // Prevent redundant fetches for the same destination if we haven't moved enough
+      if (!isInitialFetch && distanceMoved < REFETCH_THRESHOLD_METERS) {
         return;
       }
 
       console.log(`[Logic] 🛰 Fetching triple routes for: ${destinationName} (${isPlanning ? 'Planning' : 'Navigating'})`);
       if (isPlanning) setFetching(true);
+      isFetchingRef.current = true;
+      lastDestinationId.current = destId as string;
 
       try {
         const origin = { lat: userCoords[1], lng: userCoords[0] };
         const destination = { lat: destinationCoords[1], lng: destinationCoords[0] };
 
-        const [driving, walking, bicycle] = await Promise.all([
-          navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() }),
-          navigationService.getRoute({ origin, destination, mode: 'walking', timestamp: Date.now() }),
-          navigationService.getRoute({ origin, destination, mode: 'bicycle', timestamp: Date.now() }),
-        ]);
+        // Fetch sequential instead of parallel to reduce Valhalla pressure (429 errors)
+        const driving = await navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() });
+        const walking = await navigationService.getRoute({ origin, destination, mode: 'walking', timestamp: Date.now() });
+        const bicycle = await navigationService.getRoute({ origin, destination, mode: 'bicycle', timestamp: Date.now() });
 
         const routes = { driving, walking, bicycle };
         const metadata = {
@@ -83,11 +87,14 @@ export const useRoutingLogic = () => {
         }
       } catch (error) {
         console.error('[Logic] ❌ Route fetch failed:', error);
+      } finally {
         if (isPlanning) setFetching(false);
+        isFetchingRef.current = false;
       }
     };
 
-    fetchBothRoutes();
+    const timer = setTimeout(fetchBothRoutes, 300); // 300ms debounce
+    return () => clearTimeout(timer);
   }, [selectedPoiId, selectedEvent?.id, userCoords, isPlanning, transportMode]);
 
   // Handle instruction updates when transportMode changes (instant)

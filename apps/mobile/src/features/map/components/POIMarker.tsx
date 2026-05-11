@@ -107,9 +107,6 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
                   mapPinStyles.labelText,
                   {
                     color: color,
-                    textShadowColor: theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 1,
                   },
                 ]}
                 numberOfLines={2}

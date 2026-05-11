@@ -20,7 +20,7 @@ interface MapLayersProps {
   onPoiPress: (data: any) => void;
 }
 
-export const MapLayers = ({
+export const MapLayers = React.memo(({
   theme,
   allPoisGeoJSON,
   poisGeoJSON,
@@ -38,38 +38,48 @@ export const MapLayers = ({
   return (
     <>
       {/* 1. EVENTS LAYER (PRIORITY - Always render first to maintain stability) */}
-      {eventsGeoJSON?.features?.map((feature: any) => (
-        <MapLibreGL.MarkerView
-          key={`mv-ev-${feature.properties.id}`}
-          id={`event-marker-${feature.properties.id}`}
-          coordinate={feature.geometry.coordinates}
-          anchor={{ x: 0.5, y: 1.0 }}
-        >
-          <EventMarker
-            event={feature}
-            theme={theme}
-            isSelected={String(selectedEventId) === String(feature.properties.id)}
-            onPress={onPoiPress}
-          />
-        </MapLibreGL.MarkerView>
-      ))}
+      {eventsGeoJSON?.features
+        ?.filter((f: any) => {
+          const coords = f.geometry?.coordinates;
+          return coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
+        })
+        .map((feature: any) => (
+          <MapLibreGL.MarkerView
+            key={`mv-ev-${feature.properties.id}`}
+            id={`event-marker-${feature.properties.id}`}
+            coordinate={feature.geometry.coordinates}
+            anchor={{ x: 0.5, y: 1.0 }}
+          >
+            <EventMarker
+              event={feature}
+              theme={theme}
+              isSelected={String(selectedEventId) === String(feature.properties.id)}
+              onPress={onPoiPress}
+            />
+          </MapLibreGL.MarkerView>
+        ))}
 
       {/* 2. POI LAYER (Unified MarkerViews) */}
-      {poisGeoJSON?.features?.map((feature: any) => (
-        <MapLibreGL.MarkerView
-          key={`mv-poi-${feature.properties.id}`}
-          id={`poi-marker-${feature.properties.id}`}
-          coordinate={feature.geometry.coordinates}
-          anchor={{ x: 0.5, y: 1.0 }}
-        >
-          <POIMarker
-            poi={feature}
-            theme={theme}
-            isSelected={String(selectedPoiId) === String(feature.properties.id)}
-            onPress={onPoiPress}
-          />
-        </MapLibreGL.MarkerView>
-      ))}
+      {poisGeoJSON?.features
+        ?.filter((f: any) => {
+          const coords = f.geometry?.coordinates;
+          return coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
+        })
+        .map((feature: any) => (
+          <MapLibreGL.MarkerView
+            key={`mv-poi-${feature.properties.id}`}
+            id={`poi-marker-${feature.properties.id}`}
+            coordinate={feature.geometry.coordinates}
+            anchor={{ x: 0.5, y: 1.0 }}
+          >
+            <POIMarker
+              poi={feature}
+              theme={theme}
+              isSelected={String(selectedPoiId) === String(feature.properties.id)}
+              onPress={onPoiPress}
+            />
+          </MapLibreGL.MarkerView>
+        ))}
 
       {/* 3. EVENT PERIMETER - REMOVED AS REQUESTED */}
 
@@ -106,6 +116,6 @@ export const MapLayers = ({
       )}
     </>
   );
-};
+});
 
 MapLayers.displayName = 'MapLayers';

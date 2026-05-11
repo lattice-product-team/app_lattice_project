@@ -82,6 +82,7 @@ export default function MapIndexPage() {
   const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
+  const cameraMode = useMapUIStore((state) => state.cameraMode);
   const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
   const { isConnected } = useSocket();
 
@@ -642,6 +643,7 @@ export default function MapIndexPage() {
           uiLayer={uiLayer}
           islandState={islandState}
           bottomOffset={insets.bottom + 5}
+          cameraMode={cameraMode}
           onRecenter={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             triggerRecenter();
