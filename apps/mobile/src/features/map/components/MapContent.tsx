@@ -392,6 +392,7 @@ export const MapContent = function MapContent({
           isNavigating={isNavigating}
           isPlanning={isPlanning}
           onPoiPress={handlePoiPress}
+          zoomLevel={discreteZoom}
           zoomSharedValue={zoomSharedValue}
         />
       </MapLibreGL.MapView>

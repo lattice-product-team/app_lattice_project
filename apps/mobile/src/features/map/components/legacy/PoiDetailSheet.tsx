@@ -5,7 +5,7 @@ import BottomSheet, {
   BottomSheetBackgroundProps,
 } from '@gorhom/bottom-sheet';
 import { SafeBlurView } from '../../../components/ui/SafeBlurView';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Share as ShareIcon, X, Navigation, Ticket, Calendar } from 'lucide-react-native';
 import { SharedValue } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,6 @@ import { Image } from 'expo-image';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
-import { colors as primitiveColors } from '@app/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -42,17 +41,6 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
     const { setNavigating, routeMetadata } = useNavigationStore();
 
     const metadata = React.useMemo(() => getCategoryMetadata(poi?.category), [poi?.category]);
-
-    const formatDistance = (m: number) => {
-      if (m >= 1000) return `${(m / 1000).toFixed(1)} km`;
-      return `${Math.round(m)} m`;
-    };
-
-    const formatDuration = (s: number) => {
-      const mins = Math.round(s / 60);
-      if (mins < 1) return '< 1 min';
-      return `${mins} min`;
-    };
 
     const snapPoints = React.useMemo(() => [220, SCREEN_HEIGHT * 0.45, SCREEN_HEIGHT * 0.88], []);
 
@@ -89,7 +77,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
               style={styles.headerIconCircle}
             >
-              <Feather name="share" size={20} color="white" />
+              <ShareIcon size={20} color="white" strokeWidth={2.2} />
             </Pressable>
 
             <View style={styles.titleContainer}>
@@ -108,7 +96,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
               }}
               style={styles.headerIconCircle}
             >
-              <Feather name="x" size={20} color="white" />
+              <X size={20} color="white" strokeWidth={2.2} />
             </Pressable>
           </View>
 
@@ -128,7 +116,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                   !routeMetadata && { opacity: 0.6 },
                 ]}
               >
-                <MaterialCommunityIcons name="navigation" size={24} color="#000" />
+                <Navigation size={24} color="#000" strokeWidth={2.5} />
                 <Text style={styles.tridentLabelPrimary}>IR</Text>
               </Pressable>
 
@@ -141,10 +129,10 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 style={styles.tridentButtonSecondary}
               >
                 <SafeBlurView intensity={20} style={styles.buttonBlur}>
-                  <MaterialCommunityIcons
-                    name="ticket-confirmation"
+                  <Ticket
                     size={22}
                     color={theme.colors.brand.primary}
+                    strokeWidth={2.2}
                   />
                 </SafeBlurView>
                 <Text style={styles.tridentLabelSecondary}>ENTRADAS</Text>
@@ -159,7 +147,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 style={styles.tridentButtonSecondary}
               >
                 <SafeBlurView intensity={20} style={styles.buttonBlur}>
-                  <Feather name="calendar" size={22} color={theme.colors.brand.primary} />
+                  <Calendar size={22} color={theme.colors.brand.primary} strokeWidth={2.2} />
                 </SafeBlurView>
                 <Text style={styles.tridentLabelSecondary}>AÑADIR</Text>
               </Pressable>

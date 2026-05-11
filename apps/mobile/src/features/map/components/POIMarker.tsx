@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
-import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolate, SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
 
 interface POIMarkerProps {
   poi: any;
@@ -39,7 +39,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
         zoomSharedValue.value,
         [14.2, 14.5],
         [0, 1],
-        Extrapolate.CLAMP
+        Extrapolation.CLAMP
       );
       
       const finalOpacity = (isSelected || isLinkedToSelectedEvent) ? 1 : zoomOpacity;
@@ -52,7 +52,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
         zoomSharedValue.value,
         [14.5, 17],
         [0.8, 1],
-        Extrapolate.CLAMP
+        Extrapolation.CLAMP
       );
 
       return {
@@ -68,7 +68,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
         zoomSharedValue.value,
         [16.5, 17],
         [0, 1],
-        Extrapolate.CLAMP
+        Extrapolation.CLAMP
       );
       
       return {

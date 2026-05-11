@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, Pressable, Text } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { CircleCheck, RefreshCw } from 'lucide-react-native';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface ScanOverlayProps {
@@ -30,7 +30,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({ isProcessing, scanned,
 
         {scanned && !isProcessing && (
           <View className="bg-black/60 p-6 rounded-2xl items-center">
-            <Feather name="check-circle" size={48} color={theme.colors.status.success} />
+            <CircleCheck size={48} color={theme.colors.status.success} strokeWidth={2.2} />
           </View>
         )}
       </View>
@@ -42,7 +42,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({ isProcessing, scanned,
             onPress={onReset}
             className="bg-white/10 border border-white/20 px-8 py-4 rounded-full flex-row items-center"
           >
-            <Feather name="refresh-cw" size={18} color="white" />
+            <RefreshCw size={18} color="white" strokeWidth={2.2} />
             <Text className="text-white font-bold ml-3">ESCANEAR OTRA</Text>
           </Pressable>
         </View>

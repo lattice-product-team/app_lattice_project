@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Share } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Bookmark, Share2, Share as ShareIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -41,7 +41,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
   if (savedItems.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <MaterialCommunityIcons name="bookmark-outline" size={64} color="rgba(255,255,255,0.1)" />
+        <Bookmark size={64} color="rgba(255,255,255,0.1)" strokeWidth={1.5} />
         <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>
           Tu lista está vacía
         </Text>
@@ -60,7 +60,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
           onPress={handleShareList}
           style={({ pressed }) => [styles.shareAllButton, pressed && { opacity: 0.7 }]}
         >
-          <Feather name="share-2" size={18} color={theme.colors.brand.primary} />
+          <Share2 size={18} color={theme.colors.brand.primary} strokeWidth={2.2} />
           <Text style={[styles.shareAllText, { color: theme.colors.brand.primary }]}>
             Compartir lista
           </Text>
@@ -100,7 +100,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
               </Text>
             </View>
             <Pressable onPress={() => handleShareItem(item)} style={styles.itemShareButton}>
-              <Feather name="share" size={20} color="rgba(255,255,255,0.4)" />
+              <ShareIcon size={20} color="rgba(255,255,255,0.4)" strokeWidth={2.2} />
             </Pressable>
           </Pressable>
         ))}

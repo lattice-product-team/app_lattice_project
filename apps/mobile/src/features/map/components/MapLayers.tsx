@@ -1,11 +1,12 @@
 import React from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
+import { View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
+import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { EventMarker } from './EventMarker';
 import { POIMarker } from './POIMarker';
-import { useStartupStore } from '../../../store/useStartupStore';
 
 interface MapLayersProps {
   theme: any;
@@ -39,61 +40,62 @@ export const MapLayers = React.memo(({
   return (
     <>
       {/* 1. EVENTS LAYER - Always visible */}
+      {/* 1. EVENTS LAYER (PointAnnotations for maximum stability on iOS) */}
       {eventsGeoJSON?.features?.map((feature: any) => {
-        const isSelected = String(selectedEventId) === String(feature.properties?.id);
-        
-        // STRICT VALIDATION
+        const id = feature.properties?.id || feature.id;
+        const isSelected = String(selectedEventId) === String(id);
         const coords = feature.geometry?.coordinates;
-        const isValidCoords = coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
-
-        if (!isValidCoords) return null;
+        
+        if (!coords || coords.length !== 2) return null;
 
         return (
-          <MapLibreGL.MarkerView
-            key={`mv-ev-v3-${feature.properties?.id || feature.id}`}
-            id={`event-marker-${feature.properties?.id || feature.id}`}
+          <MapLibreGL.PointAnnotation
+            key={`ev-pa-${id}`}
+            id={`ev-ann-${id}`}
             coordinate={coords}
-            anchor={{ x: 0.5, y: 1.0 }}
           >
-            <EventMarker
-              event={feature}
-              theme={theme}
-              isSelected={isSelected}
-              onPress={onPoiPress}
-              zoomSharedValue={zoomSharedValue}
-            />
-          </MapLibreGL.MarkerView>
+            <View style={mapPinStyles.markerWrapper}>
+              <EventMarker
+                event={feature}
+                theme={theme}
+                isSelected={isSelected}
+                onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
         );
       })}
 
-      {/* 2. POI LAYER (With Contextual Visibility) */}
+      {/* 2. POI LAYER (PointAnnotations with Contextual Visibility) */}
       {poisGeoJSON?.features?.map((feature: any) => {
-        const isSelected = String(selectedPoiId) === String(feature.properties?.id);
+        const id = feature.properties?.id || feature.id;
+        const isSelected = String(selectedPoiId) === String(id);
         const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);
         
-        // Use React zoomLevel for mounting/unmounting (stable)
-        const isVisible = zoomLevel > 14.5 || isSelected || isLinkedToSelectedEvent;
+        // Visibility logic
+        const isVisible = zoomLevel > 13.0 || isSelected || isLinkedToSelectedEvent;
         const coords = feature.geometry?.coordinates;
-        const isValidCoords = coords && coords.length === 2 && (coords[0] !== 0 || coords[1] !== 0);
 
-        if (!isVisible || !isValidCoords) return null;
+        if (!isVisible || !coords || coords.length !== 2) return null;
 
         return (
-          <MapLibreGL.MarkerView
-            key={`mv-poi-v4-${feature.properties?.id || feature.id}`}
-            id={`poi-marker-${feature.properties?.id || feature.id}`}
+          <MapLibreGL.PointAnnotation
+            key={`poi-pa-${id}`}
+            id={`poi-ann-${id}`}
             coordinate={coords}
-            anchor={{ x: 0.5, y: 1.0 }}
           >
-            <POIMarker
-              poi={feature}
-              theme={theme}
-              isSelected={isSelected}
-              onPress={onPoiPress}
-              zoomSharedValue={zoomSharedValue}
-              zoomLevel={zoomLevel}
-            />
-          </MapLibreGL.MarkerView>
+            <View style={mapPinStyles.markerWrapper}>
+              <POIMarker
+                poi={feature}
+                theme={theme}
+                isSelected={isSelected}
+                isLinkedToSelectedEvent={isLinkedToSelectedEvent}
+                onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
         );
       })}
 

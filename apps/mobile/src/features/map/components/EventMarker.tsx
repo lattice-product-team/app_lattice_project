@@ -2,7 +2,8 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
-import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolate, SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
+import { getEventMetadata } from '../../../utils/poiUtils';
 
 interface EventMarkerProps {
   event: any;
@@ -17,7 +18,9 @@ interface EventMarkerProps {
 export const EventMarker: React.FC<EventMarkerProps> = React.memo(
   ({ event, isSelected = false, theme, onPress, zoomSharedValue }) => {
     const { properties } = event;
-    const color = theme.colors.brand.primary;
+    const metadata = getEventMetadata(properties.category);
+    const color = metadata.color || theme.colors.brand.primary;
+    const IconComponent = metadata.icon;
 
     const animatedStyle = useAnimatedStyle(() => {
       // 1. Selection scale with spring
@@ -28,7 +31,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
         zoomSharedValue.value,
         [13, 17],
         [0.8, 1],
-        Extrapolate.CLAMP
+        Extrapolation.CLAMP
       );
 
       return {
@@ -43,7 +46,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
         zoomSharedValue.value,
         [14, 15],
         [0, 1],
-        Extrapolate.CLAMP
+        Extrapolation.CLAMP
       );
       
       return {
@@ -80,7 +83,11 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                 />
               ) : (
                 <View style={[mapPinStyles.placeholder, { backgroundColor: color }]}>
-                  <Text style={mapPinStyles.placeholderText}>{properties.name?.charAt(0)}</Text>
+                  <IconComponent 
+                    size={24} 
+                    color="#FFFFFF" 
+                    strokeWidth={2.2} 
+                  />
                 </View>
               )}
             </MapPinFrame>

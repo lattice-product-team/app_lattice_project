@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { LatticeEvent } from '../../types';
 import { getEventMetadata } from '../../utils/poiUtils';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { typography } from '../../styles/typography';
 
 interface EventHistorySectionProps {
@@ -26,13 +25,14 @@ export const EventHistorySection = ({ events }: EventHistorySectionProps) => {
       >
         {events.map((event) => {
           const metadata = getEventMetadata(event.type);
+          const CategoryIcon = metadata.icon;
           return (
             <View key={event.id} style={styles.card}>
               <View style={[styles.iconContainer, { backgroundColor: `${metadata.color}15` }]}>
-                <MaterialCommunityIcons
-                  name={metadata.icon as any}
+                <CategoryIcon
                   size={24}
                   color={metadata.color}
+                  strokeWidth={2.2}
                 />
               </View>
               <Text style={styles.eventName} numberOfLines={1}>

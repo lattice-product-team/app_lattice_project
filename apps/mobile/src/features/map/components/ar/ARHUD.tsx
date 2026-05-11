@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { X, Compass, Plus, Minus } from 'lucide-react-native';
 import Animated, {
   useAnimatedStyle,
   withTiming,
@@ -81,7 +81,7 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
             accessibilityLabel="Exit AR mode"
             accessibilityRole="button"
           >
-            <Feather name="x" size={24} color="white" />
+            <X size={24} color="white" strokeWidth={2.2} />
           </Pressable>
         </View>
 
@@ -102,7 +102,7 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
             <View style={styles.compassCenter}>
               <Text style={styles.headingText}>VIEWING GRANDSTAND AREA</Text>
               <View className="flex-row items-center mt-1">
-                <Feather name="compass" size={12} color={theme.colors.brand.primary} />
+                <Compass size={12} color={theme.colors.brand.primary} strokeWidth={2.2} />
                 <Text style={[styles.subHeadingText, { color: theme.colors.text.muted }]}>
                   HEADING NORTH-WEST
                 </Text>
@@ -119,11 +119,11 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
         >
           <View style={styles.controlGroup}>
             <Pressable style={styles.sideButton} accessibilityLabel="Zoom in AR">
-              <Feather name="plus" size={20} color="white" />
+              <Plus size={20} color="white" strokeWidth={2.2} />
             </Pressable>
             <View style={styles.divider} />
             <Pressable style={styles.sideButton} accessibilityLabel="Zoom out AR">
-              <Feather name="minus" size={20} color="white" />
+              <Minus size={20} color="white" strokeWidth={2.2} />
             </Pressable>
           </View>
         </View>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: theme.colors.brand.primary,
+    backgroundColor: '#E10600', // Lattice Primary
     marginRight: 8,
   },
   statusText: {

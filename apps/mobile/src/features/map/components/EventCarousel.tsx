@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { getEventMetadata } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
@@ -20,6 +19,7 @@ interface EventCarouselLegacyCardProps {
 
 const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyCardProps) => {
   const metadata = getEventMetadata(event.type);
+  const CategoryIcon = metadata.icon;
   const imageUrl =
     event.imageUrl ||
     'https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=800&auto=format&fit=crop';
@@ -51,11 +51,7 @@ const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyC
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
             <View style={[styles.categoryBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
-              {metadata.iconFamily === 'material' ? (
-                <MaterialCommunityIcons name={metadata.icon as any} size={12} color="white" />
-              ) : (
-                <Feather name={metadata.icon as any} size={12} color="white" />
-              )}
+              <CategoryIcon size={12} color="white" strokeWidth={2.5} />
               <Text style={styles.categoryText}>{metadata.label.toUpperCase()}</Text>
             </View>
           </View>

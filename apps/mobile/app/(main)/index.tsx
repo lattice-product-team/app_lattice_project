@@ -17,6 +17,7 @@ import Animated, {
   Extrapolation,
   useAnimatedReaction,
   useAnimatedScrollHandler,
+  withDelay,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Compass, Map as MapIcon } from 'lucide-react-native';
@@ -424,13 +425,6 @@ export default function MapIndexPage() {
     };
   });
 
-  const dimmerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
-    return {
-      opacity,
-    };
-  });
-
   const canvasStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: interpolate(screenMode.value, [0, 1], [0, -SCREEN_WIDTH], Extrapolation.CLAMP) }],
   }));
@@ -438,12 +432,6 @@ export default function MapIndexPage() {
   const mapOverlayStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: interpolate(screenMode.value, [0, 1], [SCREEN_WIDTH, 0], Extrapolation.CLAMP) }],
   }));
-
-  const topDimmerStyle = useAnimatedStyle(() => {
-    return {
-      opacity: 0, // Removed dark background as requested
-    };
-  });
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
     // Hide if searching (Level 3) or if any overlay layer is active
@@ -474,6 +462,13 @@ export default function MapIndexPage() {
     };
   });
 
+  const dimmerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(islandState.value, [0.5, 1], [0, 0.6], Extrapolation.CLAMP);
+    return {
+      opacity,
+    };
+  });
+
   const dimmerProps = useAnimatedProps(() => {
     return {
       pointerEvents: islandState.value > 0.5 ? 'auto' : ('none' as any),
@@ -500,24 +495,6 @@ export default function MapIndexPage() {
     // Always snap island back to base level if not searching
     islandState.value = withSpring(0, theme.motion.physics.magnetic);
   }, [handleCloseDetails, islandState, theme.motion.physics.magnetic]);
-
-  const onSelectSearchResult = useCallback(
-    (name: string, coords?: [number, number]) => {
-      saveSearch(name);
-      setSearchQuery(name);
-      setIsSearching(false);
-      Keyboard.dismiss();
-
-      // If we have coordinates, move map. For now just collapse.
-      islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-
-      if (coords) {
-        console.log('Moving map to:', coords);
-        // In a real app, we would use mapRef.current.flyTo
-      }
-    },
-    [saveSearch, islandState]
-  );
 
   const handleSelectCategory = useCallback((id: string) => {
     console.log('Selected Category:', id);
@@ -724,8 +701,6 @@ export default function MapIndexPage() {
         />
       </Animated.View>
 
-
-
       {/* 6. Top Island / Search (Z-Index: 3000) */}
       <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 3000 }]} pointerEvents="box-none">
         <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
@@ -831,7 +806,6 @@ const styles = StyleSheet.create({
   islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
   islandHeader: { paddingBottom: 11 },
   islandScrollContent: { paddingBottom: 30 },
-  placeholderContent: { padding: 20, alignItems: 'center' },
   modeToggleContainer: {
     position: 'absolute',
     left: 12,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { CameraOff } from 'lucide-react-native';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
 interface CameraPermissionViewProps {
@@ -14,7 +14,7 @@ export const CameraPermissionView = ({ onRequestPermission }: CameraPermissionVi
       className="flex-1 items-center justify-center p-6"
       style={{ backgroundColor: theme.colors.bg.main }}
     >
-      <Feather name="camera-off" size={64} color={theme.colors.text.muted} />
+      <CameraOff size={64} color={theme.colors.text.muted} strokeWidth={1.5} />
       <Text
         className="text-xl font-bold mt-4 text-center"
         style={{ color: theme.colors.text.primary }}

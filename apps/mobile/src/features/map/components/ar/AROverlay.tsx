@@ -9,7 +9,6 @@ import { CameraPermissionView } from '../../../../components/ui/CameraPermission
 import { ARHUD } from './ARHUD';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 import { typography } from '../../../../styles/typography';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getCategoryMetadata } from '../../../../utils/poiUtils';
 
 // Math helpers
@@ -104,6 +103,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
       const [poiLon, poiLat] = poi.geometry.coordinates;
       const distance = getDistance(userLat, userLon, poiLat, poiLon);
       const metadata = getCategoryMetadata(poi.properties.category);
+      const CategoryIcon = metadata.icon;
 
       const bearing = getBearing(userLat, userLon, poiLat, poiLon);
       let angleDiff = bearing - heading;
@@ -143,7 +143,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
           >
             <View style={styles.brandBubble}>
               <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
-                <MaterialCommunityIcons name={metadata.icon as any} size={18} color="white" />
+                <CategoryIcon size={18} color="white" strokeWidth={2.5} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.brandLabelText} numberOfLines={1}>
@@ -173,7 +173,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
           >
             <View style={styles.brandBubble}>
               <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
-                <MaterialCommunityIcons name={metadata.icon as any} size={18} color="white" />
+                <CategoryIcon size={18} color="white" strokeWidth={2.5} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.brandLabelText} numberOfLines={1}>
