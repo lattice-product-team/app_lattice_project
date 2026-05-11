@@ -25,7 +25,7 @@ services:
       - '${API_PORT:-3000}:3000'
     volumes:
       - .:/app:z
-      - /app/node_modules
+      - node_modules_api:/app/node_modules
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - API_PORT=3000
@@ -46,8 +46,8 @@ services:
       - '${ADMIN_WEB_PORT:-3004}:${ADMIN_WEB_PORT:-3004}'
     volumes:
       - .:/app:z
-      - /app/node_modules
-      - /app/apps/admin-web/.next
+      - node_modules_admin:/app/node_modules
+      - next_cache_admin:/app/apps/admin-web/.next
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3004
@@ -82,3 +82,6 @@ volumes:
   postgres_data:
   redis_data:
   valhalla_data:
+  node_modules_api:
+  node_modules_admin:
+  next_cache_admin:

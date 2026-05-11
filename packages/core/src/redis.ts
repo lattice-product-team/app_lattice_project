@@ -48,16 +48,16 @@ export const deleteCache = async (key: string): Promise<void> => {
 
 export const deleteByPrefix = async (prefix: string): Promise<void> => {
   await execRedis(async (client) => {
-    let cursor = 0;
+    let cursor = '0';
     do {
-      const { cursor: nextCursor, keys } = await client.scan(cursor, {
+      const reply = await client.scan(cursor, {
         MATCH: `${prefix}*`,
         COUNT: 100
       });
-      cursor = nextCursor;
-      if (keys.length > 0) {
-        await client.del(keys);
+      cursor = reply.cursor;
+      if (reply.keys.length > 0) {
+        await client.del(reply.keys);
       }
-    } while (cursor !== 0);
+    } while (cursor !== '0');
   });
 };

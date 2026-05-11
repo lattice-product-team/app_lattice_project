@@ -3,8 +3,7 @@ import { db, pointsOfInterest, sql, events, eq } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 import { socialService } from '../services/social.service';
-import { notifyAdmin } from '../../api/socket';
-import { getCache, setCache, deleteCache, deleteByPrefix } from '../../api/redis';
+import { notifyAdmin, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -191,7 +190,7 @@ export const saveEventSpatial = async (req: Request, res: Response) => {
     await deleteCache(`geo:event:${eventId}:spatial`);
 
     // Notify Admins
-    notifyAdmin('admin:pois:updated', { type: 'EVENT_SPATIAL_UPDATED', id });
+    notifyAdmin('admin:pois:updated', { type: 'EVENT_SPATIAL_UPDATED', id: id as string });
 
     res.json({ success: true, message: 'Event spatial data saved successfully' });
   } catch (error) {

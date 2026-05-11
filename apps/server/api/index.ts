@@ -1,7 +1,6 @@
 import http from 'http';
 import app from './app';
-import { loadConfig } from '@app/core';
-import { initSocket } from './socket';
+import { loadConfig, initSocket } from '@app/core';
 
 const env = loadConfig();
 const PORT = env.API_PORT;

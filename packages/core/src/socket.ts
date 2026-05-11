@@ -1,8 +1,8 @@
 import { Server } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { Server as HttpServer } from 'http';
-import { loadConfig } from '@app/core';
-import { getRedisClient } from './redis';
+import { loadConfig } from './config.js';
+import { getRedisClient } from './redis.js';
 import jwt from 'jsonwebtoken';
 
 const config = loadConfig();
