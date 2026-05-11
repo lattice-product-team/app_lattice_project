@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:3000';
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '').replace('/v1', '') || 'http://localhost:3000';
 
 export const useSocket = (token?: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);
