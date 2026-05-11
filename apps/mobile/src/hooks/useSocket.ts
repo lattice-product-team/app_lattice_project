@@ -9,13 +9,28 @@ const SOCKET_URL = API_URL?.replace('/api/v1', '') || '';
 
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const appState = useRef(AppState.currentState);
+
+  const disconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+      setIsConnected(false);
+      console.log('[Socket] Disconnected manually');
+    }
+  }, []);
 
   const connect = useCallback(() => {
     if (!token || !SOCKET_URL) return;
 
+    // Avoid multiple connections
+    if (socketRef.current?.connected) return;
+    if (socketRef.current) disconnect();
+
+    console.log('[Socket] Connecting to:', SOCKET_URL);
+    
     const socketInstance = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket'],
@@ -37,16 +52,8 @@ export const useSocket = () => {
       console.error('[Socket] Connection error:', err.message);
     });
 
-    setSocket(socketInstance);
-  }, [token]);
-
-  const disconnect = useCallback(() => {
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
-      setIsConnected(false);
-    }
-  }, [socket]);
+    socketRef.current = socketInstance;
+  }, [token, disconnect]);
 
   // Handle connection/disconnection based on token
   useEffect(() => {
@@ -55,40 +62,35 @@ export const useSocket = () => {
     } else {
       disconnect();
     }
-    return () => disconnect();
+    return () => {
+      // Don't disconnect on every re-render, only on unmount or token change
+    };
   }, [token, connect, disconnect]);
 
-  // Lifecycle management: Task 4.2
+  // Lifecycle management
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        console.log('[Socket] App came to foreground, reconnecting...');
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         connect();
       } else if (nextAppState.match(/inactive|background/)) {
-        console.log('[Socket] App went to background, disconnecting to save battery...');
         disconnect();
       }
       appState.current = nextAppState;
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      subscription.remove();
-    };
+    return () => subscription.remove();
   }, [connect, disconnect]);
 
   const subscribe = useCallback((event: string, callback: (data: any) => void) => {
-    if (socket) {
-      socket.on(event, callback);
+    const currentSocket = socketRef.current;
+    if (currentSocket) {
+      currentSocket.on(event, callback);
       return () => {
-        socket.off(event, callback);
+        currentSocket.off(event, callback);
       };
     }
-  }, [socket]);
+  }, []);
 
   return { isConnected, subscribe };
 };
