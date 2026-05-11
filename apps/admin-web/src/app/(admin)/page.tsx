@@ -176,14 +176,14 @@ export default function Dashboard() {
                 <Button
                   variant="primary"
                   className="h-14 px-10 text-admin-base font-bold flex items-center justify-center no-underline"
-                  onPress={() => router.push(`/map?eventId=${activeEvent.id}`)}
+                  onClick={() => router.push(`/map?eventId=${activeEvent.id}`)}
                 >
                   View Map
                 </Button>
                 <Button 
                   variant="ghost" 
                   className="h-14 px-10 text-admin-base font-bold flex items-center justify-center no-underline text-obsidian"
-                  onPress={() => router.push('/events')}
+                  onClick={() => router.push('/events')}
                 >
                   Event Settings
                 </Button>

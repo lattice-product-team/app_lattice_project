@@ -124,13 +124,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   React.useEffect(() => {
     if (activeEventBoundary?.geometry?.coordinates) {
       const bbox = getBBox(activeEventBoundary.geometry.coordinates);
-      mapRef.current?.fitBounds(
-        [
-          [bbox[0], bbox[1]],
-          [bbox[2], bbox[3]],
-        ],
-        { padding: 40, duration: 1000 }
-      );
+      // Delay so the overlay animation (300ms) finishes before fitBounds,
+      // ensuring the map container has its final size.
+      const t = setTimeout(() => {
+        mapRef.current?.fitBounds(
+          [
+            [bbox[0], bbox[1]],
+            [bbox[2], bbox[3]],
+          ],
+          { padding: 80, duration: 800, maxZoom: 17 }
+        );
+      }, 350);
+      return () => clearTimeout(t);
     } else if (initialViewState) {
       mapRef.current?.flyTo({
         center: [initialViewState.longitude, initialViewState.latitude],
