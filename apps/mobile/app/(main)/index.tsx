@@ -494,12 +494,12 @@ export default function MapIndexPage() {
 
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
-    deselect();
+    handleCloseDetails();
     setIsSearching(false);
-    if (!selectedPoiId) {
-      islandState.value = withSpring(preSearchLevel.value, theme.motion.physics.magnetic);
-    }
-  }, [deselect, selectedPoiId, preSearchLevel, islandState]);
+    
+    // Always snap island back to base level if not searching
+    islandState.value = withSpring(0, theme.motion.physics.magnetic);
+  }, [handleCloseDetails, islandState, theme.motion.physics.magnetic]);
 
   const onSelectSearchResult = useCallback(
     (name: string, coords?: [number, number]) => {

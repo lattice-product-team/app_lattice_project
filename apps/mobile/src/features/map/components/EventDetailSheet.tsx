@@ -58,10 +58,10 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
     FULL: 1.0,
   };
 
-  const liquidSpring = {
-    damping: 30,
-    stiffness: 80,
-    mass: 1.5,
+  const snappySpring = {
+    damping: 25,
+    stiffness: 160,
+    mass: 0.8,
   };
 
   const isPlanning = useNavigationStore((s) => s.isPlanning);
@@ -70,9 +70,10 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   // Sync state with model selection and navigation/planning modes
   useEffect(() => {
     if (model && !isPlanning && !isNavigating) {
-      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+      islandState.value = withSpring(SNAP_POINTS.MID, snappySpring);
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
+      // Immediate close without waiting for next tick if possible
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
     }
   }, [!!model, isPlanning, isNavigating]);
 
@@ -109,13 +110,12 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
       const predictedPos = islandState.value + velocity * 0.12;
 
       if (predictedPos < SNAP_POINTS.MID * 0.5) {
-        islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
-          if (finished) runOnJS(onClose)();
-        });
+        runOnJS(onClose)(); // Deselect instantly
+        islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
       } else if (predictedPos < (SNAP_POINTS.MID + SNAP_POINTS.FULL) / 2) {
-        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.MID, snappySpring);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.FULL, snappySpring);
       }
     });
 
@@ -171,9 +171,8 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   });
 
   const handleCloseInternal = () => {
-    islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
-      if (finished) runOnJS(onClose)();
-    });
+    runOnJS(onClose)(); // Deselect instantly
+    islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
   };
 
   return (

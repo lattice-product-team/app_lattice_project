@@ -33,7 +33,6 @@ export const MapLayers = React.memo(({
   isPlanning,
   onPoiPress,
 }: MapLayersProps) => {
-  const currentZoom = useMapUIStore((s) => s.lastCameraPosition?.zoom || 15);
 
   return (
     <>
