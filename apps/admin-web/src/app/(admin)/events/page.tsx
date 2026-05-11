@@ -3,6 +3,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   Spinner,
+  Select,
+  ListBox,
+  Selection,
 } from '@heroui/react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
@@ -33,8 +36,8 @@ export default function EventsPage() {
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [capacityFilter, setCapacityFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<Selection>(new Set([]));
+  const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set([]));
 
   // Form State
   const [name, setName] = useState('');
@@ -46,25 +49,37 @@ export default function EventsPage() {
   const { boundaryPoints, setBoundaryPoints, undoLastPoint, clearBoundary } =
     useMapInteractions('DRAW_BOUNDARY');
 
+  // Helper: extract a plain string from HeroUI's Selection (which can be 'all' or a Set<Key>)
+  const selectionValue = (sel: Selection): string => {
+    if (sel === 'all') return 'all';
+    const arr = Array.from(sel as Set<string | number>);
+    return arr.length > 0 ? String(arr[0]) : '';
+  };
+
   // Filtering Logic
   const filteredEvents = useMemo(() => {
+    const statusValue = selectionValue(statusFilter);
+    const capacityValue = selectionValue(capacityFilter);
+
     return events.filter((event: any) => {
       const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
       
       const end = new Date(event.endDate);
       const isActive = end > new Date();
       const matchesStatus = 
-        statusFilter === 'all' || 
-        (statusFilter === 'active' && isActive) || 
-        (statusFilter === 'past' && !isActive);
+        !statusValue ||
+        statusValue === 'all' || 
+        (statusValue === 'active' && isActive) || 
+        (statusValue === 'past' && !isActive);
 
       const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
       const capacity = metadata?.capacity || 0;
       const matchesCapacity = 
-        capacityFilter === 'all' ||
-        (capacityFilter === 'massive' && capacity >= 10000) ||
-        (capacityFilter === 'medium' && capacity >= 1000 && capacity < 10000) ||
-        (capacityFilter === 'boutique' && capacity < 1000);
+        !capacityValue ||
+        capacityValue === 'all' ||
+        (capacityValue === 'massive' && capacity >= 10000) ||
+        (capacityValue === 'medium' && capacity >= 1000 && capacity < 10000) ||
+        (capacityValue === 'boutique' && capacity < 1000);
 
       return matchesSearch && matchesStatus && matchesCapacity;
     });
@@ -197,12 +212,11 @@ export default function EventsPage() {
             DataForSEO social proof integration.
           </p>
         </div>
-        <div className="hidden" />
       </header>
 
       {/* Full-Screen Interface */}
       {isInterfaceOpen && (
-        <div className="fixed inset-0 z-[100] bg-eggshell flex flex-col animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] bg-eggshell flex flex-col animate-in fade-in duration-300 w-screen h-screen">
           <div className="h-20 border-b border-chalk flex items-center justify-between px-12 shrink-0 bg-white/50 backdrop-blur-md">
             <div className="flex items-center gap-4">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gravel">Lattice Studio</span>
@@ -419,67 +433,69 @@ export default function EventsPage() {
 
             {/* Status filter */}
             <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
-              <span className="text-[9px] font-black uppercase tracking-widest text-gravel/50">Status</span>
-              <div className="flex items-center gap-1">
-                {[
-                  { id: 'all', label: 'All' },
-                  { id: 'active', label: 'Live' },
-                  { id: 'past', label: 'Past' },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setStatusFilter(opt.id)}
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      statusFilter === opt.id
-                        ? 'bg-obsidian text-eggshell'
-                        : 'text-gravel hover:text-obsidian hover:bg-powder'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              <Select
+                variant="bordered"
+                size="sm"
+                label="Status"
+                placeholder="Operational Status"
+                selectedKeys={statusFilter}
+                onSelectionChange={setStatusFilter}
+                className="w-40"
+                classNames={{ trigger: "rounded-full border-chalk h-10" }}
+              >
+                <Select.Trigger><Select.Value /></Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    <ListBox.Item id="all" textValue="All Schedules">All Schedules</ListBox.Item>
+                    <ListBox.Item id="active" textValue="Live & Upcoming">Live & Upcoming</ListBox.Item>
+                    <ListBox.Item id="past" textValue="Past Events">Past Events</ListBox.Item>
+                  </ListBox>
+                </Select.Popover>
+              </Select>
             </div>
 
             {/* Scale filter */}
             <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
-              <span className="text-[9px] font-black uppercase tracking-widest text-gravel/50">Scale</span>
-              <div className="flex items-center gap-1">
-                {[
-                  { id: 'all', label: 'All' },
-                  { id: 'massive', label: '+10k' },
-                  { id: 'medium', label: '1k–10k' },
-                  { id: 'boutique', label: '<1k' },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setCapacityFilter(opt.id)}
-                    className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest transition-all ${
-                      capacityFilter === opt.id
-                        ? 'bg-obsidian text-eggshell'
-                        : 'text-gravel hover:text-obsidian hover:bg-powder'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              <Select
+                variant="bordered"
+                size="sm"
+                label="Scale"
+                placeholder="Audience Scale"
+                selectedKeys={capacityFilter}
+                onSelectionChange={setCapacityFilter}
+                className="w-40"
+                classNames={{ trigger: "rounded-full border-chalk h-10" }}
+              >
+                <Select.Trigger><Select.Value /></Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    <ListBox.Item id="all" textValue="All Scales">All Scales</ListBox.Item>
+                    <ListBox.Item id="massive" textValue="Massive (>10k)">Massive (&gt;10k)</ListBox.Item>
+                    <ListBox.Item id="medium" textValue="Medium (1k-10k)">Medium (1k-10k)</ListBox.Item>
+                    <ListBox.Item id="boutique" textValue="Boutique (<1k)">Boutique (&lt;1k)</ListBox.Item>
+                  </ListBox>
+                </Select.Popover>
+              </Select>
             </div>
 
             {/* Clear filters — only shown when active */}
-            {(searchTerm || statusFilter !== 'all' || capacityFilter !== 'all') && (
+            {(searchTerm || 
+              (selectionValue(statusFilter) && selectionValue(statusFilter) !== 'all') || 
+              (selectionValue(capacityFilter) && selectionValue(capacityFilter) !== 'all')) && (
               <div className="px-5 py-3.5 shrink-0">
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setSearchTerm('');
-                    setStatusFilter('all');
-                    setCapacityFilter('all');
+                    setStatusFilter(new Set([]));
+                    setCapacityFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-ember hover:opacity-70 transition-opacity"
+                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-ember border-ember/20 hover:bg-ember/5 transition-all h-8 px-3"
                 >
-                  <Icons.X className="w-3 h-3" />
+                  <Icons.X className="w-3.5 h-3.5" />
                   Clear filters
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -555,14 +571,14 @@ export default function EventsPage() {
                             className="bg-white border-chalk hover:bg-signal-blue hover:text-white hover:border-signal-blue transition-colors"
                             onClick={() => router.push(`/map?eventId=${event.id}`)}
                           >
-                            View Map
+                            View
                           </Button>
                           <Button 
                             variant="compact" 
                             className="bg-white border-chalk hover:border-obsidian"
                             onClick={() => handleOpenEdit(event)}
                           >
-                            Manage
+                            Edit
                           </Button>
                         </div>
                       </td>
