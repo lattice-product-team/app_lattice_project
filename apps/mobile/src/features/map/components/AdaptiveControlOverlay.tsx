@@ -28,6 +28,7 @@ export const AdaptiveControlOverlay = ({
   is3DActive,
   uiLayer,
   islandState,
+  isConnected = false,
   bottomOffset = 0,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
