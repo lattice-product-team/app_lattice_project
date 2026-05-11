@@ -33,9 +33,12 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - VALHALLA_HOST=valhalla
       - VALHALLA_PORT=8002
+      - REDIS_URL=redis://redis:6379
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   admin-web:
     build:

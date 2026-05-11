@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { loadConfig } from '@app/core';
+import { loadConfig } from './config.js';
 
 const config = loadConfig();
 

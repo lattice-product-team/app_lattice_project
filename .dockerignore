@@ -25,3 +25,4 @@ ios
 **/tests
 **/__tests__
 **/coverage
+.docker
