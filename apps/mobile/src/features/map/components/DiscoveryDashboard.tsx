@@ -35,19 +35,15 @@ const CATEGORIES: Category[] = [
 
 interface DiscoveryDashboardProps {
   islandState: SharedValue<number>;
-  activeCategoryFilters?: string[];
   onSelectCategory?: (id: string) => void;
   onSelectEvent?: (event: LatticeEvent) => void;
-  onClearFilters?: () => void;
 }
 
 export const DiscoveryDashboard = React.memo(
   ({
     islandState,
-    activeCategoryFilters = [],
     onSelectCategory,
     onSelectEvent,
-    onClearFilters,
   }: DiscoveryDashboardProps) => {
     const theme = useAppTheme();
     const { activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
@@ -65,7 +61,7 @@ export const DiscoveryDashboard = React.memo(
       };
 
       return allEvents.filter((event) => {
-        return activeCategoryFilters.some((filterId) => {
+        return activeCategoryFilters.some((filterId: string) => {
           const matchedTypes = categoryMap[filterId] || [filterId];
           return matchedTypes.includes(event.type.toLowerCase());
         });

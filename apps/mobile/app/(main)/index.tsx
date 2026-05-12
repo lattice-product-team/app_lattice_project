@@ -835,10 +835,8 @@ export default function MapIndexPage() {
                 <Animated.View style={level2ContentStyle}>
                   <DiscoveryDashboard
                     islandState={islandState}
-                    activeCategoryFilters={activeCategoryFilters}
                     onSelectCategory={handleSelectCategory}
                     onSelectEvent={handleEventSelect}
-                    onClearFilters={clearFilters}
                   />
                 </Animated.View>
 

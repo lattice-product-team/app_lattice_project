@@ -103,7 +103,7 @@ export const usePOIStore = create<POIState>((set) => ({
         if (p.id === usePOIStore.getState().selectedPoiId) return true;
 
         // Check if the POI's category matches any of the active filters
-        return activeCategoryFilters.some((filterId) => {
+        return activeCategoryFilters.some((filterId: string) => {
           const matchedCategories = categoryMap[filterId] || [filterId];
           return matchedCategories.includes(p.category.toLowerCase());
         });
