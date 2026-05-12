@@ -12,7 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import Voice from '@react-native-voice/voice';
-import { useCameraPermissions } from 'expo-camera';
+import { useMicrophonePermissions } from 'expo-camera';
+import { NativeModules } from 'react-native';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { UserAvatar } from './UserAvatar';
 import { typography } from '../../styles/typography';
@@ -50,13 +51,24 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
   ) => {
     const theme = useAppTheme();
     const [isListening, setIsListening] = React.useState(false);
-    const [permission, requestPermission] = useCameraPermissions();
+    const [permission, requestPermission] = useMicrophonePermissions();
     const pulseValue = useSharedValue(1);
 
-    // Setup Speech Recognition
+    // Use a ref for onChangeText to keep listeners stable without re-registering
+    const onChangeTextRef = React.useRef(onChangeText);
     React.useEffect(() => {
-      Voice.onSpeechStart = () => {
+      onChangeTextRef.current = onChangeText;
+    }, [onChangeText]);
+
+    // Setup Speech Recognition - Only once on mount
+    React.useEffect(() => {
+      console.log('[Voice] Initializing listeners...');
+      
+      Voice.onSpeechStart = (e: any) => {
+        console.log('[Voice] === EVENT: onSpeechStart ===', e);
         setIsListening(true);
+        // Disable animation temporarily to rule out Reanimated crashes
+        /*
         pulseValue.value = withRepeat(
           withSequence(
             withTiming(1.3, { duration: 400 }),
@@ -65,35 +77,42 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
           -1,
           true
         );
+        */
       };
 
-      Voice.onSpeechEnd = () => {
+      Voice.onSpeechEnd = (e: any) => {
+        console.log('[Voice] === EVENT: onSpeechEnd ===', e);
         setIsListening(false);
         pulseValue.value = withSpring(1);
       };
 
-      Voice.onSpeechResults = (e: SpeechResultsEvent) => {
+      Voice.onSpeechResults = (e: any) => {
+        console.log('[Voice] === EVENT: onSpeechResults ===', e.value);
         if (e.value && e.value.length > 0) {
-          onChangeText(e.value[0]);
+          onChangeTextRef.current(e.value[0]);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       };
 
-      Voice.onSpeechError = (e: SpeechErrorEvent) => {
-        console.error('Speech Recognition Error:', e.error);
+      Voice.onSpeechError = (e: any) => {
+        console.error('[Voice] === EVENT: onSpeechError ===', e.error);
         setIsListening(false);
         pulseValue.value = withSpring(1);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       };
 
       return () => {
+        console.log('[Voice] Cleaning up listeners...');
         if (Voice) {
           Voice.destroy().then(() => {
+            console.log('[Voice] Destroyed successfully');
             Voice.removeAllListeners();
-          }).catch(() => {});
+          }).catch((err) => {
+            console.error('[Voice] Cleanup error:', err);
+          });
         }
       };
-    }, [onChangeText, pulseValue]);
+    }, []); // Empty dependency array for stability
 
     const isOperationInProgress = React.useRef(false);
 
@@ -102,6 +121,9 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
       
       try {
         isOperationInProgress.current = true;
+        console.log('[Voice] Object keys:', Object.keys(Voice));
+        console.log('[Voice] NativeModule:', !!NativeModules.VoiceModule);
+        
         console.log('[Voice] Requesting permissions...');
 
         // Check/Request microphone permissions first
@@ -112,20 +134,22 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
           return;
         }
 
-        // Small delay to let the system UI settle after permission dialog
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Increase delay to let iOS register the new permission status
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         if (onMicPress) onMicPress();
         
-        console.log('[Voice] Starting recognition...');
-        await Voice.start('es-ES');
+        console.log('[Voice] Calling Voice.start()...');
+        await Voice.start();
+        console.log('[Voice] Voice.start() promise resolved.');
         setIsListening(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } catch (e) {
-        console.error('[Voice] Failed to start:', e);
+        console.error('[Voice] Critical start error:', e);
         setIsListening(false);
       } finally {
         isOperationInProgress.current = false;
+        console.log('[Voice] startListening operation finished.');
       }
     }, [onMicPress, requestPermission]);
 
