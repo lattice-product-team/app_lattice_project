@@ -1,26 +1,25 @@
 ## Why
 
-Standardize the Admin Web UI using the premium "Eleven" design language to improve aesthetic quality and professional feel. The current interface lacks consistency with the project's high-end "Solar Gold" and "Eleven" brand guidelines, and the dashboard requires a prioritized visual overhaul to meet operational excellence standards.
+Standardize the Admin Web UI using the premium "Eleven" design language to improve aesthetic quality and professional feel. The current interface lacks consistency with the project's high-end "Solar Gold" and "Eleven" brand guidelines. By moving to an "Editorial" layout, we reduce cognitive load and provide actionable operational insights that were previously hidden in the generic interface.
 
 ## What Changes
 
-- **Core Theme Integration**: Inject Eleven design tokens (Eggshell, Powder, Obsidian, etc.) into the `admin-web` Tailwind configuration.
-- **Typography Standard**: Configure **Waldenburg 300** as the primary headline font and ensure proper fallbacks.
-- **Dashboard Refactor**: Complete visual redesign of the Admin Dashboard (`/`) based on Eleven patterns (Editorial feel, hairline shadows).
-- **Component Scaling**: Create and document new reusable components (Cards, Badges, Tables) that follow the Eleven spec for future use across other admin screens.
+- Full migration of the Admin Web styles to the Eleven achromatic palette (Eggshell/Obsidian).
+- Refactor of the root Dashboard to an asymmetric Bento Grid layout.
+- Implementation of Waldenburg 300 typography as the primary editorial voice.
+- Integration of real-time operational metrics (Accessibility, POIs, Traffic).
 
 ## Capabilities
 
-### New Capabilities
-- `admin-eleven-theme`: Implementation of the Eleven color palette and typography scale in Tailwind.
-- `eleven-dashboard`: Refactored dashboard layout using floating cards, hairline shadows, and Waldenburg headlines.
-
-### Modified Capabilities
-- `admin-design-system`: Update the administrative design standards to incorporate Eleven as the primary style guide for web.
-- `eleven-ui-components`: Extend the component library with admin-specific patterns identified during the dashboard refactor.
+- **admin-eleven-theme**: Refined Tailwind/NextFont integration for Eleven standards.
+- **eleven-dashboard**: A high-fidelity Bento Grid layout with asymmetric editorial sections.
+- **operational-insights**: Real-time analysis of gate traffic, accessibility health, and POI congestion.
+- **admin-design-system**: [Modified] Updated typography and elevation rules.
+- **eleven-ui-components**: [Modified] Standardized rounded cards (32px) and editorial typography.
 
 ## Impact
 
-- `apps/admin-web`: Major UI refactor of the root dashboard and global styles.
-- `packages/theme`: Possible updates to shared tokens if Eleven-specific values are missing.
-- `admin-web` Tailwind Configuration: Significant updates to `tailwind.config.ts`.
+- **Operational Efficiency**: Admins can now detect accessibility bottlenecks and POI congestion at a glance.
+- **Consistency**: Unified design language between the public "Eleven" brand and the internal admin tools.
+- **UX Excellence**: A high-performance interface that reduces cognitive load through clear editorial hierarchy.
+- **Technical Debt**: Clean-up of legacy Tailwind/HeroUI standard components in favor of Eleven-native patterns.

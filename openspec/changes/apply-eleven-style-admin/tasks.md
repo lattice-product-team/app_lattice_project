@@ -19,8 +19,9 @@
 - [x] 3.4 Implement the "Live" status pill using the Obsidian background and proper tracking
 - [x] 3.5 Update all metric labels and values to use the reduced typography scale (14px/12px)
 
-## 4. Verification and Polish
+## 4. Operational Insights & Intelligence
 
-- [x] 4.1 Audit contrast ratios on the new Dashboard layout for accessibility compliance
-- [x] 4.2 Verify Dark Mode transitions for all newly implemented Eleven components
-- [x] 4.3 Documentation: Update `docs/guides/design-system.mdx` with the new Admin Web Eleven standards
+- [x] 4.1 Implement the "Critical POI Monitor" component using the `usePOIs` hook
+- [x] 4.2 Create the "Accessibility Health Index" visualization in the Monitoring Sidebar
+- [x] 4.3 Add a "Gate Traffic" ranking list to the telemetry section
+- [x] 4.4 Documentation: Update `docs/guides/design-system.mdx` with the new Admin Web Eleven standards
