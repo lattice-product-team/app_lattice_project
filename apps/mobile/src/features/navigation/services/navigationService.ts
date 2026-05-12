@@ -67,27 +67,49 @@ export const navigationService = {
       throw new Error('Invalid Valhalla response structure');
     }
 
-    const leg = data.trip.legs[0];
-    const coords = decodePolyline(leg.shape, 6);
+    // Merge all legs to support long/complex routes
+    const allCoords: [number, number][] = [];
+    const allManeuvers: any[] = [];
+    let totalDistance = 0;
+    let totalTime = 0;
+
+    data.trip.legs.forEach((leg: any) => {
+      const legCoords = decodePolyline(leg.shape, 6);
+      
+      // Filter out invalid coordinates to prevent MapLibre crashes/glitches
+      const validLegCoords = legCoords.filter(c => 
+        c && c.length === 2 && 
+        typeof c[0] === 'number' && typeof c[1] === 'number' &&
+        !isNaN(c[0]) && !isNaN(c[1])
+      );
+      
+      allCoords.push(...validLegCoords);
+      
+      if (leg.maneuvers) {
+        allManeuvers.push(...leg.maneuvers.map((m: any) => ({
+          instruction: m.instruction,
+          distance: (m.length || 0) * 1000,
+          type: m.type,
+        })));
+      }
+
+      totalDistance += (leg.summary?.length || 0) * 1000;
+      totalTime += (leg.summary?.time || 0);
+    });
     
-    console.log(`[NavigationService] ${costing} route result: ${data.trip.summary.time}s, ${data.trip.summary.length}km`);
+    console.log(`[NavigationService] ${costing} route result: ${totalTime}s, ${totalDistance}m, points: ${allCoords.length}, legs: ${data.trip.legs.length}`);
 
     return {
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: coords,
+        coordinates: allCoords,
       },
       properties: {
-        distance: data.trip.summary.length * 1000, // convert km to meters
-        durationEstimate: data.trip.summary.time,
+        distance: totalDistance || data.trip.summary.length * 1000,
+        durationEstimate: totalTime || data.trip.summary.time,
       },
-      // Store maneuvers for turn-by-turn guidance
-      maneuvers: leg.maneuvers.map((m: any) => ({
-        instruction: m.instruction,
-        distance: m.length * 1000,
-        type: m.type,
-      })),
+      maneuvers: allManeuvers,
     } as any;
   },
 };
