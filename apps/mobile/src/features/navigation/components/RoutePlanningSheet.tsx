@@ -69,8 +69,9 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
     };
   });
 
-  const formatEta = (seconds: number | null | undefined) => {
+  const formatEta = (seconds: number | null | undefined, mode?: string) => {
     if (isFetching) return 'Calculating...';
+    if (mode && !metadata[mode]) return 'Not available';
     if (seconds === null || seconds === undefined || seconds === 0) return 'Tap to refresh';
     const mins = Math.round(seconds / 60);
     if (mins >= 60) {
@@ -88,6 +89,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
 
   const activeDuration = isFetching ? null : (metadata[transportMode]?.duration || routeMetadata?.duration);
   const activeDistance = isFetching ? null : (metadata[transportMode]?.distance || routeMetadata?.distance);
+  const hasRoute = !!(metadata[transportMode] || routeMetadata);
 
   return (
     <Animated.View style={[
@@ -116,16 +118,23 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
             else if (mode === 'walking') Icon = Footprints;
             else Icon = Bike;
 
+            const isAvailable = !!metadata[mode];
+
             return (
               <Pressable
                 key={mode}
                 onPress={() => {
+                  if (!isAvailable) {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                    return;
+                  }
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setTransportMode(mode);
                 }}
                 style={[
                   styles.modeButton,
-                  transportMode === mode && { backgroundColor: theme.colors.brand.primary }
+                  transportMode === mode && { backgroundColor: theme.colors.brand.primary },
+                  !isAvailable && { opacity: 0.4 }
                 ]}
               >
                 <Icon 
@@ -144,7 +153,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
                     styles.modeEta, 
                     { color: transportMode === mode ? '#000' : theme.colors.text.muted }
                   ]}>
-                    {formatEta(metadata[mode]?.duration)}
+                    {formatEta(metadata[mode]?.duration, mode)}
                   </Text>
                 </View>
               </Pressable>
@@ -163,7 +172,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
           </View>
 
           {/* Elevation / Slope Info for Active Modes */}
-          {(transportMode === 'walking' || transportMode === 'bicycle') && (
+          {(transportMode === 'walking' || transportMode === 'bicycle') && hasRoute && (
             <View style={[styles.metric, styles.metricBorder]}>
               <Text style={[styles.metricValue, { color: '#32D74B' }]}>
                 {transportMode === 'bicycle' ? '+14m' : '+8m'}
@@ -177,10 +186,10 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
 
         <Button
           label="START NAVIGATION"
-          icon="navigation"
           variant="tertiary"
           onPress={handleStart}
-          style={styles.startButton}
+          disabled={!hasRoute || isFetching}
+          style={[styles.startButton, (!hasRoute || isFetching) && { opacity: 0.5 }]}
         />
       </View>
     </Animated.View>

@@ -254,13 +254,16 @@ export default function MapIndexPage() {
     setCurrentEvent(null);
     selectPoi(null);
 
+    // 2. Clear Navigation State
+    useNavigationStore.getState().clearNavigation();
+
     if (setSelectedEvent as any) {
       (setSelectedEvent as any)(null);
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // 2. We don't animate eventSheetState here manually because the sheet's
+    // 3. We don't animate eventSheetState here manually because the sheet's
     // useEffect will react to model becoming null and animate itself to 0.
   }, [setCurrentEvent, selectPoi, setSelectedEvent]);
 
@@ -526,6 +529,9 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
     handleCloseDetails();
     setIsSearching(false);
+
+    // Clear any active navigation/planning state when deselecting
+    useNavigationStore.getState().clearNavigation();
 
     // Always snap island back to base level if not searching
     islandState.value = withSpring(0, theme.motion.physics.magnetic);

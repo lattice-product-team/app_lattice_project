@@ -75,13 +75,25 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   },
 
   setRoutes: (routes, metadata) =>
-    set((state) => ({
-      routes,
-      metadata,
-      isFetching: false,
-      currentRoute: routes[state.transportMode],
-      routeMetadata: metadata[state.transportMode],
-    })),
+    set((state) => {
+      // If current transport mode is not available in the new routes, 
+      // try to find a fallback (driving is usually the most reliable)
+      let newMode = state.transportMode;
+      if (!routes[newMode]) {
+        if (routes.driving) newMode = 'driving';
+        else if (routes.walking) newMode = 'walking';
+        else if (routes.bicycle) newMode = 'bicycle';
+      }
+
+      return {
+        routes,
+        metadata,
+        isFetching: false,
+        transportMode: newMode,
+        currentRoute: routes[newMode],
+        routeMetadata: metadata[newMode],
+      };
+    }),
 
   setTransportMode: (transportMode) =>
     set((state) => ({
