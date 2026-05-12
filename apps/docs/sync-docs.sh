@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Target directory
-PAGES_DIR="src/pages"
+PAGES_DIR="pages"
 mkdir -p "$PAGES_DIR"
 
 # Clean up previous sync (preserve essential Next.js files)
