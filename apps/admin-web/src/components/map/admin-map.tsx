@@ -32,79 +32,97 @@ interface AdminMapProps {
   activeEventBoundary?: any;
 }
 
-const POI_TYPES: Record<string, string> = {
-  wc: '🚽',
-  restaurant: '🍔',
-  bar: '🍺',
-  medical: '🏥',
-  gate: '🚪',
-  information: 'ℹ️',
-  emergency: '🚨',
-  parking: '🅿️',
-  shop: '🛍️',
+import { 
+  Utensils, 
+  Wine, 
+  Baby, 
+  Hospital, 
+  LogIn, 
+  Info, 
+  AlertTriangle, 
+  MapPin, 
+  ShoppingBag,
+  Ticket,
+  Circle
+} from 'lucide-react';
+
+const POI_METADATA: Record<string, { icon: any; color: string }> = {
+  wc: { icon: Baby, color: '#54A6FF' },
+  restaurant: { icon: Utensils, color: '#F2A03D' },
+  bar: { icon: Wine, color: '#F2A03D' },
+  medical: { icon: Hospital, color: '#E5484D' },
+  gate: { icon: LogIn, color: '#F8D548' },
+  information: { icon: Info, color: '#D9B735' },
+  emergency: { icon: AlertTriangle, color: '#E5484D' },
+  parking: { icon: MapPin, color: '#54A6FF' },
+  shop: { icon: ShoppingBag, color: '#4F46E5' },
+  default: { icon: MapPin, color: '#F8D548' },
 };
 
-const isPointInPolygon = (point: [number, number], polygon: [number, number][][]) => {
-  const [x, y] = point;
-  let inside = false;
-  for (let i = 0, j = polygon[0].length - 1; i < polygon[0].length; j = i++) {
-    const xi = polygon[0][i][0],
-      yi = polygon[0][i][1];
-    const xj = polygon[0][j][0],
-      yj = polygon[0][j][1];
-    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    if (intersect) inside = !inside;
-  }
-  return inside;
-};
-
-const getBBox = (coordinates: [number, number][][]) => {
-  let minLng = Infinity,
-    maxLng = -Infinity,
-    minLat = Infinity,
-    maxLat = -Infinity;
+const getCentroid = (coordinates: [number, number][][]): [number, number] => {
+  let totalLng = 0;
+  let totalLat = 0;
+  let count = 0;
   for (const ring of coordinates) {
     for (const point of ring) {
-      if (point[0] < minLng) minLng = point[0];
-      if (point[0] > maxLng) maxLng = point[0];
-      if (point[1] < minLat) minLat = point[1];
-      if (point[1] > maxLat) maxLat = point[1];
+      totalLng += point[0];
+      totalLat += point[1];
+      count++;
     }
   }
-  return [minLng, minLat, maxLng, maxLat] as [number, number, number, number];
+  return [totalLng / count, totalLat / count];
 };
 
-const DEFAULT_VIEW_STATE = { longitude: 2.2575, latitude: 41.5641, zoom: 15 };
+const MapMarker = React.memo(({ 
+  type, 
+  data, 
+  isSelected, 
+  onClick 
+}: { 
+  type: 'event' | 'poi'; 
+  data: any; 
+  isSelected?: boolean;
+  onClick?: (data: any) => void;
+}) => {
+  const metadata = POI_METADATA[data.category] || POI_METADATA.default;
+  const size = type === 'event' ? 'w-10 h-10' : 'w-8 h-8';
+  const color = type === 'event' ? (data.primaryColor || '#F8D548') : metadata.color;
+  const Icon = type === 'event' ? Ticket : metadata.icon;
 
-const POIMarkers = React.memo(({ pois, onAssetClick }: { pois: any[]; onAssetClick?: (asset: any) => void }) => {
+  const coords = type === 'event' 
+    ? (data.center?.coordinates || (data.boundary ? getCentroid(data.boundary.coordinates) : null))
+    : data.geometry.coordinates;
+
+  if (!coords) return null;
+
   return (
-    <>
-      {pois.map((poi: any) => (
-        <Marker
-          key={poi.id}
-          longitude={poi.geometry.coordinates[0]}
-          latitude={poi.geometry.coordinates[1]}
-          anchor="bottom"
-          onClick={(e) => {
-            e.originalEvent.stopPropagation();
-            onAssetClick?.(poi);
-          }}
+    <Marker
+      longitude={coords[0]}
+      latitude={coords[1]}
+      anchor="bottom"
+      onClick={(e) => {
+        e.originalEvent.stopPropagation();
+        onClick?.(data);
+      }}
+    >
+      <div className={`group relative cursor-pointer flex flex-col items-center`}>
+        <div 
+          className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 transform ${isSelected ? 'scale-125 ring-4 ring-white/30' : 'hover:scale-110'}`}
+          style={{ backgroundColor: color }}
         >
-          <div className="group relative cursor-pointer">
-            <div className="bg-obsidian text-eggshell p-2 rounded-full shadow-hairline border border-chalk transform transition-all hover:scale-110">
-              <span className="text-sm">{POI_TYPES[poi.category] || '📍'}</span>
-            </div>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              {poi.name}
-            </div>
-          </div>
-        </Marker>
-      ))}
-    </>
+          <Icon size={type === 'event' ? 20 : 16} color="white" strokeWidth={2.5} />
+        </div>
+        
+        {/* Label - visible on hover or if selected */}
+        <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-200 whitespace-nowrap ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'}`}>
+          {data.name}
+        </div>
+      </div>
+    </Marker>
   );
 });
 
-POIMarkers.displayName = 'POIMarkers';
+MapMarker.displayName = 'MapMarker';
 
 export const AdminMap: React.FC<AdminMapProps> = ({
   mode,
@@ -194,6 +212,27 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     } as any;
   }, [events]);
 
+  const handleMapLoad = useCallback((e: any) => {
+    const map = e.target;
+    const style = map.getStyle();
+    if (!style || !style.layers) return;
+
+    style.layers.forEach((layer: any) => {
+      const isNativePOI =
+        layer.id.includes('poi') ||
+        layer.id.includes('place') ||
+        layer.id.includes('transit') ||
+        layer.id.includes('transport') ||
+        layer.id.includes('station') ||
+        layer.id.includes('rail') ||
+        layer.id.includes('infrastructure');
+
+      if (isNativePOI) {
+        map.setLayoutProperty(layer.id, 'visibility', 'none');
+      }
+    });
+  }, []);
+
   return (
     <div className="w-full h-full relative">
       <Map
@@ -202,6 +241,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         onMoveEnd={(evt) => setInternalViewState(evt.viewState)}
         mapStyle={MAP_STYLE}
         onClick={handleMapClick}
+        onLoad={handleMapLoad}
         style={{ width: '100%', height: '100%' }}
       >
         <NavigationControl position="top-right" />
@@ -257,15 +297,32 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           </Source>
         )}
 
-        {/* Global POIs */}
+        {/* Markers */}
         {mode === 'GLOBAL_VIEW' && (
-          <POIMarkers pois={pois} onAssetClick={onAssetClick} />
+          <>
+            {events.map((event) => (
+              <MapMarker 
+                key={`event-${event.id}`} 
+                type="event" 
+                data={event} 
+                onClick={onAssetClick} 
+              />
+            ))}
+            {pois.map((poi) => (
+              <MapMarker 
+                key={`poi-${poi.id}`} 
+                type="poi" 
+                data={poi} 
+                onClick={onAssetClick} 
+              />
+            ))}
+          </>
         )}
 
-        {/* Selected POI Marker */}
+        {/* Selected POI Marker (New POI creation mode) */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
           <Marker longitude={selectedPoi.lng} latitude={selectedPoi.lat} anchor="bottom">
-            <div className="bg-obsidian text-eggshell p-2.5 rounded-full shadow-hairline border border-chalk animate-bounce">
+            <div className="w-10 h-10 bg-obsidian rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center animate-bounce">
               <span className="text-xl">📍</span>
             </div>
           </Marker>
@@ -282,3 +339,4 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     </div>
   );
 };
+
