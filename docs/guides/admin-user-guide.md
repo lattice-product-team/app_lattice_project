@@ -1,4 +1,4 @@
-# <img src="../mobile/assets/images/icon.png" height="32" align="center"> Admin Dashboard Guide
+# <img src="../mobile/assets/images/icon.png" height="32" align="center" /> Admin Dashboard Guide
 
 This guide explains how to use the Lattice Admin Dashboard to manage the platform and curate content.
 

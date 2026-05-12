@@ -1,6 +1,6 @@
 ![Lattice Banner](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_banner_1778588749257.png)
 
-# <img src="./apps/mobile/assets/images/icon.png" height="40" align="center"> Lattice
+# <img src="./apps/mobile/assets/images/icon.png" height="40" align="center" /> Lattice
 
 Lattice is the definitive ecosystem for urban discovery and festival management in Barcelona. Built as a high-performance **Modular Monolith** within a **Turborepo**, it combines a React Native mobile experience with a robust Node.js/PostgreSQL backend.
 
