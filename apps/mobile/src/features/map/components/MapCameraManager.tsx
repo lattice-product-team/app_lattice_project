@@ -236,7 +236,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM,
         pitch: lastCameraPosition?.pitch || 0,
       }}
-      followUserLocation={cameraMode !== MapCameraMode.FREE && !selectedEvent && !selectedCoords}
+      followUserLocation={cameraMode === MapCameraMode.NAVIGATION}
       followUserMode={(cameraMode === MapCameraMode.NAVIGATION ? 'compass' : 'normal') as any}
       followZoomLevel={cameraMode === MapCameraMode.NAVIGATION ? 18 : undefined}
       followPitch={cameraMode === MapCameraMode.NAVIGATION ? 45 : undefined}

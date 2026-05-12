@@ -3,10 +3,6 @@ out/
 node_modules/
 
 # Ignore all synced content from the root /docs
-src/app/*
-
-# Keep only the essential Nextra/Next.js app router system files
-!src/app/layout.tsx
-!src/app/loading.tsx
-!src/app/error.tsx
-!src/app/favicon.ico
+src/pages/*
+# But keep the pages directory itself
+!src/pages/
