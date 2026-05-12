@@ -23,6 +23,27 @@ Lattice uses a **Custom JWT-based Authentication**. Clients must exchange user c
 Authorization: Bearer <JWT_TOKEN>
 ```
 
+### Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Mobile/Web Client
+    participant A as Auth API
+    participant D as PostgreSQL
+
+    C->>A: POST /auth/login (email, password)
+    A->>D: Find user by email
+    D-->>A: User record (hashed password)
+    A->>A: Verify password (bcrypt)
+    
+    alt Success
+        A->>A: Sign JWT (Secret key)
+        A-->>C: 200 OK (Token + User Profile)
+    else Failure
+        A-->>C: 401 Unauthorized (Invalid credentials)
+    end
+```
+
 > [!IMPORTANT]
 > Ensure your client handles token storage and expiration logic (standard 24h duration).
 

@@ -4,10 +4,8 @@ import { DocsThemeConfig } from 'nextra-theme-docs'
 const config: DocsThemeConfig = {
   logo: (
     <div className="flex items-center gap-2 font-bold text-xl">
-      <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-1.5 rounded-lg shadow-lg">
-        AL
-      </span>
-      <span>App Lattice</span>
+      <img src="/icon.png" height="32" width="32" style={{ borderRadius: '6px' }} alt="Lattice Logo" />
+      <span>Lattice</span>
     </div>
   ),
   project: {

@@ -13,6 +13,14 @@ Lattice provides a centralized, map-based platform where:
 - **Organizers** can showcase their festivals and events to a targeted audience.
 - **Administrators** can ensure data quality and provide real-time updates.
 
+### Visual Vision
+
+````carousel
+![Mobile Discovery Mockup](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_mobile_mockup_1778590138740.png)
+<!-- slide -->
+![Admin Dashboard Mockup](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_admin_mockup_1778590160739.png)
+````
+
 ## Core Pillars
 
 1.  **Spatial Discovery**: Everything starts with the map. Location is the primary context.

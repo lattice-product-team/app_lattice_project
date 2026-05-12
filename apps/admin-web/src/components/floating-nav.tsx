@@ -19,7 +19,11 @@ export function FloatingNav() {
 
   return (
     <nav className="flex items-center">
-      <div className="bg-white border border-chalk/40 shadow-hairline rounded-full px-1.5 py-1.5 flex items-center gap-1">
+      <div className="bg-white border border-chalk/40 shadow-hairline rounded-full px-2 py-1.5 flex items-center gap-2">
+        <Link href="/" className="px-2 hover:opacity-80 transition-opacity">
+          <img src="/icon.png" height="24" width="24" className="rounded-md" alt="Lattice" />
+        </Link>
+        <div className="w-[1px] h-4 bg-chalk/40 mx-1" />
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = (Icons as any)[item.icon];
