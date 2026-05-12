@@ -1,8 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { 
+  Star, 
+  Calendar, 
+  MapPin 
+} from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { getEventMetadata } from '../../../utils/poiUtils';
@@ -28,6 +31,7 @@ interface EventCarouselCardProps {
 export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCardProps) => {
   const theme = useAppTheme();
   const metadata = getEventMetadata(event.type);
+  const CategoryIcon = metadata.icon;
 
   const formattedDate = React.useMemo(() => {
     if (event.date) return event.date;
@@ -69,13 +73,13 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
           {/* Top Row for Badges */}
           <View style={styles.topRow}>
             <View style={[styles.badge, styles.categoryBadge]}>
-              <MaterialCommunityIcons name={metadata.icon as any} size={14} color="white" />
+              <CategoryIcon size={14} color="white" strokeWidth={2.5} />
               <Text style={styles.categoryLabel}>{metadata.label.toUpperCase()}</Text>
             </View>
 
             {event.rating && (
               <View style={[styles.badge, styles.ratingBadge]}>
-                <MaterialCommunityIcons name="star" size={14} color="#FFD700" />
+                <Star size={14} color="#FFD700" fill="#FFD700" />
                 <Text style={styles.ratingText}>{event.rating}</Text>
               </View>
             )}
@@ -107,14 +111,14 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
 
               <View style={styles.detailsRow}>
                 <View style={styles.detailItem}>
-                  <Feather name="calendar" size={11} color={theme.colors.text.muted} />
+                  <Calendar size={11} color={theme.colors.text.muted} strokeWidth={2.2} />
                   <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>
                     {formattedDate}
                   </Text>
                 </View>
                 <View style={styles.detailSeparator} />
                 <View style={styles.detailItem}>
-                  <Feather name="map-pin" size={11} color={theme.colors.text.muted} />
+                  <MapPin size={11} color={theme.colors.text.muted} strokeWidth={2.2} />
                   <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>
                     {event.location || 'Barcelona'}
                   </Text>

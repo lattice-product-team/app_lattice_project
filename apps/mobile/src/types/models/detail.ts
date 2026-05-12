@@ -33,4 +33,9 @@ export interface DetailModel {
     snippets: string[];
     sourceUrl?: string;
   };
+  info?: {
+    label: string;
+    value: string;
+    icon: string;
+  }[];
 }

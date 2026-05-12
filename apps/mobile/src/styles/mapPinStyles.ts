@@ -3,7 +3,14 @@ import { StyleSheet } from 'react-native';
 export const mapPinStyles = StyleSheet.create({
   container: {
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerWrapper: {
+    alignItems: 'center',
     justifyContent: 'flex-end',
+    width: 120, // Enough space for pin + label
+    height: 80,  // Enough space for pin + label
+    paddingBottom: 2, // Tiny nudge for visual breathing room
   },
   pinFrame: {
     backgroundColor: '#FFFFFF',
@@ -50,7 +57,7 @@ export const mapPinStyles = StyleSheet.create({
   },
   labelText: {
     fontSize: 13, // Uniform size for both
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
   },
   // Stem no longer used

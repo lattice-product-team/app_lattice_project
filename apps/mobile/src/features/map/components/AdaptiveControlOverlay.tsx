@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
+import { MapCameraMode } from '../store/useMapUIStore';
 import Animated, {
   useAnimatedStyle,
   SharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { Navigation, Binoculars } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -18,6 +19,7 @@ interface AdaptiveControlOverlayProps {
   uiLayer: SharedValue<number>;
   islandState: SharedValue<number>;
   isConnected?: boolean;
+  cameraMode?: MapCameraMode;
   bottomOffset?: number;
 }
 
@@ -29,6 +31,7 @@ export const AdaptiveControlOverlay = ({
   uiLayer,
   islandState,
   isConnected = false,
+  cameraMode = MapCameraMode.FREE,
   bottomOffset = 0,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
@@ -65,6 +68,7 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onToggle3D();
           }}
+          hitSlop={12}
           style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
           <Text style={[styles.text3D, { color: iconColor }]}>{is3DActive ? '2D' : '3D'}</Text>
@@ -77,21 +81,21 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onRecenter();
           }}
+          hitSlop={12}
           style={({ pressed }) => [
             styles.action, 
             pressed && { opacity: 0.7 },
-            { backgroundColor: theme.colors.brand.primary, borderRadius: 22 }
+            cameraMode !== MapCameraMode.FREE && { 
+              backgroundColor: theme.colors.brand.primary, 
+              borderRadius: 22 
+            }
           ]}
         >
-          <Feather name="navigation" size={20} color={iconColor} />
-          {isConnected && (
-            <View 
-              style={[
-                styles.liveIndicator, 
-                { backgroundColor: '#4ADE80', borderColor: theme.colors.bg.surface }
-              ]} 
-            />
-          )}
+          <Navigation 
+            size={20} 
+            color={cameraMode !== MapCameraMode.FREE ? 'white' : iconColor} 
+            strokeWidth={2.2}
+          />
         </Pressable>
       </View>
 
@@ -110,9 +114,10 @@ export const AdaptiveControlOverlay = ({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onOpenBinoculars?.();
           }}
+          hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}
         >
-          <MaterialCommunityIcons name="binoculars" size={20} color={iconColor} />
+          <Binoculars size={20} color={iconColor} strokeWidth={2.2} />
         </Pressable>
       </View>
     </Animated.View>
@@ -128,24 +133,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   verticalPill: {
-    width: 52,
-    borderRadius: 26,
-    borderWidth: 1,
-    paddingVertical: 12, // Increased for more space
+    width: 56, // Slightly wider
+    borderRadius: 28,
+    borderWidth: 1.5, // Thicker border for better visibility
+    paddingVertical: 12,
     alignItems: 'center',
-    gap: 8, // Added gap between items
+    gap: 8,
   },
   circle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 1,
+    width: 56, // Slightly larger
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
   action: {
-    width: 44,
-    height: 44,
+    width: 52, // Larger touch area
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -165,14 +170,5 @@ const styles = StyleSheet.create({
     fontFamily: typography.primary.bold,
     textAlign: 'center',
     includeFontPadding: false,
-  },
-  liveIndicator: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    borderWidth: 1.5,
   },
 });

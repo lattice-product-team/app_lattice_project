@@ -17,6 +17,8 @@ export interface UserProfile {
     eventsAttended: number;
     savedEvents: number;
     latticePoints: number;
+    streak?: number;
+    totalTime?: string;
   };
   medals: Medal[];
 }

@@ -1,6 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { 
+  Trophy, 
+  Medal as MedalIcon, 
+  Star, 
+  Flame, 
+  Crown, 
+  Award,
+  LucideIcon
+} from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -9,6 +17,18 @@ import { Medal } from '../types';
 interface AchievementRowProps {
   medals: Medal[];
 }
+
+const getMedalIcon = (iconName: string): LucideIcon => {
+  const map: Record<string, LucideIcon> = {
+    trophy: Trophy,
+    medal: MedalIcon,
+    star: Star,
+    flame: Flame,
+    fire: Flame,
+    crown: Crown,
+  };
+  return map[iconName.toLowerCase()] || Award;
+};
 
 export const AchievementRow = ({ medals }: AchievementRowProps) => {
   const theme = useAppTheme();
@@ -35,49 +55,51 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
             <View style={[styles.border, { borderColor: theme.colors.glass.border }]} />
           </View>
         ) : (
-          medals.map((medal) => (
-            <View key={medal.id} style={styles.medalCard}>
-              <View style={styles.medalWrapper}>
-                <LinearGradient
-                  colors={
-                    medal.isLocked
-                      ? [theme.colors.interactive.disabled, theme.colors.bg.elevation]
-                      : [theme.colors.brand.primary, theme.colors.brand.primaryVariant]
-                  }
-                  style={styles.medalGradient}
-                >
-                  <View style={[styles.innerCircle, { backgroundColor: theme.colors.bg.surface }]}>
-                    <MaterialCommunityIcons
-                      name={medal.icon as any}
-                      size={28}
-                      color={medal.isLocked ? theme.colors.text.muted : theme.colors.brand.primary}
-                    />
-                  </View>
-                </LinearGradient>
-                {/* Ribbon effect or layered border */}
-                <View
+          medals.map((medal) => {
+            const IconComponent = getMedalIcon(medal.icon);
+            return (
+              <View key={medal.id} style={styles.medalCard}>
+                <View style={styles.medalWrapper}>
+                  <LinearGradient
+                    colors={
+                      medal.isLocked
+                        ? [theme.colors.interactive.disabled, theme.colors.bg.elevation]
+                        : [theme.colors.brand.primary, theme.colors.brand.primaryVariant]
+                    }
+                    style={styles.medalGradient}
+                  >
+                    <View style={[styles.innerCircle, { backgroundColor: theme.colors.bg.surface }]}>
+                      <IconComponent
+                        size={28}
+                        color={medal.isLocked ? theme.colors.text.muted : theme.colors.brand.primary}
+                        strokeWidth={2.2}
+                      />
+                    </View>
+                  </LinearGradient>
+                  <View
+                    style={[
+                      styles.outerBorder,
+                      {
+                        borderColor: medal.isLocked
+                          ? theme.colors.border.subtle
+                          : theme.colors.brand.primarySurface,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text
                   style={[
-                    styles.outerBorder,
-                    {
-                      borderColor: medal.isLocked
-                        ? theme.colors.border.subtle
-                        : theme.colors.brand.primarySurface,
-                    },
+                    styles.medalTitle,
+                    { color: theme.colors.text.primary },
+                    medal.isLocked && { color: theme.colors.text.muted },
                   ]}
-                />
+                  numberOfLines={1}
+                >
+                  {medal.title}
+                </Text>
               </View>
-              <Text
-                style={[
-                  styles.medalTitle,
-                  { color: theme.colors.text.primary },
-                  medal.isLocked && { color: theme.colors.text.muted },
-                ]}
-                numberOfLines={1}
-              >
-                {medal.title}
-              </Text>
-            </View>
-          ))
+            );
+          })
         )}
       </ScrollView>
     </View>

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
   Dimensions,
-  Pressable,
   Text,
-  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -18,13 +17,23 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import { GestureDetector, Gesture, NativeGesture } from 'react-native-gesture-handler';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { 
+  Settings, 
+  LogOut, 
+  ShieldCheck, 
+  Flame, 
+  Calendar, 
+  Trophy,
+  Share2
+} from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
-import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { typography } from '../../../styles/typography';
 import { useProfileStore } from '../store/useProfileStore';
+import { SheetHeader } from '../../map/components/SheetHeader';
+import { ActionPillBar } from '../../map/components/ActionPillBar';
+import { MetricGrid } from '../../map/components/MetricGrid';
 import { UserAvatar } from '../../../components/ui/UserAvatar';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -33,40 +42,38 @@ interface ProfileSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSettings: () => void;
-  externalState?: Animated.SharedValue<number>;
 }
 
-export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: ProfileSheetProps) => {
+export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { profile } = useProfileStore();
 
-  const islandState = useSharedValue(0); // 0: hidden, 0.5: mid, 1: full
+  const islandState = useSharedValue(0);
   const startState = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
   const [scrollEnabled, setScrollEnabled] = useState(false);
 
   const SNAP_POINTS = {
     HIDDEN: 0,
-    MID: 0.5,
+    MID: 0.34,
     FULL: 1.0,
   };
 
-  const liquidSpring = {
-    damping: 30,
-    stiffness: 80,
-    mass: 1.5,
+  const snappySpring = {
+    damping: 25,
+    stiffness: 160,
+    mass: 0.8,
   };
 
-  // Sync islandState with external visibility if provided
-  useAnimatedReaction(
-    () => externalState?.value,
-    (val) => {
-      if (val !== undefined) {
-        islandState.value = withSpring(val > 0.5 ? SNAP_POINTS.MID : SNAP_POINTS.HIDDEN, liquidSpring);
-      }
+  // Sync state with isOpen prop
+  React.useEffect(() => {
+    if (isOpen) {
+      islandState.value = withSpring(SNAP_POINTS.MID, snappySpring);
+    } else {
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
     }
-  );
+  }, [isOpen]);
 
   // Sync scroll enabled state
   useAnimatedReaction(
@@ -90,44 +97,43 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
       const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingDown);
 
       if (canDragSheet) {
-        const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+        const fullTravel = SCREEN_HEIGHT * 0.8;
         const delta = -e.translationY / fullTravel;
-        const newValue = startState.value + delta;
-        islandState.value = Math.max(0, Math.min(1.0, newValue));
+        islandState.value = Math.max(0, Math.min(1.0, startState.value + delta));
       }
     })
     .onEnd((e) => {
-      const fullTravel = SCREEN_HEIGHT * 0.8 - (insets.bottom + 5);
+      const fullTravel = SCREEN_HEIGHT * 0.8;
       const velocity = -e.velocityY / fullTravel;
       const predictedPos = islandState.value + velocity * 0.12;
 
-      if (predictedPos < 0.25) {
-        islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
-          if (finished) runOnJS(onClose)();
-        });
-      } else if (predictedPos < 0.75) {
-        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+      if (predictedPos < SNAP_POINTS.MID * 0.5) {
+        runOnJS(onClose)();
+        islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
+      } else if (predictedPos < (SNAP_POINTS.MID + SNAP_POINTS.FULL) / 2) {
+        islandState.value = withSpring(SNAP_POINTS.MID, snappySpring);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.FULL, snappySpring);
       }
     });
 
   const islandStyle = useAnimatedStyle(() => {
     const bottom = interpolate(
       islandState.value,
-      [0, 0.5, 1],
+      [0, SNAP_POINTS.MID, 1],
       [-SCREEN_HEIGHT, insets.bottom + 5, 0],
       Extrapolation.CLAMP
     );
-    const fullHeight = SCREEN_HEIGHT - (insets.top + 65 + 20); // Respect top island (Level 1)
+    const fullHeight = SCREEN_HEIGHT - (insets.top + 80);
+    const midHeight = 320; 
     const height = interpolate(
       islandState.value,
-      [0, 0.5, 1],
-      [0, 480, fullHeight],
+      [0, SNAP_POINTS.MID, 1],
+      [0, midHeight, fullHeight],
       Extrapolation.CLAMP
     );
 
-    const margin = interpolate(islandState.value, [0.5, 0.8], [12, 0], Extrapolation.CLAMP);
+    const margin = interpolate(islandState.value, [SNAP_POINTS.MID, 0.8], [12, 0], Extrapolation.CLAMP);
 
     return {
       height,
@@ -138,26 +144,60 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
     const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
+    const backgroundColor = interpolateColor(
+      islandState.value,
+      [0.7, 1],
+      [theme.colors.glass.background, theme.colors.bg.surface]
+    );
+
     return {
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       borderBottomLeftRadius: radius,
       borderBottomRightRadius: radius,
-      backgroundColor: interpolateColor(
-        islandState.value,
-        [0.7, 1],
-        [theme.colors.glass.background, theme.colors.bg.surface]
-      ),
+      backgroundColor,
     };
   });
 
+  const scrollY = useSharedValue(0);
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
       isScrollAtTop.value = event.contentOffset.y <= 0;
     },
   });
 
-  if (!profile && !isOpen) return null;
+  const handleCloseInternal = () => {
+    runOnJS(onClose)();
+    islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
+  };
+
+  const profileActions = [
+    {
+      id: 'share',
+      label: 'Compartir',
+      icon: 'Share2',
+      variant: 'tertiary' as const,
+      onPress: () => {},
+    },
+    {
+      id: 'settings',
+      label: 'Ajustes',
+      icon: 'Settings',
+      variant: 'tertiary' as const,
+      onPress: onSettings,
+    },
+    {
+      id: 'logout',
+      label: 'Salir',
+      icon: 'LogOut',
+      variant: 'tertiary' as const,
+      onPress: handleCloseInternal,
+    },
+  ];
+
+  const profileMetrics = []; // Replaced by dynamic metrics in render
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
@@ -167,111 +207,99 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
             style={[
               styles.background,
               islandBackgroundStyle,
-              { borderColor: theme.colors.glass.border },
+              { borderColor: theme.dark ? theme.colors.glass.border : 'rgba(0,0,0,0.05)' },
             ]}
           >
-            <View style={styles.handleContainer}>
-              <View style={styles.handle} />
-            </View>
-
-            <View style={styles.controlBar}>
-              <Pressable onPress={onSettings} style={styles.iconButton}>
-                <Ionicons name="log-out-outline" size={24} color={theme.colors.text.primary} />
-              </Pressable>
-              <Pressable onPress={() => {
-                islandState.value = withSpring(0, theme.motion.physics.magnetic, () => {
-                  runOnJS(onClose)();
-                });
-              }} style={styles.iconButton}>
-                <Ionicons name="close" size={28} color={theme.colors.text.primary} />
-              </Pressable>
-            </View>
-
-            <Animated.ScrollView 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              bounces={true}
-              scrollEnabled={scrollEnabled}
-              onScroll={scrollHandler}
-              scrollEventThrottle={16}
-            >
-              {profile && (
-                <>
-                  <View style={styles.identitySection}>
-                    <Text style={[styles.userName, { color: theme.colors.text.primary }]}>
-                      {profile.name}
-                    </Text>
-                    <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-                      Confianza
-                    </Text>
+            {profile ? (
+              <>
+                <SheetHeader
+                  title={profile.name}
+                  subtitle="MI PERFIL"
+                  onClose={handleCloseInternal}
+                  scrollY={scrollY}
+                  islandState={islandState}
+                />
+                
+                <Animated.ScrollView 
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.scrollContent}
+                  bounces={true}
+                  scrollEnabled={scrollEnabled}
+                  onScroll={scrollHandler}
+                  scrollEventThrottle={16}
+                >
+                  <View style={styles.topSection}>
+                    <View style={styles.avatarContainer}>
+                      <UserAvatar size={100} url={profile.avatarUrl} />
+                    </View>
                     
-                    <View style={styles.illustrationPlaceholder}>
-                      <UserAvatar size={120} url={profile.avatarUrl} />
+                    {/* Level Progress Section - No background, aligned margins */}
+                    <View style={styles.progressCard}>
+                      <View style={styles.levelRow}>
+                        <View style={styles.levelBadge}>
+                          <ShieldCheck size={20} color={theme.colors.brand.primary} />
+                          <Text style={[styles.levelText, { color: theme.colors.brand.primary }]}>
+                            Nivel {Math.floor((profile.stats.latticePoints || 0) / 100) + 1}
+                          </Text>
+                        </View>
+                        <View style={styles.progressBarBg}>
+                          <View 
+                            style={[
+                              styles.progressBarFill, 
+                              { 
+                                width: `${(profile.stats.latticePoints || 0) % 100}%`, 
+                                backgroundColor: theme.colors.brand.primary 
+                              }
+                            ]} 
+                          />
+                        </View>
+                        <Text style={[styles.percentageText, { color: theme.colors.brand.primary }]}>
+                          {(profile.stats.latticePoints || 0) % 100}%
+                        </Text>
+                      </View>
+                      <Text style={[styles.motivationalText, { color: theme.colors.text.secondary }]}>
+                        Estás a {(100 - (profile.stats.latticePoints || 0) % 100)} puntos del siguiente nivel
+                      </Text>
                     </View>
                   </View>
 
-                  <View style={styles.progressCard}>
-                    <Text style={[styles.motivationalText, { color: theme.colors.text.secondary }]}>
-                      You're managing many moments better. Revise your signs to catch every moment.
+                  <ActionPillBar actions={profileActions} />
+                  
+                  <MetricGrid metrics={[
+                    {
+                      label: 'Actividades',
+                      value: `${profile.stats.eventsAttended || 0}`,
+                      icon: 'Calendar',
+                      color: '#6366f1',
+                    },
+                    {
+                      label: 'Racha',
+                      value: `${profile.stats.streak || 0}`,
+                      icon: 'Flame',
+                      color: '#ef4444',
+                    },
+                    {
+                      label: 'Tiempo',
+                      value: profile.stats.totalTime || '0h',
+                      icon: 'Trophy',
+                      color: '#eab308',
+                    },
+                  ]} />
+                  
+                  <View style={styles.content}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Sobre mí</Text>
+                    <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
+                      {profile.bio || "No hay descripción disponible."}
                     </Text>
-                    <View style={styles.divider} />
-                    <View style={styles.levelRow}>
-                      <View style={styles.levelBadge}>
-                        <Ionicons name="shield-checkmark" size={16} color={theme.colors.brand.primary} />
-                        <Text style={[styles.levelText, { color: theme.colors.brand.primary }]}>Lv. 4</Text>
-                      </View>
-                      <View style={styles.progressBarBg}>
-                        <View style={[styles.progressBarFill, { width: '68%', backgroundColor: theme.colors.brand.primary }]} />
-                      </View>
-                      <Text style={[styles.percentageText, { color: theme.colors.brand.primary }]}>68%</Text>
-                    </View>
                   </View>
-
-                  <View style={[styles.actionCard, { backgroundColor: theme.colors.bg.surface }]}>
-                    <View style={styles.actionHeader}>
-                       <View style={styles.hourglassIcon}>
-                         <Ionicons name="hourglass-outline" size={32} color={theme.colors.text.secondary} />
-                       </View>
-                       <View style={styles.actionTextContainer}>
-                          <Text style={[styles.actionTitle, { color: theme.colors.text.primary }]}>
-                            Esperando cualidades ocultas...
-                          </Text>
-                          <Text style={[styles.actionSubtitle, { color: theme.colors.text.secondary }]}>
-                            Verás los resultados cuando tus amigos/familia respondan
-                          </Text>
-                       </View>
-                    </View>
-                    <Pressable style={[styles.actionButton, { backgroundColor: theme.colors.brand.primary }]}>
-                      <Text style={styles.actionButtonText}>Compartir con amigos</Text>
-                    </Pressable>
-                  </View>
-
-                  <View style={styles.statsRow}>
-                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="calendar-outline" size={24} color="#6366f1" style={styles.statIcon} />
-                      <View style={styles.statTextContainer}>
-                        <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>11/20</Text>
-                        <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Actividades</Text>
-                      </View>
-                    </View>
-                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="flame" size={24} color="#ef4444" style={styles.statIcon} />
-                      <View style={styles.statTextContainer}>
-                        <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>5</Text>
-                        <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Racha</Text>
-                      </View>
-                    </View>
-                    <View style={[styles.statItemSmall, { backgroundColor: theme.colors.bg.surface }]}>
-                      <Ionicons name="trophy-outline" size={24} color="#eab308" style={styles.statIcon} />
-                      <View style={styles.statTextContainer}>
-                        <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>1h 23m</Text>
-                        <Text style={[styles.statLabel, { color: theme.colors.text.muted }]} numberOfLines={1}>Tiempo</Text>
-                      </View>
-                    </View>
-                  </View>
-                </>
-              )}
-            </Animated.ScrollView>
+                  <View style={{ height: insets.bottom + 80 }} />
+                </Animated.ScrollView>
+              </>
+            ) : (
+              <View style={styles.loading}>
+                <ActivityIndicator color={theme.colors.brand.primary} />
+              </View>
+            )}
           </Animated.View>
         </Animated.View>
       </GestureDetector>
@@ -291,82 +319,49 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
   },
-  handleContainer: {
-    paddingTop: 8,
-    alignItems: 'center',
-  },
-  handle: {
-    width: 36,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-  },
-  controlBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  iconButton: {
-    padding: 8,
-  },
   scrollContent: {
-    paddingHorizontal: 16,
     paddingBottom: 60,
   },
-  identitySection: {
-    alignItems: 'center',
+  content: {
+    padding: 24,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: typography.primary.bold,
+    marginBottom: 12,
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontFamily: typography.primary.regular,
     marginBottom: 24,
   },
-  userName: {
-    fontSize: 24,
-    fontFamily: typography.primary.bold,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: typography.primary.medium,
-    marginBottom: 16,
-  },
-  illustrationPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
+  topSection: {
+    flexDirection: 'column',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 8,
   },
   progressCard: {
-    backgroundColor: 'white',
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  motivationalText: {
-    fontSize: 14,
-    fontFamily: typography.primary.medium,
-    lineHeight: 20,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#f3f4f6',
-    marginBottom: 16,
+    width: '100%',
+    paddingVertical: 8,
   },
   levelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    marginBottom: 8,
   },
   levelBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   levelText: {
     fontSize: 14,
@@ -375,7 +370,7 @@ const styles = StyleSheet.create({
   progressBarBg: {
     flex: 1,
     height: 8,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -388,76 +383,15 @@ const styles = StyleSheet.create({
     fontFamily: typography.primary.bold,
     minWidth: 35,
   },
-  actionCard: {
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 16,
+  motivationalText: {
+    fontSize: 12,
+    fontFamily: typography.primary.medium,
+    lineHeight: 16,
   },
-  actionHeader: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
-  },
-  hourglassIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#f9fafb',
+  loading: {
+    flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionTextContainer: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontSize: 18,
-    fontFamily: typography.primary.bold,
-    marginBottom: 4,
-  },
-  actionSubtitle: {
-    fontSize: 13,
-    fontFamily: typography.primary.medium,
-    lineHeight: 18,
-  },
-  actionButton: {
-    borderRadius: 16,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontFamily: typography.primary.bold,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 20,
-  },
-  statItemSmall: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 4,
-    borderRadius: 24,
-    gap: 6,
-  },
-  statIcon: {
-    marginBottom: 4,
-  },
-  statTextContainer: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 18,
-    fontFamily: typography.primary.bold,
-  },
-  statLabel: {
-    fontSize: 11,
-    fontFamily: typography.primary.medium,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
 });
+

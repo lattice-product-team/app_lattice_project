@@ -84,30 +84,33 @@ export const usePOIStore = create<POIState>((set) => ({
   getFilteredPOIs: (allPOIs, zoom = 0) => {
     const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
 
-    // 1. Basic zoom threshold
+    // 1. Zoom-based visibility threshold
     if (zoom < 13.0) return [];
 
-    let filtered = allPOIs.filter((p) => p.category !== 'event');
-
-    // 2. Apply category filters if active
+    // 2. Category Filtering Logic
     if (activeCategoryFilters.length > 0) {
-      // Map dashboard IDs to actual POI categories
-      const categoryMapping: Record<string, string[]> = {
-        gastro: ['food', 'restaurant', 'coffee', 'gastro'],
-        sport: ['sport', 'stadium', 'grandstand', 'sports'],
-        music: ['music', 'concert', 'stage'],
-        culture: ['culture', 'museum', 'art', 'palette'],
-        night: ['night', 'bar', 'club', 'ocio'],
+      // Mapping from dashboard IDs to POI/Event categories
+      const categoryMap: Record<string, string[]> = {
+        services: ['services', 'info', 'toilet', 'wc', 'utility'],
+        gastro: ['food', 'restaurant', 'gastro', 'bar', 'cafe', 'drinks'],
+        parking: ['parking', 'garage', 'transport'],
+        transport: ['transport', 'bus', 'train', 'shuttle'],
+        emergency: ['emergency', 'medical', 'security', 'police', 'hospital'],
       };
 
-      filtered = filtered.filter((poi) => {
+      return allPOIs.filter((p) => {
+        // Always show the explicitly selected POI
+        if (p.id === usePOIStore.getState().selectedPoiId) return true;
+
+        // Check if the POI's category matches any of the active filters
         return activeCategoryFilters.some((filterId) => {
-          const mappedCategories = categoryMapping[filterId] || [filterId];
-          return mappedCategories.includes(poi.category);
+          const matchedCategories = categoryMap[filterId] || [filterId];
+          return matchedCategories.includes(p.category.toLowerCase());
         });
       });
     }
 
-    return filtered;
+    // 3. Default: Filter out events from the POI collection (they are handled by MarkerViews)
+    return allPOIs.filter((p) => p.category !== 'event');
   },
 }));

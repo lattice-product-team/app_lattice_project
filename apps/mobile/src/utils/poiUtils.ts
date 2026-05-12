@@ -1,10 +1,27 @@
 import { colors } from '@app/theme';
+import { 
+  Coffee, 
+  MapPin, 
+  User, 
+  Map, 
+  SquarePlus, 
+  LogIn, 
+  Users, 
+  Info, 
+  ShoppingBag, 
+  Music, 
+  Utensils, 
+  Laptop, 
+  Trophy, 
+  Calendar,
+  LucideIcon
+} from 'lucide-react-native';
 
 export interface CategoryMetadata {
-  icon: string;
-  iconFamily: 'feather' | 'material';
+  icon: LucideIcon;
   color: string;
   label: string;
+  strokeWidth?: number;
 }
 
 export const NEUTRAL_MARKER_COLOR = colors.neutral.dark.overlay;
@@ -13,129 +30,149 @@ export const NEUTRAL_MARKER_BORDER = colors.neutral.dark.elevated;
 const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   // Food & Drink
   restaurant: {
-    icon: 'coffee',
-    iconFamily: 'feather',
+    icon: Utensils,
     color: colors.semantic.dark.warning,
     label: 'Comida y Bebida',
+    strokeWidth: 2.5,
   },
   food: {
-    icon: 'coffee',
-    iconFamily: 'feather',
+    icon: Utensils,
     color: colors.semantic.dark.warning,
     label: 'Comida y Bebida',
+    strokeWidth: 2.5,
   },
   coffee: {
-    icon: 'coffee',
-    iconFamily: 'feather',
+    icon: Coffee,
     color: colors.semantic.dark.warning,
     label: 'Cafetería',
+    strokeWidth: 2.5,
   },
 
   // Infrastructure
   parking: {
-    icon: 'map-pin',
-    iconFamily: 'feather',
+    icon: MapPin,
     color: colors.semantic.dark.info,
     label: 'Parking',
+    strokeWidth: 2.5,
   },
-  wc: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' },
-  toilet: { icon: 'user', iconFamily: 'feather', color: colors.semantic.dark.info, label: 'Aseos' },
+  wc: { 
+    icon: User, 
+    color: colors.semantic.dark.info, 
+    label: 'Aseos',
+    strokeWidth: 2.5,
+  },
+  toilet: { 
+    icon: User, 
+    color: colors.semantic.dark.info, 
+    label: 'Aseos',
+    strokeWidth: 2.5,
+  },
   restroom: {
-    icon: 'user',
-    iconFamily: 'feather',
+    icon: User,
     color: colors.semantic.dark.info,
     label: 'Aseos',
+    strokeWidth: 2.5,
   },
 
   // Event Specific
   grandstand: {
-    icon: 'map',
-    iconFamily: 'feather',
+    icon: Map,
     color: colors.semantic.dark.success,
     label: 'Tribuna',
+    strokeWidth: 2.5,
   },
   medical: {
-    icon: 'plus-square',
-    iconFamily: 'feather',
+    icon: SquarePlus,
     color: colors.semantic.dark.error,
     label: 'Servicio Médico',
+    strokeWidth: 2.5,
   },
   hospital: {
-    icon: 'plus-square',
-    iconFamily: 'feather',
+    icon: SquarePlus,
     color: colors.semantic.dark.error,
     label: 'Hospital',
+    strokeWidth: 2.5,
   },
-  gate: { icon: 'log-in', iconFamily: 'feather', color: colors.brand.primary, label: 'Acceso' },
-  entrance: { icon: 'log-in', iconFamily: 'feather', color: colors.brand.primary, label: 'Acceso' },
+  gate: { 
+    icon: LogIn, 
+    color: colors.brand.primary, 
+    label: 'Acceso',
+    strokeWidth: 2.5,
+  },
+  entrance: { 
+    icon: LogIn, 
+    color: colors.brand.primary, 
+    label: 'Acceso',
+    strokeWidth: 2.5,
+  },
 
   // Community & Info
   meetup_point: {
-    icon: 'users',
-    iconFamily: 'feather',
+    icon: Users,
     color: colors.brand.accent,
     label: 'Punto de Encuentro',
+    strokeWidth: 2.5,
   },
   info: {
-    icon: 'info',
-    iconFamily: 'feather',
+    icon: Info,
     color: colors.brand.secondary,
     label: 'Información',
+    strokeWidth: 2.5,
   },
   shop: {
-    icon: 'shopping-bag',
-    iconFamily: 'feather',
+    icon: ShoppingBag,
     color: colors.category.tech,
     label: 'Tienda Oficial',
+    strokeWidth: 2.5,
   },
   shopping: {
-    icon: 'shopping-bag',
-    iconFamily: 'feather',
+    icon: ShoppingBag,
     color: colors.category.tech,
     label: 'Tienda Oficial',
+    strokeWidth: 2.5,
   },
 };
 
 const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
   music: {
-    icon: 'music-note',
-    iconFamily: 'material',
+    icon: Music,
     color: colors.brand.primary,
     label: 'Música',
+    strokeWidth: 2.5,
   },
   food: {
-    icon: 'food-fork-drink',
-    iconFamily: 'material',
+    icon: Utensils,
     color: colors.brand.primary,
     label: 'Comida',
+    strokeWidth: 2.5,
   },
   tech: {
-    icon: 'laptop',
-    iconFamily: 'material',
+    icon: Laptop,
     color: colors.brand.primary,
     label: 'Tecnología',
+    strokeWidth: 2.5,
   },
   sports: {
-    icon: 'trophy',
-    iconFamily: 'material',
+    icon: Trophy,
     color: colors.brand.primary,
     label: 'Deportes',
+    strokeWidth: 2.5,
   },
   generic: {
-    icon: 'calendar-star',
-    iconFamily: 'material',
+    icon: Calendar,
     color: colors.brand.primary,
     label: 'Evento',
+    strokeWidth: 2.5,
   },
 };
 
 export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 
 const DEFAULT_METADATA: CategoryMetadata = {
-  icon: 'map-pin',
-  iconFamily: 'feather',
+  icon: MapPin,
   color: colors.brand.primary,
   label: 'Punto de Interés',
+  strokeWidth: 2.5,
 };
 
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {
@@ -165,28 +202,6 @@ export const getEventMetadata = (type?: string): CategoryMetadata => {
 };
 
 // Legacy support and direct accessors
-export const getCategoryIcon = (category?: string): string => getCategoryMetadata(category).icon;
+export const getCategoryIcon = (category?: string): LucideIcon => getCategoryMetadata(category).icon;
 export const getCategoryColor = (category?: string): string => getCategoryMetadata(category).color;
 export const getCategoryLabel = (category?: string): string => getCategoryMetadata(category).label;
-
-/**
- * Maps legacy or multi-framework icon names to Feather names.
- */
-export const mapIconName = (name: string): string => {
-  const map: Record<string, string> = {
-    SlidersHorizontal: 'sliders',
-    Search: 'search',
-    X: 'x',
-    Utensils: 'coffee',
-    SquareP: 'map-pin',
-    ShoppingBag: 'shopping-bag',
-    Accessibility: 'user',
-    Stadium: 'map',
-    MapPin: 'map-pin',
-    'door-open': 'log-in',
-    'stadium-variant': 'map',
-    'medical-bag': 'plus-square',
-    'account-group': 'users',
-  };
-  return map[name] || name.toLowerCase();
-};

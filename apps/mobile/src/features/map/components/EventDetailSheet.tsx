@@ -58,10 +58,10 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
     FULL: 1.0,
   };
 
-  const liquidSpring = {
-    damping: 30,
-    stiffness: 80,
-    mass: 1.5,
+  const snappySpring = {
+    damping: 25,
+    stiffness: 160,
+    mass: 0.8,
   };
 
   const isPlanning = useNavigationStore((s) => s.isPlanning);
@@ -70,9 +70,10 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   // Sync state with model selection and navigation/planning modes
   useEffect(() => {
     if (model && !isPlanning && !isNavigating) {
-      islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+      islandState.value = withSpring(SNAP_POINTS.MID, snappySpring);
     } else {
-      islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring);
+      // Immediate close without waiting for next tick if possible
+      islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
     }
   }, [!!model, isPlanning, isNavigating]);
 
@@ -109,13 +110,12 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
       const predictedPos = islandState.value + velocity * 0.12;
 
       if (predictedPos < SNAP_POINTS.MID * 0.5) {
-        islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
-          if (finished) runOnJS(onClose)();
-        });
+        runOnJS(onClose)(); // Deselect instantly
+        islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
       } else if (predictedPos < (SNAP_POINTS.MID + SNAP_POINTS.FULL) / 2) {
-        islandState.value = withSpring(SNAP_POINTS.MID, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.MID, snappySpring);
       } else {
-        islandState.value = withSpring(SNAP_POINTS.FULL, liquidSpring);
+        islandState.value = withSpring(SNAP_POINTS.FULL, snappySpring);
       }
     });
 
@@ -171,9 +171,8 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   });
 
   const handleCloseInternal = () => {
-    islandState.value = withSpring(SNAP_POINTS.HIDDEN, liquidSpring, (finished) => {
-      if (finished) runOnJS(onClose)();
-    });
+    runOnJS(onClose)(); // Deselect instantly
+    islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
   };
 
   return (
@@ -184,7 +183,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
             style={[
               styles.background,
               islandBackgroundStyle,
-              { borderColor: theme.colors.glass.border },
+              { borderColor: theme.dark ? theme.colors.glass.border : 'rgba(0,0,0,0.05)' },
             ]}
           >
             {displayModel ? (
@@ -238,10 +237,38 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                         </Text>
                       </View>
                     )}
-                    <Text style={[styles.sectionTitle, { color: 'white' }]}>About</Text>
-                    <Text style={[styles.description, { color: 'rgba(255,255,255,0.7)' }]}>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
+                    <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
                       {displayModel.description}
                     </Text>
+
+                    {displayModel.info && displayModel.info.length > 0 && (
+                      <View style={styles.infoSection}>
+                        <Text style={[styles.sectionTitle, { color: theme.colors.text.primary, marginTop: 24 }]}>
+                          Information
+                        </Text>
+                        <View style={styles.infoGrid}>
+                          {displayModel.info.map((item, idx) => {
+                            const Icon = (LucideIcons as any)[item.icon] || LucideIcons.InfoIcon;
+                            return (
+                              <View key={idx} style={styles.infoItem}>
+                                <View style={[styles.infoIconBox, { backgroundColor: theme.colors.glass.subtle }]}>
+                                  <Icon size={18} color={theme.colors.brand.primary} />
+                                </View>
+                                <View>
+                                  <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>
+                                    {item.label}
+                                  </Text>
+                                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
+                                    {item.value}
+                                  </Text>
+                                </View>
+                              </View>
+                            );
+                          })}
+                        </View>
+                      </View>
+                    )}
                   </View>
                   <View style={{ height: insets.bottom + 80 }} />
                 </Animated.ScrollView>
@@ -301,6 +328,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontFamily: typography.primary.regular,
+  },
+  infoSection: {
+    marginTop: 8,
+  },
+  infoGrid: {
+    gap: 16,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoLabel: {
+    fontSize: 12,
+    fontFamily: typography.primary.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 15,
+    fontFamily: typography.primary.medium,
   },
   loading: {
     flex: 1,

@@ -1,6 +1,17 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Search, XCircle, Mic } from 'lucide-react-native';
+import Animated, { 
+  useAnimatedStyle, 
+  withRepeat, 
+  withSpring, 
+  withSequence, 
+  withTiming,
+  interpolate,
+  useSharedValue,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import Voice, { SpeechResultsEvent, SpeechErrorEvent } from '@react-native-voice/voice';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { UserAvatar } from './UserAvatar';
 import { typography } from '../../styles/typography';
@@ -16,6 +27,7 @@ interface FloatingSearchBarProps {
   avatarUrl?: string | null;
   isGuest?: boolean;
   editable?: boolean;
+  onMicPress?: () => void;
 }
 
 export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarProps>(
@@ -31,14 +43,85 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
       avatarUrl,
       isGuest,
       editable = true,
+      onMicPress,
     },
     ref
   ) => {
     const theme = useAppTheme();
+    const [isListening, setIsListening] = React.useState(false);
+    const pulseValue = useSharedValue(1);
+
+    // Setup Speech Recognition
+    React.useEffect(() => {
+      Voice.onSpeechStart = () => {
+        setIsListening(true);
+        pulseValue.value = withRepeat(
+          withSequence(
+            withTiming(1.3, { duration: 400 }),
+            withTiming(1, { duration: 400 })
+          ),
+          -1,
+          true
+        );
+      };
+
+      Voice.onSpeechEnd = () => {
+        setIsListening(false);
+        pulseValue.value = withSpring(1);
+      };
+
+      Voice.onSpeechResults = (e: SpeechResultsEvent) => {
+        if (e.value && e.value.length > 0) {
+          onChangeText(e.value[0]);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      };
+
+      Voice.onSpeechError = (e: SpeechErrorEvent) => {
+        console.error('Speech Recognition Error:', e.error);
+        setIsListening(false);
+        pulseValue.value = withSpring(1);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      };
+
+      return () => {
+        Voice.destroy().then(Voice.removeAllListeners);
+      };
+    }, [onChangeText, pulseValue]);
+
+    const startListening = React.useCallback(async () => {
+      try {
+        if (onMicPress) onMicPress();
+        await Voice.start('es-ES'); // Set to Spanish
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (e) {
+        console.error('Failed to start Voice:', e);
+      }
+    }, [onMicPress]);
+
+    const stopListening = React.useCallback(async () => {
+      try {
+        await Voice.stop();
+        setIsListening(false);
+        pulseValue.value = withSpring(1);
+      } catch (e) {
+        console.error('Failed to stop Voice:', e);
+      }
+    }, [pulseValue]);
+
+    const micAnimatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: pulseValue.value }],
+      opacity: interpolate(pulseValue.value, [1, 1.3], [0.9, 1]),
+    }));
+
+    const ringStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: interpolate(pulseValue.value, [1, 1.3], [1, 2]) }],
+      opacity: interpolate(pulseValue.value, [1, 1.3], [0.3, 0]),
+    }));
 
     return (
       <View style={styles.innerContainer}>
-        <Feather name="search" size={22} color={theme.colors.text.primary} style={styles.icon} />
+        <Search size={20} color={theme.colors.text.primary} strokeWidth={2.2} style={styles.icon} />
 
         <Pressable
           style={{ flex: 1, justifyContent: 'center' }}
@@ -63,14 +146,35 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
 
         {value.length > 0 && (
           <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-            <Feather name="x-circle" size={18} color={theme.colors.text.muted} />
+            <XCircle size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
           </Pressable>
         )}
 
         <View style={styles.rightActions}>
-          <Pressable style={styles.micButton}>
-            <MaterialCommunityIcons name="microphone" size={24} color={theme.colors.text.primary} />
-          </Pressable>
+          <View style={styles.micContainer}>
+            {isListening && (
+              <Animated.View 
+                style={[
+                  styles.micRing, 
+                  { backgroundColor: theme.colors.brand.primary },
+                  ringStyle
+                ]} 
+              />
+            )}
+            <Pressable 
+              style={styles.micButton}
+              onPressIn={startListening}
+              onPressOut={stopListening}
+            >
+              <Animated.View style={micAnimatedStyle}>
+                <Mic 
+                  size={22} 
+                  color={isListening ? theme.colors.brand.primary : theme.colors.text.primary} 
+                  strokeWidth={isListening ? 3 : 2.2} 
+                />
+              </Animated.View>
+            </Pressable>
+          </View>
 
           <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
 
@@ -112,9 +216,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  micContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micRing: {
+    position: 'absolute',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
   micButton: {
     padding: 4,
-    opacity: 0.9,
+    zIndex: 10,
   },
   verticalDivider: {
     width: 1,

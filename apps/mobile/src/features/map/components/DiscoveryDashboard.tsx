@@ -1,31 +1,36 @@
-import React from 'react';
-import { View, StyleSheet, Pressable, Text } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, Pressable, Text, Dimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
   interpolate,
   SharedValue,
   Extrapolation,
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LucideIcon, Info, Utensils, Car, Bus, Shield } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { semanticColors } from '../../../styles/semanticColors';
 import { EventCarouselCard } from './EventCarouselCard';
 import { useSearchEvents } from '../hooks/useSearchEvents';
+import { usePOIStore } from '../../poi/store/usePOIStore';
 import { LatticeEvent } from '../../../types';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Category {
   id: string;
   label: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: LucideIcon;
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'music', label: 'Música', icon: 'music' },
-  { id: 'gastro', label: 'Gastro', icon: 'food' },
-  { id: 'culture', label: 'Cultura', icon: 'palette' },
-  { id: 'sport', label: 'Deporte', icon: 'run' },
-  { id: 'night', label: 'Ocio', icon: 'weather-night' },
+  { id: 'services', label: 'Info', icon: Info },
+  { id: 'gastro', label: 'Comida', icon: Utensils },
+  { id: 'parking', label: 'Parking', icon: Car },
+  { id: 'transport', label: 'Bus', icon: Bus },
+  { id: 'emergency', label: 'Seguridad', icon: Shield },
 ];
 
 interface DiscoveryDashboardProps {
@@ -37,35 +42,35 @@ interface DiscoveryDashboardProps {
 }
 
 export const DiscoveryDashboard = React.memo(
-  ({ 
-    islandState, 
-    activeCategoryFilters = [], 
-    onSelectCategory, 
+  ({
+    islandState,
+    activeCategoryFilters = [],
+    onSelectCategory,
     onSelectEvent,
-    onClearFilters 
+    onClearFilters,
   }: DiscoveryDashboardProps) => {
     const theme = useAppTheme();
-    const { events, loading: eventsLoading } = useSearchEvents(''); // Fetch all events for the dashboard
+    const { activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
+    const { events: allEvents, loading: eventsLoading } = useSearchEvents('');
 
     const filteredEvents = useMemo(() => {
-      if (activeCategoryFilters.length === 0) return events;
-      
-      // Map dashboard IDs to actual Event types/categories
-      const eventMapping: Record<string, string[]> = {
-        gastro: ['food', 'gastro', 'gastronomía'],
-        sport: ['sports', 'sport', 'deporte'],
-        music: ['music', 'música', 'concierto'],
-        culture: ['culture', 'cultura', 'arte'],
-        night: ['night', 'ocio', 'fiesta'],
+      if (activeCategoryFilters.length === 0) return allEvents;
+
+      const categoryMap: Record<string, string[]> = {
+        services: ['services', 'info', 'toilet', 'wc', 'utility'],
+        gastro: ['food', 'restaurant', 'gastro', 'bar', 'cafe'],
+        parking: ['parking', 'garage', 'transport'],
+        transport: ['transport', 'bus', 'train', 'shuttle'],
+        emergency: ['emergency', 'medical', 'security', 'police'],
       };
 
-      return events.filter((event) => {
+      return allEvents.filter((event) => {
         return activeCategoryFilters.some((filterId) => {
-          const mappedTypes = eventMapping[filterId] || [filterId];
-          return mappedTypes.includes(event.type?.toLowerCase());
+          const matchedTypes = categoryMap[filterId] || [filterId];
+          return matchedTypes.includes(event.type.toLowerCase());
         });
       });
-    }, [events, activeCategoryFilters]);
+    }, [allEvents, activeCategoryFilters]);
 
     const rContainerStyle = useAnimatedStyle(() => {
       // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
@@ -92,44 +97,24 @@ export const DiscoveryDashboard = React.memo(
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoryScroll}
           >
-            {activeCategoryFilters.length > 0 && (
-              <Pressable
-                onPress={() => onClearFilters?.()}
-                style={({ pressed }) => [
-                  { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.categoryPill,
-                    {
-                      backgroundColor: theme.colors.brand.primary,
-                    },
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    name="close-circle-outline"
-                    size={18}
-                    color="black"
-                  />
-                  <Text
-                    style={[
-                      styles.categoryLabel,
-                      { color: 'black' },
-                    ]}
-                  >
-                    Limpiar
-                  </Text>
-                </View>
-              </Pressable>
-            )}
-
             {CATEGORIES.map((cat) => {
-              const isActive = activeCategoryFilters.includes(cat.id);
+              const Icon = cat.icon;
+              const isSelected = activeCategoryFilters.includes(cat.id);
+              const activeColor =
+                (semanticColors.categories as any)[cat.id === 'gastro' ? 'food' : cat.id] ||
+                theme.colors.brand.primary;
+
               return (
                 <Pressable
                   key={cat.id}
-                  onPress={() => onSelectCategory?.(cat.id)}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    if (onSelectCategory) {
+                      onSelectCategory(cat.id);
+                    } else {
+                      toggleCategoryFilter(cat.id);
+                    }
+                  }}
                   style={({ pressed }) => [
                     { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
                   ]}
@@ -138,27 +123,37 @@ export const DiscoveryDashboard = React.memo(
                     style={[
                       styles.categoryPill,
                       {
-                        backgroundColor: isActive 
-                          ? theme.colors.brand.primary 
+                        backgroundColor: isSelected
+                          ? activeColor
                           : theme.colors.glass.tint === 'dark'
                             ? 'rgba(120, 120, 128, 0.36)'
                             : 'rgba(120, 120, 128, 0.12)',
+                        borderWidth: 1.5,
+                        borderColor: isSelected ? 'rgba(255,255,255,0.3)' : 'transparent',
                       },
                     ]}
                   >
-                    <MaterialCommunityIcons
-                      name={cat.icon}
+                    <Icon
                       size={18}
-                      color={isActive 
-                        ? 'black' 
-                        : theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'}
+                      color={
+                        isSelected
+                          ? '#FFFFFF'
+                          : theme.dark
+                            ? 'rgba(255, 255, 255, 0.7)'
+                            : 'rgba(0, 0, 0, 0.6)'
+                      }
+                      strokeWidth={isSelected ? 3 : 2.5}
                     />
                     <Text
                       style={[
                         styles.categoryLabel,
-                        { color: isActive 
-                          ? 'black' 
-                          : theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' },
+                        {
+                          color: isSelected
+                            ? '#FFFFFF'
+                            : theme.dark
+                              ? 'rgba(255, 255, 255, 0.7)'
+                              : 'rgba(0, 0, 0, 0.6)',
+                        },
                       ]}
                     >
                       {cat.label}
@@ -195,9 +190,24 @@ export const DiscoveryDashboard = React.memo(
                 />
               ))}
               {filteredEvents.length === 0 && (
-                <Text style={{ color: theme.colors.text.muted, padding: 20 }}>
-                  No hay eventos que coincidan con los filtros.
-                </Text>
+                <View
+                  style={{
+                    width: SCREEN_WIDTH - 32,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.text.muted,
+                      padding: 20,
+                      textAlign: 'center',
+                      fontFamily: typography.primary.medium,
+                    }}
+                  >
+                    No hay eventos de esta categoría hoy.
+                  </Text>
+                </View>
               )}
             </ScrollView>
           )}

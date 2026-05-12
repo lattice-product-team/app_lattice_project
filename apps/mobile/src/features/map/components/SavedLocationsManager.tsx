@@ -10,7 +10,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { X, MapPin, Navigation, Trash2, Map as MapIcon } from 'lucide-react-native';
 import { useSavedLocations, useDeleteSavedLocation } from '../hooks/useSavedLocations';
 import * as SafeAreaContext from 'react-native-safe-area-context';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
@@ -63,7 +63,7 @@ export const SavedLocationsManager = ({
               onPress={onClose}
               style={({ pressed }) => [styles.closeButton, pressed && { opacity: 0.7 }]}
             >
-              <Feather name="x" size={24} color="white" />
+              <X size={24} color="white" strokeWidth={2.2} />
             </Pressable>
           </View>
 
@@ -80,7 +80,7 @@ export const SavedLocationsManager = ({
                 <View key={feature.properties.id} style={styles.markerItem}>
                   <View style={styles.markerInfo}>
                     <View style={styles.iconWrapper}>
-                      <Feather name="map-pin" size={18} color={theme.colors.brand.primary} />
+                      <MapPin size={18} color={theme.colors.brand.primary} strokeWidth={2.5} />
                     </View>
                     <View style={styles.nameContainer}>
                       <Text style={styles.markerName} numberOfLines={1}>
@@ -104,7 +104,7 @@ export const SavedLocationsManager = ({
                         pressed && { opacity: 0.7 },
                       ]}
                     >
-                      <Feather name="navigation" size={16} color="white" />
+                      <Navigation size={16} color="white" strokeWidth={2.2} />
                       <Text style={styles.actionText}>Ir</Text>
                     </Pressable>
 
@@ -117,7 +117,7 @@ export const SavedLocationsManager = ({
                       ]}
                       disabled={deleteMutation.isPending}
                     >
-                      <Feather name="trash-2" size={16} color="white" />
+                      <Trash2 size={16} color="white" strokeWidth={2.2} />
                     </Pressable>
                   </View>
                 </View>
@@ -126,7 +126,7 @@ export const SavedLocationsManager = ({
           ) : (
             <View style={styles.centerContainer}>
               <View style={styles.emptyIconCircle}>
-                <Feather name="map" size={40} color="rgba(255, 255, 255, 0.1)" />
+                <MapIcon size={40} color="rgba(255, 255, 255, 0.1)" strokeWidth={1.5} />
               </View>
               <Text style={styles.emptyTitle}>No tienes marcadores</Text>
               <Text style={styles.emptySubtitle}>Los lugares que guardes aparecerán aquí.</Text>

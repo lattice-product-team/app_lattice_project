@@ -1,14 +1,15 @@
 import React from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
+import { View } from 'react-native';
+import { SharedValue } from 'react-native-reanimated';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
+import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { EventMarker } from './EventMarker';
 import { POIMarker } from './POIMarker';
-import { useMapUIStore } from '../store/useMapUIStore';
 
 interface MapLayersProps {
   theme: any;
-  allPoisGeoJSON: any;
   poisGeoJSON: any;
   eventsGeoJSON?: any;
   selectedEventId?: string | number | null;
@@ -18,11 +19,12 @@ interface MapLayersProps {
   isNavigating: boolean;
   isPlanning?: boolean;
   onPoiPress: (data: any) => void;
+  zoomLevel: number;
+  zoomSharedValue: SharedValue<number>;
 }
 
-export const MapLayers = ({
+export const MapLayers = React.memo(({
   theme,
-  allPoisGeoJSON,
   poisGeoJSON,
   eventsGeoJSON,
   selectedEventId,
@@ -32,48 +34,85 @@ export const MapLayers = ({
   isNavigating,
   isPlanning,
   onPoiPress,
+  zoomLevel,
+  zoomSharedValue,
 }: MapLayersProps) => {
-  const currentZoom = useMapUIStore((s) => s.lastCameraPosition?.zoom || 15);
-
   return (
     <>
-      {/* 1. EVENTS LAYER (PRIORITY - Always render first to maintain stability) */}
-      {eventsGeoJSON?.features?.map((feature: any) => (
-        <MapLibreGL.MarkerView
-          key={`mv-ev-${feature.properties.id}`}
-          id={`event-marker-${feature.properties.id}`}
-          coordinate={feature.geometry.coordinates}
-          anchor={{ x: 0.5, y: 1.0 }}
-        >
-          <EventMarker
-            event={feature}
-            theme={theme}
-            isSelected={String(selectedEventId) === String(feature.properties.id)}
-            onPress={onPoiPress}
-          />
-        </MapLibreGL.MarkerView>
-      ))}
+      {/* 1. EVENTS LAYER (Ultra-stable PointAnnotations) */}
+      {eventsGeoJSON?.features?.map((feature: any) => {
+        const id = feature.properties?.id || feature.id;
+        const isSelected = String(selectedEventId) === String(id);
+        const coords = feature.geometry?.coordinates;
+        
+        if (!coords || coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) return null;
 
-      {/* 2. POI LAYER (Unified MarkerViews) */}
-      {poisGeoJSON?.features?.map((feature: any) => (
-        <MapLibreGL.MarkerView
-          key={`mv-poi-${feature.properties.id}`}
-          id={`poi-marker-${feature.properties.id}`}
-          coordinate={feature.geometry.coordinates}
-          anchor={{ x: 0.5, y: 1.0 }}
-        >
-          <POIMarker
-            poi={feature}
-            theme={theme}
-            isSelected={String(selectedPoiId) === String(feature.properties.id)}
-            onPress={onPoiPress}
-          />
-        </MapLibreGL.MarkerView>
-      ))}
+        return (
+          <MapLibreGL.PointAnnotation
+            key={`ev-pa-${id}`}
+            id={`ev-ann-${id}`}
+            coordinate={coords}
+          >
+            <View 
+              style={[
+                mapPinStyles.markerWrapper, 
+                { 
+                  backgroundColor: 'transparent',
+                  transform: [{ translateY: -40 }] 
+                }
+              ]}
+              collapsable={false}
+            >
+              <EventMarker
+                event={feature}
+                theme={theme}
+                isSelected={isSelected}
+                onPress={onPoiPress}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
 
-      {/* 3. EVENT PERIMETER - REMOVED AS REQUESTED */}
+      {/* 2. POI LAYER (Ultra-stable PointAnnotations) */}
+      {poisGeoJSON?.features?.map((feature: any) => {
+        const id = feature.properties?.id || feature.id;
+        const isSelected = String(selectedPoiId) === String(id);
+        const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);
+        const coords = feature.geometry?.coordinates;
+        
+        if (!coords || coords.length !== 2) return null;
 
-      {/* 4. PATH NETWORK (Stays in GL) */}
+        return (
+          <MapLibreGL.PointAnnotation
+            key={`poi-pa-${id}`}
+            id={`poi-ann-${id}`}
+            coordinate={coords}
+          >
+            <View 
+              style={[
+                mapPinStyles.markerWrapper, 
+                { 
+                  backgroundColor: 'transparent',
+                  transform: [{ translateY: -40 }]
+                }
+              ]}
+              collapsable={false}
+            >
+              <POIMarker
+                poi={feature}
+                theme={theme}
+                isSelected={isSelected}
+                isLinkedToSelectedEvent={isLinkedToSelectedEvent}
+                onPress={onPoiPress}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
+
+      {/* 3. PATH NETWORK (Removed as requested) */}
+      {/* 
       {!isNavigating && (
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
@@ -86,8 +125,9 @@ export const MapLayers = ({
           />
         </MapLibreGL.ShapeSource>
       )}
+      */}
 
-      {/* 5. ROUTE VISUALS (Stays in GL) */}
+      {/* 4. ROUTE VISUALS (Stays in GL) */}
       {!!((isNavigating || isPlanning) && currentRoute) && (
         <MapLibreGL.ShapeSource 
           id="routeSource" 
@@ -106,6 +146,6 @@ export const MapLayers = ({
       )}
     </>
   );
-};
+});
 
 MapLayers.displayName = 'MapLayers';

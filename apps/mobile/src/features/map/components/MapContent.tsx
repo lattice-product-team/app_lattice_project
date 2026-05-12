@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
-import { useMapUIStore } from '../store/useMapUIStore';
+import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { normalizePOI, normalizeEventList, normalizePOIList } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
@@ -57,8 +57,8 @@ export const MapContent = function MapContent({
   const {
     recenterCount,
     forceCenterCount,
-    isFollowingUser,
-    setIsFollowingUser,
+    cameraMode,
+    setCameraMode,
     lastCameraPosition,
     setLastCameraPosition,
     setInitialLoadComplete,
@@ -68,6 +68,7 @@ export const MapContent = function MapContent({
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const initialZoom = 14;
   const [currentZoom, setCurrentZoom] = React.useState(initialZoom);
+  const [discreteZoom, setDiscreteZoom] = React.useState(Math.round(initialZoom));
   const { getFilteredPOIs } = usePOIStore();
 
   const zoomSharedValue = useSharedValue(initialZoom);
@@ -88,6 +89,12 @@ export const MapContent = function MapContent({
         // Shared value is cheap (running on UI thread via Reanimated), update it every frame
         zoomSharedValue.value = properties.zoomLevel;
 
+        // Update discrete zoom for list filtering only when crossing major thresholds
+        const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
+        if (newDiscreteZoom !== discreteZoom) {
+          setDiscreteZoom(newDiscreteZoom);
+        }
+
         // Throttle React state updates for zoom to prevent re-render loops
         if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
           if (Math.abs(currentZoom - properties.zoomLevel) > 0.15) {
@@ -107,18 +114,20 @@ export const MapContent = function MapContent({
         lastZoomUpdateRef.current = now;
       }
 
-      // If camera is changing due to user interaction, stop following
-      if (isUserInteraction && isFollowingUser) {
-        setIsFollowingUser(false);
+      // If camera is changing due to user interaction, stop following/navigation automatic tracking
+      if (isUserInteraction && cameraMode !== MapCameraMode.FREE) {
+        setCameraMode(MapCameraMode.FREE);
       }
     },
     [
       currentZoom,
       setCurrentZoom,
+      discreteZoom,
+      setDiscreteZoom,
       zoomSharedValue,
       setLastCameraPosition,
-      isFollowingUser,
-      setIsFollowingUser,
+      cameraMode,
+      setCameraMode,
     ]
   );
 
@@ -131,7 +140,7 @@ export const MapContent = function MapContent({
 
   // Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
-    const filteredList = getFilteredPOIs(allUIPois, currentZoom);
+    const filteredList = getFilteredPOIs(allUIPois, discreteZoom);
     return {
       type: 'FeatureCollection',
       features: Array.from(
@@ -163,7 +172,7 @@ export const MapContent = function MapContent({
         },
       })),
     };
-  }, [allUIPois, currentZoom, getFilteredPOIs]);
+  }, [allUIPois, discreteZoom, getFilteredPOIs]);
 
   const events = useMemo(() => normalizeEventList(allEvents || []), [allEvents]);
 
@@ -210,6 +219,7 @@ export const MapContent = function MapContent({
 
       const { properties, geometry } = feature;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setCameraMode(MapCameraMode.FREE);
       triggerForceCenter();
 
       const isEvent =
@@ -228,6 +238,8 @@ export const MapContent = function MapContent({
         }
       } else {
         // Normal POI selection
+        setSelectedEvent(null);
+        setGlobalCurrentEvent(null);
         selectPoi(normalizePOI(feature));
       }
     },
@@ -245,6 +257,7 @@ export const MapContent = function MapContent({
   const handleEventPress = useCallback(
     (poi: any) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setCameraMode(MapCameraMode.FREE);
       triggerForceCenter();
       setSelectedEvent(poi.id);
       setGlobalCurrentEvent(poi.raw);
@@ -289,6 +302,9 @@ export const MapContent = function MapContent({
         layer.id.includes('poi') || 
         layer.id.includes('place') || 
         layer.id.includes('transit') || 
+        layer.id.includes('transport') ||
+        layer.id.includes('station') ||
+        layer.id.includes('rail') ||
         layer.id.includes('infrastructure');
         
       if (isNativePOI) {
@@ -360,7 +376,7 @@ export const MapContent = function MapContent({
           lastCameraPosition={lastCameraPosition}
           isNavigating={isNavigating}
           isPlanning={isPlanning}
-          isFollowingUser={isFollowingUser}
+          cameraMode={cameraMode}
           currentRoute={currentRoute}
         />
 
@@ -376,6 +392,8 @@ export const MapContent = function MapContent({
           isNavigating={isNavigating}
           isPlanning={isPlanning}
           onPoiPress={handlePoiPress}
+          zoomLevel={discreteZoom}
+          zoomSharedValue={zoomSharedValue}
         />
       </MapLibreGL.MapView>
     </View>

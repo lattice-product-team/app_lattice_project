@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Navigation } from 'lucide-react-native';
 import Animated, { FadeInRight, FadeOutRight, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -59,7 +58,7 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
           },
         ]}
       >
-        <MaterialCommunityIcons name="navigation-variant" size={22} color="#000000" />
+        <Navigation size={22} color="#000000" strokeWidth={2.5} />
         <Text style={[styles.text, { color: '#000000' }]}>CENTRAR</Text>
       </Pressable>
     </Animated.View>

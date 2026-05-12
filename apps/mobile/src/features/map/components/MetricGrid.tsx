@@ -21,7 +21,7 @@ export const MetricGrid = ({ metrics }: MetricGridProps) => {
           </Text>
           <View style={styles.valueRow}>
             {(() => {
-              const IconComponent = (LucideIcons as any)[metric.icon] || LucideIcons.Info;
+              const IconComponent = (LucideIcons as any)[metric.icon] || LucideIcons.InfoIcon;
               return (
                 <IconComponent
                   size={18}

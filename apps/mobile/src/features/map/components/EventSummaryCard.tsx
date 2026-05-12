@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { X, CircleCheck, CloudDownload } from 'lucide-react-native';
 import { LatticeEvent } from '../../../types';
 import { getEventMetadata } from '../../../utils/poiUtils';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -16,6 +16,7 @@ interface EventSummaryCardProps {
 export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
   const theme = useAppTheme();
   const metadata = getEventMetadata(event.type);
+  const CategoryIcon = metadata.icon;
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -44,15 +45,7 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
       <View style={styles.header}>
         <View style={styles.titleSection}>
           <View style={[styles.iconContainer, { backgroundColor: theme.colors.glass.subtle }]}>
-            {metadata.iconFamily === 'material' ? (
-              <MaterialCommunityIcons
-                name={metadata.icon as any}
-                size={24}
-                color={theme.colors.brand.primary}
-              />
-            ) : (
-              <Feather name={metadata.icon as any} size={24} color={theme.colors.brand.primary} />
-            )}
+            <CategoryIcon size={24} color={theme.colors.brand.primary} strokeWidth={2.2} />
           </View>
           <View>
             <Text style={[styles.name, { color: theme.colors.text.primary }]}>{event.name}</Text>
@@ -60,7 +53,7 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
           </View>
         </View>
         <Pressable onPress={onClear} style={styles.closeButton}>
-          <Feather name="x" size={20} color={theme.colors.text.muted} />
+          <X size={20} color={theme.colors.text.muted} strokeWidth={2.2} />
         </Pressable>
       </View>
 
@@ -72,19 +65,21 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
             styles.downloadButton,
             { backgroundColor: theme.colors.brand.primary },
             isDownloaded && styles.downloadedButton,
-            isDownloading && styles.downloadingButton,
+            isDownloading && { backgroundColor: theme.colors.interactive.disabled },
           ]}
         >
           {isDownloading ? (
-            <ActivityIndicator size="small" color="white" />
+            <ActivityIndicator size="small" color={theme.colors.text.inverse} />
           ) : (
-            <Feather
-              name={isDownloaded ? 'check-circle' : 'download-cloud'}
-              size={18}
-              color="white"
-            />
+            <>
+              {isDownloaded ? (
+                <CircleCheck size={18} color={theme.colors.text.inverse} strokeWidth={2.2} />
+              ) : (
+                <CloudDownload size={18} color={theme.colors.text.inverse} strokeWidth={2.2} />
+              )}
+            </>
           )}
-          <Text style={styles.buttonText}>
+          <Text style={[styles.buttonText, { color: theme.colors.text.inverse }]}>
             {isDownloading
               ? `Descargando ${Math.round(progress * 100)}%`
               : isDownloaded

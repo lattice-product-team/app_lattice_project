@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Star } from 'lucide-react-native';
 import { useSavedLocations } from '../hooks/useSavedLocations';
 import { typography } from '../../../styles/typography';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
@@ -52,7 +52,7 @@ export const GuidesSection = ({ onSelectMarker, onSeeAll }: GuidesSectionProps) 
             onPress={() => onSelectMarker(f.geometry.coordinates, f.properties.id)}
           >
             <View style={styles.savedIconCircle}>
-              <MaterialCommunityIcons name="star" size={16} color="#FFD60A" />
+              <Star size={16} color="#FFD60A" fill="#FFD60A" strokeWidth={2.2} />
             </View>
             <Text
               style={[styles.savedLabel, { color: theme.colors.text.primary }]}

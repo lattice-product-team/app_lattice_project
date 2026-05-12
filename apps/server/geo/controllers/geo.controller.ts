@@ -3,7 +3,7 @@ import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
 import { findRoute } from '../services/navigation.service';
 import { socialService } from '../services/social.service';
-import { notifyAdmin, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
+import { notifyAdmin, notifyAll, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -189,8 +189,9 @@ export const saveEventSpatial = async (req: Request, res: Response) => {
     await deleteByPrefix('geo:pois:');
     await deleteCache(`geo:event:${eventId}:spatial`);
 
-    // Notify Admins
+    // Notify Admins & Clients
     notifyAdmin('admin:pois:updated', { type: 'EVENT_SPATIAL_UPDATED', id: id as string });
+    notifyAll('sync:event:spatial', { id: id as string });
 
     res.json({ success: true, message: 'Event spatial data saved successfully' });
   } catch (error) {
@@ -594,8 +595,9 @@ export const createEvent = async (req: Request, res: Response) => {
     // Invalidate Cache (All POIs might need refresh if new event contains them)
     await deleteByPrefix('geo:pois:');
 
-    // Notify Admins
+    // Notify Admins & Clients
     notifyAdmin('admin:events:new', { type: 'EVENT_CREATED', id: newEvent.id.toString() });
+    notifyAll('sync:events', { action: 'created', id: newEvent.id });
 
     res.status(201).json(newEvent);
   } catch (error) {
@@ -675,8 +677,9 @@ export const createPoi = async (req: Request, res: Response) => {
 
     res.status(201).json(newPoi);
 
-    // Notify Admins
+    // Notify Admins & Clients
     notifyAdmin('admin:pois:updated', { type: 'POI_CREATED', id: newPoi.id.toString() });
+    notifyAll('sync:pois', { action: 'created', id: newPoi.id, eventId: parsedEventId });
   } catch (error) {
     console.error('Error creating POI:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });

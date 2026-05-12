@@ -5,22 +5,22 @@ Welcome to the official repository. This application is a full-stack solution bu
 > [!TIP]
 > This project uses **Turborepo** to manage the monorepo. You can run commands from the root and they will be applied to all packages efficiently.
 
-## Documentation Map
+## Project Documentation
 
-To ensure a smooth development process and perfect integration with AI agents, we maintain a "Source of Truth" in the following directories;
+This project follows a structured 10-section documentation framework as required by instructors. All documentation is located in the [`/docs`](./docs) directory.
 
-### Project Context (AI-Ready)
+### 📚 Documentation Index
 
-- **[System Prompt](docs/product/system-prompt.md)**: Code style guidelines and agent behavior.
-- **[Architecture](docs/architecture/overview.md)**: Technical structure and data flow details.
-- **[User Journeys](docs/product/user-journeys.md)**: Business logic and main user flows.
-- **[Mobile Best Practices](docs/guides/mobile-best-practices.md)**: Expo guidelines and code style.
-
-### Specifications and Guides
-
-- **[Setup Guide](docs/guides/setup.md)**: How to set up the local environment with Docker.
-- **[Deployment Guide](docs/guides/deployment.md)**: How to take the application to production.
-- **[Contributor Guide](docs/guides/standards.md)**: Rules for branches, commits, and Pull Requests.
+- **[a] [Summary Presentation](./docs/a-summary-presentation)**: Project identity, abstract, and visual highlights.
+- **[b] [Planning](./docs/b-planning)**: Sprint enumeration, task list, and testing phases.
+- **[c] [Design](./docs/c-design)**: Mockups, wireframes, and UML/ER diagrams.
+- **[d] [Source Code](./docs/d-source-code)**: Installation manuals and deployment guides.
+- **[e] [Technical Documentation](./docs/e-technical-documentation)**: Architecture, API contracts, and code organization.
+- **[f] [Functional & Commercial](./docs/f-functional-commercial-presentation)**: Objectives, scope, and market study.
+- **[g] [Demo](./docs/g-demo)**: Application demonstration video.
+- **[h] [Technical Presentation](./docs/h-technical-presentation)**: Sprint evolution and technical problem-solving.
+- **[i] [User Manual](./docs/i-user-manual)**: Usage guides, localization, and accessibility standards.
+- **[j] [Pitch](./docs/j-pitch)**: 1-minute project "pitch" video.
 
 ## Quick Start
 

@@ -92,7 +92,7 @@ export const NavigationInfo = () => {
             onPress={handleCancel}
             style={({ pressed }) => [styles.closeButton, { opacity: pressed ? 0.7 : 1 }]}
           >
-            <X size={20} color="#666" />
+            <X size={20} color="#666" strokeWidth={2.2} />
           </Pressable>
         </View>
       </View>

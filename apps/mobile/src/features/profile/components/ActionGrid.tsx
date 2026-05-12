@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ticket, Wallet, Heart } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -33,10 +33,10 @@ export const ActionGrid = () => {
       id: 'tickets',
       label: 'Entradas',
       icon: (
-        <MaterialCommunityIcons
-          name="ticket-confirmation-outline"
+        <Ticket
           size={26}
           color={theme.colors.brand.primary}
+          strokeWidth={2.2}
         />
       ),
       onPress: () => handlePress('tickets'),
@@ -45,10 +45,10 @@ export const ActionGrid = () => {
       id: 'wallet',
       label: 'Wallet',
       icon: (
-        <MaterialCommunityIcons
-          name="wallet-outline"
+        <Wallet
           size={26}
           color={theme.colors.brand.primary}
+          strokeWidth={2.2}
         />
       ),
       onPress: () => handlePress('wallet'),
@@ -56,7 +56,13 @@ export const ActionGrid = () => {
     {
       id: 'saved',
       label: 'Favoritos',
-      icon: <Feather name="heart" size={24} color={theme.colors.brand.primary} />,
+      icon: (
+        <Heart 
+          size={24} 
+          color={theme.colors.brand.primary} 
+          strokeWidth={2.2} 
+        />
+      ),
       onPress: () => handlePress('saved'),
     },
   ];

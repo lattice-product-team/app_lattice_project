@@ -12,7 +12,7 @@ import { useAppTheme } from '../../hooks/useAppTheme';
 import { Button } from './Button';
 import { useAuthStore } from '../../store/useAuthStore';
 import * as Haptics from 'expo-haptics';
-import { Feather } from '@expo/vector-icons';
+import { X, ArrowRight } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -103,7 +103,7 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
           <View style={styles.headerActions}>
             <View style={{ flex: 1 }} />
             <Pressable onPress={handleClose} style={styles.actionCircle}>
-              <Feather name="x" size={20} color={theme.colors.text.primary} />
+              <X size={20} color={theme.colors.text.primary} strokeWidth={2.2} />
             </Pressable>
           </View>
 
@@ -120,7 +120,7 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
                 label="GET STARTED" 
                 variant="primary" 
                 onPress={handleAction} 
-                rightIcon={<Feather name="arrow-right" size={20} color={theme.colors.text.inverse} />}
+                rightIcon={<ArrowRight size={20} color={theme.colors.text.inverse} strokeWidth={2.5} />}
               />
             </View>
           </View>

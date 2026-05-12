@@ -66,30 +66,42 @@ export const useDetailModel = (): DetailModel | null => {
           snippets: social.snippets || [],
           sourceUrl: social.source_url,
         } : undefined,
+        info: [
+          ...(metadata.is_wheelchair_accessible ? [{
+            label: 'AccessibilityIcon',
+            value: 'Wheelchair Accessible',
+            icon: 'AccessibilityIcon',
+          }] : []),
+          ...(metadata.accepts_apple_pay ? [{
+            label: 'Payment',
+            value: 'Accepts Apple Pay',
+            icon: 'SmartphoneIcon',
+          }] : []),
+        ],
         metrics: [
           { 
             label: 'Hours', 
             value: (data as any).openingHours || 'Open', 
-            icon: 'Clock', 
+            icon: 'ClockIcon', 
             color: '#32D74B' 
           },
           { 
             label: 'Popular', 
             value: 'Trending', 
-            icon: 'Flame',
+            icon: 'FlameIcon',
             color: '#FF9F0A'
           },
           { 
             label: 'Distance', 
             value: formatDistance(drivingDistance), 
-            icon: 'MapPin' 
+            icon: 'MapPinIcon' 
           },
         ],
         actions: [
           { 
             id: 'directions', 
             label: formatDuration(drivingDuration), 
-            icon: 'Car', 
+            icon: 'CarIcon', 
             variant: 'primary', 
             onPress: () => {
               setPlanning(true);
@@ -98,21 +110,21 @@ export const useDetailModel = (): DetailModel | null => {
           { 
             id: 'offline', 
             label: 'Offline', 
-            icon: 'Download', 
+            icon: 'DownloadIcon', 
             variant: 'subdued', 
-            onPress: () => console.log('Download offline') 
+            onPress: () => console.log('DownloadIcon offline') 
           },
           { 
             id: 'website', 
             label: 'Website', 
-            icon: 'Globe', 
+            icon: 'GlobeIcon', 
             variant: 'subdued', 
             onPress: () => console.log('Open website') 
           },
           { 
             id: 'tickets', 
-            label: 'Tickets', 
-            icon: 'Ticket', 
+            label: 'TicketIcons', 
+            icon: 'TicketIcon', 
             variant: 'subdued', 
             onPress: () => console.log('Buy tickets') 
           },
@@ -144,35 +156,47 @@ export const useDetailModel = (): DetailModel | null => {
           snippets: social.snippets || [],
           sourceUrl: social.source_url,
         } : undefined,
+        info: [
+          ...(selectedPoi.isWheelchairAccessible ? [{
+            label: 'AccessibilityIcon',
+            value: 'Wheelchair Accessible',
+            icon: 'AccessibilityIcon',
+          }] : []),
+          ...(selectedPoi.hasPriorityLane ? [{
+            label: 'Priority',
+            value: 'Fast Track Available',
+            icon: 'ZapIcon',
+          }] : []),
+          ...(metadata.accepts_apple_pay ? [{
+            label: 'Payment',
+            value: 'Accepts Apple Pay',
+            icon: 'SmartphoneIcon',
+          }] : []),
+        ],
         metrics: [
           { 
             label: 'Hours', 
             value: 'Open', 
-            icon: 'Clock', 
+            icon: 'ClockIcon', 
             color: '#32D74B' 
           },
           { 
             label: 'Popular', 
             value: 'Top Choice', 
-            icon: 'Flame',
+            icon: 'FlameIcon',
             color: '#FF9F0A'
-          },
-          { 
-            label: 'Accepts', 
-            value: 'Pay', 
-            icon: 'Smartphone',
           },
           { 
             label: 'Distance', 
             value: formatDistance(drivingDistance), 
-            icon: 'MapPin' 
+            icon: 'MapPinIcon' 
           },
         ],
         actions: [
           { 
             id: 'directions', 
             label: formatDuration(drivingDuration), 
-            icon: 'Car', 
+            icon: 'CarIcon', 
             variant: 'primary', 
             onPress: () => {
               setPlanning(true);
@@ -181,21 +205,21 @@ export const useDetailModel = (): DetailModel | null => {
           { 
             id: 'offline', 
             label: 'Offline', 
-            icon: 'Download', 
+            icon: 'DownloadIcon', 
             variant: 'subdued', 
             onPress: () => {} 
           },
           { 
             id: 'website', 
             label: 'Website', 
-            icon: 'Globe', 
+            icon: 'GlobeIcon', 
             variant: 'subdued', 
             onPress: () => {} 
           },
           { 
             id: 'tickets', 
-            label: 'Tickets', 
-            icon: 'Ticket', 
+            label: 'TicketIcons', 
+            icon: 'TicketIcon', 
             variant: 'subdued', 
             onPress: () => {} 
           },

@@ -1988,7 +1988,7 @@
       "minzoom": 18,
       "layout": {
         "text-field": "{housenumber}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-size": 10,
         "visibility": "visible"
       },
@@ -2108,7 +2108,7 @@
         "text-allow-overlap": false,
         "text-anchor": "center",
         "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-ignore-placement": false,
         "text-justify": "center",
         "text-max-width": 10,
@@ -2155,7 +2155,7 @@
         "symbol-spacing": 200,
         "symbol-z-order": "auto",
         "text-field": "{ref}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-offset": [0, 0.1],
         "text-rotation-alignment": "viewport",
         "text-size": 9,
@@ -2197,7 +2197,7 @@
           ["get", "class"],
           "motorway",
           ["literal", ["Roboto Bold", "Noto Sans Bold"]],
-          ["literal", ["Roboto Regular"]]
+          ["literal", ["Inter Regular"]]
         ],
         "text-offset": [0, 0.05],
         "text-padding": 2,
@@ -2249,7 +2249,7 @@
           ["get", "class"],
           "motorway",
           ["literal", ["Roboto Bold", "Noto Sans Bold"]],
-          ["literal", ["Roboto Regular", "Noto Sans Regular"]]
+          ["literal", ["Inter Regular", "Inter Regular"]]
         ],
         "text-offset": [0, 0.05],
         "text-rotation-alignment": "viewport",
@@ -2297,7 +2297,7 @@
           ["get", "class"],
           "motorway",
           ["literal", ["Roboto Bold", "Noto Sans Bold"]],
-          ["literal", ["Roboto Regular", "Noto Sans Regular"]]
+          ["literal", ["Inter Regular", "Inter Regular"]]
         ],
         "text-offset": [0, 0.1],
         "text-rotation-alignment": "viewport",
@@ -2347,7 +2347,7 @@
           ["get", "class"],
           "motorway",
           ["literal", ["Roboto Bold", "Noto Sans Bold"]],
-          ["literal", ["Roboto Regular", "Noto Sans Regular"]]
+          ["literal", ["Inter Regular", "Inter Regular"]]
         ],
         "text-offset": [0, 0.1],
         "text-rotation-alignment": "viewport",
@@ -2408,7 +2408,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -2541,7 +2541,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -2659,7 +2659,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -2760,7 +2760,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -2853,7 +2853,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -2957,7 +2957,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -3056,7 +3056,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -3160,7 +3160,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -3330,7 +3330,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -3399,7 +3399,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0.8],
         "text-optional": true,
@@ -3473,7 +3473,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "center",
         "text-field": "{name}",
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-letter-spacing": [
           "match",
           ["get", "class"],
@@ -3578,7 +3578,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "top",
         "text-field": "{name}",
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-line-height": 0.9,
         "text-max-width": 9,
         "text-offset": [0, 0.9],
@@ -3640,7 +3640,7 @@
       "minzoom": 15,
       "layout": {
         "text-field": "{ref}",
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-size": {
           "stops": [
             [15, 10],
@@ -3684,7 +3684,7 @@
             [12, "{name:en}"]
           ]
         },
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-line-height": 1.4,
         "text-max-width": 9,
         "text-offset": [0, 0.8],
@@ -3726,7 +3726,7 @@
       "layout": {
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-letter-spacing": 0.1,
         "text-max-width": 8,
         "text-padding": 2,
@@ -3779,7 +3779,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "bottom",
         "text-field": ["coalesce", ["get", "name:en"], ["get", "name"]],
-        "text-font": ["Roboto Regular", "Noto Sans Regular"],
+        "text-font": ["Inter Regular", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, -0.15],
         "text-size": [
@@ -3823,7 +3823,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "bottom",
         "text-field": "{name:en}",
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, -0.15],
         "text-size": [
@@ -3870,7 +3870,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-anchor": "bottom",
         "text-field": "{name:en}",
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-max-width": 8,
         "text-offset": [0, -0.15],
         "text-size": ["interpolate", ["linear", 1], ["zoom"], 4, 14, 8, 18, 12, 24, 16, 32],
@@ -3901,7 +3901,7 @@
         "symbol-sort-key": ["to-number", ["get", "rank"]],
         "text-allow-overlap": false,
         "text-field": "{name:en}",
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-letter-spacing": 0.07,
         "text-max-width": {
           "stops": [
@@ -3956,7 +3956,7 @@
       "maxzoom": 1,
       "layout": {
         "text-field": "{name:en}",
-        "text-font": ["Roboto Medium", "Noto Sans Regular"],
+        "text-font": ["Inter Medium", "Inter Regular"],
         "text-justify": "center",
         "text-size": {
           "stops": [

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { X, Car, Footprints, Bike } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { 
   useSharedValue, 
@@ -105,44 +105,51 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
             onPress={() => setPlanning(false)}
             style={styles.closeButton}
           >
-            <MaterialCommunityIcons name="close" size={20} color={theme.colors.text.muted} />
+            <X size={20} color={theme.colors.text.muted} strokeWidth={2.2} />
           </Pressable>
         </View>
 
         <View style={styles.modesContainer}>
-          {(['driving', 'walking', 'bicycle'] as const).map((mode) => (
-            <Pressable
-              key={mode}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setTransportMode(mode);
-              }}
-              style={[
-                styles.modeButton,
-                transportMode === mode && { backgroundColor: theme.colors.brand.primary }
-              ]}
-            >
-              <MaterialCommunityIcons 
-                name={mode === 'driving' ? 'car' : mode === 'walking' ? 'walk' : 'bicycle'} 
-                size={24} 
-                color={transportMode === mode ? '#000' : theme.colors.text.muted} 
-              />
-              <View style={styles.modeTextContainer}>
-                <Text style={[
-                  styles.modeLabel, 
-                  { color: transportMode === mode ? '#000' : theme.colors.text.main }
-                ]}>
-                  {mode === 'driving' ? 'Drive' : mode === 'walking' ? 'Walk' : 'Bike'}
-                </Text>
-                <Text style={[
-                  styles.modeEta, 
-                  { color: transportMode === mode ? '#000' : theme.colors.text.muted }
-                ]}>
-                  {formatEta(metadata[mode]?.duration)}
-                </Text>
-              </View>
-            </Pressable>
-          ))}
+          {(['driving', 'walking', 'bicycle'] as const).map((mode) => {
+            let Icon;
+            if (mode === 'driving') Icon = Car;
+            else if (mode === 'walking') Icon = Footprints;
+            else Icon = Bike;
+
+            return (
+              <Pressable
+                key={mode}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setTransportMode(mode);
+                }}
+                style={[
+                  styles.modeButton,
+                  transportMode === mode && { backgroundColor: theme.colors.brand.primary }
+                ]}
+              >
+                <Icon 
+                  size={24} 
+                  color={transportMode === mode ? '#000' : theme.colors.text.muted} 
+                  strokeWidth={2.2}
+                />
+                <View style={styles.modeTextContainer}>
+                  <Text style={[
+                    styles.modeLabel, 
+                    { color: transportMode === mode ? '#000' : theme.colors.text.main }
+                  ]}>
+                    {mode === 'driving' ? 'Drive' : mode === 'walking' ? 'Walk' : 'Bike'}
+                  </Text>
+                  <Text style={[
+                    styles.modeEta, 
+                    { color: transportMode === mode ? '#000' : theme.colors.text.muted }
+                  ]}>
+                    {formatEta(metadata[mode]?.duration)}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={styles.metricsRow}>

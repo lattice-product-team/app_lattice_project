@@ -2,43 +2,39 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
-import Animated, { useAnimatedStyle, withTiming, useDerivedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
+import { getEventMetadata } from '../../../utils/poiUtils';
 
 interface EventMarkerProps {
   event: any;
   isSelected?: boolean;
   theme: any;
   onPress: (event: any) => void;
+  zoomSharedValue: SharedValue<number>;
+  spiderAngle?: number;
+  isSpiderfied?: boolean;
 }
 
 export const EventMarker: React.FC<EventMarkerProps> = React.memo(
   ({ event, isSelected = false, theme, onPress }) => {
     const { properties } = event;
-    const color = theme.colors.brand.primary;
-
-    const scale = useDerivedValue(() => {
-      return withTiming(isSelected ? 1.4 : 1, { duration: 250 });
-    }, [isSelected]);
-
-    const animatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ scale: scale.value }],
-      };
-    });
+    const metadata = getEventMetadata(properties.category);
+    const color = metadata.color || theme.colors.brand.primary;
+    const IconComponent = metadata.icon;
 
     return (
-      <View style={mapPinStyles.container}>
+      <View style={mapPinStyles.markerWrapper}>
         <TouchableOpacity
           onPress={() => onPress(event)}
           activeOpacity={0.9}
         >
-          <Animated.View
+          <View
             style={[
               {
                 alignItems: 'center',
                 justifyContent: 'center',
-              },
-              animatedStyle,
+                transform: [{ scale: isSelected ? 1.4 : 1 }]
+              }
             ]}
           >
             <MapPinFrame
@@ -55,29 +51,34 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                 />
               ) : (
                 <View style={[mapPinStyles.placeholder, { backgroundColor: color }]}>
-                  <Text style={mapPinStyles.placeholderText}>{properties.name?.charAt(0)}</Text>
+                  <IconComponent 
+                    size={24} 
+                    color="#FFFFFF" 
+                    strokeWidth={metadata.strokeWidth || 2.5} 
+                  />
                 </View>
               )}
             </MapPinFrame>
 
-            <View style={mapPinStyles.labelBadge}>
-              <Text
-                style={[
-                  mapPinStyles.labelText,
-                  {
-                    color: color, // Chromatic style for events too
-                    // Flat look halo
-                    textShadowColor: theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 1,
-                  },
-                ]}
-                numberOfLines={2}
-              >
-                {properties.name}
-              </Text>
-            </View>
-          </Animated.View>
+            {isSelected && (
+              <View style={mapPinStyles.labelBadge}>
+                <Text
+                  style={[
+                    mapPinStyles.labelText,
+                    {
+                      color: theme.colors.text.primary,
+                      textShadowColor: theme.colors.bg.surface,
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 3,
+                    },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {properties.name}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
     );

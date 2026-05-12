@@ -1,0 +1,8 @@
+.next/
+out/
+node_modules/
+
+# Ignore all synced content from the root /docs
+src/pages/*
+# But keep the pages directory itself
+!src/pages/
