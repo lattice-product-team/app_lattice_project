@@ -1,18 +1,23 @@
-import React from 'react';
-import { View, StyleSheet, Pressable, Text } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, StyleSheet, Pressable, Text, Dimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
   interpolate,
   SharedValue,
   Extrapolation,
 } from 'react-native-reanimated';
-import { LucideIcon, Music, Utensils, Palette, Activity, Moon } from 'lucide-react-native';
+import { LucideIcon, Info, Utensils, Car, Bus, Shield } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { semanticColors } from '../../../styles/semanticColors';
 import { EventCarouselCard } from './EventCarouselCard';
 import { useSearchEvents } from '../hooks/useSearchEvents';
+import { usePOIStore } from '../../poi/store/usePOIStore';
 import { LatticeEvent } from '../../../types';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Category {
   id: string;
@@ -21,11 +26,11 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { id: 'music', label: 'Música', icon: Music },
-  { id: 'gastro', label: 'Gastro', icon: Utensils },
-  { id: 'culture', label: 'Cultura', icon: Palette },
-  { id: 'sport', label: 'Deporte', icon: Activity },
-  { id: 'night', label: 'Ocio', icon: Moon },
+  { id: 'services', label: 'Info', icon: Info },
+  { id: 'gastro', label: 'Comida', icon: Utensils },
+  { id: 'parking', label: 'Parking', icon: Car },
+  { id: 'transport', label: 'Bus', icon: Bus },
+  { id: 'emergency', label: 'Seguridad', icon: Shield },
 ];
 
 interface DiscoveryDashboardProps {
@@ -37,7 +42,27 @@ interface DiscoveryDashboardProps {
 export const DiscoveryDashboard = React.memo(
   ({ islandState, onSelectCategory, onSelectEvent }: DiscoveryDashboardProps) => {
     const theme = useAppTheme();
-    const { events, loading: eventsLoading } = useSearchEvents(''); // Fetch all events for the dashboard
+    const { activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
+    const { events: allEvents, loading: eventsLoading } = useSearchEvents('');
+
+    const filteredEvents = useMemo(() => {
+      if (activeCategoryFilters.length === 0) return allEvents;
+
+      const categoryMap: Record<string, string[]> = {
+        services: ['services', 'info', 'toilet', 'wc', 'utility'],
+        gastro: ['food', 'restaurant', 'gastro', 'bar', 'cafe'],
+        parking: ['parking', 'garage', 'transport'],
+        transport: ['transport', 'bus', 'train', 'shuttle'],
+        emergency: ['emergency', 'medical', 'security', 'police'],
+      };
+
+      return allEvents.filter((event) => {
+        return activeCategoryFilters.some((filterId) => {
+          const matchedTypes = categoryMap[filterId] || [filterId];
+          return matchedTypes.includes(event.type.toLowerCase());
+        });
+      });
+    }, [allEvents, activeCategoryFilters]);
 
     const rContainerStyle = useAnimatedStyle(() => {
       // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
@@ -66,10 +91,20 @@ export const DiscoveryDashboard = React.memo(
           >
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
+              const isSelected = activeCategoryFilters.includes(cat.id);
+              const activeColor = (semanticColors.categories as any)[cat.id === 'gastro' ? 'food' : cat.id] || theme.colors.brand.primary;
+
               return (
                 <Pressable
                   key={cat.id}
-                  onPress={() => onSelectCategory?.(cat.id)}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    if (onSelectCategory) {
+                      onSelectCategory(cat.id);
+                    } else {
+                      toggleCategoryFilter(cat.id);
+                    }
+                  }}
                   style={({ pressed }) => [
                     { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
                   ]}
@@ -78,22 +113,32 @@ export const DiscoveryDashboard = React.memo(
                     style={[
                       styles.categoryPill,
                       {
-                        backgroundColor:
-                          theme.colors.glass.tint === 'dark'
+                        backgroundColor: isSelected
+                          ? activeColor
+                          : theme.colors.glass.tint === 'dark'
                             ? 'rgba(120, 120, 128, 0.36)'
                             : 'rgba(120, 120, 128, 0.12)',
+                        borderWidth: 1.5,
+                        borderColor: isSelected ? 'rgba(255,255,255,0.3)' : 'transparent',
                       },
                     ]}
                   >
                     <Icon
                       size={18}
-                      color={theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'}
-                      strokeWidth={2.5}
+                      color={isSelected 
+                        ? '#FFFFFF' 
+                        : theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'
+                      }
+                      strokeWidth={isSelected ? 3 : 2.5}
                     />
                     <Text
                       style={[
                         styles.categoryLabel,
-                        { color: theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' },
+                        { 
+                          color: isSelected 
+                            ? '#FFFFFF' 
+                            : theme.dark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)' 
+                        },
                       ]}
                     >
                       {cat.label}
@@ -122,17 +167,19 @@ export const DiscoveryDashboard = React.memo(
               snapToInterval={276} // 260 width + 16 gap
               decelerationRate="fast"
             >
-              {events.map((event) => (
+              {filteredEvents.map((event) => (
                 <EventCarouselCard
                   key={event.id}
                   event={event as any}
                   onPress={() => onSelectEvent?.(event as any)}
                 />
               ))}
-              {events.length === 0 && (
-                <Text style={{ color: theme.colors.text.muted, padding: 20 }}>
-                  No hay eventos programados hoy.
-                </Text>
+              {filteredEvents.length === 0 && (
+                <View style={{ width: SCREEN_WIDTH - 32, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: theme.colors.text.muted, padding: 20, textAlign: 'center', fontFamily: typography.primary.medium }}>
+                    No hay eventos de esta categoría hoy.
+                  </Text>
+                </View>
               )}
             </ScrollView>
           )}

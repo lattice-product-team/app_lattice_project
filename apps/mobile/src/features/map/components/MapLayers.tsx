@@ -39,65 +39,94 @@ export const MapLayers = React.memo(({
 }: MapLayersProps) => {
   return (
     <>
-      {/* 1. EVENTS LAYER - Always visible */}
-      {/* 1. EVENTS LAYER (PointAnnotations for maximum stability on iOS) */}
-      {eventsGeoJSON?.features?.map((feature: any) => {
-        const id = feature.properties?.id || feature.id;
-        const isSelected = String(selectedEventId) === String(id);
-        const coords = feature.geometry?.coordinates;
+      {/* 1. EVENTS LAYER (Ultra-stable PointAnnotations) */}
+      {(() => {
+        const features = eventsGeoJSON?.features || [];
+        console.log(`📍 MapLayers: Intentando renderizar ${features.length} eventos`);
         
-        if (!coords || coords.length !== 2) return null;
+        return features.map((feature: any) => {
+          const id = feature.properties?.id || feature.id;
+          const name = feature.properties?.name || 'Evento sin nombre';
+          const isSelected = String(selectedEventId) === String(id);
+          const coords = feature.geometry?.coordinates;
+          
+          // DIAGNÓSTICO: Log de posiciones para detectar fallos como el de "Neon Night"
+          console.log(`🔎 [Evento: ${name}] Coords:`, coords);
 
-        return (
-          <MapLibreGL.PointAnnotation
-            key={`ev-pa-${id}`}
-            id={`ev-ann-${id}`}
-            coordinate={coords}
-          >
-            <View style={mapPinStyles.markerWrapper}>
-              <EventMarker
-                event={feature}
-                theme={theme}
-                isSelected={isSelected}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            </View>
-          </MapLibreGL.PointAnnotation>
-        );
-      })}
+          if (!coords || coords.length !== 2 || isNaN(coords[0]) || isNaN(coords[1])) {
+            console.warn(`⚠️ [Evento: ${name}] Tiene coordenadas inválidas y no se mostrará.`);
+            return null;
+          }
 
-      {/* 2. POI LAYER (PointAnnotations with Contextual Visibility) */}
-      {poisGeoJSON?.features?.map((feature: any) => {
-        const id = feature.properties?.id || feature.id;
-        const isSelected = String(selectedPoiId) === String(id);
-        const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);
-        
-        // Visibility logic
-        const isVisible = zoomLevel > 13.0 || isSelected || isLinkedToSelectedEvent;
-        const coords = feature.geometry?.coordinates;
+          return (
+            <MapLibreGL.PointAnnotation
+              key={`ev-pa-${id}`}
+              id={`ev-ann-${id}`}
+              coordinate={coords}
+            >
+              <View 
+                style={[
+                  mapPinStyles.markerWrapper, 
+                  { 
+                    backgroundColor: 'transparent',
+                    // Compensación: el centro del wrapper (80/2 = 40) debe subir 
+                    // para que la base del pin toque la coordenada.
+                    transform: [{ translateY: -40 }] 
+                  }
+                ]}
+                collapsable={false}
+              >
+                <EventMarker
+                  event={feature}
+                  theme={theme}
+                  isSelected={isSelected}
+                  onPress={onPoiPress}
+                />
+              </View>
+            </MapLibreGL.PointAnnotation>
+          );
+        });
+      })()}
 
-        if (!isVisible || !coords || coords.length !== 2) return null;
+      {/* 2. POI LAYER (Ultra-stable PointAnnotations) */}
+      {(() => {
+        const features = poisGeoJSON?.features || [];
+        return features.map((feature: any) => {
+          const id = feature.properties?.id || feature.id;
+          const isSelected = String(selectedPoiId) === String(id);
+          const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);
+          const coords = feature.geometry?.coordinates;
+          
+          if (!coords || coords.length !== 2) return null;
 
-        return (
-          <MapLibreGL.PointAnnotation
-            key={`poi-pa-${id}`}
-            id={`poi-ann-${id}`}
-            coordinate={coords}
-          >
-            <View style={mapPinStyles.markerWrapper}>
-              <POIMarker
-                poi={feature}
-                theme={theme}
-                isSelected={isSelected}
-                isLinkedToSelectedEvent={isLinkedToSelectedEvent}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            </View>
-          </MapLibreGL.PointAnnotation>
-        );
-      })}
+          return (
+            <MapLibreGL.PointAnnotation
+              key={`poi-pa-${id}`}
+              id={`poi-ann-${id}`}
+              coordinate={coords}
+            >
+              <View 
+                style={[
+                  mapPinStyles.markerWrapper, 
+                  { 
+                    backgroundColor: 'transparent',
+                    transform: [{ translateY: -40 }]
+                  }
+                ]}
+                collapsable={false}
+              >
+                <POIMarker
+                  poi={feature}
+                  theme={theme}
+                  isSelected={isSelected}
+                  isLinkedToSelectedEvent={isLinkedToSelectedEvent}
+                  onPress={onPoiPress}
+                />
+              </View>
+            </MapLibreGL.PointAnnotation>
+          );
+        });
+      })()}
 
       {/* 3. PATH NETWORK (Stays in GL) */}
       {!isNavigating && (

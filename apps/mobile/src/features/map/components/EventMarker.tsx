@@ -16,43 +16,11 @@ interface EventMarkerProps {
 }
 
 export const EventMarker: React.FC<EventMarkerProps> = React.memo(
-  ({ event, isSelected = false, theme, onPress, zoomSharedValue }) => {
+  ({ event, isSelected = false, theme, onPress }) => {
     const { properties } = event;
     const metadata = getEventMetadata(properties.category);
     const color = metadata.color || theme.colors.brand.primary;
     const IconComponent = metadata.icon;
-
-    const animatedStyle = useAnimatedStyle(() => {
-      // 1. Selection scale with spring
-      const baseScale = withSpring(isSelected ? 1.4 : 1, theme.motion.physics.snappy);
-      
-      // 2. Zoom-based scaling
-      const zoomScale = interpolate(
-        zoomSharedValue.value,
-        [13, 17],
-        [0.8, 1],
-        Extrapolation.CLAMP
-      );
-
-      return {
-        transform: [
-          { scale: baseScale * zoomScale },
-        ],
-      };
-    });
-
-    const labelAnimatedStyle = useAnimatedStyle(() => {
-      const labelOpacity = interpolate(
-        zoomSharedValue.value,
-        [14, 15],
-        [0, 1],
-        Extrapolation.CLAMP
-      );
-      
-      return {
-        opacity: isSelected ? 1 : labelOpacity,
-      };
-    });
 
     return (
       <View style={mapPinStyles.markerWrapper}>
@@ -60,13 +28,13 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
           onPress={() => onPress(event)}
           activeOpacity={0.9}
         >
-          <Animated.View
+          <View
             style={[
               {
                 alignItems: 'center',
                 justifyContent: 'center',
-              },
-              animatedStyle,
+                transform: [{ scale: isSelected ? 1.4 : 1 }]
+              }
             ]}
           >
             <MapPinFrame
@@ -86,29 +54,31 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                   <IconComponent 
                     size={24} 
                     color="#FFFFFF" 
-                    strokeWidth={2.2} 
+                    strokeWidth={metadata.strokeWidth || 2.5} 
                   />
                 </View>
               )}
             </MapPinFrame>
 
-            <Animated.View style={[mapPinStyles.labelBadge, labelAnimatedStyle]}>
-              <Text
-                style={[
-                  mapPinStyles.labelText,
-                  {
-                    color: theme.colors.text.primary,
-                    textShadowColor: theme.colors.bg.surface,
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 3,
-                  },
-                ]}
-                numberOfLines={2}
-              >
-                {properties.name}
-              </Text>
-            </Animated.View>
-          </Animated.View>
+            {isSelected && (
+              <View style={mapPinStyles.labelBadge}>
+                <Text
+                  style={[
+                    mapPinStyles.labelText,
+                    {
+                      color: theme.colors.text.primary,
+                      textShadowColor: theme.colors.bg.surface,
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 3,
+                    },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {properties.name}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
     );

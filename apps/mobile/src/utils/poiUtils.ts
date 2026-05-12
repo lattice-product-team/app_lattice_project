@@ -21,6 +21,7 @@ export interface CategoryMetadata {
   icon: LucideIcon;
   color: string;
   label: string;
+  strokeWidth?: number;
 }
 
 export const NEUTRAL_MARKER_COLOR = colors.neutral.dark.overlay;
@@ -32,16 +33,19 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     icon: Utensils,
     color: colors.semantic.dark.warning,
     label: 'Comida y Bebida',
+    strokeWidth: 2.5,
   },
   food: {
     icon: Utensils,
     color: colors.semantic.dark.warning,
     label: 'Comida y Bebida',
+    strokeWidth: 2.5,
   },
   coffee: {
     icon: Coffee,
     color: colors.semantic.dark.warning,
     label: 'Cafetería',
+    strokeWidth: 2.5,
   },
 
   // Infrastructure
@@ -49,21 +53,25 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     icon: MapPin,
     color: colors.semantic.dark.info,
     label: 'Parking',
+    strokeWidth: 2.5,
   },
   wc: { 
     icon: User, 
     color: colors.semantic.dark.info, 
-    label: 'Aseos' 
+    label: 'Aseos',
+    strokeWidth: 2.5,
   },
   toilet: { 
     icon: User, 
     color: colors.semantic.dark.info, 
-    label: 'Aseos' 
+    label: 'Aseos',
+    strokeWidth: 2.5,
   },
   restroom: {
     icon: User,
     color: colors.semantic.dark.info,
     label: 'Aseos',
+    strokeWidth: 2.5,
   },
 
   // Event Specific
@@ -71,26 +79,31 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     icon: Map,
     color: colors.semantic.dark.success,
     label: 'Tribuna',
+    strokeWidth: 2.5,
   },
   medical: {
     icon: SquarePlus,
     color: colors.semantic.dark.error,
     label: 'Servicio Médico',
+    strokeWidth: 2.5,
   },
   hospital: {
     icon: SquarePlus,
     color: colors.semantic.dark.error,
     label: 'Hospital',
+    strokeWidth: 2.5,
   },
   gate: { 
     icon: LogIn, 
     color: colors.brand.primary, 
-    label: 'Acceso' 
+    label: 'Acceso',
+    strokeWidth: 2.5,
   },
   entrance: { 
     icon: LogIn, 
     color: colors.brand.primary, 
-    label: 'Acceso' 
+    label: 'Acceso',
+    strokeWidth: 2.5,
   },
 
   // Community & Info
@@ -98,21 +111,25 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     icon: Users,
     color: colors.brand.accent,
     label: 'Punto de Encuentro',
+    strokeWidth: 2.5,
   },
   info: {
     icon: Info,
     color: colors.brand.secondary,
     label: 'Información',
+    strokeWidth: 2.5,
   },
   shop: {
     icon: ShoppingBag,
     color: colors.category.tech,
     label: 'Tienda Oficial',
+    strokeWidth: 2.5,
   },
   shopping: {
     icon: ShoppingBag,
     color: colors.category.tech,
     label: 'Tienda Oficial',
+    strokeWidth: 2.5,
   },
 };
 
@@ -121,26 +138,31 @@ const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
     icon: Music,
     color: colors.brand.primary,
     label: 'Música',
+    strokeWidth: 2.5,
   },
   food: {
     icon: Utensils,
     color: colors.brand.primary,
     label: 'Comida',
+    strokeWidth: 2.5,
   },
   tech: {
     icon: Laptop,
     color: colors.brand.primary,
     label: 'Tecnología',
+    strokeWidth: 2.5,
   },
   sports: {
     icon: Trophy,
     color: colors.brand.primary,
     label: 'Deportes',
+    strokeWidth: 2.5,
   },
   generic: {
     icon: Calendar,
     color: colors.brand.primary,
     label: 'Evento',
+    strokeWidth: 2.5,
   },
 };
 
@@ -150,6 +172,7 @@ const DEFAULT_METADATA: CategoryMetadata = {
   icon: MapPin,
   color: colors.brand.primary,
   label: 'Punto de Interés',
+  strokeWidth: 2.5,
 };
 
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {

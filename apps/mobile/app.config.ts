@@ -95,6 +95,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         'Allow Lattice to use your location to guide you through events.',
       NSLocationAlwaysAndWhenInUseUsageDescription:
         'Allow Lattice to use your location to guide you through events.',
+      NSMicrophoneUsageDescription:
+        'Lattice uses the microphone for voice search and commands.',
+      NSSpeechRecognitionUsageDescription:
+        'Lattice uses speech recognition to help you search for places using your voice.',
     },
   },
   android: {
@@ -111,6 +115,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'INTERNET',
       'CAMERA',
       'RECORD_AUDIO',
+      'android.permission.RECORD_AUDIO',
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.ACCESS_FINE_LOCATION',
     ],

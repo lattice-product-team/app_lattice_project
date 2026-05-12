@@ -123,10 +123,14 @@ export const SheetHeader = ({
         
         {/* Top Actions Bar */}
         <View style={styles.topActions}>
-          <CircularActionButton 
-            icon="Share"
-            onPress={onShare || (() => {})} 
-          />
+          {onShare ? (
+            <CircularActionButton 
+              icon="Share"
+              onPress={onShare} 
+            />
+          ) : (
+            <View style={{ width: 44 }} />
+          )}
           <View style={{ flex: 1 }} />
           <CircularActionButton 
             icon="X"

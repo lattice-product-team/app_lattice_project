@@ -496,9 +496,10 @@ export default function MapIndexPage() {
     islandState.value = withSpring(0, theme.motion.physics.magnetic);
   }, [handleCloseDetails, islandState, theme.motion.physics.magnetic]);
 
+  const { toggleCategoryFilter } = usePOIStore();
   const handleSelectCategory = useCallback((id: string) => {
-    console.log('Selected Category:', id);
-  }, []);
+    toggleCategoryFilter(id);
+  }, [toggleCategoryFilter]);
 
   // Mode Toggle Drag Logic
   const toggleDrag = useSharedValue(activeMode); // Independent visual state for the toggle
@@ -539,7 +540,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      [theme.dark ? theme.colors.text.primary : '#000', theme.colors.text.muted]
+      [theme.colors.text.primary, theme.colors.text.muted]
     ),
   }));
 
@@ -547,7 +548,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      [theme.colors.text.muted, theme.dark ? theme.colors.text.primary : '#000']
+      [theme.colors.text.muted, theme.colors.text.primary]
     ),
   }));
 
@@ -555,7 +556,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      [theme.dark ? theme.colors.text.primary : '#000', theme.colors.text.muted]
+      [theme.colors.text.primary, theme.colors.text.muted]
     ),
   }));
 
@@ -563,7 +564,7 @@ export default function MapIndexPage() {
     color: interpolateColor(
       toggleDrag.value,
       [0.4, 0.6],
-      [theme.colors.text.muted, theme.dark ? theme.colors.text.primary : '#000']
+      [theme.colors.text.muted, theme.colors.text.primary]
     ),
   }));
 
@@ -661,13 +662,13 @@ export default function MapIndexPage() {
             <View style={styles.modePillLabels}>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedCompass size={18} animatedProps={exploreIconStyle as any} strokeWidth={2.2} />
+                  <AnimatedCompass size={20} animatedProps={exploreIconStyle as any} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
                 </Animated.View>
               </View>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedMap size={18} animatedProps={mapIconStyle as any} strokeWidth={2.2} />
+                  <AnimatedMap size={20} animatedProps={mapIconStyle as any} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, mapTextStyle]}>Map</Animated.Text>
                 </Animated.View>
               </View>
@@ -732,6 +733,10 @@ export default function MapIndexPage() {
                   onSubmit={() => {
                     saveSearch(searchQuery);
                     Keyboard.dismiss();
+                  }}
+                  onMicPress={() => {
+                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }}
                   onPress={() => {
                     if (selectedEvent) {
@@ -842,7 +847,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   modeText: {
-    fontSize: 12,
-    fontFamily: typography.primary.bold,
+    fontSize: 16,
+    fontFamily: typography.secondary.medium,
+    letterSpacing: -0.2,
   },
 });

@@ -82,18 +82,35 @@ export const usePOIStore = create<POIState>((set) => ({
 
   clearFilters: () => set({ activeCategoryFilters: [] }),
   getFilteredPOIs: (allPOIs, zoom = 0) => {
-    const { selectedEventId, userInsideEventId } = usePOIStore.getState();
+    const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
 
-    const activeEventId = selectedEventId || userInsideEventId;
-
-    // We no longer restrict to ONLY children when an event is selected.
-    // We want a global discovery experience.
-
-    // 2. Global zoom-based logic (When NO event is selected)
-    // We lower the threshold to 14.5 to allow for a very early and subtle fade-in
+    // 1. Zoom-based visibility threshold
     if (zoom < 13.0) return [];
 
-    // Filter out events from the POI collection (they are handled by MarkerViews)
+    // 2. Category Filtering Logic
+    if (activeCategoryFilters.length > 0) {
+      // Mapping from dashboard IDs to POI/Event categories
+      const categoryMap: Record<string, string[]> = {
+        services: ['services', 'info', 'toilet', 'wc', 'utility'],
+        gastro: ['food', 'restaurant', 'gastro', 'bar', 'cafe', 'drinks'],
+        parking: ['parking', 'garage', 'transport'],
+        transport: ['transport', 'bus', 'train', 'shuttle'],
+        emergency: ['emergency', 'medical', 'security', 'police', 'hospital'],
+      };
+
+      return allPOIs.filter((p) => {
+        // Always show the explicitly selected POI
+        if (p.id === usePOIStore.getState().selectedPoiId) return true;
+
+        // Check if the POI's category matches any of the active filters
+        return activeCategoryFilters.some((filterId) => {
+          const matchedCategories = categoryMap[filterId] || [filterId];
+          return matchedCategories.includes(p.category.toLowerCase());
+        });
+      });
+    }
+
+    // 3. Default: Filter out events from the POI collection (they are handled by MarkerViews)
     return allPOIs.filter((p) => p.category !== 'event');
   },
 }));

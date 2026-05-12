@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+}
+
+:root {
+  --nextra-primary-hue: 210deg;
+}
+
+.nextra-nav-container {
+  @apply backdrop-blur-md bg-white/70 dark:bg-black/70;
+}
