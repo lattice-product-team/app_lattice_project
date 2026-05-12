@@ -191,8 +191,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       cameraRef.current.setCamera({
         zoomLevel: 18,
         pitch: 45,
-        animationDuration: 1500,
-        animationMode: 'flyTo',
+        animationDuration: 800,
+        animationMode: 'easeTo',
       });
     } else if (!isNavigating && cameraMode === MapCameraMode.NAVIGATION) {
       setCameraMode(MapCameraMode.FREE);

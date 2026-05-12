@@ -111,7 +111,8 @@ export const MapLayers = React.memo(({
         );
       })}
 
-      {/* 3. PATH NETWORK (Stays in GL) */}
+      {/* 3. PATH NETWORK (Removed as requested) */}
+      {/* 
       {!isNavigating && (
         <MapLibreGL.ShapeSource id="networkSource" shape={pathNetwork || EMPTY_GEOJSON}>
           <MapLibreGL.LineLayer
@@ -124,6 +125,7 @@ export const MapLayers = React.memo(({
           />
         </MapLibreGL.ShapeSource>
       )}
+      */}
 
       {/* 4. ROUTE VISUALS (Stays in GL) */}
       {!!((isNavigating || isPlanning) && currentRoute) && (

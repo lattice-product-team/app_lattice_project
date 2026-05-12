@@ -17,7 +17,7 @@
 - **System:**
   1. The server sends User B's last throttled location (via Socket.io).
   2. The app draws a dynamic line on the map.
-  3. As they get closer (<50m), the App suggests: "Switch to AR to locate your friend in the crowd."
+  3. As they get closer (< 50m), the App suggests: "Switch to AR to locate your friend in the crowd."
 
 ## Journey: Finding Food & Drink (Restaurants)
 
