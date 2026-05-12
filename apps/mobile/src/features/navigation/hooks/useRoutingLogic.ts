@@ -50,12 +50,31 @@ export const useRoutingLogic = () => {
     userCoordsRef.current = userCoords;
   }, [userCoords]);
 
+  // When the destination changes and we're not in planning/navigating mode,
+  // clear any stale route so the old polyline doesn't linger on the map.
+  useEffect(() => {
+    const { isNavigating } = useNavigationStore.getState();
+    if (!isPlanning && !isNavigating) {
+      setRoutes(
+        { driving: null, walking: null, bicycle: null },
+        { driving: null, walking: null, bicycle: null }
+      );
+      lastFetchCoords.current = null;
+      lastDestinationId.current = null;
+    }
+  }, [selectedPoiId, selectedEvent?.id]);
+
   useEffect(() => {
     const fetchBothRoutes = async () => {
       const destId = selectedPoiId || selectedEvent?.id;
       const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
       const destinationName = selectedPoi?.displayName || selectedEvent?.name || '';
       const currentUserCoords = userCoordsRef.current;
+
+      // Only calculate routes when the user explicitly requested it (planning) or is navigating.
+      // Tapping a pin on the map should NOT trigger a route fetch.
+      const { isNavigating } = useNavigationStore.getState();
+      if (!isPlanning && !isNavigating) return;
 
       if (!destinationCoords || !currentUserCoords || !destId || isFetchingRef.current) return;
 
