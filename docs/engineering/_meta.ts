@@ -1,4 +1,4 @@
-{
+export default {
   "index": "Engineering Overview",
   "coding-standards": "Coding Standards",
   "git-standards": "Git & Collaboration",

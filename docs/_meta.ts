@@ -1,4 +1,4 @@
-{
+export default {
   "index": "Introduction",
   "architecture": "Architecture",
   "api-spec": "API Reference",

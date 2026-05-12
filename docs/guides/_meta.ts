@@ -1,4 +1,4 @@
-{
+export default {
   "index": "Guides Overview",
   "getting-started": "Getting Started",
   "onboarding": "Developer Onboarding",
