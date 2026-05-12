@@ -1,22 +1,55 @@
-# Welcome to Lattice
-
 ![Lattice Banner](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_banner_1778588749257.png)
 
-Welcome to the official documentation for **Lattice**, the definitive ecosystem for urban discovery and festival management in Barcelona.
+# <img src="./apps/mobile/assets/images/icon.png" height="40" style={{ verticalAlign: 'middle' }} /> Lattice
 
-Lattice provides a high-performance mapping experience, intelligent routing, and real-time operational tools for festival organizers and attendees.
+Lattice is the definitive ecosystem for urban discovery and festival management in Barcelona. Built as a high-performance **Modular Monolith** within a **Turborepo**, it combines a React Native mobile experience with a robust Node.js/PostgreSQL backend.
 
-## 🧭 Navigating the Documentation
+## 📚 Documentation Portal
 
-Use the sidebar to explore the following sections:
+We follow a professional, domain-driven documentation structure that also satisfies the 10-section academic requirement **[a-j]**.
 
-- **[Architecture](./architecture)**: Understand the high-level design, monorepo organization, and key technical decisions.
-- **[API Reference](./api-spec)**: Detailed specifications for our RESTful endpoints and data schemas.
-- **[Engineering](./engineering)**: Our standards for code quality, collaboration, and testing.
-- **[Guides](./guides)**: Practical instructions for developers and administrators.
-- **[Product](./product)**: The vision, roadmap, and UX design principles behind Lattice.
+| Domain | Academic Mapping | Description |
+| :--- | :--- | :--- |
+| **[Product](./docs/product)** | **[a]**, **[f]** | Vision, roadmap, and market objectives. |
+| **[UX Design](./docs/product/features-design)** | **[c]** | Wireframes, feature specs, and HUD designs. |
+| **[Architecture](./docs/architecture)** | **[e]**, **[h]** | System design, monorepo structure, and ADRs. |
+| **[API Spec](./docs/api-spec)** | **[e]** | RESTful contracts and shared data schemas. |
+| **[Engineering](./docs/engineering)** | **[b]**, **[e]** | Coding standards, Git workflow, and testing. |
+| **[Guides](./docs/guides)** | **[d]**, **[i]** | Installation, troubleshooting, and user manuals. |
+| **Demo & Pitch** | **[g]**, **[j]** | Links to video demonstrations and project pitch. |
 
 ---
 
-> [!TIP]
-> If you are a new developer, we recommend starting with the **[Getting Started](./guides/getting-started)** guide.
+## 🚀 Quick Start
+
+> [!IMPORTANT]
+> Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
+
+1.  **Dependencies**: `pnpm install`
+2.  **Infrastructure**: `docker-compose up -d`
+3.  **Database**: `pnpm --filter @app/db db:migrate && pnpm --filter @app/db db:seed`
+4.  **Launch**: `pnpm dev` (Starts API, Admin Web, and Mobile)
+
+---
+
+## 🛠 Technology Stack
+
+-   **Backend**: Node.js (Express) with **Drizzle ORM**.
+-   **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
+-   **Mobile**: React Native (Expo) with **MapLibre GL** for 60fps mapping.
+-   **Admin**: Next.js 14 with high-density operational dashboards.
+-   **Auth**: Custom JWT authentication with bcrypt password hashing.
+-   **Tooling**: Turborepo, Docker, and Vitest.
+
+## 📦 Shared Packages
+
+-   `@app/db`: SSOT for schema and migrations.
+-   `@app/types-schema`: Universal TypeScript definitions.
+-   `@app/core`: Shared utilities and middleware.
+-   `@app/theme`: Visual DNA for all platforms.
+
+---
+
+## 🤝 Contributing
+
+We follow **Conventional Commits**. Please review our **[Git Standards](./docs/engineering/git-standards.md)** before opening a Pull Request.

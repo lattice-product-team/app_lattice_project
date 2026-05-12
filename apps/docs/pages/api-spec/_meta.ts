@@ -1,6 +1,6 @@
 export default {
-  "index": "API Overview",
-  "mobile-api": "Mobile API",
-  "admin-api": "Admin API",
-  "schemas": "Data Schemas"
-}
+  index: 'API Overview',
+  'mobile-api': 'Mobile API',
+  'admin-api': 'Admin API',
+  schemas: 'Data Schemas',
+};
