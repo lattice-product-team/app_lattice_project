@@ -12,8 +12,6 @@ cp -r ../../docs/* "$PAGES_DIR/"
 
 # --- Normalization ---
 
-# 1. Rename README.md to index.mdx for clean routing
-find "$PAGES_DIR" -name "README.md" -exec bash -c 'mv "$1" "${1%README.md}index.mdx"' _ {} \;
 
 # 2. Convert all .md to .mdx
 find "$PAGES_DIR" -name "*.md" -exec bash -c 'mv "$1" "${1%.md}.mdx"' _ {} \;

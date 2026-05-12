@@ -77,15 +77,15 @@ export default function Dashboard() {
             data: [120, 120, 120, 120, 120, 120, 120],
           },
         ].map((m, i) => (
-          <Card key={i} className="relative overflow-hidden">
-            <p className="text-admin-xs font-bold uppercase tracking-widest mb-6 text-gravel">
+          <Card key={i} className="relative overflow-hidden p-8">
+            <p className="text-admin-xs font-black uppercase tracking-widest mb-6 text-gravel opacity-60">
               {m.label}
             </p>
             <div className="flex items-baseline justify-between gap-2">
               <div className="flex items-baseline gap-2">
-                <h3 className="text-admin-xl font-bold tabular-nums">{m.value}</h3>
+                <h3 className="text-admin-xl font-bold tabular-nums tracking-tight">{m.value}</h3>
                 {m.trend && (
-                  <span className="text-[10px] font-black tracking-tighter opacity-60">
+                  <span className="text-[10px] font-black tracking-tighter opacity-40">
                     {m.trend}
                   </span>
                 )}
@@ -94,7 +94,7 @@ export default function Dashboard() {
             </div>
             {/* Background Texture Effect */}
             <div
-              className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"
+              className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"
               aria-hidden="true"
             />
           </Card>
@@ -123,7 +123,7 @@ export default function Dashboard() {
                       aria-hidden="true"
                     />
                   </div>
-                  <span className="pill-label text-admin-xs text-obsidian">Live Environment</span>
+                  <span className="pill-label text-[9px] bg-obsidian text-white px-2 py-0.5 rounded-full">Live Environment</span>
                 </div>
 
                 {/* Event Selector */}
@@ -150,7 +150,7 @@ export default function Dashboard() {
                     <Select.Popover>
                       <ListBox>
                         {events.map((event: Event) => (
-                          <ListBox.Item key={event.id} id={event.id.toString()} textValue={event.name}>
+                          <ListBox.Item key={event.id} id={event.id.toString()} textValue={event.name} className="hover:bg-powder transition-colors">
                             <span className="text-admin-xs font-bold uppercase tracking-widest">{event.name}</span>
                           </ListBox.Item>
                         ))}
@@ -232,15 +232,15 @@ export default function Dashboard() {
                   <div className="space-y-5">
                     {['Security Alpha', 'Medical Unit B', 'Operations Core'].map((staff, i) => (
                       <div key={i} className="flex items-center justify-between group cursor-help">
-                        <span className="text-obsidian text-admin-base font-medium group-hover:translate-x-1 transition-transform">
+                        <span className="text-obsidian text-admin-base font-bold group-hover:translate-x-1 transition-transform tracking-tight">
                           {staff}
                         </span>
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-1.5 h-1.5 rounded-full bg-success shadow-hairline"
+                            className="w-1.5 h-1.5 rounded-full bg-success"
                             aria-hidden="true"
                           />
-                          <span className="text-[10px] font-black tracking-widest text-obsidian uppercase">
+                          <span className="text-[10px] font-black tracking-widest text-obsidian uppercase opacity-40">
                             Online
                           </span>
                         </div>

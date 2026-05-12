@@ -1,48 +1,42 @@
-# Mobile Best Practices
+# Buenas Prácticas en Desarrollo Móvil
 
-## Expo & Development Builds
+Este documento resume las convenciones técnicas necesarias para mantener el rendimiento y la calidad en la aplicación móvil de Lattice.
 
-This project requires **Custom Development Builds** because it uses native modules that are not compatible with Expo Go (MMKV, Reanimated, Viro).
+## Expo y Development Builds
 
-- **Build Command:** `npx expo run:android` or `npx expo run:ios`.
-- **Pre-requisite:** Ensure you have the local development environment configured (Android Studio / Xcode).
+Este proyecto requiere **Custom Development Builds** debido al uso de módulos nativos de alto rendimiento (MMKV, Reanimated) que no son compatibles con Expo Go.
 
-## MapLibre GL Integration
+- **Comando de ejecución:** `npx expo run:android` o `npx expo run:ios`.
+- **Requisito:** Tener configurado el entorno nativo local (Android Studio / Xcode).
 
-We use `@maplibre/maplibre-react-native` for the map engine.
+## Integración de MapLibre GL
 
-14. **Performance:** Always use `surfaceView={true}` for Android in the `MapView` component.
-15. **High-Performance Layering:**
-    - **Avoid Standard Markers:** Do not use the default `Marker` component for multiple points. It causes JS-thread bottlenecking.
-    - **Native Layers:** Use `ShapeSource` + `CircleLayer`/`SymbolLayer`. This offloads rendering to the GPU and MapLibre's native core.
-    - **Separate Active State:** Use a dedicated `ShapeSource` for the "Selected POI" to allow instant UI updates without re-parsing the entire dataset.
-16. **Batching:** Update GeoJSON shapes via `useMemo` to prevent unnecessary bridge traffic.
+Utilizamos `@maplibre/maplibre-react-native` como motor de mapas principal.
 
-## State Management Patterns
+### Optimización de Rendimiento
+1. **SurfaceView**: Usar siempre `surfaceView={true}` en Android para evitar el overhead de renderizado.
+2. **Capas Nativas (GPU)**:
+   - **Evitar Marcadores Estándar**: No usar el componente `Marker` por defecto para múltiples puntos, ya que bloquea el hilo de JS.
+   - **ShapeSource + Layers**: Usar `ShapeSource` combinado con `CircleLayer` o `SymbolLayer`. Esto delega el renderizado a la GPU.
+   - **Estado Activo Separado**: Mantener una `ShapeSource` dedicada para el punto seleccionado para permitir actualizaciones instantáneas sin re-parsear todo el dataset.
+3. **Batching**: Actualizar las formas GeoJSON mediante `useMemo` para reducir el tráfico en el puente (bridge) de React Native.
 
-- **Server Side:** Use `useQuery` for data fetching. Wrap results in custom hooks for business logic reuse.
-- **Local Persistence:** Use `react-native-mmkv` for critical settings (Auth, Offline Cache). Avoid `AsyncStorage`.
-- **Animation:** Use `react-native-reanimated` for all UI transitions.
+## Gestión de Estado y Animaciones
 
-Transitions between 2D and AR are governed by device orientation to ensure a smooth, professional experience.
+- **Estado de Servidor**: Utilizar `useQuery` para la obtención de datos, envolviendo los resultados en hooks personalizados.
+- **Persistencia Local**: Usar `react-native-mmkv` para configuraciones críticas. Evitar el uso de `AsyncStorage`.
+- **Animaciones**: Utilizar exclusivamente `react-native-reanimated` para todas las transiciones de UI y movimientos del mapa.
 
-### Orientation Management
+## Realidad Aumentada y Orientación
 
-- **Portrait:** Standard 2D Map view.
-- **Landscape (Physical):** AR activates automatically.
-- **Hybrid Projection:** In landscape mode, labels use a 2D Overlay (Reanimated) projected via a 90-degree rotated coordinate system to stay readable even if the OS orientation hasn't flipped yet.
+La transición entre 2D y AR está automatizada mediante sensores de orientación:
 
-### Stability
+- **Portrait**: Vista estándar de mapa 2D.
+- **Landscape**: El modo AR se activa automáticamente.
+- **Proyección Híbrida**: En modo landscape, las etiquetas utilizan un overlay 2D (Reanimated) proyectado para mantenerse legibles independientemente del giro del sistema operativo.
 
-- **Smoothing:** Uses `react-native-reanimated` (opacity fade) and a small mounting delay to ensure GPU stability, especially on emulators.
-- **Orientation Lock:** Ensure `AndroidManifest.xml` has `android:screenOrientation="unspecified"` to allow rotation.
+## Escalabilidad y Accesibilidad
 
-## Clean Code & Scalability
-
-- **SettingItem Pattern:** Use the `SettingItem` component for all list-based UI screens (Profile, Settings) to ensure consistent iconography and feedback.
-- **StyleSheet.create:** Prefer `StyleSheet.create` over inline objects for shadows and complex compositions to improve rendering performance.
-- **Conditional Rendering:** Always use ternary operators `condition ? <Component /> : null` instead of the `&&` short-circuit to avoid rendering unexpected `0` or `NaN` values in the UI.
-
-## Accessibility
-
-Always provide accessibility labels for interactive elements on the map and in the UI to ensure the app is usable by everyone at the circuit.
+- **Componentes Atómicos**: Utilizar el patrón `SettingItem` para pantallas de configuración y perfil para asegurar consistencia visual.
+- **Renderizado Condicional**: Usar siempre operadores ternarios `condicion ? <Component /> : null` para evitar renderizados inesperados de valores `0` o `NaN`.
+- **Accesibilidad**: Proporcionar etiquetas de accesibilidad (`accessibilityLabel`) en todos los elementos interactivos del mapa y la interfaz.

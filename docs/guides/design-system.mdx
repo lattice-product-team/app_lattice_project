@@ -82,10 +82,32 @@ const styles = {
 };
 ```
 
-### Tailwind CSS Integration (Future)
+### Tailwind CSS Integration
 
-The shared package will eventually be integrated into the Tailwind configurations for `apps/mobile` and `apps/admin-web` to allow usage via utility classes:
+The shared package is integrated into the Tailwind configurations for `apps/mobile` and `apps/admin-web` to allow usage via utility classes.
 
-- `text-brand-primary`
-- `bg-neutral-light-base` / `dark:bg-neutral-dark-base`
-- `font-sans`
+## Eleven Design System (Admin Web)
+
+For the administrative interface, we use the **Eleven** design language, which focuses on an editorial, high-contrast, and premium "achromatic" aesthetic.
+
+### Achromatic Palette
+
+| Token        | Hex       | Use Case                           |
+| :----------- | :-------- | :--------------------------------- |
+| **Eggshell** | `#fdfcfc` | Main page ground.                  |
+| **Powder**   | `#f5f3f1` | Secondary surfaces, hovers.        |
+| **Chalk**    | `#e5e5e5` | Borders and dividers.              |
+| **Gravel**   | `#777169` | Secondary text, disabled states.   |
+| **Obsidian** | `#000000` | Primary text, CTAs, status badges. |
+
+### Editorial Typography
+
+- **Display Serif:** **Waldenburg 300** (or Cormorant Garamond equivalent).
+- **Tracking:** -0.02em for headlines to create a tight, editorial look.
+- **Scale:** Reduced 14px base for data-density in admin tables and lists.
+
+### Hairline Elevation
+
+Unlike the mobile app's glassmorphism, the Admin Web uses a **Hairline Shadow** system:
+- **Shadow:** `rgba(0, 0, 0, 0.4) 0px 0px 1px 0px`
+- **Effect:** Cards appear to "hover" on the ground rather than float with deep blurs.

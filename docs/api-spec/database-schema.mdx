@@ -1,22 +1,21 @@
-# Esquema de la Base de Dades: Lattice
+# Esquema de la Base de Datos: Lattice
 
-> **Projecte:** Accessibilitat + Temps Real
-> **Context:** Gestió de rutes, accessibilitat i grups per a esdeveniments en circuits.
+Este documento detalla la estructura de datos espacial y relacional que soporta la inteligencia de Lattice.
 
-## 1. Diagrama Visual (ERD)
+## 1. Diagrama de Entidad-Relación (ERD)
 
-Aquest diagrama representa les principals entitats i relacions.
+Este diagrama representa las principales entidades y sus relaciones.
 
 ```mermaid
 erDiagram
-    %% RELACIONS
-    USERS ||--o{ TICKETS : posseeix
+    %% RELACIONES
+    USERS ||--o{ TICKETS : posee
     USERS ||--o{ GROUPS : crea_admin
-    USERS ||--o{ GROUP_MEMBERS : "és membre de"
-    GROUPS ||--o{ GROUP_MEMBERS : conté
+    USERS ||--o{ GROUP_MEMBERS : "es miembro de"
+    GROUPS ||--o{ GROUP_MEMBERS : contiene
     USERS ||--o{ SAVED_LOCATIONS : guarda
 
-    %% ENTITATS
+    %% ENTIDADES
     USERS {
         int id PK
         string email
@@ -90,3 +89,8 @@ erDiagram
         float size_mb
     }
 ```
+
+## 2. Consideraciones Geoespaciales (PostGIS)
+
+- **Tipos de Geometría**: Utilizamos `GEOMETRY(Point, 4326)` para puntos de interés y ubicaciones, y `GEOMETRY(LineString, 4326)` para segmentos de ruta.
+- **Indexación**: Todas las columnas de geometría cuentan con índices GIST para optimizar las consultas de proximidad.

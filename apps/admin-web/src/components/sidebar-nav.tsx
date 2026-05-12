@@ -52,10 +52,10 @@ export function SidebarNav() {
           <Button
             type="submit"
             variant="light"
-            className="w-full flex items-center justify-start gap-4 px-5 py-2.5 rounded-full text-gravel hover:text-obsidian hover:bg-powder/50 font-medium transition-all no-underline text-admin-base"
+            className="w-full flex items-center justify-start gap-4 px-5 py-2.5 rounded-full text-gravel hover:text-obsidian hover:bg-powder/50 font-bold transition-all no-underline text-admin-base tracking-tight"
           >
             <Icons.LogOut className="w-5 h-5" />
-            <span className="tracking-tight leading-tight">Sign Out</span>
+            <span className="leading-tight">Sign Out</span>
           </Button>
         </form>
       </div>
@@ -83,8 +83,8 @@ function NavItem({
         flex items-center gap-4 px-5 py-2.5 rounded-full transition-all group w-full no-underline text-admin-base
         ${
           active
-            ? 'bg-powder text-obsidian font-semibold'
-            : 'text-gravel hover:bg-powder/50 hover:text-obsidian font-medium'
+            ? 'bg-powder text-obsidian font-bold'
+            : 'text-gravel hover:bg-powder/50 hover:text-obsidian font-bold'
         }
       `}
     >
@@ -96,7 +96,7 @@ function NavItem({
       <div className="flex flex-col">
         <span className="tracking-tight leading-tight">{label}</span>
         {subtitle && (
-          <span className="text-[10px] text-slate font-medium uppercase tracking-wider mt-0.5">
+          <span className="text-[10px] text-slate font-black uppercase tracking-widest mt-0.5 opacity-60">
             {subtitle}
           </span>
         )}

@@ -1,4 +1,3 @@
-import { Avatar } from '@heroui/react';
 import { SidebarNav } from '@/components/sidebar-nav';
 import { getSession } from '@/lib/auth';
 
@@ -17,15 +16,14 @@ export default async function AdminLayout({
       <aside className="w-64 bg-eggshell border-r border-chalk flex flex-col z-50">
         <div className="p-8 pt-12">
           <div className="flex items-center gap-3 px-1 pb-6 border-b border-chalk/50 mb-8">
-            <Avatar 
-              name={displayName[0]}
-              className="bg-powder text-obsidian font-bold rounded-full w-10 h-10 border border-chalk" 
-            />
+            <div className="w-10 h-10 rounded-full bg-powder flex items-center justify-center border border-chalk text-obsidian font-bold text-admin-base">
+              {displayName[0]}
+            </div>
             <div className="flex flex-col">
-              <span className="text-admin-base font-semibold text-obsidian leading-tight">
+              <span className="text-admin-base font-bold text-obsidian leading-tight tracking-tight">
                 {displayName}
               </span>
-              <span className="text-admin-xs text-gravel font-medium">Administrator</span>
+              <span className="text-admin-xs text-gravel font-medium uppercase tracking-widest">Admin</span>
             </div>
           </div>
         </div>
