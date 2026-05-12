@@ -6,7 +6,7 @@ const withNextra = nextra({
 
 export default withNextra({
   output: 'export',
-  basePath: '/app_lattice_project',
+  basePath: process.env.NODE_ENV === 'production' ? '/app_lattice_project' : '',
   images: {
     unoptimized: true
   }
