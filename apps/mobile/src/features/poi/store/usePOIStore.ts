@@ -82,18 +82,32 @@ export const usePOIStore = create<POIState>((set) => ({
 
   clearFilters: () => set({ activeCategoryFilters: [] }),
   getFilteredPOIs: (allPOIs, zoom = 0) => {
-    const { selectedEventId, userInsideEventId } = usePOIStore.getState();
+    const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
 
-    const activeEventId = selectedEventId || userInsideEventId;
-
-    // We no longer restrict to ONLY children when an event is selected.
-    // We want a global discovery experience.
-
-    // 2. Global zoom-based logic (When NO event is selected)
-    // We lower the threshold to 14.5 to allow for a very early and subtle fade-in
+    // 1. Basic zoom threshold
     if (zoom < 13.0) return [];
 
-    // Filter out events from the POI collection (they are handled by MarkerViews)
-    return allPOIs.filter((p) => p.category !== 'event');
+    let filtered = allPOIs.filter((p) => p.category !== 'event');
+
+    // 2. Apply category filters if active
+    if (activeCategoryFilters.length > 0) {
+      // Map dashboard IDs to actual POI categories
+      const categoryMapping: Record<string, string[]> = {
+        gastro: ['food', 'restaurant', 'coffee', 'gastro'],
+        sport: ['sport', 'stadium', 'grandstand', 'sports'],
+        music: ['music', 'concert', 'stage'],
+        culture: ['culture', 'museum', 'art', 'palette'],
+        night: ['night', 'bar', 'club', 'ocio'],
+      };
+
+      filtered = filtered.filter((poi) => {
+        return activeCategoryFilters.some((filterId) => {
+          const mappedCategories = categoryMapping[filterId] || [filterId];
+          return mappedCategories.includes(poi.category);
+        });
+      });
+    }
+
+    return filtered;
   },
 }));

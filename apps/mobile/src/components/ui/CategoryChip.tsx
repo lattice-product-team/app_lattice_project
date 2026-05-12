@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { Text, StyleSheet, Pressable, Platform, View } from 'react-native';
 import { typography } from '../../styles/typography';
 import { useAppTheme } from '../../hooks/useAppTheme';
 

@@ -107,8 +107,17 @@ export default function MapIndexPage() {
   }, [user, isGuest, setProfile]);
 
   // Map & POI State
-  const { selectedPoiId, selectedPoi, selectPoi, deselect, selectedEventId, setSelectedEvent } =
-    usePOIStore();
+  const { 
+    selectedPoiId, 
+    selectedPoi, 
+    selectPoi, 
+    deselect, 
+    selectedEventId, 
+    setSelectedEvent,
+    toggleCategoryFilter,
+    activeCategoryFilters,
+    clearFilters
+  } = usePOIStore();
 
   const selectedEvent = useEventStore((s) => s.selectedEvent);
   const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
@@ -519,8 +528,9 @@ export default function MapIndexPage() {
   );
 
   const handleSelectCategory = useCallback((id: string) => {
-    console.log('Selected Category:', id);
-  }, []);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleCategoryFilter(id);
+  }, [toggleCategoryFilter]);
 
   // Mode Toggle Drag Logic
   const toggleDrag = useSharedValue(activeMode); // Independent visual state for the toggle
@@ -782,8 +792,10 @@ export default function MapIndexPage() {
                 <Animated.View style={level2ContentStyle}>
                   <DiscoveryDashboard
                     islandState={islandState}
+                    activeCategoryFilters={activeCategoryFilters}
                     onSelectCategory={handleSelectCategory}
                     onSelectEvent={handleEventSelect}
+                    onClearFilters={clearFilters}
                   />
                 </Animated.View>
 

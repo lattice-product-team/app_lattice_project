@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import { useAuthStore } from '../store/useAuthStore';
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl as string;
-const SOCKET_URL = API_URL?.replace('/api/v1', '') || '';
+const SOCKET_URL = API_URL?.replace('/api/v1', '').replace('/v1', '') || '';
 
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
