@@ -1,20 +1,24 @@
 #!/bin/bash
-# Sync docs from root to pages
-mkdir -p src/pages
+
+# Target directory
+PAGES_DIR="src/pages"
+mkdir -p "$PAGES_DIR"
+
 # Clean up previous sync
-find src/pages -mindepth 1 -maxdepth 1 -not -name "_app.tsx" -not -name "_document.tsx" -exec rm -rf {} +
+find "$PAGES_DIR" -mindepth 1 -maxdepth 1 -not -name "_app.tsx" -not -name "_document.tsx" -exec rm -rf {} +
 
-# Copy everything
-cp -r ../../docs/* src/pages/
+# Since the root /docs already follows the professional structure:
+cp -r ../../docs/* "$PAGES_DIR/"
 
-# Rename README.md to index.mdx for clean routing
-find src/pages -name "README.md" -exec bash -c 'mv "$1" "${1%README.md}index.mdx"' _ {} \;
-find src/pages -name "*.md" -exec bash -c 'mv "$1" "${1%.md}.mdx"' _ {} \;
+# --- Normalization ---
 
-# Remove non-page files that Next.js might try to compile as routes
-find src/pages -name "*.html" -type f -delete
-find src/pages -name "*.py" -type f -delete
-find src/pages -name "*.sh" -type f -delete
-find src/pages -name "*.ts" -type f -delete
-find src/pages -name "*.tsx" -type f -delete
-find src/pages -name "*.js" -type f -delete
+# 1. Rename README.md to index.mdx for clean routing
+find "$PAGES_DIR" -name "README.md" -exec bash -c 'mv "$1" "${1%README.md}index.mdx"' _ {} \;
+
+# 2. Convert all .md to .mdx
+find "$PAGES_DIR" -name "*.md" -exec bash -c 'mv "$1" "${1%.md}.mdx"' _ {} \;
+
+# 3. Security Cleanup: Remove non-documentation files
+find "$PAGES_DIR" -type f \( -name "*.html" -o -name "*.py" -o -name "*.sh" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" \) -delete
+
+echo "🚀 Documentation synced successfully from the professionalized source!"

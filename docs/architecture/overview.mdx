@@ -1,0 +1,31 @@
+# System Overview: Lattice
+
+Lattice is a premium mobile application designed to enhance the spectator experience at high-density events, providing advanced navigation, real-time telemetry, and immersive interactions through Augmented Reality.
+
+## Technology Stack
+
+- **Mobile Framework:** Expo (React Native)
+  - **Environment:** Custom Development Builds (optimized for MMKV, Reanimated, and R3F).
+- **Map Engine:** MapLibre GL (`@maplibre/maplibre-react-native`).
+  - **Optimization:** SurfaceView and **Native Layer Rendering** (`ShapeSource`) for maximum GPU performance.
+- **Augmented Reality:** React Three Fiber (R3F) with **Orientation-Aware Hybrid Projection** for stable labels.
+- **Backend:** Node.js (Express) within a modular microservices architecture.
+- **Database:** PostgreSQL with **PostGIS** extension for spatial intelligence.
+- **Real-time:** Socket.io with MessagePack for high-frequency binary data transmission.
+
+## Core Philosophical Pillars
+
+1. **Mixed Style Design:** Fusion of Cupertino elegance and Material functional structure.
+2. **Offline-First:** Critical data (POIs, Map Styles) is cached to survive network saturation at crowded venues.
+3. **Location Intelligence:** Efficiency-gated GPS updates and on-device routing calculations.
+
+## Documentation Pillars
+
+- [**Architecture**](/architecture/index): Technical deep-dives into Backend and Frontend systems.
+- [**API Specification**](/api-spec/index): Data contracts and schema definitions.
+- [**Guides**](/guides/index): Setup, Deployment, and Development standards.
+- [**Product Vision**](/product/index): Strategic vision and user experience definition.
+
+---
+
+> For detailed technical decisions and ADRs, see [**Architecture Decisions**](/architecture/decisions).

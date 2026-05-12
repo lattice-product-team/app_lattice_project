@@ -1,7 +1,8 @@
 {
-  "index": "Introducción",
-  "guides": "Guías",
-  "architecture": "Arquitectura",
-  "apis": "APIs",
-  "product": "Producto"
+  "index": "Introduction",
+  "product": "Product",
+  "architecture": "Architecture",
+  "api-spec": "API",
+  "guides": "Guides",
+  "engineering": "Engineering"
 }

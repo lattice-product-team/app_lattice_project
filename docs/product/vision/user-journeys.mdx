@@ -1,0 +1,42 @@
+# User Journeys
+
+Este documento detalla los flujos de experiencia de usuario (UX) diseñados para resolver problemas críticos en eventos de alta densidad.
+
+## Escenario: Salida Eficiente (Gestión de Tráfico)
+
+- **Contexto:** La carrera ha terminado. 100,000 personas intentan abandonar el recinto simultáneamente.
+- **Acción:** El usuario abre la app para encontrar su vehículo (ubicación guardada previamente).
+- **Respuesta del Sistema:**
+  1. Recupera las coordenadas guardadas del parking.
+  2. Consulta al servidor el "Nivel de Congestión" en tiempo real de cada puerta.
+  3. Calcula una ruta hacia una puerta secundaria: 5 minutos más de caminata, pero 20 minutos menos de espera en cola.
+  4. Activa flechas de Realidad Aumentada (AR) para guiar al usuario entre la multitud.
+
+## Escenario: Reencuentro de Grupo
+
+- **Contexto:** El Usuario A está en la Tribuna G, el Usuario B está en la zona de restauración.
+- **Acción:** El Usuario A selecciona "Localizar a B".
+- **Respuesta del Sistema:**
+  1. El servidor envía la última ubicación filtrada del Usuario B vía Socket.io.
+  2. La app dibuja una línea dinámica sobre el mapa 2D.
+  3. Cuando la distancia es reducida (menor a 50m), la app sugiere: "Cambia a modo AR para ver a tu amigo sobre la multitud".
+
+## Escenario: Restauración y Servicios
+
+- **Contexto:** El usuario desea comer sin perderse la acción en pista.
+- **Acción:** Busca "Restaurantes" en el menú de servicios.
+- **Respuesta del Sistema:**
+  1. Muestra opciones cercanas filtradas por tiempo de espera en cola.
+  2. Permite realizar el pedido y pago directamente desde la aplicación.
+  3. Envía una notificación push cuando el pedido está listo para recogida (Pick-up).
+
+## Escenario: Llegada al Asiento (Tribuna / Pelouse)
+
+- **Contexto:** El usuario acaba de entrar al circuito y necesita encontrar su asiento exacto.
+- **Acción:** El usuario escanea el código QR de su entrada física.
+- **Respuesta del Sistema:**
+  1. Identifica el código (ej: `CIRCUIT-VIP-2026`).
+  2. Si el usuario no tiene cuenta, vincula el ticket temporalmente y facilita el registro rápido.
+  3. Si tiene cuenta, añade el ticket a su "Wallet" personal.
+  4. Genera una ruta paso a paso desde la puerta de acceso hasta la tribuna, fila y asiento específicos.
+  5. Utiliza AR para proyectar el número de asiento sobre la grada real al llegar.
