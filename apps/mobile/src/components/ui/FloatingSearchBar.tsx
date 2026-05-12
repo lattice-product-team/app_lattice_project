@@ -11,7 +11,8 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import Voice, { SpeechResultsEvent, SpeechErrorEvent } from '@react-native-voice/voice';
+import Voice from '@react-native-voice/voice';
+import { useCameraPermissions } from 'expo-camera';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { UserAvatar } from './UserAvatar';
 import { typography } from '../../styles/typography';
@@ -49,6 +50,7 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
   ) => {
     const theme = useAppTheme();
     const [isListening, setIsListening] = React.useState(false);
+    const [permission, requestPermission] = useCameraPermissions();
     const pulseValue = useSharedValue(1);
 
     // Setup Speech Recognition
@@ -85,29 +87,70 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
       };
 
       return () => {
-        Voice.destroy().then(Voice.removeAllListeners);
+        if (Voice) {
+          Voice.destroy().then(() => {
+            Voice.removeAllListeners();
+          }).catch(() => {});
+        }
       };
     }, [onChangeText, pulseValue]);
 
+    const isOperationInProgress = React.useRef(false);
+
     const startListening = React.useCallback(async () => {
+      if (!Voice || isOperationInProgress.current) return;
+      
       try {
+        isOperationInProgress.current = true;
+        console.log('[Voice] Requesting permissions...');
+
+        // Check/Request microphone permissions first
+        const currentPermission = await requestPermission();
+        if (!currentPermission.granted) {
+          console.warn('[Voice] Permission denied');
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          return;
+        }
+
+        // Small delay to let the system UI settle after permission dialog
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         if (onMicPress) onMicPress();
-        await Voice.start('es-ES'); // Set to Spanish
+        
+        console.log('[Voice] Starting recognition...');
+        await Voice.start('es-ES');
+        setIsListening(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } catch (e) {
-        console.error('Failed to start Voice:', e);
+        console.error('[Voice] Failed to start:', e);
+        setIsListening(false);
+      } finally {
+        isOperationInProgress.current = false;
       }
-    }, [onMicPress]);
+    }, [onMicPress, requestPermission]);
 
     const stopListening = React.useCallback(async () => {
+      if (!Voice || isOperationInProgress.current) return;
+
       try {
+        isOperationInProgress.current = true;
         await Voice.stop();
         setIsListening(false);
         pulseValue.value = withSpring(1);
       } catch (e) {
         console.error('Failed to stop Voice:', e);
+      } finally {
+        isOperationInProgress.current = false;
       }
     }, [pulseValue]);
+
+    const toggleListening = React.useCallback(async () => {
+      if (isListening) {
+        await stopListening();
+      } else {
+        await startListening();
+      }
+    }, [isListening, startListening, stopListening]);
 
     const micAnimatedStyle = useAnimatedStyle(() => ({
       transform: [{ scale: pulseValue.value }],
@@ -163,14 +206,13 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
             )}
             <Pressable 
               style={styles.micButton}
-              onPressIn={startListening}
-              onPressOut={stopListening}
+              onPress={toggleListening}
             >
               <Animated.View style={micAnimatedStyle}>
                 <Mic 
-                  size={22} 
-                  color={isListening ? theme.colors.brand.primary : theme.colors.text.primary} 
-                  strokeWidth={isListening ? 3 : 2.2} 
+                   size={22} 
+                   color={isListening ? theme.colors.brand.primary : theme.colors.text.primary} 
+                   strokeWidth={isListening ? 3 : 2.2} 
                 />
               </Animated.View>
             </Pressable>
