@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Canvas } from '@react-three/fiber/native';
+import * as ScreenOrientation from 'expo-screen-orientation';
+import * as Location from 'expo-location';
 import { useLocationStore } from '../../../../store/useLocationStore';
 import { useOrientationStore } from '../../../../store/useOrientationStore';
 import { MainARScene } from './MainARScene';
@@ -10,6 +12,8 @@ import { ARHUD } from './ARHUD';
 import Animated, { useAnimatedStyle, withTiming, useSharedValue } from 'react-native-reanimated';
 import { typography } from '../../../../styles/typography';
 import { getCategoryMetadata } from '../../../../utils/poiUtils';
+import { useARStore } from '../../store/useARStore';
+import { useARData } from '../../hooks/useARData';
 
 // Math helpers
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -36,13 +40,9 @@ const getBearing = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   return ((theta * 180) / Math.PI + 360) % 360;
 };
 
-interface AROverlayProps {
-  isVisible: boolean;
-  onExitAR?: () => void;
-  pois?: any[];
-}
-
-export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois = [] }) => {
+export const AROverlay: React.FC = () => {
+  const { isVisible, closeAR } = useARStore();
+  const { activePois, loading, statusMessage } = useARData();
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [mountScene, setMountScene] = useState(false);
@@ -50,8 +50,44 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
   const { width, height } = useWindowDimensions();
 
   const userCoords = useLocationStore((s) => s.coords);
+  const setHeading = useOrientationStore((s) => s.setHeading);
   const heading = useOrientationStore((s) => s.heading);
-  const isLandscape = useOrientationStore((s) => s.isLandscape);
+
+  // 1. Orientation Lock (Strict Portrait)
+  useEffect(() => {
+    if (isVisible) {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    } else {
+      ScreenOrientation.unlockAsync();
+    }
+    return () => {
+      ScreenOrientation.unlockAsync();
+    };
+  }, [isVisible]);
+
+  // 2. Real-time Heading (Compass)
+  useEffect(() => {
+    let subscription: Location.LocationSubscription | null = null;
+
+    const startWatching = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+
+      subscription = await Location.watchHeadingAsync((data) => {
+        setHeading(data.trueHeading !== -1 ? data.trueHeading : data.magHeading);
+      });
+    };
+
+    if (isVisible) {
+      startWatching();
+    }
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, [isVisible, setHeading]);
 
   useEffect(() => {
     if (isVisible && isCameraReady) {
@@ -71,17 +107,6 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
     transform: [{ translateY: withTiming(hudOpacity.value === 1 ? 0 : 20, { duration: 600 }) }],
   }));
 
-  // Filter POIs by distance for AR - MUST BE AT TOP LEVEL BEFORE EARLY RETURNS
-  const activePois = React.useMemo(() => {
-    if (!userCoords || !pois.length) return [];
-    const [userLon, userLat] = userCoords;
-    return pois.filter((poi) => {
-      const [poiLon, poiLat] = poi.geometry.coordinates;
-      const dist = getDistance(userLat, userLon, poiLat, poiLon);
-      return dist < 1000;
-    });
-  }, [userCoords, pois]);
-
   if (!isVisible) return null;
   if (!permission) return <View style={styles.permissionContainer} />;
   if (!permission.granted)
@@ -91,7 +116,7 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
       </View>
     );
 
-  const isScanning = activePois.length === 0;
+  const isScanning = loading || activePois.length === 0;
 
   // Calculate 2D Screen Overlay Positions for Text Labels
   const render2DLabels = (poisToRender: any[]) => {
@@ -100,9 +125,12 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
     const FOV = 60; // Camera Field of View
 
     return poisToRender.map((poi, idx) => {
-      const [poiLon, poiLat] = poi.geometry.coordinates;
+      const coords = poi.geometry?.coordinates;
+      if (!coords) return null;
+      
+      const [poiLon, poiLat] = coords;
       const distance = getDistance(userLat, userLon, poiLat, poiLon);
-      const metadata = getCategoryMetadata(poi.properties.category);
+      const metadata = getCategoryMetadata(poi.properties?.category);
       const CategoryIcon = metadata.icon;
 
       const bearing = getBearing(userLat, userLon, poiLat, poiLon);
@@ -115,77 +143,38 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
       // Only show if it's within the front hemisphere and reasonably centered
       if (Math.abs(angleDiff) > 45) return null;
 
-      // Use staggered height to prevent overlaps but more subtly
-      let yOffset = (idx % 2) * 50 - 25;
+      // Use staggered height to prevent overlaps
+      const yOffset = (idx % 2) * 50 - 25;
 
-      if (isLandscape) {
-        // When physically landscape but OS is portrait (rotated 90deg CW)
-        // The camera view is filling the screen [width x height]
-        // Our UI will be rotated 90deg.
-        // angleDiff maps to 'vertical' movement on the portrait screen (which is horizontal movement for the user)
-        const centerOffset = (angleDiff / (FOV / 2)) * (height / 2);
-        const screenYPos = height / 2 + centerOffset;
-        // distance/elevation maps to 'horizontal' movement on portrait screen
-        const screenXPos = width / 2 + yOffset;
+      // Standard Portrait
+      const xPos = (angleDiff / (FOV / 2)) * (width / 2) + width / 2;
+      const yPos = height / 2 + yOffset - 120;
 
-        return (
-          <View
-            key={`2d-label-${poi.properties.id}`}
-            style={{
-              position: 'absolute',
-              top: screenYPos - 40,
-              left: screenXPos - 120,
-              width: 240,
-              flexDirection: 'row',
-              alignItems: 'center',
-              transform: [{ rotate: '90deg' }],
-            }}
-          >
-            <View style={styles.brandBubble}>
-              <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
-                <CategoryIcon size={18} color="white" strokeWidth={2.5} />
-              </View>
-              <View style={styles.textContainer}>
-                <Text style={styles.brandLabelText} numberOfLines={1}>
-                  {poi.properties.name}
-                </Text>
-                <Text style={styles.brandDistanceText}>{Math.round(distance)}m • Ahead</Text>
-              </View>
+      return (
+        <View
+          key={`2d-label-${poi.properties?.id || idx}`}
+          style={{
+            position: 'absolute',
+            left: xPos - 100,
+            top: yPos,
+            width: 200,
+            alignItems: 'center',
+          }}
+        >
+          <View style={styles.brandBubble}>
+            <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
+              <CategoryIcon size={18} color="white" strokeWidth={2.5} />
             </View>
-            <View style={styles.horizontalStalk} />
-          </View>
-        );
-      } else {
-        // Standard Portrait
-        const xPos = (angleDiff / (FOV / 2)) * (width / 2) + width / 2;
-        const yPos = height / 2 + yOffset - 120;
-
-        return (
-          <View
-            key={`2d-label-${poi.properties.id}`}
-            style={{
-              position: 'absolute',
-              left: xPos - 100,
-              top: yPos,
-              width: 200,
-              alignItems: 'center',
-            }}
-          >
-            <View style={styles.brandBubble}>
-              <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
-                <CategoryIcon size={18} color="white" strokeWidth={2.5} />
-              </View>
-              <View style={styles.textContainer}>
-                <Text style={styles.brandLabelText} numberOfLines={1}>
-                  {poi.properties.name}
-                </Text>
-                <Text style={styles.brandDistanceText}>{Math.round(distance)}m • Ahead</Text>
-              </View>
+            <View style={styles.textContainer}>
+              <Text style={styles.brandLabelText} numberOfLines={1}>
+                {poi.properties?.name || poi.name}
+              </Text>
+              <Text style={styles.brandDistanceText}>{Math.round(distance)}m • Ahead</Text>
             </View>
-            <View style={styles.verticalStalk} />
           </View>
-        );
-      }
+          <View style={styles.verticalStalk} />
+        </View>
+      );
     });
   };
 
@@ -226,9 +215,9 @@ export const AROverlay: React.FC<AROverlayProps> = ({ isVisible, onExitAR, pois 
             pointerEvents="box-none"
           >
             <ARHUD
-              onExit={onExitAR || (() => {})}
-              isLandscape={isLandscape}
+              onExit={closeAR}
               isScanning={isScanning}
+              statusMessage={statusMessage}
             />
           </Animated.View>
         </>
@@ -290,11 +279,5 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
     marginTop: -2,
-  },
-  horizontalStalk: {
-    width: 40,
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    marginRight: -2,
   },
 });
