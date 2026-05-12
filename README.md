@@ -1,90 +1,55 @@
-# 📱 Lattice
+![Lattice Banner](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_banner_1778588749257.png)
 
-Welcome to the official repository. This application is a full-stack solution built with **Express**, **Expo**, and **PostgreSQL**, organized in a **monorepo** with **Turborepo** and **Docker**.
+# <img src="./apps/mobile/assets/images/icon.png" height="40" align="center"> Lattice
 
-> [!TIP]
-> This project uses **Turborepo** to manage the monorepo. You can run commands from the root and they will be applied to all packages efficiently.
+Lattice is the definitive ecosystem for urban discovery and festival management in Barcelona. Built as a high-performance **Modular Monolith** within a **Turborepo**, it combines a React Native mobile experience with a robust Node.js/PostgreSQL backend.
 
-## Project Documentation
+## 📚 Documentation Portal
 
-This project follows a structured 10-section documentation framework as required by instructors. All documentation is located in the [`/docs`](./docs) directory.
+We follow a professional, domain-driven documentation structure that also satisfies the 10-section academic requirement **[a-j]**.
 
-### 📚 Documentation Index
+| Domain | Academic Mapping | Description |
+| :--- | :--- | :--- |
+| **[Product](./docs/product)** | **[a]**, **[f]** | Vision, roadmap, and market objectives. |
+| **[UX Design](./docs/product/features-design)** | **[c]** | Wireframes, feature specs, and HUD designs. |
+| **[Architecture](./docs/architecture)** | **[e]**, **[h]** | System design, monorepo structure, and ADRs. |
+| **[API Spec](./docs/api-spec)** | **[e]** | RESTful contracts and shared data schemas. |
+| **[Engineering](./docs/engineering)** | **[b]**, **[e]** | Coding standards, Git workflow, and testing. |
+| **[Guides](./docs/guides)** | **[d]**, **[i]** | Installation, troubleshooting, and user manuals. |
+| **Demo & Pitch** | **[g]**, **[j]** | Links to video demonstrations and project pitch. |
 
-- **[a] [Summary Presentation](./docs/a-summary-presentation)**: Project identity, abstract, and visual highlights.
-- **[b] [Planning](./docs/b-planning)**: Sprint enumeration, task list, and testing phases.
-- **[c] [Design](./docs/c-design)**: Mockups, wireframes, and UML/ER diagrams.
-- **[d] [Source Code](./docs/d-source-code)**: Installation manuals and deployment guides.
-- **[e] [Technical Documentation](./docs/e-technical-documentation)**: Architecture, API contracts, and code organization.
-- **[f] [Functional & Commercial](./docs/f-functional-commercial-presentation)**: Objectives, scope, and market study.
-- **[g] [Demo](./docs/g-demo)**: Application demonstration video.
-- **[h] [Technical Presentation](./docs/h-technical-presentation)**: Sprint evolution and technical problem-solving.
-- **[i] [User Manual](./docs/i-user-manual)**: Usage guides, localization, and accessibility standards.
-- **[j] [Pitch](./docs/j-pitch)**: 1-minute project "pitch" video.
+---
 
-## Quick Start
+## 🚀 Quick Start
 
 > [!IMPORTANT]
-> Make sure you have **Docker Desktop**/**Docker Compose** and **Node.js** (v18+) installed before starting.
+> Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
 
-1.  **Install**: `pnpm install` at the root.
-2.  **Infrastructure**: `docker compose up -d` to start PostgreSQL and PostGIS.
-3.  **Mobile Build**: `pnpm ios` or `pnpm android` (Run this at least once to create the Development Build).
-4.  **Development**: `pnpm dev` to start all services (API + Mobile) simultaneously.
-5.  **Remote Tunneling**: `pnpm dev:tunnel` to expose the local API via a secure tunnel.
+1.  **Dependencies**: `pnpm install`
+2.  **Infrastructure**: `docker-compose up -d`
+3.  **Database**: `pnpm --filter @app/db db:migrate && pnpm --filter @app/db db:seed`
+4.  **Launch**: `pnpm dev` (Starts API, Admin Web, and Mobile)
 
-## Available Commands (Root)
+---
 
-You can manage the entire project directly from the root of the monorepo:
+## 🛠 Technology Stack
 
-| Command                     | Description                                                  |
-| :-------------------------- | :----------------------------------------------------------- |
-| `npm run dev`               | Starts development mode for API and Mobile.                  |
-| `npm run build`             | Compiles all packages and applications.                      |
-| `npm run lint`              | Runs the linter across the entire project.                   |
-| `npm run test`              | Runs unit and integration tests.                             |
-| `npm run format`            | Formats code across the entire project with Prettier.        |
-| `npm run db:clean`          | Resets all database tables across the monorepo.              |
-| `npm run db:seed-master`    | Populates the database with master event and POI data.       |
-| `npm run db:seed-pedralbes` | Populates the database with Pedralbes test data.             |
-| `npm run <cmd> -w <pkg>`    | Runs a specific command in a workspace (e.g., `-w lattice`). |
+-   **Backend**: Node.js (Express) with **Drizzle ORM**.
+-   **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
+-   **Mobile**: React Native (Expo) with **MapLibre GL** for 60fps mapping.
+-   **Admin**: Next.js 14 with high-density operational dashboards.
+-   **Auth**: Firebase Identity with **Passkey** (WebAuthn) integration.
+-   **Tooling**: Turborepo, Docker, and Vitest.
 
-## Testing Infrastructure
+## 📦 Shared Packages
 
-We have implemented a professional dual testing architecture in `apps/mobile`:
+-   `@app/db`: SSOT for schema and migrations.
+-   `@app/types-schema`: Universal TypeScript definitions.
+-   `@app/core`: Shared utilities and middleware.
+-   `@app/theme`: Visual DNA for all platforms.
 
-- **Logic Engine (Vitest):** For fast testing of logic, utilities, and hooks.
-  - Command: `pnpm --filter @app/mobile test:logic`
-- **UI Engine (Jest + RTL):** For Expo UI and component validation.
-  - Command: `pnpm --filter @app/mobile test:components`
-- **Full Suite:** `pnpm --filter @app/mobile test`
+---
 
-More details in the **[Testing Guide](docs/guides/testing.md)**.
+## 🤝 Contributing
 
-## Refactoring and Code Status
-
-We have recently improved the maintainability of the mobile application:
-
-- **Logic Extraction:** Map controls and location services have been decoupled from the main view (`MapScreen`) using custom hooks (`useLocationService`, `useMapControls`).
-- **High-Performance Maps:** Transitioned to native MapLibre layers (`ShapeSource`, `CircleLayer`, `SymbolLayer`) for rendering thousands of points at 60fps, bypassing the overhead of standard markers.
-- **Orientation-Aware AR:** The AR engine now supports landscape mode with a hybrid 2D/3D projection system for stable, professional labels regardless of device orientation.
-- **Typography Unification:** Titles and fonts have been unified across the auth flow using a centralized `authStyles` SSOT in `typography.ts`, following the **[Design System](docs/guides/design-system.md)**.
-
-### Database Management
-
-> [!CAUTION]
-> Use `migrate` with caution in production environments.
-
-- `npm run db:generate`: Generates Drizzle migration files based on the schema.
-- `npm run db:migrate`: Applies pending migrations to the database.
-- `npm run db:clean`: Safely truncates all tables for environment reset.
-- `npm run db:seed-master`: Seeds the database with the master data set.
-- `npm run db:seed-pedralbes`: Seeds the database for the Pedralbes test environment.
-- `npm run db:studio`: Opens the Drizzle visual interface to explore data.
-
-## Technology Stack
-
-- **Frontend:** React Native via Expo (`apps/mobile`) with **React Three Fiber (R3F)** for Augmented Reality.
-- **Backend:** Node.js **Microservices** (`apps/server/*`) orchestrated via Docker.
-- **Shared:** Common types and logic (`packages/shared`).
-- **Infrastructure:** Postgres + PostGIS via Docker, with Redis for real-time telemetry.
+We follow **Conventional Commits**. Please review our **[Git Standards](./docs/engineering/git-standards.md)** before opening a Pull Request.

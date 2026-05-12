@@ -1,8 +1,8 @@
 {
   "index": "Introduction",
-  "product": "Product",
   "architecture": "Architecture",
-  "api-spec": "API",
+  "api-spec": "API Reference",
+  "engineering": "Engineering",
   "guides": "Guides",
-  "engineering": "Engineering"
+  "product": "Product"
 }

@@ -1,9 +1,6 @@
 {
-  "setup": "Configuración",
-  "design-system": "Sistema de Diseño",
-  "standards": "Estándares",
-  "deployment": "Despliegue",
-  "testing": "Testing",
-  "localization": "Localización",
-  "mobile-best-practices": "Buenas Prácticas Mobile"
+  "getting-started": "Getting Started",
+  "onboarding": "Developer Onboarding",
+  "troubleshooting": "Troubleshooting",
+  "admin-user-guide": "Admin User Guide"
 }

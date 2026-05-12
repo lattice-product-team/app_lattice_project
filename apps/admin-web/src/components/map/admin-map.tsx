@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { Icons } from '@/components/icons';
 import Map, {
   NavigationControl,
   Marker,
@@ -10,6 +11,7 @@ import Map, {
 } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+// AdminMap component with integrated SVG icons
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 
@@ -32,31 +34,17 @@ interface AdminMapProps {
   activeEventBoundary?: any;
 }
 
-import { 
-  Utensils, 
-  Wine, 
-  Baby, 
-  Hospital, 
-  LogIn, 
-  Info, 
-  AlertTriangle, 
-  MapPin, 
-  ShoppingBag,
-  Ticket,
-  Circle
-} from 'lucide-react';
-
 const POI_METADATA: Record<string, { icon: any; color: string }> = {
-  wc: { icon: Baby, color: '#54A6FF' },
-  restaurant: { icon: Utensils, color: '#F2A03D' },
-  bar: { icon: Wine, color: '#F2A03D' },
-  medical: { icon: Hospital, color: '#E5484D' },
-  gate: { icon: LogIn, color: '#F8D548' },
-  information: { icon: Info, color: '#D9B735' },
-  emergency: { icon: AlertTriangle, color: '#E5484D' },
-  parking: { icon: MapPin, color: '#54A6FF' },
-  shop: { icon: ShoppingBag, color: '#4F46E5' },
-  default: { icon: MapPin, color: '#F8D548' },
+  wc: { icon: Icons.Baby, color: '#54A6FF' },
+  restaurant: { icon: Icons.Utensils, color: '#F2A03D' },
+  bar: { icon: Icons.Wine, color: '#F2A03D' },
+  medical: { icon: Icons.Hospital, color: '#E5484D' },
+  gate: { icon: Icons.LogIn, color: '#F8D548' },
+  information: { icon: Icons.Info, color: '#D9B735' },
+  emergency: { icon: Icons.AlertTriangle, color: '#E5484D' },
+  parking: { icon: Icons.MapPin, color: '#54A6FF' },
+  shop: { icon: Icons.ShoppingBag, color: '#4F46E5' },
+  default: { icon: Icons.MapPin, color: '#F8D548' },
 };
 
 const getCentroid = (coordinates: [number, number][][]): [number, number] => {
@@ -87,7 +75,7 @@ const MapMarker = React.memo(({
   const metadata = POI_METADATA[data.category] || POI_METADATA.default;
   const size = type === 'event' ? 'w-10 h-10' : 'w-8 h-8';
   const color = type === 'event' ? (data.primaryColor || '#F8D548') : metadata.color;
-  const Icon = type === 'event' ? Ticket : metadata.icon;
+  const Icon = type === 'event' ? Icons.Ticket : metadata.icon;
 
   const coords = type === 'event' 
     ? (data.center?.coordinates || (data.boundary ? getCentroid(data.boundary.coordinates) : null))
@@ -110,7 +98,7 @@ const MapMarker = React.memo(({
           className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 transform ${isSelected ? 'scale-125 ring-4 ring-white/30' : 'hover:scale-110'}`}
           style={{ backgroundColor: color }}
         >
-          <Icon size={type === 'event' ? 20 : 16} color="white" strokeWidth={2.5} />
+          <Icon className={type === 'event' ? "w-5 h-5" : "w-4 h-4"} color="white" strokeWidth={2.5} />
         </div>
         
         {/* Label - visible on hover or if selected */}

@@ -1,6 +1,5 @@
 {
-  "overview": "Visión General",
-  "frontend": "Arquitectura Frontend",
-  "backend": "Arquitectura Backend",
-  "decisions": "Decisiones Técnicas"
+  "index": "System Overview",
+  "monorepo-structure": "Monorepo Structure",
+  "adr": "Architectural Decisions"
 }
