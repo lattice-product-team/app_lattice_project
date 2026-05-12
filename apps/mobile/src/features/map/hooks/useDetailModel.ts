@@ -7,6 +7,7 @@ import { useAppTheme } from '../../../hooks/useAppTheme';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useSearchEvents } from './useSearchEvents';
+import { useARStore, ARFilterMode } from '../store/useARStore';
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -28,6 +29,7 @@ export const useDetailModel = (): DetailModel | null => {
   const { allEvents } = useSearchEvents('');
   const setPlanning = useNavigationStore((s) => s.setPlanning);
   const isFetching = useNavigationStore((s) => s.isFetching);
+  const openAR = useARStore((s) => s.openAR);
 
   const drivingDuration = navMetadata.driving?.duration;
   const drivingDistance = navMetadata.driving?.distance;
@@ -105,6 +107,15 @@ export const useDetailModel = (): DetailModel | null => {
             variant: 'primary', 
             onPress: () => {
               setPlanning(true);
+            } 
+          },
+          { 
+            id: 'ar', 
+            label: 'Use AR', 
+            icon: 'BinocularsIcon', 
+            variant: 'subdued', 
+            onPress: () => {
+              openAR(ARFilterMode.SELECTED_EVENT, data.id);
             } 
           },
           { 
@@ -200,6 +211,15 @@ export const useDetailModel = (): DetailModel | null => {
             variant: 'primary', 
             onPress: () => {
               setPlanning(true);
+            } 
+          },
+          { 
+            id: 'ar', 
+            label: 'Use AR', 
+            icon: 'BinocularsIcon', 
+            variant: 'subdued', 
+            onPress: () => {
+              openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
             } 
           },
           { 
