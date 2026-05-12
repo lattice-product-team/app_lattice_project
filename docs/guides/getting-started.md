@@ -15,7 +15,7 @@ Ensure you have the following installed:
 Lattice uses a decentralized `.env` strategy.
 
 1.  **Root**: Copy `.env.example` to `.env`.
-2.  **Server**: Navigate to `apps/server` and ensure environment variables for Firebase and Database are set.
+2.  **Server**: Ensure `DATABASE_URL` and `JWT_SECRET` are correctly set in the root `.env`.
 3.  **Admin Web**: Ensure `NEXT_PUBLIC_API_URL` points to your local server.
 
 ## 3. Launch Sequence

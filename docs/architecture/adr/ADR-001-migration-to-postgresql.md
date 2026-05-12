@@ -6,7 +6,7 @@
 
 ## Context and Problem Statement
 
-The project initially considered Firebase Firestore (NoSQL) for data storage. However, as the requirements for complex geospatial queries (PostGIS), relational integrity (Events linked to POIs and Users), and robust migrations grew, the limitations of NoSQL became apparent.
+The project initially considered a Cloud-managed NoSQL approach (such as Firestore) for data storage. However, as the requirements for complex geospatial queries (PostGIS), relational integrity (Events linked to POIs and Users), and robust migrations grew, the limitations of NoSQL became apparent.
 
 ## Decision Drivers
 
@@ -16,7 +16,7 @@ The project initially considered Firebase Firestore (NoSQL) for data storage. Ho
 
 ## Considered Options
 
-1.  **Firebase Firestore**: NoSQL, real-time, but limited query capabilities for complex relations.
+1.  **Cloud NoSQL (Firestore)**: Schema-less, real-time, but limited query capabilities for complex relations.
 2.  **PostgreSQL with Drizzle ORM**: Relational, industry-standard geospatial support (PostGIS), and TypeScript-first ORM.
 
 ## Decision Outcome
@@ -36,7 +36,7 @@ Chosen option: **PostgreSQL with Drizzle ORM**, because it provides the best bal
 
 ## Pros and Cons of the Options
 
-### Firebase Firestore
+### Cloud NoSQL (Firestore)
 
 *   **Good**: Built-in real-time support and zero infrastructure management.
 *   **Bad**: Limited geospatial queries and difficult to manage complex relations without data duplication.

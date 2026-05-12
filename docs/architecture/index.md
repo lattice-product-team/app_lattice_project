@@ -25,7 +25,7 @@ graph TD
 
     subgraph "Infrastructure"
         Postgres[("PostgreSQL DB")]
-        Auth["Firebase Auth"]
+        Redis[("Redis Cache")]
         Storage["Cloud Storage / Assets"]
     end
 
@@ -34,7 +34,6 @@ graph TD
     API --> Core
     API --> DBSchema
     DBSchema --> Postgres
-    API --> Auth
     API --> Storage
 ```
 
@@ -51,7 +50,7 @@ graph TD
 ## Service Domains
 
 -   **Geospatial (Geo)**: Handles spatial searches, POI management, and custom routing logic.
--   **Identity (Auth)**: Manages user profiles and leverages Firebase for secure authentication (including Passkeys).
+-   **Identity (Auth)**: Manages user profiles and handles secure JWT-based authentication with bcrypt hashing.
 -   **Social**: Orchestrates group discovery and real-time interaction between users.
 
 ## Tech Stack
@@ -61,5 +60,5 @@ graph TD
 -   **Mobile**: React Native, Expo, MapLibre GL.
 -   **Backend**: Node.js, Express, Drizzle ORM.
 -   **Database**: PostgreSQL (with PostGIS for geospatial queries).
--   **Identity**: Firebase Authentication.
+-   **Identity**: Custom JWT Authentication.
 -   **Tooling**: pnpm, Turborepo, Docker.

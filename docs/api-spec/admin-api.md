@@ -33,7 +33,7 @@ Engagement metrics for a specific event.
 ## 3. System Health
 
 ### GET `/health`
-Check connectivity to database, cache (Redis), and Firebase services.
+Check connectivity to database, cache (Redis), and internal identity services.
 
 ### GET `/navigation/network`
 Returns the status and version of the current navigation graph used by the routing engine.

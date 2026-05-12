@@ -38,7 +38,7 @@ We follow a professional, domain-driven documentation structure that also satisf
 -   **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
 -   **Mobile**: React Native (Expo) with **MapLibre GL** for 60fps mapping.
 -   **Admin**: Next.js 14 with high-density operational dashboards.
--   **Auth**: Firebase Identity with **Passkey** (WebAuthn) integration.
+-   **Auth**: Custom JWT authentication with bcrypt password hashing.
 -   **Tooling**: Turborepo, Docker, and Vitest.
 
 ## 📦 Shared Packages

@@ -4,27 +4,27 @@ This domain contains the technical specifications for all internal and external 
 
 ## API Philosophy
 
-Our APIs are designed to be **developer-friendly**, **consistent**, and **performant**. We follow RESTful principles and leverage the Firebase ecosystem for identity and real-time capabilities.
+Our APIs are designed to be **developer-friendly**, **consistent**, and **performant**. We follow RESTful principles and use custom JWT-based identity management.
 
 ### Core Principles
 
 1.  **JSON-First**: All request and response bodies MUST be valid JSON.
 2.  **Resource-Oriented**: Endpoints are organized around resources (e.g., `/events`, `/pois`).
-3.  **Authentication**: All sensitive endpoints REQUIRE a valid Firebase ID Token passed in the `Authorization` header.
+3.  **Authentication**: All sensitive endpoints REQUIRE a valid JSON Web Token (JWT) passed in the `Authorization` header.
 4.  **Idempotency**: All `PUT` and `DELETE` operations are idempotent.
 5.  **Error Handling**: We use standard HTTP status codes and provide descriptive error messages in a consistent format.
 
 ## Authentication
 
-Lattice uses **Firebase Authentication**. Clients must exchange user credentials for an ID Token and include it in all protected requests.
+Lattice uses a **Custom JWT-based Authentication**. Clients must exchange user credentials (email/password) for a token via the `/auth/login` endpoint and include it in all protected requests.
 
 **Header Format:**
 ```http
-Authorization: Bearer <FIREBASE_ID_TOKEN>
+Authorization: Bearer <JWT_TOKEN>
 ```
 
 > [!IMPORTANT]
-> Tokens are short-lived. Ensure your client handles token refresh logic automatically.
+> Ensure your client handles token storage and expiration logic (standard 24h duration).
 
 ## Global Error Schema
 
@@ -63,7 +63,7 @@ All error responses follow this structure:
 ## Data Formats
 
 ### Timestamp
-All timestamps MUST be in ISO 8601 format (UTC) or Firebase Timestamp format depending on the transport layer.
+All timestamps MUST be in ISO 8601 format (UTC).
 
 ### Location
 Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`.
