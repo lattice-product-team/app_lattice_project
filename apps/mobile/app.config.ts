@@ -153,6 +153,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         isAndroidBackgroundLocationEnabled: false,
       },
     ],
+    [
+      '@react-native-voice/voice',
+      {
+        microphonePermission: 'Allow Lattice to access your microphone for voice search.',
+        speechRecognitionPermission: 'Allow Lattice to recognize your speech for commands.',
+      },
+    ],
     '@maplibre/maplibre-react-native',
 
     'expo-web-browser',
