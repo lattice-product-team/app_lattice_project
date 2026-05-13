@@ -16,7 +16,9 @@
     "nextra-theme-docs": "3.2.1",
     "tailwindcss": "^4",
     "@tailwindcss/postcss": "^4",
-    "postcss": "^8"
+    "postcss": "^8",
+    "unist-util-generated": "^2.0.1",
+    "mdast-util-to-hast": "^13.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
