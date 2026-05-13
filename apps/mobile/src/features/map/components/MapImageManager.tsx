@@ -39,8 +39,8 @@ export const MapImageManager = ({ events }: MapImageManagerProps) => {
     });
 
     // Register Category Icons
-    Object.entries(categoryIcons).forEach(([key, url]) => {
-      images[`icon-${key}`] = { uri: url };
+    Object.entries(categoryIcons).forEach(([key, icon]) => {
+      images[`icon-${key}`] = icon;
     });
 
     return images;
