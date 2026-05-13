@@ -62,6 +62,10 @@
 
   /* Safe Area for fixed navigation */
   --admin-safe-area: 120px;
+  
+  /* Command Center Redesign Variables */
+  --sidebar-width: 320px;
+  --command-dock-height: 80px;
 }
 
 @media (min-width: 1024px) {

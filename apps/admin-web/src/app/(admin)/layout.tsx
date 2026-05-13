@@ -1,4 +1,4 @@
-import { FloatingNav, FloatingLogout } from '@/components/floating-nav';
+import { FloatingWrapper } from '@/components/command-center/FloatingWrapper';
 import { getSession } from '@/lib/auth';
 
 export default async function AdminLayout({
@@ -12,15 +12,7 @@ export default async function AdminLayout({
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-eggshell flex flex-col font-sans antialiased">
-      {/* Floating Logout - Responsive Position */}
-      <div className="fixed bottom-8 left-8 sm:top-8 sm:left-12 sm:bottom-auto z-[110]">
-        <FloatingLogout />
-      </div>
-
-      {/* Floating Nav - Mathematically Centered */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 sm:top-8 z-[100]">
-        <FloatingNav />
-      </div>
+      <FloatingWrapper />
 
       {/* Main Content Canvas - Full screen to allow maps/backgrounds to show behind nav */}
       <main 

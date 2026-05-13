@@ -196,7 +196,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         .filter((e) => e.boundary)
         .map((e) => ({
           type: 'Feature',
-          properties: { id: e.id, name: e.name, color: e.primaryColor },
+          properties: { id: e.id, name: e.name?.toUpperCase(), color: e.primaryColor },
           geometry: e.boundary,
         })),
     } as any;
@@ -252,6 +252,25 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               paint={{
                 'line-color': ['get', 'color'],
                 'line-width': 2,
+              }}
+            />
+            <Layer
+              id="global-boundaries-labels"
+              type="symbol"
+              minzoom={13}
+              layout={{
+                'text-field': ['get', 'name'],
+                'text-font': ['Open Sans Bold'],
+                'text-size': 10,
+                'text-letter-spacing': 0.2,
+                'text-transform': 'uppercase',
+                'text-anchor': 'center',
+                'text-allow-overlap': false,
+              }}
+              paint={{
+                'text-color': ['get', 'color'],
+                'text-halo-color': '#fff',
+                'text-halo-width': 2,
               }}
             />
           </Source>
