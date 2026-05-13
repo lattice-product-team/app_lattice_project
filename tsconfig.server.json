@@ -17,8 +17,17 @@
     "baseUrl": ".",
     "paths": {
       "@app/core": ["./packages/core/index.ts"],
+      "@app/core/*.js": ["./packages/core/*.ts"],
       "@app/db": ["./packages/db/index.ts"],
-      "@app/types-schema": ["./packages/types-schema/index.ts"]
+      "@app/db/*.js": ["./packages/db/*.ts"],
+      "@app/types-schema": ["./packages/types-schema/index.ts"],
+      "@app/types-schema/*.js": ["./packages/types-schema/*.ts"],
+      "@app/auth": ["./apps/server/auth/index.ts"],
+      "@app/auth/*.js": ["./apps/server/auth/*.ts"],
+      "@app/geo": ["./apps/server/geo/index.ts"],
+      "@app/geo/*.js": ["./apps/server/geo/*.ts"],
+      "@app/social": ["./apps/server/social/index.ts"],
+      "@app/social/*.js": ["./apps/server/social/*.ts"]
     }
   }
 }
