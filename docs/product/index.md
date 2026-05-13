@@ -16,9 +16,9 @@ Lattice provides a centralized, map-based platform where:
 ### Visual Vision
 
 ````carousel
-![Mobile Discovery Mockup](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_mobile_mockup_1778590138740.png)
+![Mobile Discovery Mockup](/assets/lattice_mobile_mockup_1778590138740.png)
 <!-- slide -->
-![Admin Dashboard Mockup](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_admin_mockup_1778590160739.png)
+![Admin Dashboard Mockup](/assets/lattice_admin_mockup_1778590160739.png)
 ````
 
 ## Core Pillars
