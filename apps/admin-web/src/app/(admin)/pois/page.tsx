@@ -126,7 +126,8 @@ export default function POIsPage() {
     setEditingPoiId(poi.id);
     setName(poi.name);
     setDescription(poi.description || '');
-    setType(poi.type);
+    // Support both 'type' and 'category' from backend
+    setType(poi.category || poi.type || 'wc');
     setCapacity(poi.capacity?.toString() || '');
     setSelectedEventId(poi.eventId?.toString() || '');
     setIsWheelchairAccessible(poi.isWheelchairAccessible);
@@ -162,9 +163,10 @@ export default function POIsPage() {
           eventId: selectedEventId,
           name,
           description,
-          type,
+          category: type, // API often expects category
+          type: type,     // Legacy support
           geometry: { type: 'Point', coordinates: [selectedPoi.lng, selectedPoi.lat] },
-          capacity,
+          capacity: parseInt(capacity) || 0,
           isWheelchairAccessible,
         }),
       });
@@ -177,9 +179,13 @@ export default function POIsPage() {
         setDescription('');
         setCapacity('');
         clearPoi();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setFormError(errorData.message || `Server error: ${res.status}`);
       }
     } catch (err) {
       console.error('Failed to register asset', err);
+      setFormError('Network error. Please check if the API is running.');
     } finally {
       setIsSubmitting(false);
     }

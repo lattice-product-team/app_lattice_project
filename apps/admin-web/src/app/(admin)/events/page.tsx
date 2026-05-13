@@ -599,10 +599,7 @@ export default function EventsPage() {
                             View
                           </button>
                           <button
-                            onClick={() => {
-                              setSelectedEvent(event);
-                              setIsInterfaceOpen(true);
-                            }}
+                            onClick={() => handleOpenEdit(event)}
                             className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             Edit

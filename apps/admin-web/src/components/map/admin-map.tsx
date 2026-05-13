@@ -15,6 +15,12 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 
+const DEFAULT_VIEW_STATE = {
+  longitude: 2.128,
+  latitude: 41.353,
+  zoom: 13,
+};
+
 export type InteractionMode = 'GLOBAL_VIEW' | 'DRAW_BOUNDARY' | 'PICK_COORDINATE';
 
 interface AdminMapProps {
