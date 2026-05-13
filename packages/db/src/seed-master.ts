@@ -55,6 +55,12 @@ async function seed() {
       ],
       imageUrl:
         'https://images.unsplash.com/photo-1530648672449-81f6c723e2f1?auto=format&fit=crop&q=80&w=800',
+      bannerUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200',
+      galleryUrls: [
+        'https://images.unsplash.com/photo-1552667466-07f7040296f3?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800'
+      ],
       primaryColor: '#e10600',
       metadata: JSON.stringify({ capacity: 140000, category: 'Sports' }),
     })
@@ -84,6 +90,12 @@ async function seed() {
       ],
       imageUrl:
         'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800',
+      bannerUrl: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=1200',
+      galleryUrls: [
+        'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1514525253344-f21f8a7f5641?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=800'
+      ],
       primaryColor: '#bc00ff',
       metadata: JSON.stringify({ capacity: 50000, category: 'Music' }),
     })
@@ -117,6 +129,12 @@ async function seed() {
       ],
       imageUrl:
         'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=800',
+      bannerUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200',
+      galleryUrls: [
+        'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800'
+      ],
       primaryColor: '#ff4704',
       metadata: JSON.stringify({ capacity: 12000, currentOccupancy: 45, category: 'Technology' }),
     })
@@ -210,6 +228,12 @@ async function seed() {
           name: poi.name,
           type: poi.type as any,
           location: poi.coords,
+          imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400',
+          bannerUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1200',
+          galleryUrls: [
+            'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800',
+            'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&q=80&w=800'
+          ],
           eventId: config.event.id,
           description: `Experience the best of ${poi.name} at ${config.event.name}.`,
           locationName: `${poi.name} Area`,

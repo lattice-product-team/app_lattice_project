@@ -662,7 +662,7 @@ export default function MapIndexPage() {
       </Animated.View>
 
       {/* 2. Persistent HUD & Navigation Info (Z-Index: 500) */}
-      <Animated.View style={mapOverlayStyle}>
+      <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 500 }]} pointerEvents="box-none">
         <InstructionBanner />
         <NavigationInfo />
       </Animated.View>

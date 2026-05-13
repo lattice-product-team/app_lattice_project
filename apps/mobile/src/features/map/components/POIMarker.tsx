@@ -32,19 +32,15 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
 
     return (
       <View style={mapPinStyles.markerWrapper}>
-        <TouchableOpacity
-          onPress={() => onPress(poi)}
-          activeOpacity={0.9}
+        <View
+          style={[
+            {
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: [{ scale: isSelected ? 1.4 : 1 }]
+            }
+          ]}
         >
-          <View
-            style={[
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-                transform: [{ scale: isSelected ? 1.4 : 1 }]
-              }
-            ]}
-          >
             <MapPinFrame
               size="poi"
               borderColor="#FFFFFF"
@@ -81,7 +77,6 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               </View>
             )}
           </View>
-        </TouchableOpacity>
       </View>
     );
   }

@@ -191,6 +191,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                 <SheetHeader
                   title={displayModel.name}
                   subtitle={displayModel.subtitle}
+                  bannerUrl={displayModel.bannerUrl}
                   logoUrl={displayModel.logoUrl}
                   categoryIcon={displayModel.categoryIcon}
                   onClose={handleCloseInternal}
@@ -219,13 +220,9 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                     />
                   )}
 
-                  {displayModel.imageUrl && (
+                  {displayModel.galleryUrls && displayModel.galleryUrls.length > 0 && (
                     <GalleryCarousel 
-                      images={[
-                        displayModel.imageUrl,
-                        'https://images.unsplash.com/photo-1546768292-fb12f6c92568?q=80&w=800',
-                        'https://images.unsplash.com/photo-1503174971373-b1f69850bbd6?q=80&w=800'
-                      ]} 
+                      images={displayModel.galleryUrls} 
                     />
                   )}
                   <View style={styles.content}>

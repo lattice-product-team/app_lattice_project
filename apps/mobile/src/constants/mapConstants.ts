@@ -2,7 +2,16 @@ import Constants from 'expo-constants';
 
 export const EMPTY_GEOJSON: any = {
   type: 'FeatureCollection',
-  features: [],
+  features: [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: [[0, 0], [0, 0]],
+      },
+      properties: {},
+    },
+  ],
 };
 
 export const MAP_CENTER: [number, number] = [-3.70379, 40.41678]; // Madrid default, will be overridden by user location

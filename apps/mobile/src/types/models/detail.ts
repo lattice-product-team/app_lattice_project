@@ -22,6 +22,8 @@ export interface DetailModel {
   subtitle: string;
   description: string;
   imageUrl?: string;
+  bannerUrl?: string;
+  galleryUrls?: string[];
   logoUrl?: string;
   categoryIcon?: string;
   parentName?: string;

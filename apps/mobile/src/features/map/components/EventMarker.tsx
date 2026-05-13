@@ -24,19 +24,15 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
 
     return (
       <View style={mapPinStyles.markerWrapper}>
-        <TouchableOpacity
-          onPress={() => onPress(event)}
-          activeOpacity={0.9}
+        <View
+          style={[
+            {
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: [{ scale: isSelected ? 1.4 : 1 }]
+            }
+          ]}
         >
-          <View
-            style={[
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-                transform: [{ scale: isSelected ? 1.4 : 1 }]
-              }
-            ]}
-          >
             <MapPinFrame
               size="event"
               borderColor="#FFFFFF"
@@ -79,7 +75,6 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
               </View>
             )}
           </View>
-        </TouchableOpacity>
       </View>
     );
   }

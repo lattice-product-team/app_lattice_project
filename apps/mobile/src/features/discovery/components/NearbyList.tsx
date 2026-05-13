@@ -39,12 +39,12 @@ export function NearbyList({ title, items, onPress }: Props) {
       </View>
 
       <View className="flex-col gap-3">
-        {items.map((item) => {
+        {items.map((item, index) => {
           const distanceText = item.distance ? `${(item.distance / 1000).toFixed(1)} km` : '';
           
           return (
             <Pressable
-              key={item.id}
+              key={`${item.id}-${index}`}
               onPress={() => onPress(item)}
               className="flex-row items-center p-3 rounded-2xl"
               style={{

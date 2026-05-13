@@ -61,6 +61,8 @@ export const useDetailModel = (): DetailModel | null => {
         subtitle: (data as any).type || 'Activity',
         description: (data as any).description || 'Explore this event and discover unique experiences in the city.',
         imageUrl: data.imageUrl || (data as any).images?.[0],
+        bannerUrl: (data as any).bannerUrl,
+        galleryUrls: (data as any).galleryUrls || [],
         logoUrl: (data as any).logoUrl,
         social: social ? {
           rating: social.rating,
@@ -158,7 +160,9 @@ export const useDetailModel = (): DetailModel | null => {
         name: selectedPoi.displayName,
         subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
-        imageUrl: selectedPoi.images?.[0],
+        imageUrl: selectedPoi.imageUrl || selectedPoi.images?.[0],
+        bannerUrl: (selectedPoi as any).bannerUrl,
+        galleryUrls: (selectedPoi as any).galleryUrls || [],
         categoryIcon: catMetadata.icon,
         parentName,
         social: social ? {

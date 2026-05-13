@@ -184,25 +184,52 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
   }, [selectedEvent, isNavigating, insets.top, forceCenterCount]);
 
+  const userCoordsRef = React.useRef(userCoords);
+  useEffect(() => {
+    userCoordsRef.current = userCoords;
+  }, [userCoords]);
+
+  const prevIsNavigating = React.useRef(isNavigating);
+
   // Navigation camera behavior
   useEffect(() => {
-    if (isNavigating && cameraRef.current) {
-      setCameraMode(MapCameraMode.NAVIGATION);
-      cameraRef.current.setCamera({
-        zoomLevel: 18,
-        pitch: 45,
-        animationDuration: 800,
-        animationMode: 'easeTo',
-      });
-    } else if (!isNavigating && cameraMode === MapCameraMode.NAVIGATION) {
+    let timer: NodeJS.Timeout;
+    
+    // Only trigger the "jump to navigation" transition when navigation is FIRST enabled
+    // or if we were explicitly told to re-engage from a different state.
+    if (isNavigating && !prevIsNavigating.current && cameraRef.current) {
+      // Transition gracefully to the user's location first
+      if (userCoordsRef.current) {
+        cameraRef.current.setCamera({
+          centerCoordinate: userCoordsRef.current,
+          zoomLevel: 18,
+          pitch: 45,
+          animationDuration: 1500,
+          animationMode: 'flyTo',
+        });
+      }
+      // Engage native follow mode only after the smooth transition completes
+      timer = setTimeout(() => {
+        setCameraMode(MapCameraMode.NAVIGATION);
+      }, 1500);
+    } else if (!isNavigating && prevIsNavigating.current && cameraMode === MapCameraMode.NAVIGATION) {
+      // Exit navigation camera mode
       setCameraMode(MapCameraMode.FREE);
-      cameraRef.current.setCamera({
-        pitch: 0,
-        animationDuration: 1000,
-        animationMode: 'flyTo',
-      });
+      if (cameraRef.current) {
+        cameraRef.current.setCamera({
+          pitch: 0,
+          animationDuration: 1000,
+          animationMode: 'flyTo',
+        });
+      }
     }
-  }, [isNavigating, setCameraMode, cameraMode]);
+    
+    prevIsNavigating.current = isNavigating;
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isNavigating, setCameraMode]); // Removed cameraMode from dependencies to prevent infinite loops/fighting user drag
 
   // Planning fitBounds
   useEffect(() => {
@@ -211,8 +238,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
       if (currentRoute?.geometry?.coordinates) {
         pointsToFit = currentRoute.geometry.coordinates;
-      } else if (userCoords && selectedCoords) {
-        pointsToFit = [userCoords, selectedCoords];
+      } else if (userCoordsRef.current && selectedCoords) {
+        pointsToFit = [userCoordsRef.current, selectedCoords];
       }
 
       if (pointsToFit.length < 2) return;
@@ -225,7 +252,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         800
       );
     }
-  }, [isPlanning, userCoords, selectedCoords, currentRoute, insets.top]);
+  }, [isPlanning, selectedCoords, currentRoute, insets.top]);
 
   return (
     <MapLibreGL.Camera

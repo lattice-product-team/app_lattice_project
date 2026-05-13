@@ -6,6 +6,7 @@ import Animated, {
   interpolate, 
   Extrapolation,
   useDerivedValue,
+  interpolateColor,
 } from 'react-native-reanimated';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -15,6 +16,7 @@ interface SheetHeaderProps {
   title: string;
   subtitle: string;
   logoUrl?: string;
+  bannerUrl?: string;
   categoryIcon?: string;
   onClose: () => void;
   onShare?: () => void;
@@ -27,6 +29,7 @@ const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 export const SheetHeader = ({
   title,
   subtitle,
+  bannerUrl,
   onClose,
   onShare,
   scrollY,
@@ -97,9 +100,19 @@ export const SheetHeader = ({
       Extrapolation.CLAMP
     );
 
+    const textColor = interpolateColor(
+      clampedScrollY.value,
+      [0, 40],
+      [bannerUrl ? '#FFFFFF' : theme.colors.text.primary, theme.colors.text.primary]
+    );
+
     return {
       fontSize,
+      color: textColor,
       transform: [{ translateY }],
+      textShadowColor: bannerUrl ? 'rgba(0,0,0,0.4)' : 'transparent',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 4,
     };
   });
 
@@ -109,10 +122,28 @@ export const SheetHeader = ({
     const height = interpolate(clampedScrollY.value, [0, 50], [18, 0], Extrapolation.CLAMP);
     const marginTop = interpolate(clampedScrollY.value, [0, 50], [2, 0], Extrapolation.CLAMP);
 
+    const textColor = interpolateColor(
+      clampedScrollY.value,
+      [0, 40],
+      [bannerUrl ? 'rgba(255,255,255,0.9)' : theme.colors.text.secondary, theme.colors.text.secondary]
+    );
+
     return {
       opacity,
       height,
       marginTop,
+      color: textColor,
+    };
+  });
+
+  const bannerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(clampedScrollY.value, [0, 100], [1, 0], Extrapolation.CLAMP);
+    const scale = interpolate(clampedScrollY.value, [-50, 0], [1.1, 1], Extrapolation.CLAMP);
+    const translateY = interpolate(clampedScrollY.value, [0, 100], [0, -20], Extrapolation.CLAMP);
+
+    return {
+      opacity,
+      transform: [{ scale }, { translateY }],
     };
   });
 
@@ -121,6 +152,21 @@ export const SheetHeader = ({
       <Animated.View style={[styles.container, containerStyle]}>
         <Animated.View style={backgroundStyle} />
         
+        {bannerUrl && (
+          <>
+            <Animated.Image 
+              source={{ uri: bannerUrl }}
+              style={[StyleSheet.absoluteFill, styles.banner, bannerStyle]}
+              resizeMode="cover"
+            />
+            <AnimatedLinearGradient
+              colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.5)']}
+              locations={[0, 0.4, 1]}
+              style={[StyleSheet.absoluteFill, bannerStyle]}
+            />
+          </>
+        )}
+
         {/* Top Actions Bar */}
         <View style={styles.topActions}>
           {onShare ? (
@@ -141,10 +187,10 @@ export const SheetHeader = ({
         {/* Main Branding Section */}
         <View style={styles.content}>
           <View style={styles.textContainer}>
-            <Animated.Text style={[styles.title, titleStyle, { color: theme.colors.text.primary }]} numberOfLines={1}>
+            <Animated.Text style={[styles.title, titleStyle]} numberOfLines={1}>
               {title}
             </Animated.Text>
-            <Animated.Text style={[styles.subtitle, subtitleStyle, { color: theme.colors.text.secondary }]} numberOfLines={1}>
+            <Animated.Text style={[styles.subtitle, subtitleStyle]} numberOfLines={1}>
               {subtitle}
             </Animated.Text>
           </View>
@@ -195,5 +241,8 @@ const styles = StyleSheet.create({
     fontFamily: typography.primary.medium,
     textAlign: 'center',
     textTransform: 'uppercase',
+  },
+  banner: {
+    opacity: 0.6,
   },
 });

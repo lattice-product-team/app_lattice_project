@@ -87,9 +87,9 @@ export const navigationService = {
       
       if (leg.maneuvers) {
         allManeuvers.push(...leg.maneuvers.map((m: any) => ({
-          instruction: m.instruction,
+          text: m.instruction,
           distance: (m.length || 0) * 1000,
-          type: m.type,
+          maneuverType: m.type?.toString() || '',
         })));
       }
 

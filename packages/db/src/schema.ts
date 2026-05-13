@@ -9,6 +9,7 @@ import {
   pgEnum,
   doublePrecision,
   primaryKey,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { geometry, polygon } from './custom-types.js';
 
@@ -80,6 +81,8 @@ export const events = pgTable('events', {
   isPermanent: boolean('is_permanent').default(false),
   primaryColor: varchar('primary_color', { length: 7 }).default('#ff382e'),
   metadata: text('metadata'),
+  bannerUrl: text('banner_url'),
+  galleryUrls: jsonb('gallery_urls').default([]),
   isFeatured: boolean('is_featured').default(false),
   isTrending: boolean('is_trending').default(false),
   createdAt: timestamp('created_at').defaultNow(),
@@ -149,6 +152,9 @@ export const pointsOfInterest = pgTable('points_of_interest', {
   hasPriorityLane: boolean('has_priority_lane'),
   isFeatured: boolean('is_featured').default(false),
   isTrending: boolean('is_trending').default(false),
+  imageUrl: text('image_url'),
+  bannerUrl: text('banner_url'),
+  galleryUrls: jsonb('gallery_urls').default([]),
 });
 
 export const nodes = pgTable('nodes', {

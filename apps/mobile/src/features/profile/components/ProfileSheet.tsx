@@ -5,6 +5,7 @@ import {
   Dimensions,
   Text,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -31,6 +32,7 @@ import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { typography } from '../../../styles/typography';
 import { useProfileStore } from '../store/useProfileStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { SheetHeader } from '../../map/components/SheetHeader';
 import { ActionPillBar } from '../../map/components/ActionPillBar';
 import { MetricGrid } from '../../map/components/MetricGrid';
@@ -174,6 +176,20 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
     islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
   };
 
+  const handleLogout = () => {
+    Alert.alert('Cerrar Sesión', '¿Estás seguro de que quieres salir de Lattice?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Salir',
+        style: 'destructive',
+        onPress: () => {
+          handleCloseInternal();
+          useAuthStore.getState().logout();
+        },
+      },
+    ]);
+  };
+
   const profileActions = [
     {
       id: 'share',
@@ -194,7 +210,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
       label: 'Salir',
       icon: 'LogOut',
       variant: 'tertiary' as const,
-      onPress: handleCloseInternal,
+      onPress: handleLogout,
     },
   ];
 

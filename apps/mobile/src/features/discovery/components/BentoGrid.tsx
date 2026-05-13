@@ -45,7 +45,7 @@ export function BentoGrid({ title, items, onPress }: Props) {
 
           return (
             <Pressable
-              key={item.id}
+              key={`${item.id}-${index}`}
               onPress={() => onPress(item)}
               style={{ width: cardWidth, height: cardHeight, borderRadius: 24, overflow: 'hidden' }}
             >

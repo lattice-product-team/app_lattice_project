@@ -37,6 +37,21 @@ export const MapLayers = React.memo(({
   zoomLevel,
   zoomSharedValue,
 }: MapLayersProps) => {
+  const { eventMarkers, eventBoundaries } = useMemo(() => {
+    const markers: any[] = [];
+    const boundaries: any[] = [];
+    
+    eventsGeoJSON?.features?.forEach((f: any) => {
+      if (f.geometry.type === 'Point') markers.push(f);
+      else boundaries.push(f);
+    });
+    
+    return {
+      eventMarkers: { type: 'FeatureCollection', features: markers },
+      eventBoundaries: { type: 'FeatureCollection', features: boundaries },
+    };
+  }, [eventsGeoJSON]);
+
   const routeGeoJSON = useMemo(() => {
     // Show route whenever we have one, even if not explicitly in planning/nav mode yet
     // This provides better feedback to the user as soon as they select a POI
@@ -51,21 +66,32 @@ export const MapLayers = React.memo(({
     };
   }, [currentRoute]);
 
-  // Create a unique key for the route source to force re-renders when the path changes
-  // We use coordinates length and first/last point as a cheap "hash"
-  const routeKey = useMemo(() => {
-    if (!currentRoute) return 'none';
-    const coords = currentRoute.geometry?.coordinates || [];
-    if (coords.length === 0) return 'empty';
-    const first = coords[0];
-    const last = coords[coords.length - 1];
-    return `route-${coords.length}-${first[0]}-${last[0]}-${isNavigating ? 'nav' : 'plan'}`;
-  }, [currentRoute, isNavigating]);
 
   return (
     <>
+      {/* 0. EVENT BOUNDARIES (Polygons BELOW markers) */}
+      <MapLibreGL.ShapeSource id="eventBoundariesSource" shape={eventBoundaries}>
+        <MapLibreGL.FillLayer
+          id="eventBoundaryFill"
+          style={{
+            fillColor: ['get', 'color'],
+            fillOpacity: 0.15,
+            fillAntialias: true,
+          }}
+        />
+        <MapLibreGL.LineLayer
+          id="eventBoundaryOutline"
+          style={{
+            lineColor: ['get', 'color'],
+            lineWidth: 2,
+            lineDasharray: [2, 2],
+            lineOpacity: 0.5,
+          }}
+        />
+      </MapLibreGL.ShapeSource>
+
       {/* 1. EVENTS LAYER (Ultra-stable PointAnnotations) */}
-      {eventsGeoJSON?.features?.map((feature: any) => {
+      {eventMarkers?.features?.map((feature: any) => {
         const id = feature.properties?.id || feature.id;
         const isSelected = String(selectedEventId) === String(id);
         const coords = feature.geometry?.coordinates;
@@ -77,6 +103,7 @@ export const MapLayers = React.memo(({
             key={`ev-pa-${id}`}
             id={`ev-ann-${id}`}
             coordinate={coords}
+            onSelected={() => onPoiPress(feature)}
           >
             <View 
               style={[
@@ -113,6 +140,7 @@ export const MapLayers = React.memo(({
             key={`poi-pa-${id}`}
             id={`poi-ann-${id}`}
             coordinate={coords}
+            onSelected={() => onPoiPress(feature)}
           >
             <View 
               style={[
@@ -137,34 +165,31 @@ export const MapLayers = React.memo(({
       })}
 
       {/* 4. ROUTE VISUALS (Stays in GL) */}
-      {currentRoute && (
-        <MapLibreGL.ShapeSource 
-          id="routeSource" 
-          key={routeKey}
-          shape={routeGeoJSON}
-          tolerance={0.1} // Slight tolerance for smoother rendering on mobile
-          buffer={64}
-          maxZoomLevel={20}
-        >
-          {/* Layer order: Glow UNDER, Fill ON TOP */}
-          <MapLibreGL.LineLayer
-            id="routeGlow"
-            style={{ 
-              ...mapLayerStyles.routeGlow, 
-              lineBlur: 6, 
-              lineOpacity: 0.3,
-              lineOpacityTransition: { duration: 400 } // Smooth entrance
-            }}
-          />
-          <MapLibreGL.LineLayer 
-            id="routeFill" 
-            style={{
-              ...mapLayerStyles.routeFill,
-              lineOpacityTransition: { duration: 400 } // Smooth entrance
-            }} 
-          />
-        </MapLibreGL.ShapeSource>
-      )}
+      <MapLibreGL.ShapeSource 
+        id="routeSource" 
+        shape={routeGeoJSON}
+        tolerance={0.1} // Slight tolerance for smoother rendering on mobile
+        buffer={64}
+        maxZoomLevel={20}
+      >
+        {/* Layer order: Glow UNDER, Fill ON TOP */}
+        <MapLibreGL.LineLayer
+          id="routeGlow"
+          style={{ 
+            ...mapLayerStyles.routeGlow, 
+            lineBlur: 6, 
+            lineOpacity: 0.3,
+            lineOpacityTransition: { duration: 400 } // Smooth entrance
+          }}
+        />
+        <MapLibreGL.LineLayer 
+          id="routeFill" 
+          style={{
+            ...mapLayerStyles.routeFill,
+            lineOpacityTransition: { duration: 400 } // Smooth entrance
+          }} 
+        />
+      </MapLibreGL.ShapeSource>
     </>
   );
 });

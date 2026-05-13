@@ -28,15 +28,15 @@ export const InstructionBanner = () => {
 
   const { text = '', distance = 0, maneuverType = '' } = nextInstruction || {};
 
-  // Helper to get the correct icon based on maneuver type
+  // Helper to get the correct icon based on maneuver text
   const renderIcon = () => {
     const iconProps = { size: 42, color: '#FFFFFF', strokeWidth: 2.5 };
 
-    const type = maneuverType?.toLowerCase() || '';
-    if (type.includes('left')) return <CornerUpLeft {...iconProps} />;
-    if (type.includes('right')) return <CornerUpRight {...iconProps} />;
-    if (type.includes('u_turn') || type.includes('uturn')) return <RotateCcw {...iconProps} />;
-    if (type.includes('straight') || type.includes('keep')) return <ArrowUp {...iconProps} />;
+    const instructionStr = text?.toLowerCase() || '';
+    if (instructionStr.includes('left')) return <CornerUpLeft {...iconProps} />;
+    if (instructionStr.includes('right')) return <CornerUpRight {...iconProps} />;
+    if (instructionStr.includes('u-turn') || instructionStr.includes('u turn')) return <RotateCcw {...iconProps} />;
+    if (instructionStr.includes('straight') || instructionStr.includes('keep')) return <ArrowUp {...iconProps} />;
     
     return <ArrowUp {...iconProps} />;
   };

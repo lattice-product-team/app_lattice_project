@@ -1,24 +1,44 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { X } from 'lucide-react-native';
+import { Navigation } from 'lucide-react-native';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
-import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
+import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
+import { usePOIStore } from '../../poi/store/usePOIStore';
+import { useEventStore } from '../../event/store/useEventStore';
+import Animated, { FadeInDown, FadeOutDown, FadeIn, FadeOut } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 
 /**
  * NavigationInfo: Bottom arrival summary sheet.
- * Aesthetic: White Glassmorphism consistent with the user's reference image.
+ * Aesthetic: Google Maps style (large duration, exit button) + Lattice Glassmorphism.
  */
 export const NavigationInfo = () => {
-  const { isNavigating, routeMetadata, clearNavigation } = useNavigationStore();
+  const { isNavigating, routeMetadata, setNavigating, setPlanning } = useNavigationStore();
+  const { setSelectedEvent } = usePOIStore();
+  const { setCurrentEvent } = useEventStore();
+  const { cameraMode, setCameraMode } = useMapUIStore();
+  const theme = useLatticeTheme();
   const insets = useSafeAreaInsets();
 
   if (!isNavigating || !routeMetadata) return null;
 
   const handleCancel = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    clearNavigation();
+    
+    // Clear event details so they don't pop back up when exiting planning
+    setSelectedEvent(null);
+    setCurrentEvent(null);
+    
+    setNavigating(false);
+    setPlanning(true);
+    setCameraMode(MapCameraMode.FREE);
+  };
+
+  const handleRecenter = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setCameraMode(MapCameraMode.NAVIGATION);
   };
 
   const formatDistance = (m: number) => {
@@ -26,16 +46,13 @@ export const NavigationInfo = () => {
     return `${Math.round(m)} m`;
   };
 
-  const formatDuration = (s: number) => {
+  const formatDurationLarge = (s: number) => {
     const totalMins = Math.round(s / 60);
-    if (totalMins < 1) return { value: '< 1', label: 'min' };
-    if (totalMins < 60) return { value: `${totalMins}`, label: 'min' };
-
+    if (totalMins < 1) return '< 1 min';
+    if (totalMins < 60) return `${totalMins} min`;
     const hours = Math.floor(totalMins / 60);
     const mins = totalMins % 60;
-
-    if (mins === 0) return { value: `${hours}`, label: 'h' };
-    return { value: `${hours}h ${mins}`, label: 'min' };
+    return mins === 0 ? `${hours} hr` : `${hours} hr ${mins} min`;
   };
 
   const getArrivalTime = (seconds: number) => {
@@ -44,55 +61,66 @@ export const NavigationInfo = () => {
     return arrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const durationData = formatDuration(routeMetadata.duration);
-
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
       exiting={FadeOutDown.duration(300)}
       style={[styles.container, { bottom: insets.bottom + 20 }]}
     >
+      {cameraMode === MapCameraMode.FREE && (
+        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.recenterContainer}>
+          <Pressable
+            onPress={handleRecenter}
+            style={({ pressed }) => [
+              styles.recenterButton,
+              {
+                backgroundColor: theme.colors.glass.background,
+                borderColor: theme.colors.glass.border,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <Navigation
+              size={18}
+              color={theme.colors.brand.primary}
+              strokeWidth={2.5}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.recenterText, { color: theme.colors.brand.primary }]}>
+              Re-center
+            </Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
       <View
         style={[
           styles.card,
           {
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderColor: 'rgba(0, 0, 0, 0.1)',
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border,
           },
         ]}
       >
         <View style={styles.handle} />
         <View style={styles.content}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{getArrivalTime(routeMetadata.duration)}</Text>
-            <Text style={styles.statLabel}>arrival</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.stat}>
-            <Text style={[styles.statValue, durationData.value.includes('h') && { fontSize: 24 }]}>
-              {durationData.value}
+          <View style={styles.infoLeft}>
+            <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>
+              {formatDurationLarge(routeMetadata.duration)}
             </Text>
-            <Text style={styles.statLabel}>{durationData.label}</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>
-              {formatDistance(routeMetadata.distance).split(' ')[0]}
-            </Text>
-            <Text style={styles.statLabel}>
-              {formatDistance(routeMetadata.distance).split(' ')[1]}
+            <Text style={[styles.subText, { color: theme.colors.text.secondary }]}>
+              {formatDistance(routeMetadata.distance)} · {getArrivalTime(routeMetadata.duration)}
             </Text>
           </View>
 
           <Pressable
             onPress={handleCancel}
-            style={({ pressed }) => [styles.closeButton, { opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [
+              styles.exitButton,
+              { opacity: pressed ? 0.8 : 1 },
+            ]}
           >
-            <X size={20} color="#666" strokeWidth={2.2} />
+            <Text style={styles.exitText}>Exit</Text>
           </Pressable>
         </View>
       </View>
@@ -107,13 +135,39 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 9999,
   },
+  recenterContainer: {
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  recenterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  recenterText: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
   card: {
     borderRadius: 32,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
     overflow: 'hidden',
     paddingTop: 8,
-    paddingBottom: 16,
+    paddingBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 10,
   },
   handle: {
     width: 40,
@@ -121,44 +175,45 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
   },
-  stat: {
-    alignItems: 'center',
+  infoLeft: {
     flex: 1,
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#000',
-    letterSpacing: -0.5,
-  },
-  statLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(0, 0, 0, 0.4)',
-    marginTop: -2,
-  },
-  divider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 12,
-    top: -4,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    alignItems: 'center',
     justifyContent: 'center',
+  },
+  durationText: {
+    fontSize: 34,
+    fontWeight: '800',
+    letterSpacing: -1,
+    marginBottom: 4,
+  },
+  subText: {
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+  },
+  exitButton: {
+    backgroundColor: '#E53935', // Google Maps style red
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 30,
+    marginLeft: 16,
+    shadowColor: '#E53935',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  exitText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
 });

@@ -80,7 +80,7 @@ export const MapContent = function MapContent({
   const { data: pathNetwork } = usePathNetwork(currentEventId);
 
   const handleCameraChange = useCallback(
-    (e: any) => {
+    (e: any, isChanging: boolean = false) => {
       const { geometry, properties } = e;
       const now = Date.now();
       const isUserInteraction = e.properties?.isUserInteraction;
@@ -89,10 +89,14 @@ export const MapContent = function MapContent({
         // Shared value is cheap (running on UI thread via Reanimated), update it every frame
         zoomSharedValue.value = properties.zoomLevel;
 
-        // Update discrete zoom for list filtering only when crossing major thresholds
-        const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
-        if (newDiscreteZoom !== discreteZoom) {
-          setDiscreteZoom(newDiscreteZoom);
+        // CRITICAL FIX: Only update discrete zoom when the camera STOPS moving.
+        // Changing it during an active gesture causes PointAnnotations to unmount
+        // while MapLibre's C++ layout engine is busy, causing hard crashes.
+        if (!isChanging) {
+          const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
+          if (newDiscreteZoom !== discreteZoom) {
+            setDiscreteZoom(newDiscreteZoom);
+          }
         }
 
         // Throttle React state updates for zoom to prevent re-render loops
@@ -192,20 +196,41 @@ export const MapContent = function MapContent({
             )
             .map((poi) => [poi.id, poi])
         ).values()
-      ).map((poi) => ({
-        type: 'Feature',
-        id: `ev-f-${poi.id}`,
-        geometry: { type: 'Point', coordinates: poi.coordinates },
-        properties: {
-          id: poi.id,
-          name: poi.displayName,
-          category: poi.category,
-          color: poi.mainColor,
-          imageKey: poi.imageKey,
-          imageUrl: poi.images?.[0],
-          raw: poi.raw,
-        },
-      })),
+      ).flatMap((poi) => {
+        const features = [];
+        
+        // 1. Add the Point Marker
+        features.push({
+          type: 'Feature',
+          id: `ev-f-${poi.id}`,
+          geometry: { type: 'Point', coordinates: poi.coordinates },
+          properties: {
+            id: poi.id,
+            name: poi.displayName,
+            category: poi.category,
+            color: poi.mainColor,
+            imageKey: poi.imageKey,
+            imageUrl: poi.images?.[0],
+            raw: poi.raw,
+          },
+        });
+
+        // 2. Add the Boundary Polygon if it exists
+        if (poi.raw?.boundary) {
+          features.push({
+            type: 'Feature',
+            id: `ev-b-${poi.id}`,
+            geometry: poi.raw.boundary,
+            properties: {
+              id: poi.id,
+              type: 'boundary',
+              color: poi.mainColor,
+            },
+          });
+        }
+
+        return features;
+      }),
     }),
     [events]
   );
@@ -344,8 +369,8 @@ export const MapContent = function MapContent({
         minZoomLevel={2}
         maxZoomLevel={22}
         onPress={onDeselect}
-        onRegionIsChanging={handleCameraChange}
-        onRegionDidChange={handleCameraChange}
+        onRegionIsChanging={(e) => handleCameraChange(e, true)}
+        onRegionDidChange={(e) => handleCameraChange(e, false)}
         onDidFinishLoadingStyle={() => {
           if (!hasInitialRendered.current) {
             hasInitialRendered.current = true;
