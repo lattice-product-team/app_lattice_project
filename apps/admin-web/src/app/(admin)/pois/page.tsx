@@ -216,7 +216,7 @@ export default function POIsPage() {
   );
 
   return (
-    <div className="space-y-12 px-8 py-12 pb-24">
+    <div className="space-y-12 px-8 pt-[calc(var(--admin-safe-area)+1.5rem)] pb-24">
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-xl">
           <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">

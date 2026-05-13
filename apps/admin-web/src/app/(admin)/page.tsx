@@ -5,8 +5,8 @@ import { AdminMap } from '@/components/map/admin-map';
 import { useEvents, usePOIs } from '@/hooks/use-admin-data';
 import { useSearchParams } from 'next/navigation';
 import { Sidebar } from '@/components/command-center/Sidebar';
-import { CommandDock } from '@/components/command-center/CommandDock';
 import { AssetPanel } from '@/components/command-center/AssetPanel';
+import { useSidebar } from '@/hooks/use-sidebar';
 
 interface BaseAsset {
   id: string | number;
@@ -22,15 +22,15 @@ export default function GlobalOperationsPage() {
   const searchParams = useSearchParams();
   const { events, loading: eventsLoading } = useEvents();
   const { pois, loading: poisLoading } = usePOIs();
+  const { isOpen: isSidebarOpen, close: closeSidebar } = useSidebar();
 
   const [visibleEventIds, setVisibleEventIds] = useState<Set<string>>(new Set());
   const [radarEventIds, setRadarEventIds] = useState<Set<string>>(new Set());
   const [radarData, setRadarData] = useState<any>(null);
   const [selectedAsset, setSelectedAsset] = useState<BaseAsset | null>(null);
   const [mapInitialView, setMapInitialView] = useState({ longitude: 2.2575, latitude: 41.5641, zoom: 15 });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-
+  
+  const searchTerm = searchParams.get('q') || '';
   const processedParams = React.useRef<string | null>(null);
 
   // Filtering events based on search
@@ -183,10 +183,10 @@ export default function GlobalOperationsPage() {
     );
 
   return (
-    <div className="flex h-screen w-full bg-eggshell overflow-hidden -mt-[var(--admin-safe-area)]">
+    <div className="flex h-screen w-full bg-eggshell overflow-hidden">
       <Sidebar 
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={closeSidebar}
         events={filteredEventsForList}
         visibleEventIds={visibleEventIds}
         toggleEventVisibility={toggleEventVisibility}
@@ -194,31 +194,22 @@ export default function GlobalOperationsPage() {
         toggleRadar={toggleRadar}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 relative">
-        <CommandDock 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          isSidebarOpen={isSidebarOpen}
-          onOpenSidebar={() => setIsSidebarOpen(true)}
+      <main className="flex-1 relative min-w-0">
+        <AdminMap
+          mode="GLOBAL_VIEW"
+          initialViewState={mapInitialView}
+          events={activeEventsOnMap}
+          pois={activePoisOnMap}
+          onAssetClick={setSelectedAsset}
+          radarData={radarData}
         />
 
-        <div className="flex-1 relative overflow-hidden">
-          <AdminMap
-            mode="GLOBAL_VIEW"
-            initialViewState={mapInitialView}
-            events={activeEventsOnMap}
-            pois={activePoisOnMap}
-            onAssetClick={setSelectedAsset}
-            radarData={radarData}
+        {selectedAsset && (
+          <AssetPanel 
+            asset={selectedAsset}
+            onClose={() => setSelectedAsset(null)}
           />
-
-          {selectedAsset && (
-            <AssetPanel 
-              asset={selectedAsset}
-              onClose={() => setSelectedAsset(null)}
-            />
-          )}
-        </div>
+        )}
       </main>
     </div>
   );

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
 import { logout } from '@/app/actions';
+import { useSidebar } from '@/hooks/use-sidebar';
 
 const NAV_ITEMS = [
   { label: 'Map', href: '/', icon: 'Map' },
@@ -15,10 +16,20 @@ const NAV_ITEMS = [
 
 export function FloatingNav() {
   const pathname = usePathname();
+  const { isOpen: isSidebarOpen, open: openSidebar } = useSidebar();
 
   return (
-    <nav className="flex items-center">
-      <div className="bg-white border border-chalk/40 shadow-hairline rounded-full px-2 py-1.5 flex items-center gap-2">
+    <nav className="flex items-center gap-4">
+      {!isSidebarOpen && (
+        <button 
+          onClick={openSidebar}
+          className="h-11 w-11 rounded-full bg-white/40 backdrop-blur-xl border border-white/20 shadow-hairline flex items-center justify-center text-obsidian hover:bg-white/60 transition-all duration-300"
+        >
+          <Icons.Menu className="w-4 h-4" />
+        </button>
+      )}
+      
+      <div className="bg-white/40 backdrop-blur-xl border border-white/20 shadow-hairline rounded-full px-2 py-1.5 flex items-center gap-2">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = (Icons as any)[item.icon];
@@ -39,6 +50,7 @@ export function FloatingNav() {
           );
         })}
       </div>
+
     </nav>
   );
 }
@@ -47,7 +59,7 @@ export function FloatingLogout() {
   return (
     <button 
       onClick={() => logout()}
-      className="h-11 px-4 sm:px-6 rounded-full bg-white border border-chalk/40 shadow-hairline flex items-center gap-3 text-obsidian hover:bg-powder transition-all duration-500 group"
+      className="h-11 px-4 sm:px-6 rounded-full bg-white/40 backdrop-blur-xl border border-white/20 shadow-hairline flex items-center gap-3 text-obsidian hover:bg-white/60 transition-all duration-500 group"
     >
       <Icons.LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
       <span className="text-[10px] font-bold uppercase tracking-[0.15em] hidden sm:inline">Logout</span>
