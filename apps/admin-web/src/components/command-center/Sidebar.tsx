@@ -86,17 +86,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {events.map((event) => (
               <div
                 key={event.id}
-                className="flex items-center justify-between p-2.5 rounded-xl hover:bg-powder transition-all cursor-pointer group"
+                className={cn(
+                  "flex items-center justify-between p-2.5 rounded-xl hover:bg-powder transition-all cursor-pointer group",
+                  !visibleEventIds.has(event.id.toString()) && "opacity-60 grayscale-[0.3]"
+                )}
                 onClick={() => toggleEventVisibility(event.id.toString())}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="w-2.5 h-2.5 rounded-full shadow-sm"
-                    style={{ backgroundColor: event.primaryColor || '#000' }}
-                  />
-                  <span className="text-[11px] font-bold text-obsidian truncate max-w-[140px] uppercase tracking-tight">
-                    {event.name}
-                  </span>
+                  <div className="relative">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full shadow-sm"
+                      style={{ backgroundColor: event.primaryColor || '#000' }}
+                    />
+                    {new Date() >= new Date(event.startDate) && new Date() <= new Date(event.endDate) && (
+                      <div 
+                        className="absolute inset-0 w-2.5 h-2.5 rounded-full animate-ping opacity-75"
+                        style={{ backgroundColor: event.primaryColor || '#000' }}
+                      />
+                    )}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[11px] font-bold text-obsidian truncate max-w-[140px] uppercase tracking-tight">
+                      {event.name}
+                    </span>
+                    <span className={cn(
+                      "text-[7px] font-black uppercase tracking-[0.1em] mt-0.5",
+                      new Date() >= new Date(event.startDate) && new Date() <= new Date(event.endDate)
+                        ? "text-emerald-600"
+                        : new Date() > new Date(event.endDate)
+                          ? "text-gravel/40"
+                          : "text-amber-600/80"
+                    )}>
+                      {new Date() >= new Date(event.startDate) && new Date() <= new Date(event.endDate)
+                        ? "• Live Now"
+                        : new Date() > new Date(event.endDate)
+                          ? "Completed"
+                          : "Scheduled"}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button

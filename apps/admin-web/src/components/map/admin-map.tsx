@@ -39,6 +39,7 @@ interface AdminMapProps {
   onAssetClick?: (asset: any) => void;
   activeEventBoundary?: any;
   radarData?: any;
+  selectedCategory?: string;
 }
 
 const POI_METADATA: Record<string, { icon: any; color: string }> = {
@@ -88,17 +89,8 @@ const isPointInPolygon = (point: [number, number], vs: [number, number][][]): bo
 };
 
 const getCentroid = (coordinates: [number, number][][]): [number, number] => {
-  let totalLng = 0;
-  let totalLat = 0;
-  let count = 0;
-  for (const ring of coordinates) {
-    for (const point of ring) {
-      totalLng += point[0];
-      totalLat += point[1];
-      count++;
-    }
-  }
-  return [totalLng / count, totalLat / count];
+  const [minLng, minLat, maxLng, maxLat] = getBBox(coordinates);
+  return [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 };
 
 const MapMarker = React.memo(({ 
@@ -125,12 +117,13 @@ const MapMarker = React.memo(({
 
   if (!coords) return null;
 
-  // Zoom Logic
-  const ZOOM_SHOW_EVENTS = 11;
-  const ZOOM_SHOW_POIS = 14.5;
+  // Dynamic scaling based on zoom to prevent markers from overwhelming boundaries
+  const zoomScale = isSelected ? 1.25 : (currentZoom < 14 ? 0.75 : 1);
+  const hideLabelByZoom = type === 'event' && currentZoom < 15;
 
-  if (type === 'event' && currentZoom < ZOOM_SHOW_EVENTS) return null;
-  if (type === 'poi' && currentZoom < ZOOM_SHOW_POIS) return null;
+  // Stability: Don't render markers if we are too far out
+  if (type === 'event' && currentZoom < 11) return null;
+  if (type === 'poi' && currentZoom < 14.5) return null;
 
   return (
     <Marker
@@ -142,9 +135,12 @@ const MapMarker = React.memo(({
         onClick?.(data);
       }}
     >
-      <div className={`group relative cursor-pointer flex flex-col items-center`}>
+      <div 
+        className="group relative cursor-pointer flex flex-col items-center transition-transform duration-300"
+        style={{ transform: `scale(${zoomScale})` }}
+      >
         <div 
-          className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 transform ${isSelected ? 'scale-125 ring-4 ring-white/30' : 'hover:scale-110'}`}
+          className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 ${isSelected ? 'ring-4 ring-white/30' : 'hover:scale-110'}`}
           style={{ backgroundColor: color }}
         >
           <Icon className={type === 'event' ? "w-5 h-5" : "w-4 h-4"} color="white" strokeWidth={2.5} />
@@ -152,7 +148,7 @@ const MapMarker = React.memo(({
         
         {/* Label - visible on hover, if selected, or if it's an event and we are zoomed in */}
         <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-black uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-300 whitespace-nowrap ${
-          (isSelected || type === 'event') ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'
+          (isSelected || (type === 'event' && !hideLabelByZoom)) ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'
         }`}>
           {data.name}
         </div>
@@ -175,6 +171,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   onAssetClick,
   activeEventBoundary,
   radarData,
+  selectedCategory,
 }) => {
   const mapRef = React.useRef<any>(null);
   const [_internalViewState, setInternalViewState] = useState(initialViewState);
@@ -224,6 +221,19 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     (e: MapLayerMouseEvent) => {
       const { lng, lat } = e.lngLat;
 
+      // Handle layer clicks first (Events via boundaries)
+      const features = e.features;
+      const boundaryFeature = features?.find(f => f.layer.id === 'global-boundaries-fill');
+      
+      if (boundaryFeature && mode === 'GLOBAL_VIEW' && onAssetClick) {
+        const eventId = boundaryFeature.properties?.id;
+        const event = events.find(ev => String(ev.id) === String(eventId));
+        if (event) {
+          onAssetClick(event);
+          return;
+        }
+      }
+
       if (mode === 'DRAW_BOUNDARY' && onBoundaryChange) {
         onBoundaryChange([...boundaryPoints, [lng, lat]]);
       } else if (mode === 'PICK_COORDINATE' && onPoiSelect) {
@@ -237,7 +247,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         onPoiSelect({ lng, lat });
       }
     },
-    [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary]
+    [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary, events, onAssetClick]
   );
 
   const boundaryGeoJSON = useMemo(() => {
@@ -260,6 +270,22 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           type: 'Feature',
           properties: { id: e.id, name: e.name?.toUpperCase(), color: e.primaryColor },
           geometry: e.boundary,
+        })),
+    } as any;
+  }, [events]);
+
+  const allLabelsGeoJSON = useMemo(() => {
+    return {
+      type: 'FeatureCollection',
+      features: events
+        .filter((e) => e.boundary)
+        .map((e) => ({
+          type: 'Feature',
+          properties: { id: e.id, name: e.name?.toUpperCase(), color: e.primaryColor },
+          geometry: {
+            type: 'Point',
+            coordinates: getCentroid(e.boundary.coordinates),
+          },
         })),
     } as any;
   }, [events]);
@@ -292,6 +318,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         initialViewState={initialViewState}
         onMoveEnd={(evt) => setInternalViewState(evt.viewState)}
         mapStyle={MAP_STYLE}
+        interactiveLayerIds={['global-boundaries-fill']}
         onClick={handleMapClick}
         onLoad={handleMapLoad}
         style={{ width: '100%', height: '100%' }}
@@ -316,6 +343,11 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                 'line-width': 2,
               }}
             />
+          </Source>
+        )}
+
+        {mode === 'GLOBAL_VIEW' && (
+          <Source type="geojson" data={allLabelsGeoJSON}>
             <Layer
               id="global-boundaries-labels"
               type="symbol"
@@ -327,6 +359,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                 'text-letter-spacing': 0.2,
                 'text-transform': 'uppercase',
                 'text-anchor': 'center',
+                'text-max-width': 8,
                 'text-allow-overlap': false,
               }}
               paint={{
@@ -409,18 +442,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           </Source>
         )}
 
-        {/* Markers */}
         {mode === 'GLOBAL_VIEW' && (
           <>
-            {events.map((event) => (
-              <MapMarker 
-                key={`event-${event.id}`} 
-                type="event" 
-                data={event} 
-                onClick={onAssetClick}
-                currentZoom={_internalViewState.zoom}
-              />
-            ))}
             {pois.map((poi) => (
               <MapMarker 
                 key={`poi-${poi.id}`} 
@@ -436,8 +459,17 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         {/* Selected POI Marker (New POI creation mode) */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
           <Marker longitude={selectedPoi.lng} latitude={selectedPoi.lat} anchor="bottom">
-            <div className="w-10 h-10 bg-obsidian rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center animate-bounce">
-              <span className="text-xl">📍</span>
+            <div className="flex flex-col items-center animate-bounce group">
+              <div 
+                className="w-10 h-10 rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center transition-all duration-300"
+                style={{ backgroundColor: POI_METADATA[selectedCategory || 'default']?.color || '#000' }}
+              >
+                {React.createElement(POI_METADATA[selectedCategory || 'default']?.icon || Icons.MapPin, {
+                  className: "w-5 h-5",
+                  color: "white",
+                  strokeWidth: 2.5
+                })}
+              </div>
             </div>
           </Marker>
         )}

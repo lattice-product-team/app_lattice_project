@@ -34,15 +34,15 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 });
 
 const POI_TYPES = [
-  { value: 'wc', label: 'Toilets', emoji: '🚽' },
-  { value: 'restaurant', label: 'Restaurant', emoji: '🍔' },
-  { value: 'bar', label: 'Bar', emoji: '🍺' },
-  { value: 'medical', label: 'Medical', emoji: '🏥' },
-  { value: 'gate', label: 'Entrance/Gate', emoji: '🚪' },
-  { value: 'information', label: 'Info', emoji: 'ℹ️' },
-  { value: 'emergency', label: 'Emergency', emoji: '🚨' },
-  { value: 'parking', label: 'Parking', emoji: '🅿️' },
-  { value: 'shop', label: 'Shop', emoji: '🛍️' },
+  { value: 'wc', label: 'Toilets', icon: Icons.Baby },
+  { value: 'restaurant', label: 'Restaurant', icon: Icons.Utensils },
+  { value: 'bar', label: 'Bar', icon: Icons.Wine },
+  { value: 'medical', label: 'Medical', icon: Icons.Hospital },
+  { value: 'gate', label: 'Entrance/Gate', icon: Icons.LogIn },
+  { value: 'information', label: 'Info', icon: Icons.Info },
+  { value: 'emergency', label: 'Emergency', icon: Icons.AlertTriangle },
+  { value: 'parking', label: 'Parking', icon: Icons.MapPin },
+  { value: 'shop', label: 'Shop', icon: Icons.ShoppingBag },
 ];
 
 export default function POIsPage() {
@@ -267,6 +267,7 @@ export default function POIsPage() {
                 onPoiSelect={selectPoi}
                 activeEventBoundary={activeEventBoundary}
                 initialViewState={mapViewState}
+                selectedCategory={type}
               />
               <div className="absolute top-6 left-6 z-10">
                 <div className="bg-white/90 backdrop-blur-sm px-5 py-4 border border-chalk/60 shadow-subtle-2 max-w-[260px]">
@@ -347,7 +348,7 @@ export default function POIsPage() {
                         className={`px-4 py-3 rounded-xl border transition-all flex items-center gap-3
                         ${type === t.value ? 'bg-obsidian border-obsidian text-eggshell shadow-subtle' : 'bg-white border-chalk text-gravel hover:bg-powder/50'}`}
                       >
-                        <span className="text-xl">{t.emoji}</span>
+                        <t.icon className="w-5 h-5 shrink-0" />
                         <span className="text-[11px] font-black uppercase tracking-tighter truncate">
                           {t.label}
                         </span>

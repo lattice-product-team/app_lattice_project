@@ -93,6 +93,7 @@ export const MapLayers = React.memo(({
                 theme={theme}
                 isSelected={isSelected}
                 onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
               />
             </View>
           </MapLibreGL.PointAnnotation>
@@ -130,6 +131,7 @@ export const MapLayers = React.memo(({
                 isSelected={isSelected}
                 isLinkedToSelectedEvent={isLinkedToSelectedEvent}
                 onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
               />
             </View>
           </MapLibreGL.PointAnnotation>

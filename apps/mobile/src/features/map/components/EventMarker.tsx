@@ -16,14 +16,35 @@ interface EventMarkerProps {
 }
 
 export const EventMarker: React.FC<EventMarkerProps> = React.memo(
-  ({ event, isSelected = false, theme, onPress }) => {
+  ({ event, isSelected = false, theme, onPress, zoomSharedValue }) => {
     const { properties } = event;
     const metadata = getEventMetadata(properties.category);
     const color = metadata.color || theme.colors.brand.primary;
     const IconComponent = metadata.icon;
 
+    const animatedStyle = useAnimatedStyle(() => {
+      const scale = interpolate(
+        zoomSharedValue.value,
+        [10, 13, 16],
+        [0.5, 0.8, 1],
+        Extrapolation.CLAMP
+      );
+
+      const opacity = interpolate(
+        zoomSharedValue.value,
+        [10, 11],
+        [0, 1],
+        Extrapolation.CLAMP
+      );
+
+      return {
+        transform: [{ scale: isSelected ? 1.4 : scale }],
+        opacity: isSelected ? 1 : opacity,
+      };
+    });
+
     return (
-      <View style={mapPinStyles.markerWrapper}>
+      <Animated.View style={[mapPinStyles.markerWrapper, animatedStyle]}>
         <TouchableOpacity
           onPress={() => onPress(event)}
           activeOpacity={0.9}
@@ -33,7 +54,6 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
               {
                 alignItems: 'center',
                 justifyContent: 'center',
-                transform: [{ scale: isSelected ? 1.4 : 1 }]
               }
             ]}
           >
@@ -80,7 +100,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
             )}
           </View>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     );
   }
 );

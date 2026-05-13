@@ -32,6 +32,7 @@ export default function GlobalOperationsPage() {
   
   const searchTerm = searchParams.get('q') || '';
   const processedParams = React.useRef<string | null>(null);
+  const lastCenteredAssetId = React.useRef<string | null>(null);
 
   // Filtering events based on search
   const filteredEventsForList = useMemo(() => {
@@ -82,16 +83,25 @@ export default function GlobalOperationsPage() {
   useEffect(() => {
     if (searchTerm && filteredEventsForList.length === 1) {
       const event = filteredEventsForList[0];
-      setSelectedAsset(event);
-      
-      // Only set initial view if no boundary is available (boundary-fitting happens in AdminMap)
-      if (!event.boundary && event.center?.coordinates) {
-        setMapInitialView({
-          longitude: event.center.coordinates[0],
-          latitude: event.center.coordinates[1],
-          zoom: 16,
-        });
+      const eventId = event.id.toString();
+
+      // Only auto-center if this is a new result we haven't centered on yet
+      if (lastCenteredAssetId.current !== eventId) {
+        setSelectedAsset(event);
+        lastCenteredAssetId.current = eventId;
+        
+        // Only set initial view if no boundary is available (boundary-fitting happens in AdminMap)
+        if (!event.boundary && event.center?.coordinates) {
+          setMapInitialView({
+            longitude: event.center.coordinates[0],
+            latitude: event.center.coordinates[1],
+            zoom: 16,
+          });
+        }
       }
+    } else if (!searchTerm) {
+      // Reset tracking when search is cleared to allow re-centering if searching again
+      lastCenteredAssetId.current = null;
     }
   }, [searchTerm, filteredEventsForList]);
 
