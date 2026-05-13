@@ -1,5 +1,5 @@
 import http from 'http';
-import app from './app.js';
+import app from './app.ts';
 import { loadConfig, initSocket } from '@app/core';
 
 const env = loadConfig();

@@ -11,6 +11,6 @@ export default withNextra({
   images: {
     unoptimized: true
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/app_lattice_project/documentation' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/app_lattice_project' : '',
   reactStrictMode: true,
 })

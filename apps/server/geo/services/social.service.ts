@@ -1,5 +1,5 @@
 import { db, events, pointsOfInterest, eq, sql } from '@app/db';
-import { dataForSEO } from './dataforseo.client.js';
+import { dataForSEO } from './dataforseo.client.ts';
 
 /**
  * Orchestrates social proof synchronization for Lattice assets.

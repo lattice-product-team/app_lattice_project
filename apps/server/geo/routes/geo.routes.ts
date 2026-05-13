@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import * as geoController from '../controllers/geo.controller.js';
-import savedRoutes from './saved.routes.js';
+import * as geoController from '../controllers/geo.controller.ts';
+import savedRoutes from './saved.routes.ts';
 import { authenticate } from '@app/core';
 
 const router = Router();

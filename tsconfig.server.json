@@ -12,6 +12,8 @@
     "declarationMap": true,
     "composite": true,
     "incremental": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "ignoreDeprecations": "5.0"
   }
 }

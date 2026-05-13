@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as socialController from '../controllers/social.controller.js';
+import * as socialController from '../controllers/social.controller.ts';
 
 const router = Router();
 

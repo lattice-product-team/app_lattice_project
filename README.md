@@ -1,22 +1,26 @@
-![Lattice Banner](https://lattice-product-team.github.io/app_lattice_project/documentation/assets/lattice_banner_1778588749257.png)
+<div align="center">
+  <img src="/assets/lattice_banner_1778588749257.png" width="100%" alt="Lattice Banner" />
+  
+  # <img src="/icon.png" height="48" style={{ verticalAlign: 'middle' }} /> Lattice
+  
+  **The definitive ecosystem for urban discovery and festival management in Barcelona.**
+  
+  *Built with a high-performance Modular Monolith architecture within a Turborepo.*
+</div>
 
-# <img src="https://lattice-product-team.github.io/app_lattice_project/documentation/icon.png" height="40" style={{ verticalAlign: 'middle' }} /> Lattice
+---
 
-Lattice is the definitive ecosystem for urban discovery and festival management in Barcelona. Built as a high-performance **Modular Monolith** within a **Turborepo**, it combines a React Native mobile experience with a robust Node.js/PostgreSQL backend.
+## 🌐 Documentation Portal
 
-## Documentation Portal
+Explore our comprehensive, domain-driven documentation. Each section is designed to provide deep technical insights and operational guidance.
 
-We follow a professional, domain-driven documentation structure that also satisfies the 10-section academic requirement **[a-j]**.
-
-| Domain | Academic Mapping | Description |
+| Domain | Key Areas | Description |
 | :--- | :--- | :--- |
-| **[Product](https://lattice-product-team.github.io/app_lattice_project/documentation/product)** | **[a]**, **[f]** | Vision, roadmap, and market objectives. |
-| **[UX Design](https://lattice-product-team.github.io/app_lattice_project/documentation/product/features-design)** | **[c]** | Wireframes, feature specs, and HUD designs. |
-| **[Architecture](https://lattice-product-team.github.io/app_lattice_project/documentation/architecture)** | **[e]**, **[h]** | System design, monorepo structure, and ADRs. |
-| **[API Spec](https://lattice-product-team.github.io/app_lattice_project/documentation/api-spec)** | **[e]** | RESTful contracts and shared data schemas. |
-| **[Engineering](https://lattice-product-team.github.io/app_lattice_project/documentation/engineering)** | **[b]**, **[e]** | Coding standards, Git workflow, and testing. |
-| **[Guides](https://lattice-product-team.github.io/app_lattice_project/documentation/guides)** | **[d]**, **[i]** | Installation, troubleshooting, and user manuals. |
-| **Demo & Pitch** | **[g]**, **[j]** | Links to video demonstrations and project pitch. |
+| **[Product](/product)** | Vision, Roadmap | Market objectives and long-term strategy. |
+| **[Architecture](/architecture)** | System Design, ADRs | Technical blueprint and architectural decisions. |
+| **[API Spec](/api-spec)** | RESTful Contracts | Shared data schemas and service interfaces. |
+| **[Engineering](/engineering)** | Standards, Workflow | Coding guidelines and developer productivity. |
+| **[Guides](/guides)** | Onboarding, Ops | Step-by-step manuals for users and devs. |
 
 ---
 
@@ -52,4 +56,4 @@ We follow a professional, domain-driven documentation structure that also satisf
 
 ## Contributing
 
-We follow **Conventional Commits**. Please review our **[Git Standards](https://lattice-product-team.github.io/app_lattice_project/documentation/engineering/git-standards)** before opening a Pull Request.
+We follow **Conventional Commits**. Please review our **[Git Standards](/engineering/coding-standards)** before opening a Pull Request.

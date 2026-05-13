@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
-import { findRoute } from '../services/navigation.service.js';
-import { socialService } from '../services/social.service.js';
+import { findRoute } from '../services/navigation.service.ts';
+import { socialService } from '../services/social.service.ts';
 import { notifyAdmin, notifyAll, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
 
 /**
