@@ -25,8 +25,8 @@ export {
   eventTypeEnum,
   crowdLevelEnum,
   surfaceTypeEnum,
-} from './schema.js';
-export { sql, eq, and, desc, asc } from 'drizzle-orm';
+} from './schema';
+export { sql, eq, and, desc, asc, getTableColumns } from 'drizzle-orm';
 
 const isProduction = env.NODE_ENV === 'production';
 

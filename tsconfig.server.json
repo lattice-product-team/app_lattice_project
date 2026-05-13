@@ -12,6 +12,7 @@
     "declarationMap": true,
     "composite": true,
     "incremental": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "types": ["node"]
   }
 }

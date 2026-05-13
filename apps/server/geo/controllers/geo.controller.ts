@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import 'dotenv/config';
 import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
 import { findRoute } from '../services/navigation.service.js';
@@ -78,11 +79,11 @@ export const getEventSpatial = async (req: Request, res: Response) => {
     const cachedData = await getCache(cacheKey);
 
     if (cachedData) {
-      res.setHeader('X-Cache', 'HIT');
+      res.header('X-Cache', 'HIT');
       return res.json(JSON.parse(cachedData));
     }
 
-    res.setHeader('X-Cache', 'MISS');
+    res.header('X-Cache', 'MISS');
 
     const [event] = await db
       .select({
@@ -290,11 +291,11 @@ export const getPois = async (req: Request, res: Response) => {
     const cachedData = await getCache(cacheKey);
 
     if (cachedData) {
-      res.setHeader('X-Cache', 'HIT');
+      res.header('X-Cache', 'HIT');
       return res.json(JSON.parse(cachedData));
     }
 
-    res.setHeader('X-Cache', 'MISS');
+    res.header('X-Cache', 'MISS');
 
     const query = db
       .select({
