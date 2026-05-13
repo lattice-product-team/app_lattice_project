@@ -77,7 +77,7 @@ enum UILayer {
   NAVIGATING = 4,
 }
 
-function MapIndexPage() {
+export default function MapIndexPage() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -932,5 +932,3 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
 });
-
-export default MapIndexPage;

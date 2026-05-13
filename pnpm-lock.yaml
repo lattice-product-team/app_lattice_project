@@ -325,8 +325,8 @@ importers:
         specifier: ~6.0.23
         version: 6.0.23(35ae5ed7b21c96e94ee96eb62598d377)
       expo-screen-orientation:
-        specifier: ^55.0.14
-        version: 55.0.14(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))
+        specifier: ~7.0.0
+        version: 7.0.5(expo@54.0.34)
       expo-sensors:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))
@@ -6226,11 +6226,10 @@ packages:
       react-server-dom-webpack:
         optional: true
 
-  expo-screen-orientation@55.0.14:
-    resolution: {integrity: sha512-eZTUzTy7SbHusn62teWycb/YuBE6FXAzcWJiyczd9Nz5WH3VUXdqpqWwRELVGqblLpXHUv8ehN+04POlJeEv0w==}
+  expo-screen-orientation@7.0.5:
+    resolution: {integrity: sha512-1j0MzVzYpjKQo4BWowQ3ZYwC3OnddX/8k06C8VYTAxMyd8ou1k+rG4tm+GIV2n2RSzc3g7cfPlQwSYr3/SGmbg==}
     peerDependencies:
       expo: ~54.0.34
-      react-native: 0.81.5
 
   expo-sensors@15.0.8:
     resolution: {integrity: sha512-ttibOSCYjFAMIfjV+vVukO1v7GKlbcPRfxcRqbTaSMGneewDwVSXbGFImY530fj1BR3mWq4n9jHnuDp8tAEY9g==}
@@ -16827,10 +16826,9 @@ snapshots:
       - '@types/react-dom'
       - supports-color
 
-  expo-screen-orientation@55.0.14(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)):
+  expo-screen-orientation@7.0.5(expo@54.0.34):
     dependencies:
       expo: 54.0.34(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
-      react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
 
   expo-sensors@15.0.8(expo@54.0.34)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)):
     dependencies:
