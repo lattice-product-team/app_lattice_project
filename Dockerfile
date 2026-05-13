@@ -78,6 +78,7 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/apps/admin-web/package.json ./apps/admin-web/package.json
 COPY --from=admin-web-builder /app/apps/admin-web/.next ./apps/admin-web/.next
 COPY --from=admin-web-builder /app/apps/admin-web/public ./apps/admin-web/public
+COPY --from=admin-web-builder /app/apps/admin-web/next.config.ts ./apps/admin-web/next.config.ts
 
 WORKDIR /app/apps/admin-web
 CMD ["sh", "-c", "npx next start -p ${PORT:-3000}"]
