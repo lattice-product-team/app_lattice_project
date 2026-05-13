@@ -1,15 +1,15 @@
 ## 1. Navigation Restructuring
 
-- [ ] 1.1 Remove the branding logo and the divider from `apps/admin-web/src/components/floating-nav.tsx`.
-- [ ] 1.2 Update `NAV_ITEMS` in `floating-nav.tsx` to contain only MAP, EVENTS, and POIS.
-- [ ] 1.3 Change the MAP link destination from `/map` to `/` in `NAV_ITEMS`.
+- [x] 1.1 Remove the branding logo and the divider from `apps/admin-web/src/components/floating-nav.tsx`.
+- [x] 1.2 Update `NAV_ITEMS` in `floating-nav.tsx` to contain only MAP, EVENTS, and POIS.
+- [x] 1.3 Change the MAP link destination from `/map` to `/` in `NAV_ITEMS`.
 
 ## 2. Root Route Migration
 
-- [ ] 2.1 Replace the content of `apps/admin-web/src/app/(admin)/page.tsx` with the logic from `apps/admin-web/src/app/(admin)/map/page.tsx`.
-- [ ] 2.2 Delete the `apps/admin-web/src/app/(admin)/map` directory and its contents.
-- [ ] 2.3 Delete the `apps/admin-web/src/app/(admin)/radar` directory and its contents.
-- [ ] 2.4 (Optional) Cleanup legacy `_bkp` directories if they interfere with build/routing.
+- [x] 2.1 Replace the content of `apps/admin-web/src/app/(admin)/page.tsx` with the logic from `apps/admin-web/src/app/(admin)/map/page.tsx`.
+- [x] 2.2 Delete the `apps/admin-web/src/app/(admin)/map` directory and its contents.
+- [x] 2.3 Delete the `apps/admin-web/src/app/(admin)/radar` directory and its contents.
+- [x] 2.4 (Optional) Cleanup legacy `_bkp` directories if they interfere with build/routing.
 
 ## 3. Map Radar Integration
 
