@@ -10,7 +10,7 @@ import {
   doublePrecision,
   primaryKey,
 } from 'drizzle-orm/pg-core';
-import { geometry, polygon } from './custom-types';
+import { geometry, polygon } from './custom-types.js';
 
 // ---------------------------------------------------------
 // ENUMS

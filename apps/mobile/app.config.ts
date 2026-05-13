@@ -74,8 +74,8 @@ const VALHALLA_URL = resolveValhallaUrl();
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Lattice',
-  slug: 'lattice',
-  owner: 'kore29',
+  slug: 'lattice-app',
+  owner: 'lattice-organization',
   version: '1.0.0',
   orientation: 'default',
   icon: './assets/images/icon.png',

@@ -1,4 +1,4 @@
-import { db, pool } from './index';
+import { db, pool } from './index.js';
 import { sql } from 'drizzle-orm';
 
 async function clean() {

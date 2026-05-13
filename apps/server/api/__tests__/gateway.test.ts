@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
-import app from '../index.ts';
+import app from '../index.js';
 
 describe('Gateway Service', () => {
   it('should return 200 OK for health check', async () => {

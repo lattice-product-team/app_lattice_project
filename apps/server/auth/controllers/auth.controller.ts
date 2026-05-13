@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db, users, tickets, events, passkeyCredentials, eq, and, sql } from '@app/db';
-import { decodeJwt, hashPassword, comparePassword, generateToken, verifyToken } from './auth.utils.ts';
+import { decodeJwt, hashPassword, comparePassword, generateToken, verifyToken } from './auth.utils.js';
 
 /**
  * Get configuration for a specific event including direct branding

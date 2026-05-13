@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import authRouter from '../routes/auth.routes.ts';
+import authRouter from '../routes/auth.routes.js';
 import * as dbLib from '@app/db';
 
 const app = express();
