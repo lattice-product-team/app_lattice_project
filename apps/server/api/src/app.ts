@@ -4,10 +4,10 @@ import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import { logger, errorHandler, loadConfig } from '@app/core';
 
-// Import Service Routers via workspace packages for the Monolith
-import authRouter from '@app/auth/routes/auth.routes.js';
-import geoRouter from '@app/geo/routes/geo.routes.js';
-import socialRouter from '@app/social/routes/social.routes.js';
+// Import Service Routers locally for the Monolith
+import authRouter from './auth/routes/auth.routes.js';
+import geoRouter from './geo/routes/geo.routes.js';
+import socialRouter from './social/routes/social.routes.js';
 
 // Load validated config (SSOT)
 const env = loadConfig();

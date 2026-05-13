@@ -13,9 +13,6 @@ COPY packages/types-schema/package.json ./packages/types-schema/
 COPY packages/db/package.json ./packages/db/
 COPY packages/core/package.json ./packages/core/
 COPY apps/server/api/package.json ./apps/server/api/
-COPY apps/server/auth/package.json ./apps/server/auth/
-COPY apps/server/geo/package.json ./apps/server/geo/
-COPY apps/server/social/package.json ./apps/server/social/
 COPY apps/admin-web/package.json ./apps/admin-web/
 COPY apps/mobile/package.json ./apps/mobile/
 COPY packages/theme/package.json ./packages/theme/
@@ -40,9 +37,6 @@ COPY packages/types-schema/package.json ./packages/types-schema/
 COPY packages/db/package.json ./packages/db/
 COPY packages/core/package.json ./packages/core/
 COPY apps/server/api/package.json ./apps/server/api/
-COPY apps/server/auth/package.json ./apps/server/auth/
-COPY apps/server/geo/package.json ./apps/server/geo/
-COPY apps/server/social/package.json ./apps/server/social/
 COPY apps/admin-web/package.json ./apps/admin-web/
 COPY apps/mobile/package.json ./apps/mobile/
 COPY packages/theme/package.json ./packages/theme/
@@ -63,12 +57,6 @@ COPY --from=builder /app/packages/types-schema/dist ./packages/types-schema/dist
 # Copy built server apps and their package.json for the Monolith
 COPY --from=builder /app/apps/server/api/dist ./apps/server/api/dist
 COPY --from=builder /app/apps/server/api/package.json ./apps/server/api/package.json
-COPY --from=builder /app/apps/server/auth/dist ./apps/server/auth/dist
-COPY --from=builder /app/apps/server/auth/package.json ./apps/server/auth/package.json
-COPY --from=builder /app/apps/server/geo/dist ./apps/server/geo/dist
-COPY --from=builder /app/apps/server/geo/package.json ./apps/server/geo/package.json
-COPY --from=builder /app/apps/server/social/dist ./apps/server/social/dist
-COPY --from=builder /app/apps/server/social/package.json ./apps/server/social/package.json
 CMD ["node", "apps/server/api/dist/index.js"]
 
 # --- ADMIN-WEB Support ---

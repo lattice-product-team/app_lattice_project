@@ -13,9 +13,6 @@
     { "path": "packages/core" },
     { "path": "packages/db" },
     { "path": "packages/types-schema" },
-    { "path": "apps/server/api" },
-    { "path": "apps/server/auth" },
-    { "path": "apps/server/geo" },
-    { "path": "apps/server/social" }
+    { "path": "apps/server/api" }
   ]
 }
