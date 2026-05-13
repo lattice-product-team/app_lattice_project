@@ -11,7 +11,7 @@
       "types": "./index.ts",
       "default": "./dist/index.js"
     },
-    "./routes/*": {
+    "./routes/*.js": {
       "import": "./dist/routes/*.js",
       "types": "./routes/*.ts",
       "default": "./dist/routes/*.js"
