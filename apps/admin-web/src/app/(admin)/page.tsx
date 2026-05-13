@@ -219,6 +219,19 @@ export default function GlobalOperationsPage() {
     setVisibleEventIds(next);
   };
 
+  const isolateEventVisibility = (id: string) => {
+    const event = events.find((e) => e.id.toString() === id);
+    
+    // If only this one is visible, show all. Otherwise, isolate this one.
+    if (visibleEventIds.size === 1 && visibleEventIds.has(id)) {
+      setVisibleEventIds(new Set(events.map((e) => e.id.toString())));
+      setSelectedAsset(null);
+    } else {
+      setVisibleEventIds(new Set([id]));
+      if (event) setSelectedAsset(event);
+    }
+  };
+
   const toggleRadar = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const next = new Set(radarEventIds);
@@ -257,6 +270,7 @@ export default function GlobalOperationsPage() {
         events={filteredEventsForList}
         visibleEventIds={visibleEventIds}
         toggleEventVisibility={toggleEventVisibility}
+        isolateEventVisibility={isolateEventVisibility}
         radarEventIds={radarEventIds}
         toggleRadar={toggleRadar}
       />
@@ -268,6 +282,7 @@ export default function GlobalOperationsPage() {
           events={activeEventsOnMap}
           pois={activePoisOnMap}
           onAssetClick={setSelectedAsset}
+          selectedAssetId={selectedAsset?.id}
           activeEventBoundary={activeEventBoundary}
           radarData={radarData}
         />

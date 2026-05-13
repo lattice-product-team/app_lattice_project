@@ -40,6 +40,7 @@ interface AdminMapProps {
   activeEventBoundary?: any;
   radarData?: any;
   selectedCategory?: string;
+  selectedAssetId?: string | number;
 }
 
 const POI_METADATA: Record<string, { icon: any; color: string }> = {
@@ -172,6 +173,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   activeEventBoundary,
   radarData,
   selectedCategory,
+  selectedAssetId,
 }) => {
   const mapRef = React.useRef<any>(null);
   const [_internalViewState, setInternalViewState] = useState(initialViewState);
@@ -262,9 +264,14 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   }, [boundaryPoints]);
 
   const allBoundariesGeoJSON = useMemo(() => {
+    // If an asset is selected, only show that one (Focus Mode)
+    const filteredEvents = selectedAssetId 
+      ? events.filter(e => String(e.id) === String(selectedAssetId))
+      : events;
+
     return {
       type: 'FeatureCollection',
-      features: events
+      features: filteredEvents
         .filter((e) => e.boundary)
         .map((e) => ({
           type: 'Feature',
@@ -272,12 +279,16 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           geometry: e.boundary,
         })),
     } as any;
-  }, [events]);
+  }, [events, selectedAssetId]);
 
   const allLabelsGeoJSON = useMemo(() => {
+    const filteredEvents = selectedAssetId 
+      ? events.filter(e => String(e.id) === String(selectedAssetId))
+      : events;
+
     return {
       type: 'FeatureCollection',
-      features: events
+      features: filteredEvents
         .filter((e) => e.boundary)
         .map((e) => ({
           type: 'Feature',
@@ -288,7 +299,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           },
         })),
     } as any;
-  }, [events]);
+  }, [events, selectedAssetId]);
 
   const handleMapLoad = useCallback((e: any) => {
     const map = e.target;

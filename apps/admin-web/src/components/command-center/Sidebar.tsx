@@ -13,6 +13,7 @@ interface SidebarProps {
   events: any[];
   visibleEventIds: Set<string>;
   toggleEventVisibility: (id: string) => void;
+  isolateEventVisibility: (id: string) => void;
   radarEventIds: Set<string>;
   toggleRadar: (id: string, e: React.MouseEvent) => void;
 }
@@ -23,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   events,
   visibleEventIds,
   toggleEventVisibility,
+  isolateEventVisibility,
   radarEventIds,
   toggleRadar,
 }) => {
@@ -90,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   "flex items-center justify-between p-2.5 rounded-xl hover:bg-powder transition-all cursor-pointer group",
                   !visibleEventIds.has(event.id.toString()) && "opacity-60 grayscale-[0.3]"
                 )}
-                onClick={() => toggleEventVisibility(event.id.toString())}
+                onClick={() => isolateEventVisibility(event.id.toString())}
               >
                 <div className="flex items-center gap-3">
                   <div className="relative">
