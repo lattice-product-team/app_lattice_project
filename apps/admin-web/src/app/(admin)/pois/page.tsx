@@ -435,23 +435,24 @@ export default function POIsPage() {
             </div>
 
             {/* Type filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-40">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Type"
                 placeholder="Asset Type"
                 selectedKeys={typeFilter}
                 onSelectionChange={setTypeFilter}
-                className="w-full"
-                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
-                <Select.Popover className="w-full">
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="All Types">All Types</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item id="all" textValue="All Types" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      All Types
+                    </ListBox.Item>
                     {POI_TYPES.map((t) => (
-                      <ListBox.Item key={t.value} id={t.value} textValue={t.label}>{t.label}</ListBox.Item>
+                      <ListBox.Item key={t.value} id={t.value} textValue={t.label} className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                        {t.label}
+                      </ListBox.Item>
                     ))}
                   </ListBox>
                 </Select.Popover>
@@ -459,23 +460,24 @@ export default function POIsPage() {
             </div>
 
             {/* Event filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-48">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-56 border-l border-chalk/60">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Event"
                 placeholder="Parent Event"
                 selectedKeys={eventFilter}
                 onSelectionChange={setEventFilter}
-                className="w-full"
-                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
-                <Select.Popover className="w-full">
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="Global Assets">Global Assets</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item id="all" textValue="Global Assets" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Global Assets
+                    </ListBox.Item>
                     {events.map((e: any) => (
-                      <ListBox.Item key={e.id} id={e.id.toString()} textValue={e.name}>{e.name}</ListBox.Item>
+                      <ListBox.Item key={e.id.toString()} id={e.id.toString()} textValue={e.name} className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                        {e.name}
+                      </ListBox.Item>
                     ))}
                   </ListBox>
                 </Select.Popover>
@@ -495,7 +497,7 @@ export default function POIsPage() {
                     setTypeFilter(new Set([]));
                     setEventFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-ember border-ember/20 hover:bg-ember/5 transition-all h-8 px-3"
+                  className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-8 px-3 rounded-lg"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
                   Clear filters
@@ -581,20 +583,18 @@ export default function POIsPage() {
                       </td>
                       <td className="py-6 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:bg-signal-blue hover:text-white hover:border-signal-blue transition-colors"
-                            onClick={() => router.push(`/map?poiId=${poi.id}`)}
+                          <button
+                            onClick={() => router.push(`/?poiId=${poi.id}`)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             View
-                          </Button>
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:border-obsidian"
+                          </button>
+                          <button
                             onClick={() => handleOpenEdit(poi)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             Edit
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>

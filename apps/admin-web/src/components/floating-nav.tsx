@@ -24,7 +24,7 @@ export function FloatingSidebarToggle() {
     <button 
       onClick={toggleSidebar}
       className={cn(
-        "fixed top-8 left-8 sm:left-12 z-[300] h-11 px-5 rounded-full backdrop-blur-xl border border-white/20 shadow-hairline flex items-center gap-3 transition-all duration-300 active:scale-95 group pointer-events-auto bg-white/40 text-obsidian hover:bg-white/60"
+        "fixed top-8 left-8 sm:left-12 z-[100] h-11 px-5 rounded-full backdrop-blur-xl border border-white/20 shadow-hairline flex items-center gap-3 transition-all duration-300 active:scale-95 group pointer-events-auto bg-white/40 text-obsidian hover:bg-white/60"
       )}
       title="Open Control Panel"
     >
@@ -74,7 +74,7 @@ export function FloatingLogout() {
   return (
     <button 
       onClick={() => logout()}
-      className="fixed top-8 right-8 sm:right-12 z-[300] h-11 px-5 rounded-full bg-white/40 backdrop-blur-xl border border-white/20 shadow-hairline flex items-center gap-3 text-obsidian hover:bg-white/60 transition-all duration-300 group active:scale-95 pointer-events-auto"
+      className="fixed top-8 right-8 sm:right-12 z-[100] h-11 px-5 rounded-full bg-white/40 backdrop-blur-xl border border-white/20 shadow-hairline flex items-center gap-3 text-obsidian hover:bg-white/60 transition-all duration-300 group active:scale-95 pointer-events-auto"
     >
       <Icons.LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
       <span className="text-[10px] font-bold uppercase tracking-[0.15em] hidden sm:inline">Logout</span>

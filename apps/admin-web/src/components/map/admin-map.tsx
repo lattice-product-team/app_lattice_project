@@ -48,6 +48,39 @@ const POI_METADATA: Record<string, { icon: any; color: string }> = {
   default: { icon: Icons.MapPin, color: '#F8D548' },
 };
 
+const getBBox = (coords: any): [number, number, number, number] => {
+  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  
+  const process = (c: any) => {
+    if (typeof c[0] === 'number') {
+      minLng = Math.min(minLng, c[0]);
+      minLat = Math.min(minLat, c[1]);
+      maxLng = Math.max(maxLng, c[0]);
+      maxLat = Math.max(maxLat, c[1]);
+    } else {
+      c.forEach(process);
+    }
+  };
+  
+  process(coords);
+  return [minLng, minLat, maxLng, maxLat];
+};
+
+const isPointInPolygon = (point: [number, number], vs: [number, number][][]): boolean => {
+  const x = point[0], y = point[1];
+  let inside = false;
+  // Use the first ring for simplicity
+  const polygon = vs[0];
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    const intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+};
+
 const getCentroid = (coordinates: [number, number][][]): [number, number] => {
   let totalLng = 0;
   let totalLat = 0;
@@ -139,23 +172,35 @@ export const AdminMap: React.FC<AdminMapProps> = ({
 }) => {
   const mapRef = React.useRef<any>(null);
   const [_internalViewState, setInternalViewState] = useState(initialViewState);
+  const lastFittedBoundary = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (activeEventBoundary?.geometry?.coordinates) {
+      const boundaryId = activeEventBoundary.properties?.isGlobalFit 
+        ? 'global-fit' 
+        : JSON.stringify(activeEventBoundary.geometry.coordinates);
+
+      // Only fit if the boundary is different from the last one we fitted
+      if (lastFittedBoundary.current === boundaryId) return;
+
       const bbox = getBBox(activeEventBoundary.geometry.coordinates);
-      // Delay so the overlay animation (300ms) finishes before fitBounds,
-      // ensuring the map container has its final size.
       const t = setTimeout(() => {
         mapRef.current?.fitBounds(
           [
             [bbox[0], bbox[1]],
             [bbox[2], bbox[3]],
           ],
-          { padding: 80, duration: 800, maxZoom: 17 }
+          { 
+            padding: { top: 100, bottom: 100, left: 380, right: 480 }, 
+            duration: 1000, 
+            maxZoom: 16 
+          }
         );
+        lastFittedBoundary.current = boundaryId;
       }, 350);
       return () => clearTimeout(t);
-    } else if (initialViewState) {
+    } else if (initialViewState && !activeEventBoundary) {
+      // Only fly to initial view if no boundary is being fitted
       mapRef.current?.flyTo({
         center: [initialViewState.longitude, initialViewState.latitude],
         zoom: initialViewState.zoom,
@@ -166,7 +211,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     initialViewState.longitude,
     initialViewState.latitude,
     initialViewState.zoom,
-    activeEventBoundary?.geometry,
+    activeEventBoundary,
   ]);
 
   const handleMapClick = useCallback(

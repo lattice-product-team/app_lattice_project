@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { useEvents } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
 import { useMapInteractions } from '@/components/map/use-map-interactions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
   ssr: false,
@@ -26,6 +26,7 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 
 export default function EventsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { events, loading, error, refetch } = useEvents();
   const [isInterfaceOpen, setIsInterfaceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +39,21 @@ export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Selection>(new Set([]));
   const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set([]));
+
+  // Handle incoming eventId from Manage action
+  useEffect(() => {
+    const targetId = searchParams.get('eventId');
+    if (targetId && events.length > 0) {
+      const targetEvent = events.find(e => e.id.toString() === targetId);
+      if (targetEvent) {
+        setSearchTerm(targetEvent.name);
+        // Optional: clear param to avoid re-filtering on refresh
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('eventId');
+        router.replace(`/events?${params.toString()}`, { scroll: false });
+      }
+    }
+  }, [searchParams, events, router]);
 
   // Form State
   const [name, setName] = useState('');
@@ -431,52 +447,62 @@ export default function EventsPage() {
               )}
             </div>
 
+
             {/* Status filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-40">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Status"
                 placeholder="Operational Status"
                 selectedKeys={statusFilter}
                 onSelectionChange={setStatusFilter}
-                className="w-full"
-                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
-                <Select.Popover className="w-full">
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="All Schedules">All Schedules</ListBox.Item>
-                    <ListBox.Item id="active" textValue="Live & Upcoming">Live & Upcoming</ListBox.Item>
-                    <ListBox.Item id="past" textValue="Past Events">Past Events</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item id="all" textValue="All Schedules" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      All Schedules
+                    </ListBox.Item>
+                    <ListBox.Item id="active" textValue="Live & Upcoming" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Live & Upcoming
+                    </ListBox.Item>
+                    <ListBox.Item id="past" textValue="Past Events" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Past Events
+                    </ListBox.Item>
                   </ListBox>
                 </Select.Popover>
               </Select>
             </div>
 
             {/* Scale filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-40">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48 border-l border-chalk/60">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Scale"
                 placeholder="Audience Scale"
                 selectedKeys={capacityFilter}
                 onSelectionChange={setCapacityFilter}
-                className="w-full"
-                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
-                <Select.Popover className="w-full">
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="All Scales">All Scales</ListBox.Item>
-                    <ListBox.Item id="massive" textValue="Massive (>10k)">Massive (&gt;10k)</ListBox.Item>
-                    <ListBox.Item id="medium" textValue="Medium (1k-10k)">Medium (1k-10k)</ListBox.Item>
-                    <ListBox.Item id="boutique" textValue="Boutique (<1k)">Boutique (&lt;1k)</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item id="all" textValue="All Scales" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      All Scales
+                    </ListBox.Item>
+                    <ListBox.Item id="massive" textValue="Massive (>10k)" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Massive (&gt;10k)
+                    </ListBox.Item>
+                    <ListBox.Item id="medium" textValue="Medium (1k-10k)" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Medium (1k-10k)
+                    </ListBox.Item>
+                    <ListBox.Item id="boutique" textValue="Boutique (<1k)" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Boutique (&lt;1k)
+                    </ListBox.Item>
                   </ListBox>
                 </Select.Popover>
               </Select>
             </div>
+
 
             {/* Clear filters — only shown when active */}
             {(searchTerm || 
@@ -491,7 +517,7 @@ export default function EventsPage() {
                     setStatusFilter(new Set([]));
                     setCapacityFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-ember border-ember/20 hover:bg-ember/5 transition-all h-8 px-3"
+                  className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-8 px-3 rounded-lg"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
                   Clear filters
@@ -566,20 +592,21 @@ export default function EventsPage() {
                       </td>
                       <td className="py-6 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:bg-signal-blue hover:text-white hover:border-signal-blue transition-colors"
-                            onClick={() => router.push(`/map?eventId=${event.id}`)}
+                          <button
+                            onClick={() => router.push(`/?eventId=${event.id}`)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             View
-                          </Button>
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:border-obsidian"
-                            onClick={() => handleOpenEdit(event)}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedEvent(event);
+                              setIsInterfaceOpen(true);
+                            }}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             Edit
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>

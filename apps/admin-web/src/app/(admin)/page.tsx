@@ -39,17 +39,58 @@ export default function GlobalOperationsPage() {
     return events.filter(e => e.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [events, searchTerm]);
 
+  // Clear selection when search is emptied
+  useEffect(() => {
+    if (!searchTerm && !searchParams.get('eventId') && !searchParams.get('poiId')) {
+      setSelectedAsset(null);
+    }
+  }, [searchTerm, searchParams]);
+
+  const activeEventBoundary = useMemo(() => {
+    // If a specific asset is selected, focus on its boundary
+    if (selectedAsset && (selectedAsset as any).boundary) {
+      return {
+        type: 'Feature',
+        geometry: (selectedAsset as any).boundary,
+        properties: {}
+      };
+    }
+    
+    // If no specific asset but we have multiple events and it's initial load/no search,
+    // we can create a combined boundary to fit all events.
+    if (!searchTerm && !selectedAsset && events.length > 0 && !searchParams.get('eventId') && !searchParams.get('poiId')) {
+      // Simple combined bbox logic: create a feature that encompasses all event centers
+      const allCoords = events
+        .map(e => e.center?.coordinates)
+        .filter(Boolean) as [number, number][];
+      
+      if (allCoords.length > 1) {
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [allCoords] // This is a hack to get AdminMap's getBBox to work with centers
+          },
+          properties: { isGlobalFit: true }
+        };
+      }
+    }
+    return null;
+  }, [selectedAsset, events, searchTerm, searchParams]);
+
   // Center map on search result if unique
   useEffect(() => {
     if (searchTerm && filteredEventsForList.length === 1) {
       const event = filteredEventsForList[0];
-      if (event.center?.coordinates) {
+      setSelectedAsset(event);
+      
+      // Only set initial view if no boundary is available (boundary-fitting happens in AdminMap)
+      if (!event.boundary && event.center?.coordinates) {
         setMapInitialView({
           longitude: event.center.coordinates[0],
           latitude: event.center.coordinates[1],
           zoom: 16,
         });
-        setSelectedAsset(event);
       }
     }
   }, [searchTerm, filteredEventsForList]);
@@ -89,6 +130,22 @@ export default function GlobalOperationsPage() {
     return () => clearInterval(interval);
   }, [radarEventIds]);
 
+  // Center map on selected asset (especially for POIs which don't have boundaries)
+  useEffect(() => {
+    if (selectedAsset) {
+      const isPoi = (selectedAsset as any).geometry?.type === 'Point' || (selectedAsset as any).category && (selectedAsset as any).category !== 'EVENT';
+      const coords = (selectedAsset as any).geometry?.coordinates || (selectedAsset as any).center?.coordinates;
+      
+      if (isPoi && coords) {
+        setMapInitialView({
+          longitude: coords[0],
+          latitude: coords[1],
+          zoom: 18,
+        });
+      }
+    }
+  }, [selectedAsset]);
+
   // Handle initial focus from URL (poiId or eventId)
   useEffect(() => {
     if (eventsLoading || poisLoading) return;
@@ -126,7 +183,7 @@ export default function GlobalOperationsPage() {
             return new Set([...Array.from(prev), event.id.toString()]);
           });
           setSelectedAsset(event);
-          if (event.center?.coordinates) {
+          if (!event.boundary && event.center?.coordinates) {
             setMapInitialView({
               longitude: event.center.coordinates[0],
               latitude: event.center.coordinates[1],
@@ -201,6 +258,7 @@ export default function GlobalOperationsPage() {
           events={activeEventsOnMap}
           pois={activePoisOnMap}
           onAssetClick={setSelectedAsset}
+          activeEventBoundary={activeEventBoundary}
           radarData={radarData}
         />
 
@@ -208,6 +266,8 @@ export default function GlobalOperationsPage() {
           <AssetPanel 
             asset={selectedAsset}
             onClose={() => setSelectedAsset(null)}
+            onToggleRadar={(e) => toggleRadar(selectedAsset.id.toString(), e)}
+            isRadarActive={radarEventIds.has(selectedAsset.id.toString())}
           />
         )}
       </main>
