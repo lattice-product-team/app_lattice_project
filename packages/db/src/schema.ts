@@ -10,7 +10,7 @@ import {
   doublePrecision,
   primaryKey,
 } from 'drizzle-orm/pg-core';
-import { geometry, polygon } from './custom-types';
+import { geometry, polygon } from './custom-types.js';
 
 // ---------------------------------------------------------
 // ENUMS
@@ -80,6 +80,8 @@ export const events = pgTable('events', {
   isPermanent: boolean('is_permanent').default(false),
   primaryColor: varchar('primary_color', { length: 7 }).default('#ff382e'),
   metadata: text('metadata'),
+  isFeatured: boolean('is_featured').default(false),
+  isTrending: boolean('is_trending').default(false),
   createdAt: timestamp('created_at').defaultNow(),
 });
 
@@ -145,6 +147,8 @@ export const pointsOfInterest = pgTable('points_of_interest', {
   crowdLevel: crowdLevelEnum('crowd_level').default('low'),
   isWheelchairAccessible: boolean('is_wheelchair_accessible').default(true),
   hasPriorityLane: boolean('has_priority_lane'),
+  isFeatured: boolean('is_featured').default(false),
+  isTrending: boolean('is_trending').default(false),
 });
 
 export const nodes = pgTable('nodes', {

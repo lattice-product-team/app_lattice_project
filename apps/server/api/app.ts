@@ -5,9 +5,9 @@ import { rateLimit } from 'express-rate-limit';
 import { logger, errorHandler, loadConfig } from '@app/core';
 
 // Import Service Routers directly for the Monolith
-import authRouter from '../auth/routes/auth.routes';
-import geoRouter from '../geo/routes/geo.routes';
-import socialRouter from '../social/routes/social.routes';
+import authRouter from '../auth/routes/auth.routes.js';
+import geoRouter from '../geo/routes/geo.routes.js';
+import socialRouter from '../social/routes/social.routes.js';
 
 // Load validated config (SSOT)
 const env = loadConfig();
@@ -30,7 +30,7 @@ const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
@@ -40,7 +40,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }) as unknown as express.RequestHandler
 );
 
 // 3. Body Parsing
@@ -63,9 +63,9 @@ const authRateLimiter = rateLimit({
 app.use(logger);
 
 // Log incoming requests for debugging
-app.use((req, _res, next) => {
+app.use((req: Request, _res: Response, next: express.NextFunction) => {
   if (env.NODE_ENV !== 'test') {
-    console.log(`[API Monolith] Incoming: ${req.method} ${req.originalUrl}`);
+    console.log(`[API Monolith] Incoming: ${req.method} ${req.originalUrl} -> ${req.path}`);
   }
   next();
 });
@@ -101,11 +101,19 @@ v1Router.use(geoRouter);
 v1Router.use(socialRouter);
 
 // --- MOUNTING STRATEGY ---
-// Support all common prefixes used by clients
+// Use a more explicit mounting strategy to avoid overlapping issues
 app.use('/api/v1', v1Router);
 app.use('/v1', v1Router);
 app.use('/api', v1Router);
-app.use('/', v1Router);
+
+// Root fallback to v1 for simpler clients
+app.use('/', (req: Request, res: Response, next: express.NextFunction) => {
+  // If we already hit a prefix, don't run again (though Express handles this usually)
+  if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/v1')) {
+    return next();
+  }
+  v1Router(req, res, next);
+});
 
 // Fallback for unhandled API routes
 app.use('*', (req: Request, res: Response) => {

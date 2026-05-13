@@ -1,3 +1,5 @@
+import { Callout } from 'nextra/components'
+
 # Getting Started
 
 This guide provides the essential steps to get the Lattice ecosystem running on your local machine for development.
@@ -54,5 +56,6 @@ Open three terminals or use a terminal multiplexer:
 
 ---
 
-> [!TIP]
-> If you encounter issues with the database connection, check the [Troubleshooting](./troubleshooting.md) guide.
+<Callout type="info">
+  If you encounter issues with the database connection, check the [Troubleshooting](./troubleshooting.md) guide.
+</Callout>

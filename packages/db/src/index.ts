@@ -1,7 +1,7 @@
 import { loadConfig } from '@app/core';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './schema';
+import * as schema from './schema.js';
 
 // Load validated config
 const env = loadConfig();
@@ -25,8 +25,8 @@ export {
   eventTypeEnum,
   crowdLevelEnum,
   surfaceTypeEnum,
-} from './schema';
-export { sql, eq, and, desc, asc } from 'drizzle-orm';
+} from './schema.js';
+export { sql, eq, and, desc, asc, getTableColumns } from 'drizzle-orm';
 
 const isProduction = env.NODE_ENV === 'production';
 
@@ -48,4 +48,4 @@ pool.on('error', (err) => {
 });
 
 export const db = drizzle(pool, { schema });
-export * from './test-utils';
+export * from './test-utils.js';

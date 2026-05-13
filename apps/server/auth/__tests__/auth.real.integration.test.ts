@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import authRouter from '../routes/auth.routes';
+import authRouter from '../routes/auth.routes.js';
 import { db, users, truncateAllTables, eq } from '@app/db';
 
 const app = express();

@@ -51,6 +51,7 @@ export interface LatticeEvent {
   id: number;
   name: string;
   type: EventType;
+  locationName?: string;
   imageUrl?: string;
   startDate?: string;
   endDate?: string;
@@ -64,3 +65,14 @@ export interface LatticeEvent {
     coordinates: [number, number][][];
   };
 }
+
+export interface DiscoverySection {
+  type: 'featured' | 'categories' | 'trending' | 'nearby';
+  title: string | null;
+  items: any[];
+}
+
+export interface DiscoveryFeed {
+  sections: DiscoverySection[];
+}
+

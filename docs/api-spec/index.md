@@ -1,3 +1,5 @@
+import { Callout } from 'nextra/components'
+
 # API Reference
 
 This domain contains the technical specifications for all internal and external APIs used in the Lattice ecosystem.
@@ -44,8 +46,9 @@ sequenceDiagram
     end
 ```
 
-> [!IMPORTANT]
-> Ensure your client handles token storage and expiration logic (standard 24h duration).
+<Callout type="warning">
+  Ensure your client handles token storage and expiration logic (standard 24h duration).
+</Callout>
 
 ## Global Error Schema
 
@@ -91,5 +94,6 @@ Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`.
 
 ---
 
-> [!TIP]
-> For local development, the API is usually available at `http://localhost:3001/api/v1`.
+<Callout type="info">
+  For local development, the API is usually available at `http://localhost:3001/api/v1`.
+</Callout>

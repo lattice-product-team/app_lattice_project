@@ -20,7 +20,7 @@ export const useARData = () => {
 
   useEffect(() => {
     if (!isVisible || !userCoords) {
-      setActivePois([]);
+      if (activePois.length > 0) setActivePois([]);
       return;
     }
 
@@ -33,6 +33,7 @@ export const useARData = () => {
           // 1. Find the nearest event
           if (!allEvents || allEvents.length === 0) {
             setStatusMessage('NO EVENTS FOUND');
+            if (activePois.length > 0) setActivePois([]);
             return;
           }
 
@@ -52,7 +53,12 @@ export const useARData = () => {
 
           setStatusMessage(`VIEWING ${nearestEvent.name.toUpperCase()}`);
           const spatial = await geoService.getEventSpatial(nearestEvent.id);
-          setActivePois(spatial?.features || []);
+          const newPois = spatial?.features || [];
+          
+          // Only update if data changed (simple length check for now, could be deeper)
+          if (newPois.length !== activePois.length) {
+            setActivePois(newPois);
+          }
 
         } else if (filterMode === ARFilterMode.SELECTED_EVENT) {
           // 2. Load pins for a specific event
@@ -61,7 +67,10 @@ export const useARData = () => {
           
           setStatusMessage(`VIEWING ${event?.name.toUpperCase() || 'EVENT'}`);
           const spatial = await geoService.getEventSpatial(eventId);
-          setActivePois(spatial?.features || []);
+          const newPois = spatial?.features || [];
+          if (newPois.length !== activePois.length) {
+            setActivePois(newPois);
+          }
 
         } else if (filterMode === ARFilterMode.SPECIFIC_PIN) {
           // 3. Load a single pin
@@ -69,7 +78,10 @@ export const useARData = () => {
           const poi = await geoService.getPOI(poiId);
           
           setStatusMessage(`TRACKING ${poi?.name?.toUpperCase() || 'POI'}`);
-          setActivePois(poi ? [poi] : []);
+          const newPois = poi ? [poi] : [];
+          if (newPois.length !== activePois.length) {
+            setActivePois(newPois);
+          }
         }
       } catch (error) {
         console.error('AR Data Load Error:', error);
@@ -79,8 +91,13 @@ export const useARData = () => {
       }
     };
 
+    if (!isVisible || !userCoords) {
+      if (activePois.length > 0) setActivePois([]);
+      return;
+    }
+
     loadData();
-  }, [isVisible, filterMode, targetId, userCoords, allEvents]);
+  }, [isVisible, filterMode, targetId, userCoords?.join(','), allEvents?.length]);
 
   return {
     activePois,

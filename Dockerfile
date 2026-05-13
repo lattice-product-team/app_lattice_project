@@ -60,13 +60,14 @@ COPY --from=prod-deps /app/apps ./apps
 COPY --from=builder /app/packages/core/dist ./packages/core/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/types-schema/dist ./packages/types-schema/dist
-COPY --from=builder /app/apps/server/api/index.ts ./apps/server/api/index.ts
+# Copy all source code for the server apps
+COPY --from=builder /app/apps/server ./apps/server
 CMD ["npx", "tsx", "apps/server/api/index.ts"]
 
 # --- ADMIN-WEB Support ---
 FROM builder AS admin-web-dev
 ENV NODE_ENV=development
-CMD ["pnpm", "dev", "--filter=admin-web"]
+CMD ["sh", "-c", "rm -rf apps/admin-web/.next/* && pnpm dev --filter=admin-web"]
 
 FROM builder AS admin-web-builder
 ARG NEXT_PUBLIC_API_URL

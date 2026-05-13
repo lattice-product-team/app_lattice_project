@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { db, pool, eq, sql } from './index';
+import { db, pool, eq, sql } from './index.js';
 import {
   users,
   events,
@@ -8,8 +8,8 @@ import {
   pathSegments,
   tickets,
   savedLocations,
-} from './schema';
-import { seedCommon } from './seed-common';
+} from './schema.js';
+import { seedCommon } from './seed-common.js';
 
 async function seed() {
   console.log('🚀 Starting Master Seed...');

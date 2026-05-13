@@ -1,5 +1,6 @@
+/// <reference types="node" />
 import http from 'http';
-import app from './app';
+import app from './app.js';
 import { loadConfig, initSocket } from '@app/core';
 
 const env = loadConfig();

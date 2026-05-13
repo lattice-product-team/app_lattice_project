@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import 'dotenv/config';
 import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
-import { findRoute } from '../services/navigation.service';
-import { socialService } from '../services/social.service';
+import { findRoute } from '../services/navigation.service.js';
+import { socialService } from '../services/social.service.js';
+import { discoveryService } from '../services/discovery.service.js';
 import { notifyAdmin, notifyAll, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
 
 /**
@@ -77,11 +79,11 @@ export const getEventSpatial = async (req: Request, res: Response) => {
     const cachedData = await getCache(cacheKey);
 
     if (cachedData) {
-      res.setHeader('X-Cache', 'HIT');
+      res.header('X-Cache', 'HIT');
       return res.json(JSON.parse(cachedData));
     }
 
-    res.setHeader('X-Cache', 'MISS');
+    res.header('X-Cache', 'MISS');
 
     const [event] = await db
       .select({
@@ -289,11 +291,11 @@ export const getPois = async (req: Request, res: Response) => {
     const cachedData = await getCache(cacheKey);
 
     if (cachedData) {
-      res.setHeader('X-Cache', 'HIT');
+      res.header('X-Cache', 'HIT');
       return res.json(JSON.parse(cachedData));
     }
 
-    res.setHeader('X-Cache', 'MISS');
+    res.header('X-Cache', 'MISS');
 
     const query = db
       .select({
@@ -739,5 +741,19 @@ export const getEvent = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching event:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const getDiscoveryFeed = async (req: Request, res: Response) => {
+  try {
+    const { lat, lng } = req.query;
+    const feed = await discoveryService.getDiscoveryFeed(
+      lat ? parseFloat(lat as string) : undefined,
+      lng ? parseFloat(lng as string) : undefined
+    );
+    res.json(feed);
+  } catch (error) {
+    console.error('Error fetching discovery feed:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };

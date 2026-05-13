@@ -38,6 +38,7 @@ import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
 import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryDashboard';
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
+import { DiscoveryFeed } from '../../src/features/discovery/components/DiscoveryFeed';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
 import { AROverlay } from '../../src/features/map/components/ar/AROverlay';
 import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
@@ -581,6 +582,26 @@ export default function MapIndexPage() {
     transform: [{ translateX: toggleDrag.value * 96 }],
   }));
 
+  const handleDiscoveryItemPress = useCallback(
+    (item: any) => {
+      // Basic heuristic to distinguish POI vs Event
+      if (item.capacity !== undefined || item.currentOccupancy !== undefined || item.crowdLevel !== undefined) {
+        selectPoi(item);
+        if (setSelectedEvent as any) (setSelectedEvent as any)(null);
+        setCurrentEvent(null);
+      } else {
+        handleEventSelect(item);
+      }
+      
+      // Auto-switch to Map mode when an item is selected from Explore
+      const nextMode = 1;
+      toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
+      screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
+      setActiveMode(nextMode);
+    },
+    [handleEventSelect, selectPoi, setSelectedEvent, setCurrentEvent, toggleDrag, screenMode, theme.motion.physics.magnetic]
+  );
+
   const exploreTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
       toggleDrag.value,
@@ -624,28 +645,7 @@ export default function MapIndexPage() {
       {/* 1. Unified Sliding Canvas (Z-Index: 0) */}
       <Animated.View style={[styles.canvas, canvasStyle]}>
         <View style={[styles.screen, { backgroundColor: theme.colors.bg.surface }]}>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-            <Text
-              style={{
-                fontSize: 32,
-                fontFamily: typography.primary.bold,
-                color: theme.colors.text.primary,
-              }}
-            >
-              Exploración
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                fontFamily: typography.primary.regular,
-                color: theme.colors.text.muted,
-                textAlign: 'center',
-                marginTop: 12,
-              }}
-            >
-              Aquí aparecerán los próximos eventos y tus colecciones personales.
-            </Text>
-          </View>
+          <DiscoveryFeed onItemPress={handleDiscoveryItemPress} />
         </View>
 
         <View style={styles.screen}>

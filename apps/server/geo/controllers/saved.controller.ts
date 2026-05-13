@@ -3,7 +3,7 @@ import { db, savedLocations, sql } from '@app/db';
 import { eq, and } from 'drizzle-orm';
 
 const getUserIdFromAuth = (req: Request): number => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.get('authorization');
   if (!authHeader) return 1; // Fallback for safety in development
   const userIdStr = authHeader.replace('Bearer mock_jwt_token_for_', '');
   return parseInt(userIdStr, 10);
