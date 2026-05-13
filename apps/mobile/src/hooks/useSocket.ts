@@ -9,6 +9,7 @@ const SOCKET_URL = API_URL?.replace('/api/v1', '').replace('/v1', '') || '';
 
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
+  const isGuest = useAuthStore((state) => state.isGuest);
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const appState = useRef(AppState.currentState);
@@ -23,7 +24,8 @@ export const useSocket = () => {
   }, []);
 
   const connect = useCallback(() => {
-    if (!token || !SOCKET_URL) return;
+    // Don't connect for guests or unauthenticated users
+    if (!token || isGuest || !SOCKET_URL) return;
 
     // Avoid multiple connections
     if (socketRef.current?.connected) return;
@@ -49,15 +51,21 @@ export const useSocket = () => {
     });
 
     socketInstance.on('connect_error', (err) => {
-      console.error('[Socket] Connection error:', err.message);
+      // Auth errors are expected for guests / expired tokens — log as warning, not error
+      if (err.message.includes('Authentication error')) {
+        console.warn('[Socket] Auth error (token may be expired):', err.message);
+        socketInstance.disconnect(); // Stop retrying
+      } else {
+        console.error('[Socket] Connection error:', err.message);
+      }
     });
 
     socketRef.current = socketInstance;
-  }, [token, disconnect]);
+  }, [token, isGuest, disconnect]);
 
-  // Handle connection/disconnection based on token
+  // Handle connection/disconnection based on token and guest mode
   useEffect(() => {
-    if (token) {
+    if (token && !isGuest) {
       connect();
     } else {
       disconnect();
@@ -65,7 +73,7 @@ export const useSocket = () => {
     return () => {
       // Don't disconnect on every re-render, only on unmount or token change
     };
-  }, [token, connect, disconnect]);
+  }, [token, isGuest, connect, disconnect]);
 
   // Lifecycle management
   useEffect(() => {
