@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import geoRouter from '../routes/geo.routes';
+import geoRouter from '../routes/geo.routes.js';
 import * as dbLib from '@app/db';
 
 const app = express();
