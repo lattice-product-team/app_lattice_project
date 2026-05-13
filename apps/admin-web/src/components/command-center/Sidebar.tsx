@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={cn(
-        "z-30 bg-white/40 backdrop-blur-xl border-r border-white/20 shadow-massive transition-all duration-500 flex flex-col overflow-hidden h-full shrink-0",
+        "z-[200] bg-white/40 backdrop-blur-xl border-r border-white/20 shadow-massive transition-all duration-500 flex flex-col overflow-hidden h-full shrink-0",
         "lg:relative fixed inset-y-0 left-0",
         isOpen ? 'w-[var(--sidebar-width)] translate-x-0' : 'w-0 -translate-x-full'
       )}
@@ -53,9 +53,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <p className="text-[9px] font-black uppercase tracking-[0.3em] text-gravel mb-1">Operative Context</p>
           <h2 className="waldenburg-display text-admin-xl text-obsidian">Control Panel</h2>
         </div>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onClose}>
-          <Icons.ChevronLeft className="w-4 h-4" />
-        </Button>
+        <button 
+          onClick={onClose}
+          className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-obsidian hover:text-white transition-all duration-300 border border-obsidian/10"
+          title="Close Sidebar"
+        >
+          <Icons.ChevronLeft className="w-5 h-5" />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar w-[var(--sidebar-width)]">

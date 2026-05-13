@@ -66,12 +66,14 @@ const MapMarker = React.memo(({
   type, 
   data, 
   isSelected, 
-  onClick 
+  onClick,
+  currentZoom = 0
 }: { 
   type: 'event' | 'poi'; 
   data: any; 
   isSelected?: boolean;
   onClick?: (data: any) => void;
+  currentZoom?: number;
 }) => {
   const metadata = POI_METADATA[data.category] || POI_METADATA.default;
   const size = type === 'event' ? 'w-10 h-10' : 'w-8 h-8';
@@ -83,6 +85,13 @@ const MapMarker = React.memo(({
     : data.geometry.coordinates;
 
   if (!coords) return null;
+
+  // Zoom Logic
+  const ZOOM_SHOW_EVENTS = 11;
+  const ZOOM_SHOW_POIS = 14.5;
+
+  if (type === 'event' && currentZoom < ZOOM_SHOW_EVENTS) return null;
+  if (type === 'poi' && currentZoom < ZOOM_SHOW_POIS) return null;
 
   return (
     <Marker
@@ -102,8 +111,10 @@ const MapMarker = React.memo(({
           <Icon className={type === 'event' ? "w-5 h-5" : "w-4 h-4"} color="white" strokeWidth={2.5} />
         </div>
         
-        {/* Label - visible on hover or if selected */}
-        <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-200 whitespace-nowrap ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'}`}>
+        {/* Label - visible on hover, if selected, or if it's an event and we are zoomed in */}
+        <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-black uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-300 whitespace-nowrap ${
+          (isSelected || type === 'event') ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'
+        }`}>
           {data.name}
         </div>
       </div>
@@ -257,7 +268,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="global-boundaries-labels"
               type="symbol"
-              minzoom={13}
+              minzoom={11}
               layout={{
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold'],
@@ -355,7 +366,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                 key={`event-${event.id}`} 
                 type="event" 
                 data={event} 
-                onClick={onAssetClick} 
+                onClick={onAssetClick}
+                currentZoom={_internalViewState.zoom}
               />
             ))}
             {pois.map((poi) => (
@@ -363,7 +375,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                 key={`poi-${poi.id}`} 
                 type="poi" 
                 data={poi} 
-                onClick={onAssetClick} 
+                onClick={onAssetClick}
+                currentZoom={_internalViewState.zoom}
               />
             ))}
           </>
