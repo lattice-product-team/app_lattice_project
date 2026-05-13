@@ -30,7 +30,7 @@ const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
@@ -63,7 +63,7 @@ const authRateLimiter = rateLimit({
 app.use(logger);
 
 // Log incoming requests for debugging
-app.use((req, _res, next) => {
+app.use((req: Request, _res: Response, next: express.NextFunction) => {
   if (env.NODE_ENV !== 'test') {
     console.log(`[API Monolith] Incoming: ${req.method} ${req.originalUrl}`);
   }

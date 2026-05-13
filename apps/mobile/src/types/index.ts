@@ -51,6 +51,7 @@ export interface LatticeEvent {
   id: number;
   name: string;
   type: EventType;
+  locationName?: string;
   imageUrl?: string;
   startDate?: string;
   endDate?: string;

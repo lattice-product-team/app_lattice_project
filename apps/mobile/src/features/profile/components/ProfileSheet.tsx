@@ -42,9 +42,10 @@ interface ProfileSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSettings: () => void;
+  externalState?: any;
 }
 
-export const ProfileSheet = ({ isOpen, onClose, onSettings }: ProfileSheetProps) => {
+export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: ProfileSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { profile } = useProfileStore();

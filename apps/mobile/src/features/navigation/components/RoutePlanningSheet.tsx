@@ -22,7 +22,7 @@ import { Button } from '../../../components/ui/Button';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RoutePlanningSheetProps {
-  visibility: SharedValue<number>;
+  visibility: any;
 }
 
 export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {

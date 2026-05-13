@@ -251,26 +251,6 @@ export default function MapIndexPage() {
     [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
   );
 
-  const handleDiscoveryItemPress = useCallback(
-    (item: any) => {
-      // Basic heuristic to distinguish POI vs Event
-      if (item.capacity !== undefined || item.currentOccupancy !== undefined || item.crowdLevel !== undefined) {
-        selectPoi(item);
-        if (setSelectedEvent as any) (setSelectedEvent as any)(null);
-        setCurrentEvent(null);
-      } else {
-        handleEventSelect(item);
-      }
-      
-      // Auto-switch to Map mode when an item is selected from Explore
-      const nextMode = 1;
-      toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
-      screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
-      setActiveMode(nextMode);
-    },
-    [handleEventSelect, selectPoi, setSelectedEvent, setCurrentEvent, toggleDrag, screenMode, theme.motion.physics.magnetic]
-  );
-
   const handleCloseDetails = useCallback(() => {
     // 1. Clear Data (This triggers the sheet to close via useEffect)
     setCurrentEvent(null);
@@ -601,6 +581,26 @@ export default function MapIndexPage() {
   const modeIndicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: toggleDrag.value * 96 }],
   }));
+
+  const handleDiscoveryItemPress = useCallback(
+    (item: any) => {
+      // Basic heuristic to distinguish POI vs Event
+      if (item.capacity !== undefined || item.currentOccupancy !== undefined || item.crowdLevel !== undefined) {
+        selectPoi(item);
+        if (setSelectedEvent as any) (setSelectedEvent as any)(null);
+        setCurrentEvent(null);
+      } else {
+        handleEventSelect(item);
+      }
+      
+      // Auto-switch to Map mode when an item is selected from Explore
+      const nextMode = 1;
+      toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
+      screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
+      setActiveMode(nextMode);
+    },
+    [handleEventSelect, selectPoi, setSelectedEvent, setCurrentEvent, toggleDrag, screenMode, theme.motion.physics.magnetic]
+  );
 
   const exploreTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
