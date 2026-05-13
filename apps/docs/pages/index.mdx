@@ -1,26 +1,26 @@
-![Lattice Banner](/Users/kore/.gemini/antigravity/brain/0e75ea40-401a-469a-8529-a9d3f11e4ca4/lattice_banner_1778588749257.png)
+![Lattice Banner](https://lattice-product-team.github.io/app_lattice_project/documentation/assets/lattice_banner_1778588749257.png)
 
-# <img src="./apps/mobile/assets/images/icon.png" height="40" style={{ verticalAlign: 'middle' }} /> Lattice
+# <img src="https://lattice-product-team.github.io/app_lattice_project/documentation/icon.png" height="40" style={{ verticalAlign: 'middle' }} /> Lattice
 
 Lattice is the definitive ecosystem for urban discovery and festival management in Barcelona. Built as a high-performance **Modular Monolith** within a **Turborepo**, it combines a React Native mobile experience with a robust Node.js/PostgreSQL backend.
 
-## 📚 Documentation Portal
+## Documentation Portal
 
 We follow a professional, domain-driven documentation structure that also satisfies the 10-section academic requirement **[a-j]**.
 
 | Domain | Academic Mapping | Description |
 | :--- | :--- | :--- |
-| **[Product](./docs/product)** | **[a]**, **[f]** | Vision, roadmap, and market objectives. |
-| **[UX Design](./docs/product/features-design)** | **[c]** | Wireframes, feature specs, and HUD designs. |
-| **[Architecture](./docs/architecture)** | **[e]**, **[h]** | System design, monorepo structure, and ADRs. |
-| **[API Spec](./docs/api-spec)** | **[e]** | RESTful contracts and shared data schemas. |
-| **[Engineering](./docs/engineering)** | **[b]**, **[e]** | Coding standards, Git workflow, and testing. |
-| **[Guides](./docs/guides)** | **[d]**, **[i]** | Installation, troubleshooting, and user manuals. |
+| **[Product](https://lattice-product-team.github.io/app_lattice_project/documentation/product)** | **[a]**, **[f]** | Vision, roadmap, and market objectives. |
+| **[UX Design](https://lattice-product-team.github.io/app_lattice_project/documentation/product/features-design)** | **[c]** | Wireframes, feature specs, and HUD designs. |
+| **[Architecture](https://lattice-product-team.github.io/app_lattice_project/documentation/architecture)** | **[e]**, **[h]** | System design, monorepo structure, and ADRs. |
+| **[API Spec](https://lattice-product-team.github.io/app_lattice_project/documentation/api-spec)** | **[e]** | RESTful contracts and shared data schemas. |
+| **[Engineering](https://lattice-product-team.github.io/app_lattice_project/documentation/engineering)** | **[b]**, **[e]** | Coding standards, Git workflow, and testing. |
+| **[Guides](https://lattice-product-team.github.io/app_lattice_project/documentation/guides)** | **[d]**, **[i]** | Installation, troubleshooting, and user manuals. |
 | **Demo & Pitch** | **[g]**, **[j]** | Links to video demonstrations and project pitch. |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 > [!IMPORTANT]
 > Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
@@ -32,7 +32,7 @@ We follow a professional, domain-driven documentation structure that also satisf
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 -   **Backend**: Node.js (Express) with **Drizzle ORM**.
 -   **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
@@ -41,7 +41,7 @@ We follow a professional, domain-driven documentation structure that also satisf
 -   **Auth**: Custom JWT authentication with bcrypt password hashing.
 -   **Tooling**: Turborepo, Docker, and Vitest.
 
-## 📦 Shared Packages
+## Shared Packages
 
 -   `@app/db`: SSOT for schema and migrations.
 -   `@app/types-schema`: Universal TypeScript definitions.
@@ -50,6 +50,6 @@ We follow a professional, domain-driven documentation structure that also satisf
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We follow **Conventional Commits**. Please review our **[Git Standards](./docs/engineering/git-standards.md)** before opening a Pull Request.
+We follow **Conventional Commits**. Please review our **[Git Standards](https://lattice-product-team.github.io/app_lattice_project/documentation/engineering/git-standards)** before opening a Pull Request.

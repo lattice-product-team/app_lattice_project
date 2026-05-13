@@ -1,3 +1,5 @@
+import { Callout } from 'nextra/components'
+
 # <img src="/icon.png" height="32" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '8px' }} /> Admin Dashboard Guide
 
 This guide explains how to use the Lattice Admin Dashboard to manage the platform and curate content.
@@ -37,5 +39,6 @@ Lattice prides itself on being inclusive. Administrators are responsible for:
 
 ---
 
-> [!IMPORTANT]
-> All changes made in the Admin Dashboard are live. Ensure data accuracy before saving.
+<Callout type="warning">
+  All changes made in the Admin Dashboard are live. Ensure data accuracy before saving.
+</Callout>
