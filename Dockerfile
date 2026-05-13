@@ -66,7 +66,7 @@ CMD ["npx", "tsx", "apps/server/api/index.ts"]
 # --- ADMIN-WEB Support ---
 FROM builder AS admin-web-dev
 ENV NODE_ENV=development
-CMD ["sh", "-c", "rm -rf apps/admin-web/.next && pnpm dev --filter=admin-web"]
+CMD ["sh", "-c", "rm -rf apps/admin-web/.next/* && pnpm dev --filter=admin-web"]
 
 FROM builder AS admin-web-builder
 ARG NEXT_PUBLIC_API_URL

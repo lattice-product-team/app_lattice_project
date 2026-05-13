@@ -81,7 +81,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/images/icon.png',
   scheme: 'lattice',
   userInterfaceStyle: 'automatic',
-  newArchEnabled: false,
+  newArchEnabled: true,
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.cdc.lattice.dev',
