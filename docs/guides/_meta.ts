@@ -1,0 +1,7 @@
+export default {
+  index: 'Guides Overview',
+  'getting-started': 'Getting Started',
+  onboarding: 'Developer Onboarding',
+  troubleshooting: 'Troubleshooting',
+  'admin-user-guide': 'Admin User Guide',
+};

@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { db, pool } from './index';
-import { tickets } from './schema';
+import { db, pool } from './index.js';
+import { tickets } from './schema.js';
 import { sql } from 'drizzle-orm';
 import * as QRCode from 'qrcode';
 

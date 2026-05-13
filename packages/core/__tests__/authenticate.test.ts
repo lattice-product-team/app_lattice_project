@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
-import { authenticate } from '../index';
+import { authenticate } from '../index.js';
 import { Request, Response } from 'express';
-import { loadConfig } from '../src/config';
+import { loadConfig } from '../src/config.js';
 
 // Mock loadConfig to provide a consistent secret for tests
 vi.mock('../src/config', () => ({

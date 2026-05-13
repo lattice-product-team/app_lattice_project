@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@import "nextra-theme-docs/style.css";
+
+@layer base {
+  :root {
+    --nextra-primary-hue: 45deg;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+

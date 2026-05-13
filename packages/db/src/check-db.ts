@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { pool } from './index';
+import { pool } from './index.js';
 
 async function check() {
   const client = await pool.connect();

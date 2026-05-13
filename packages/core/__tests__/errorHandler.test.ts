@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { errorHandler } from '../index';
+import { errorHandler } from '../index.js';
 import { Request, Response } from 'express';
 
 describe('errorHandler', () => {

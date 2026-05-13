@@ -1,5 +1,5 @@
-import { db, sql } from './index';
-import * as schema from './schema';
+import { db, sql } from './index.js';
+import * as schema from './schema.js';
 import { getTableConfig } from 'drizzle-orm/pg-core';
 
 /**

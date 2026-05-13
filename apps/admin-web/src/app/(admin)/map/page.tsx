@@ -134,8 +134,8 @@ export default function GlobalMapPage() {
         />
       </div>
 
-      {/* Floating Header */}
-      <div className="absolute top-6 left-6 z-10 pointer-events-none">
+      {/* Floating Header - Shifted down to clear nav */}
+      <div className="absolute top-24 left-12 z-10 pointer-events-none">
         <Card className="p-4 bg-white/80 backdrop-blur-md border-chalk shadow-subtle pointer-events-auto max-w-sm">
           <p className="text-gravel text-[9px] font-black uppercase tracking-[0.2em] mb-1">
             Operational Awareness
@@ -146,8 +146,8 @@ export default function GlobalMapPage() {
         </Card>
       </div>
 
-      {/* Event Layers Panel */}
-      <Card className="absolute left-6 top-32 w-64 bg-white/80 backdrop-blur-md p-4 border-chalk shadow-subtle z-10">
+      {/* Event Layers Panel - Shifted down to clear header */}
+      <Card className="absolute left-12 top-52 w-64 bg-white/80 backdrop-blur-md p-4 border-chalk shadow-subtle z-10">
         <h3 className="text-[9px] font-black uppercase tracking-widest text-gravel mb-3 border-b border-chalk pb-2">
           Active Layers
         </h3>
@@ -176,9 +176,9 @@ export default function GlobalMapPage() {
         </div>
       </Card>
 
-      {/* Asset Detail Panel */}
+      {/* Asset Detail Panel - Shifted down to clear nav */}
       {selectedAsset && (
-        <Card className="absolute right-6 top-6 bottom-6 w-80 bg-white/95 backdrop-blur-md border-chalk shadow-massive z-20 flex flex-col animate-in slide-in-from-right duration-300">
+        <Card className="absolute right-12 top-24 bottom-12 w-80 bg-white/95 backdrop-blur-md border-chalk shadow-massive z-20 flex flex-col animate-in slide-in-from-right duration-300">
           <div className="p-6 border-b border-chalk flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gravel mb-1">

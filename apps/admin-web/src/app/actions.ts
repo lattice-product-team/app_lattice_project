@@ -5,11 +5,11 @@ import { redirect } from 'next/navigation';
 import { encrypt } from '@/lib/auth';
 
 export async function login(prevState: any, formData: FormData) {
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const email = formData.get('email')?.toString().trim();
+  const password = formData.get('password')?.toString().trim();
 
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminEmail = process.env.ADMIN_EMAIL?.trim();
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
 
   if (email === adminEmail && password === adminPassword) {
     // Create the session

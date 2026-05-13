@@ -1,5 +1,4 @@
-import { Avatar } from '@heroui/react';
-import { SidebarNav } from '@/components/sidebar-nav';
+import { FloatingNav, FloatingLogout } from '@/components/floating-nav';
 import { getSession } from '@/lib/auth';
 
 export default async function AdminLayout({
@@ -12,29 +11,20 @@ export default async function AdminLayout({
   const displayName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-eggshell">
-      {/* Sidebar - Editorial Style */}
-      <aside className="w-64 bg-eggshell border-r border-chalk flex flex-col z-50">
-        <div className="p-8 pt-12">
-          <div className="flex items-center gap-3 px-1 pb-6 border-b border-chalk/50 mb-8">
-            <Avatar 
-              name={displayName[0]}
-              className="bg-powder text-obsidian font-bold rounded-full w-10 h-10 border border-chalk" 
-            />
-            <div className="flex flex-col">
-              <span className="text-admin-base font-semibold text-obsidian leading-tight">
-                {displayName}
-              </span>
-              <span className="text-admin-xs text-gravel font-medium">Administrator</span>
-            </div>
-          </div>
-        </div>
+    <div className="relative h-screen w-full overflow-hidden bg-eggshell flex flex-col">
+      {/* Floating Logout - Fixed Left */}
+      <div className="fixed top-8 left-12 z-[110]">
+        <FloatingLogout />
+      </div>
 
-        <SidebarNav />
-      </aside>
+      {/* Floating Nav - Mathematically Centered */}
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100]">
+        <FloatingNav />
+      </div>
 
-      <main className="flex-1 flex flex-col min-h-0 bg-eggshell">
-        <div className="flex-1 overflow-y-auto w-full">{children}</div>
+      {/* Main Content Canvas - Full screen to allow maps/backgrounds to show behind nav */}
+      <main className="flex-1 w-full overflow-y-auto">
+        {children}
       </main>
     </div>
   );

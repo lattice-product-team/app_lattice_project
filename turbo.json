@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "passThroughEnv": ["NODE_ENV", "JWT_SECRET", "ADMIN_EMAIL", "ADMIN_PASSWORD"]
     },
     "lint": {},
     "test": {
@@ -32,7 +33,10 @@
         "DATABASE_URL",
         "REDIS_HOST",
         "REDIS_PORT",
-        "REDIS_URL"
+        "REDIS_URL",
+        "JWT_SECRET",
+        "ADMIN_EMAIL",
+        "ADMIN_PASSWORD"
       ]
     },
     "db:generate": {

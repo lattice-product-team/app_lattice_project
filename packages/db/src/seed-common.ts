@@ -1,4 +1,4 @@
-import { users } from './schema';
+import { users } from './schema.js';
 
 export async function seedCommon(db: any) {
   console.log('Seeding common data (users and profiles)...');

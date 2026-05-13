@@ -5,9 +5,9 @@ import { rateLimit } from 'express-rate-limit';
 import { logger, errorHandler, loadConfig } from '@app/core';
 
 // Import Service Routers directly for the Monolith
-import authRouter from '../auth/routes/auth.routes';
-import geoRouter from '../geo/routes/geo.routes';
-import socialRouter from '../social/routes/social.routes';
+import authRouter from '../auth/routes/auth.routes.js';
+import geoRouter from '../geo/routes/geo.routes.js';
+import socialRouter from '../social/routes/social.routes.js';
 
 // Load validated config (SSOT)
 const env = loadConfig();
