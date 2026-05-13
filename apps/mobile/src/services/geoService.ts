@@ -49,4 +49,11 @@ export const geoService = {
   deleteSavedLocation: async (id: number): Promise<any> => {
     return apiClient.delete<any>(`/saved/${id}`);
   },
+
+  getDiscoveryFeed: async (lat?: number, lng?: number): Promise<any> => {
+    const params: any = {};
+    if (lat) params.lat = lat;
+    if (lng) params.lng = lng;
+    return apiClient.get<any>('/discovery', params);
+  },
 };

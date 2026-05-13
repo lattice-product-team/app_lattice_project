@@ -64,3 +64,14 @@ export interface LatticeEvent {
     coordinates: [number, number][][];
   };
 }
+
+export interface DiscoverySection {
+  type: 'featured' | 'categories' | 'trending' | 'nearby';
+  title: string | null;
+  items: any[];
+}
+
+export interface DiscoveryFeed {
+  sections: DiscoverySection[];
+}
+
