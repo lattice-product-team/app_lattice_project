@@ -25,6 +25,7 @@ export default async function AdminLayout({
       {/* Main Content Canvas - Full screen to allow maps/backgrounds to show behind nav */}
       <main 
         className="flex-1 w-full overflow-y-auto"
+        style={{ paddingTop: 'var(--admin-safe-area)' }}
       >
         {children}
       </main>

@@ -390,8 +390,8 @@ export default function POIsPage() {
       )}
 
       <div className="space-y-0">
-        {/* Toolbar - full width, flush with table */}
-        <div className="w-full bg-white border border-chalk border-b-0">
+        {/* Toolbar - integrated with canvas */}
+        <div className="w-full bg-white/40 backdrop-blur-md border border-chalk/60 border-b-0 shadow-subtle">
           {/* Top row: title + matched count + create button */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-chalk/60 gap-4">
             <div className="flex items-center gap-3">
