@@ -1,7 +1,13 @@
 {
   "files": [],
   "compilerOptions": {
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "baseUrl": ".",
+    "paths": {
+      "@app/core": ["packages/core/index.ts"],
+      "@app/db": ["packages/db/index.ts"],
+      "@app/types-schema": ["packages/types-schema/index.ts"]
+    }
   },
   "references": [
     { "path": "packages/core" },
