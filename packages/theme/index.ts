@@ -1,2 +1,2 @@
-export * from './colors.js';
-export * from './typography.js';
+export * from './colors';
+export * from './typography';
