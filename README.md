@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="/assets/lattice_banner_1778588749257.png" width="100%" alt="Lattice Banner" />
+  <img src="/app_lattice_project/assets/lattice_banner_1778588749257.png" width="100%" alt="Lattice Banner" />
   
-  # <img src="/icon.png" height="48" style={{ verticalAlign: 'middle' }} /> Lattice
+  # <img src="/app_lattice_project/icon.png" height="48" style={{ verticalAlign: 'middle' }} /> Lattice
   
   **The definitive ecosystem for urban discovery and festival management in Barcelona.**
   

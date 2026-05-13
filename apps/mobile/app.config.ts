@@ -28,7 +28,7 @@ if (fs.existsSync(rootEnvPath)) {
  */
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  API_URL: z.string().url(),
+  API_URL: z.string().url().default('http://localhost:3000/api/v1'),
   GATEWAY_HOST: z.string().default('localhost'),
   GATEWAY_PORT: z.string().default('3000'),
   VALHALLA_PORT: z.string().default('8002'),
