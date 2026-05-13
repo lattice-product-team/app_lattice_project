@@ -24,10 +24,47 @@ export default function GlobalOperationsPage() {
   const { pois, loading: poisLoading } = usePOIs();
 
   const [visibleEventIds, setVisibleEventIds] = useState<Set<string>>(new Set());
+  const [radarEventIds, setRadarEventIds] = useState<Set<string>>(new Set());
+  const [radarData, setRadarData] = useState<any>(null);
   const [selectedAsset, setSelectedAsset] = useState<BaseAsset | null>(null);
   const [mapInitialView, setMapInitialView] = useState({ longitude: 2.2575, latitude: 41.5641, zoom: 15 });
 
   const processedParams = React.useRef<string | null>(null);
+
+  // Poll for telemetry data
+  useEffect(() => {
+    if (radarEventIds.size === 0) {
+      setRadarData(null);
+      return;
+    }
+
+    const fetchTelemetry = async () => {
+      try {
+        const results = await Promise.all(
+          Array.from(radarEventIds).map(async (id) => {
+            const res = await fetch(`/api/v1/geo/locations?eventId=${id}`);
+            if (!res.ok) return null;
+            return res.json();
+          })
+        );
+
+        const allFeatures = results
+          .filter(Boolean)
+          .flatMap((data: any) => data.features || []);
+
+        setRadarData({
+          type: 'FeatureCollection',
+          features: allFeatures,
+        });
+      } catch (error) {
+        console.error('Error fetching telemetry:', error);
+      }
+    };
+
+    fetchTelemetry();
+    const interval = setInterval(fetchTelemetry, 5000);
+    return () => clearInterval(interval);
+  }, [radarEventIds]);
 
   // Handle initial focus from URL (poiId or eventId)
   useEffect(() => {
@@ -99,6 +136,14 @@ export default function GlobalOperationsPage() {
     setVisibleEventIds(next);
   };
 
+  const toggleRadar = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = new Set(radarEventIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setRadarEventIds(next);
+  };
+
   const filteredEvents = useMemo(
     () => events.filter((e) => visibleEventIds.has(e.id.toString())),
     [events, visibleEventIds]
@@ -131,6 +176,7 @@ export default function GlobalOperationsPage() {
           events={filteredEvents}
           pois={filteredPois}
           onAssetClick={setSelectedAsset}
+          radarData={radarData}
         />
       </div>
 
@@ -167,10 +213,25 @@ export default function GlobalOperationsPage() {
                   {event.name}
                 </span>
               </div>
-              <Checkbox
-                isSelected={visibleEventIds.has(event.id.toString())}
-                aria-label={`Toggle ${event.name}`}
-              />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-7 w-7 p-0 rounded-full transition-colors ${
+                    radarEventIds.has(event.id.toString())
+                      ? 'bg-ember/20 text-ember hover:bg-ember/30'
+                      : 'text-gravel hover:bg-powder'
+                  }`}
+                  onClick={(e) => toggleRadar(event.id.toString(), e)}
+                  title="Toggle Radar"
+                >
+                  <Icons.Activity className="w-3.5 h-3.5" />
+                </Button>
+                <Checkbox
+                  isSelected={visibleEventIds.has(event.id.toString())}
+                  aria-label={`Toggle ${event.name}`}
+                />
+              </div>
             </div>
           ))}
         </div>
