@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "description": "App Lattice Core Library",
-  "main": "./index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./index.ts",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
     "build": "tsc",
