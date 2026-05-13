@@ -39,6 +39,7 @@ import { DiscoveryDashboard } from '../../src/features/map/components/DiscoveryD
 import { SearchExperience } from '../../src/features/map/components/SearchExperience';
 import { EventDetailSheet } from '../../src/features/map/components/EventDetailSheet';
 import { MapLoadingOverlay } from '../../src/features/map/components/MapLoadingOverlay';
+import { AROverlay } from '../../src/features/map/components/ar/AROverlay';
 import { InstructionBanner } from '../../src/components/navigation/InstructionBanner';
 import { NavigationInfo } from '../../src/features/map/components/NavigationInfo';
 import { RoutePlanningSheet } from '../../src/features/navigation/components/RoutePlanningSheet';
@@ -866,7 +867,10 @@ export default function MapIndexPage() {
         </GestureDetector>
       </Animated.View>
 
-      {/* 7. Loading Overlay (Z-Index: 4000) */}
+      {/* 7. AR Overlay Layer (Z-Index: 3500) */}
+      <AROverlay />
+
+      {/* 8. Loading Overlay (Z-Index: 4000) */}
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );

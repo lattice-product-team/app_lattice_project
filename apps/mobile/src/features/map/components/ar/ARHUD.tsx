@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { X, Compass, Plus, Minus } from 'lucide-react-native';
 import Animated, {
   useAnimatedStyle,
@@ -15,13 +15,16 @@ import { typography } from '../../../../styles/typography';
 interface ARHUDProps {
   onExit: () => void;
   isScanning?: boolean;
-  isLandscape?: boolean;
+  statusMessage?: string;
 }
 
-export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLandscape = false }) => {
+export const ARHUD: React.FC<ARHUDProps> = ({ 
+  onExit, 
+  isScanning = true, 
+  statusMessage = 'AR ACTIVE' 
+}) => {
   const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
-  const { width, height } = useWindowDimensions();
   const scanOpacity = useSharedValue(0.5);
 
   useEffect(() => {
@@ -36,43 +39,25 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
     opacity: scanOpacity.value,
   }));
 
-  // Rotation style for when the device is physically landscape but the OS is in portrait
-  const rotationStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: withTiming(isLandscape ? '90deg' : '0deg') }],
-  }));
-
-  // Adjust container for landscape rotation
-  // If rotated 90deg, the "top" of our UI should be the long side of the device.
-  const landscapeContainerStyle = isLandscape
-    ? {
-        width: height,
-        height: width,
-        top: (height - width) / 2,
-        left: (width - height) / 2,
-      }
-    : {};
-
   return (
     <View style={[StyleSheet.absoluteFill, styles.container]} pointerEvents="box-none">
-      <Animated.View
-        style={[StyleSheet.absoluteFill, rotationStyle, landscapeContainerStyle, { padding: 0 }]}
-        pointerEvents="box-none"
-      >
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {/* Top Bar - Status & Exit */}
         <View
           style={[
             styles.topBar,
             {
-              paddingTop: Math.max(isLandscape ? insets.left : insets.top, 24),
-              paddingLeft: Math.max(isLandscape ? insets.top : insets.left, 24),
-              paddingRight: Math.max(isLandscape ? insets.bottom : insets.right, 24),
+              paddingTop: Math.max(insets.top, 24),
+              paddingHorizontal: 24,
             },
           ]}
           pointerEvents="box-none"
         >
           <Animated.View style={[styles.statusBadge, scanAnimatedStyle]}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>{isScanning ? 'SCANNING LATTICE…' : 'AR ACTIVE'}</Text>
+            <View style={[styles.statusDot, { backgroundColor: isScanning ? '#FF9F0A' : '#32D74B' }]} />
+            <Text style={styles.statusText}>
+              {isScanning ? 'SCANNING LATTICE…' : statusMessage.toUpperCase()}
+            </Text>
           </Animated.View>
 
           <Pressable
@@ -85,14 +70,13 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
           </Pressable>
         </View>
 
-        {/* Bottom Interface - Compass/Heading Concept */}
+        {/* Bottom Interface - Heading Concept */}
         <View
           style={[
             styles.bottomBar,
             {
-              paddingBottom: Math.max(isLandscape ? insets.right : insets.bottom, 24),
-              paddingLeft: Math.max(isLandscape ? insets.top : insets.left, 24),
-              paddingRight: Math.max(isLandscape ? insets.bottom : insets.right, 24),
+              paddingBottom: Math.max(insets.bottom, 24),
+              paddingHorizontal: 24,
             },
           ]}
           pointerEvents="box-none"
@@ -100,11 +84,11 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
           <View style={styles.headingContainer}>
             <View style={styles.compassLine} />
             <View style={styles.compassCenter}>
-              <Text style={styles.headingText}>VIEWING GRANDSTAND AREA</Text>
+              <Text style={styles.headingText}>{statusMessage}</Text>
               <View className="flex-row items-center mt-1">
                 <Compass size={12} color={theme.colors.brand.primary} strokeWidth={2.2} />
-                <Text style={[styles.subHeadingText, { color: theme.colors.text.muted }]}>
-                  HEADING NORTH-WEST
+                <Text style={[styles.subHeadingText, { color: 'rgba(255,255,255,0.6)' }]}>
+                  REAL-TIME SPATIAL SYNC
                 </Text>
               </View>
             </View>
@@ -112,9 +96,9 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
           </View>
         </View>
 
-        {/* Side Controls - Concept */}
+        {/* Side Controls - Zoom/etc */}
         <View
-          style={[styles.sideControls, isLandscape && { right: Math.max(insets.bottom, 24) }]}
+          style={[styles.sideControls, { right: 24 }]}
           pointerEvents="box-none"
         >
           <View style={styles.controlGroup}>
@@ -127,7 +111,7 @@ export const ARHUD: React.FC<ARHUDProps> = ({ onExit, isScanning = true, isLands
             </Pressable>
           </View>
         </View>
-      </Animated.View>
+      </View>
     </View>
   );
 };
@@ -145,18 +129,17 @@ const styles = StyleSheet.create({
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#E10600', // Lattice Primary
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     marginRight: 8,
   },
   statusText: {
@@ -169,11 +152,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   bottomBar: {
     position: 'absolute',
@@ -185,12 +168,12 @@ const styles = StyleSheet.create({
   headingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
+    paddingVertical: 14,
+    borderRadius: 28,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   compassLine: {
     width: 30,
@@ -203,14 +186,15 @@ const styles = StyleSheet.create({
   },
   headingText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: typography.primary.bold,
     letterSpacing: 0.5,
   },
   subHeadingText: {
-    fontSize: 10,
+    fontSize: 9,
     marginLeft: 4,
     fontFamily: typography.secondary.bold,
+    letterSpacing: 0.8,
   },
   sideControls: {
     position: 'absolute',
@@ -220,21 +204,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   controlGroup: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     overflow: 'hidden',
   },
   sideButton: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     marginHorizontal: 8,
   },
 });

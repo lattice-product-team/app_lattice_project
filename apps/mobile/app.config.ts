@@ -127,7 +127,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-dev-client',
       {
-        newArchEnabled: true,
+        newArchEnabled: false,
       },
     ],
     'expo-router',

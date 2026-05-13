@@ -10,11 +10,11 @@ import { Navigation, Binoculars } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { useARStore, ARFilterMode } from '../store/useARStore';
 
 interface AdaptiveControlOverlayProps {
   onToggle3D: () => void;
   onRecenter: () => void;
-  onOpenBinoculars?: () => void;
   is3DActive: boolean;
   uiLayer: SharedValue<number>;
   islandState: SharedValue<number>;
@@ -26,7 +26,6 @@ interface AdaptiveControlOverlayProps {
 export const AdaptiveControlOverlay = ({
   onToggle3D,
   onRecenter,
-  onOpenBinoculars,
   is3DActive,
   uiLayer,
   islandState,
@@ -36,19 +35,21 @@ export const AdaptiveControlOverlay = ({
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const iconColor = theme.colors.text.primary;
+  const openAR = useARStore((s) => s.openAR);
+  const isARActive = useARStore((s) => s.isVisible);
 
   const rOverlayStyle = useAnimatedStyle(() => {
-    // Option B: Fade-out if any overlay layer is active or island is full-screen
+    // Option B: Fade-out if any overlay layer is active, island is full-screen, or AR is active
     const isLayerActive = uiLayer.value !== 0; // UILayer.BASE
     const isIslandFull = islandState.value > 0.8;
-    const shouldHide = isLayerActive || isIslandFull;
+    const shouldHide = isLayerActive || isIslandFull || isARActive;
 
     return {
       opacity: withTiming(shouldHide ? 0 : 1, { duration: 150 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
-  });
+  }, [isARActive]);
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
@@ -112,7 +113,7 @@ export const AdaptiveControlOverlay = ({
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onOpenBinoculars?.();
+            openAR(ARFilterMode.CLOSEST_EVENT);
           }}
           hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}
