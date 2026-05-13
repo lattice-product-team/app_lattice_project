@@ -4,15 +4,14 @@ import { DiscoveryFeed } from '../types';
 import { useLocationStore } from '../store/useLocationStore';
 
 export function useDiscovery() {
-  const { location } = useLocationStore();
+  const { coords } = useLocationStore();
+  const lng = coords?.[0];
+  const lat = coords?.[1];
 
   return useQuery({
-    queryKey: ['discovery-feed', location?.coords.latitude, location?.coords.longitude],
+    queryKey: ['discovery-feed', lat, lng],
     queryFn: async () => {
-      const response = await geoService.getDiscoveryFeed(
-        location?.coords.latitude,
-        location?.coords.longitude
-      );
+      const response = await geoService.getDiscoveryFeed(lat, lng);
       return response as DiscoveryFeed;
     },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
