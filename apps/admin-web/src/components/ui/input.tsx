@@ -33,7 +33,7 @@ export function Input({
         '**:data-[slot=input-wrapper]:h-12 **:data-[slot=input-wrapper]:px-5 **:data-[slot=input-wrapper]:rounded-none',
         // Variant styling for inputWrapper
         variant === 'contained' &&
-          '**:data-[slot=input-wrapper]:bg-white **:data-[slot=input-wrapper]:border **:data-[slot=input-wrapper]:border-chalk **:data-[slot=input-wrapper]:shadow-subtle-3',
+          '**:data-[slot=input-wrapper]:bg-powder/40 **:data-[slot=input-wrapper]:border **:data-[slot=input-wrapper]:border-chalk **:data-[slot=input-wrapper]:shadow-none',
         variant === 'transparent' &&
           '**:data-[slot=input-wrapper]:bg-transparent **:data-[slot=input-wrapper]:border-b **:data-[slot=input-wrapper]:border-obsidian **:data-[slot=input-wrapper]:shadow-none',
         // Input styling

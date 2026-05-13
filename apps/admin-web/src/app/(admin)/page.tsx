@@ -183,10 +183,10 @@ export default function GlobalOperationsPage() {
       {/* Floating Header - Shifted down to clear nav */}
       <div className="absolute top-24 left-4 sm:left-12 z-10 pointer-events-none">
         <Card className="p-4 bg-white/80 backdrop-blur-md border-chalk shadow-subtle pointer-events-auto max-w-[calc(100vw-2rem)] sm:max-w-sm">
-          <p className="text-gravel text-[9px] font-black uppercase tracking-[0.2em] mb-1">
+          <p className="text-gravel text-[9px] font-black uppercase tracking-[0.3em] mb-1">
             Operational Awareness
           </p>
-          <h1 className="waldenburg-display text-[22px] text-obsidian leading-none">
+          <h1 className="waldenburg-display text-[28px] text-obsidian leading-none">
             Global Asset Map.
           </h1>
         </Card>

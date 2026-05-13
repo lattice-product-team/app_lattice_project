@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
+import { logout } from '@/app/actions';
 
 const NAV_ITEMS = [
   { label: 'Map', href: '/', icon: 'Map' },
@@ -45,7 +46,7 @@ export function FloatingNav() {
 export function FloatingLogout() {
   return (
     <button 
-      onClick={() => {/* Logout logic */}}
+      onClick={() => logout()}
       className="h-11 px-4 sm:px-6 rounded-full bg-white border border-chalk/40 shadow-hairline flex items-center gap-3 text-obsidian hover:bg-powder transition-all duration-500 group"
     >
       <Icons.LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
