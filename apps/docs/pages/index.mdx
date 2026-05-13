@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="/app_lattice_project/assets/lattice_banner_1778588749257.png" width="100%" alt="Lattice Banner" />
+  <img src="https://lattice-product-team.github.io/app_lattice_project/assets/lattice_banner_1778588749257.png" width="100%" alt="Lattice Banner" />
   
-  # <img src="/app_lattice_project/icon.png" height="48" style={{ verticalAlign: 'middle' }} /> Lattice
+  # Lattice
   
   **The definitive ecosystem for urban discovery and festival management in Barcelona.**
   
@@ -10,24 +10,25 @@
 
 ---
 
-## 🌐 Documentation Portal
+## Documentation Portal
 
 Explore our comprehensive, domain-driven documentation. Each section is designed to provide deep technical insights and operational guidance.
 
+**[Visit the Documentation Portal](https://lattice-product-team.github.io/app_lattice_project/)**
+
 | Domain | Key Areas | Description |
 | :--- | :--- | :--- |
-| **[Product](/product)** | Vision, Roadmap | Market objectives and long-term strategy. |
-| **[Architecture](/architecture)** | System Design, ADRs | Technical blueprint and architectural decisions. |
-| **[API Spec](/api-spec)** | RESTful Contracts | Shared data schemas and service interfaces. |
-| **[Engineering](/engineering)** | Standards, Workflow | Coding guidelines and developer productivity. |
-| **[Guides](/guides)** | Onboarding, Ops | Step-by-step manuals for users and devs. |
+| **Product** | Vision, Roadmap | Market objectives and long-term strategy. |
+| **Architecture** | System Design, ADRs | Technical blueprint and architectural decisions. |
+| **API Spec** | RESTful Contracts | Shared data schemas and service interfaces. |
+| **Engineering** | Standards, Workflow | Coding guidelines and developer productivity. |
+| **Guides** | Onboarding, Ops | Step-by-step manuals for users and devs. |
 
 ---
 
 ## Quick Start
 
-> [!IMPORTANT]
-> Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
+**IMPORTANT**: Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
 
 1.  **Dependencies**: `pnpm install`
 2.  **Infrastructure**: `docker-compose up -d`
@@ -56,4 +57,4 @@ Explore our comprehensive, domain-driven documentation. Each section is designed
 
 ## Contributing
 
-We follow **Conventional Commits**. Please review our **[Git Standards](/engineering/coding-standards)** before opening a Pull Request.
+We follow **Conventional Commits**. Please review our **Git Standards** before opening a Pull Request.

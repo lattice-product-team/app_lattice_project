@@ -15,11 +15,26 @@ cp ../../README.md "$PAGES_DIR/index.md"
 
 # --- Normalization ---
 
+# 1. Convert GitHub alerts to Nextra Callouts
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!IMPORTANT\]/<Callout type="error">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!WARNING\]/<Callout type="warning">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!NOTE\]/<Callout type="info">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!TIP\]/<Callout type="info">/g' {} +
 
-# 2. Convert all .md to .mdx
+# 2. Add Callout import if needed
+find "$PAGES_DIR" -name "*.md" -exec bash -c 'if grep -q "<Callout" "$1"; then sed -i "" "1i\\
+import { Callout } from \"nextra/components\"\\
+" "$1"; fi' _ {} \;
+
+# 3. Remove common emojis
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/🚀//g' {} +
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/🌐//g' {} +
+find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/📦//g' {} +
+
+# 4. Convert all .md to .mdx
 find "$PAGES_DIR" -name "*.md" -exec bash -c 'mv "$1" "${1%.md}.mdx"' _ {} \;
 
-# 3. Security Cleanup: Remove non-documentation files (but preserve _meta and Next.js essentials)
+# 5. Security Cleanup: Remove non-documentation files (but preserve _meta and Next.js essentials)
 find "$PAGES_DIR" -type f \( -name "*.html" -o -name "*.py" -o -name "*.sh" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" \) ! -name "_meta.*" ! -name "_app.*" ! -name "_document.*" -delete
 
 echo "🚀 Documentation synced successfully from the professionalized source!"

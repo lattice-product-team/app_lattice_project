@@ -40,7 +40,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }) as unknown as express.RequestHandler
 );
 
 // 3. Body Parsing
@@ -65,7 +65,7 @@ app.use(logger);
 // Log incoming requests for debugging
 app.use((req: Request, _res: Response, next: express.NextFunction) => {
   if (env.NODE_ENV !== 'test') {
-    console.log(`[API Monolith] Incoming: ${req.method} ${req.originalUrl}`);
+    console.log(`[API Monolith] Incoming: ${req.method} ${req.originalUrl} -> ${req.path}`);
   }
   next();
 });
@@ -101,11 +101,19 @@ v1Router.use(geoRouter);
 v1Router.use(socialRouter);
 
 // --- MOUNTING STRATEGY ---
-// Support all common prefixes used by clients
+// Use a more explicit mounting strategy to avoid overlapping issues
 app.use('/api/v1', v1Router);
 app.use('/v1', v1Router);
 app.use('/api', v1Router);
-app.use('/', v1Router);
+
+// Root fallback to v1 for simpler clients
+app.use('/', (req: Request, res: Response, next: express.NextFunction) => {
+  // If we already hit a prefix, don't run again (though Express handles this usually)
+  if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/v1')) {
+    return next();
+  }
+  v1Router(req, res, next);
+});
 
 // Fallback for unhandled API routes
 app.use('*', (req: Request, res: Response) => {

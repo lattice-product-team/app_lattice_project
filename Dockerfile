@@ -60,7 +60,8 @@ COPY --from=prod-deps /app/apps ./apps
 COPY --from=builder /app/packages/core/dist ./packages/core/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/types-schema/dist ./packages/types-schema/dist
-COPY --from=builder /app/apps/server/api/index.ts ./apps/server/api/index.ts
+# Copy all source code for the server apps
+COPY --from=builder /app/apps/server ./apps/server
 CMD ["npx", "tsx", "apps/server/api/index.ts"]
 
 # --- ADMIN-WEB Support ---

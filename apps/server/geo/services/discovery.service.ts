@@ -1,4 +1,4 @@
-import { db, events, pointsOfInterest, eq, and, sql } from '@app/db';
+import { db, events, pointsOfInterest, eq, and, sql, getTableColumns, desc } from '@app/db';
 
 export interface DiscoverySection {
   type: 'featured' | 'categories' | 'trending' | 'nearby';
@@ -64,7 +64,7 @@ export class DiscoveryService {
 
       const nearbyEvents = await db
         .select({
-          ...events,
+          ...getTableColumns(events),
           distance:
             sql<number>`ST_Distance(${events.location}::geography, ${sql.raw(userPoint)})`.as(
               'distance'
@@ -77,7 +77,7 @@ export class DiscoveryService {
 
       const nearbyPois = await db
         .select({
-          ...pointsOfInterest,
+          ...getTableColumns(pointsOfInterest),
           distance:
             sql<number>`ST_Distance(${pointsOfInterest.location}::geography, ${sql.raw(userPoint)})`.as(
               'distance'
@@ -88,8 +88,8 @@ export class DiscoveryService {
         .orderBy(sql`distance ASC`)
         .limit(5);
 
-      const combinedNearby = [...nearbyEvents, ...nearbyPois]
-        .sort((a, b) => a.distance - b.distance)
+      const combinedNearby = ([...nearbyEvents, ...nearbyPois] as any[])
+        .sort((a, b) => (a.distance as number) - (b.distance as number))
         .slice(0, 8); // Top 8 nearby items
 
       if (combinedNearby.length > 0) {

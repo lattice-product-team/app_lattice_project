@@ -163,6 +163,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     '@maplibre/maplibre-react-native',
 
     'expo-web-browser',
+    'expo-screen-orientation',
+    './plugins/withAndroidBuildFix',
   ],
   experiments: {
     typedRoutes: true,

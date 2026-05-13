@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import http from 'http';
 import app from './app.js';
 import { loadConfig, initSocket } from '@app/core';
