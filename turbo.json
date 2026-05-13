@@ -45,7 +45,6 @@
     },
     "db:migrate": {
       "cache": false,
-      "dependsOn": ["build"],
       "passThroughEnv": ["DATABASE_URL", "REDIS_URL"]
     },
     "db:seed": {
