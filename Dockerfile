@@ -60,9 +60,15 @@ COPY --from=prod-deps /app/apps ./apps
 COPY --from=builder /app/packages/core/dist ./packages/core/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/types-schema/dist ./packages/types-schema/dist
-# Copy all built files and source for the server apps
+# Copy built server apps and their package.json for the Monolith
 COPY --from=builder /app/apps/server/api/dist ./apps/server/api/dist
 COPY --from=builder /app/apps/server/api/package.json ./apps/server/api/package.json
+COPY --from=builder /app/apps/server/auth/dist ./apps/server/auth/dist
+COPY --from=builder /app/apps/server/auth/package.json ./apps/server/auth/package.json
+COPY --from=builder /app/apps/server/geo/dist ./apps/server/geo/dist
+COPY --from=builder /app/apps/server/geo/package.json ./apps/server/geo/package.json
+COPY --from=builder /app/apps/server/social/dist ./apps/server/social/dist
+COPY --from=builder /app/apps/server/social/package.json ./apps/server/social/package.json
 CMD ["node", "apps/server/api/dist/index.js"]
 
 # --- ADMIN-WEB Support ---

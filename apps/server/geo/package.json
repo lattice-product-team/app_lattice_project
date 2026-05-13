@@ -2,8 +2,21 @@
   "name": "@app/geo",
   "version": "1.0.0",
   "description": "App Lattice Geo Service",
-  "main": "index.ts",
+  "main": "./dist/index.js",
+  "types": "./index.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./index.ts",
+      "default": "./dist/index.js"
+    },
+    "./routes/*": {
+      "import": "./dist/routes/*.js",
+      "types": "./routes/*.ts",
+      "default": "./dist/routes/*.js"
+    }
+  },
   "scripts": {
     "build": "tsc --build",
     "dev": "tsx watch index.ts",
