@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6778ec40-b372-4c34-8df4-aef0c4bbf887"
+      }
+    },
+    "owner": "lattice-organization",
+    "slug": "lattice-app"
+  }
+}

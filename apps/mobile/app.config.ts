@@ -177,7 +177,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     googleIosClientId: env.GOOGLE_IOS_CLIENT_ID || 'missing-ios-client-id',
     googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID || 'missing-android-client-id',
     eas: {
-      projectId: '2fbc4e45-153f-443a-b152-c034ef3964b0',
+      projectId: '6778ec40-b372-4c34-8df4-aef0c4bbf887',
     },
   },
 });
