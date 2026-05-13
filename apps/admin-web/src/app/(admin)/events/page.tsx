@@ -390,7 +390,7 @@ export default function EventsPage() {
         {/* Toolbar - full width, flush with table */}
         <div className="w-full bg-white border border-chalk border-b-0">
           {/* Top row: title + create button */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-chalk/60">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-chalk/60 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">Active Schedule</h2>
               {!loading && (
@@ -410,7 +410,7 @@ export default function EventsPage() {
           </div>
 
           {/* Search + filters row */}
-          <div className="flex items-center gap-0 divide-x divide-chalk/60">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-chalk/60 divide-y lg:divide-y-0">
             {/* Search — takes up all remaining space */}
             <div className="flex-1 flex items-center gap-3 px-6 py-3.5">
               <Icons.Search className="w-4 h-4 text-gravel/40 shrink-0" />
@@ -432,7 +432,7 @@ export default function EventsPage() {
             </div>
 
             {/* Status filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-40">
               <Select
                 variant="bordered"
                 size="sm"
@@ -440,11 +440,11 @@ export default function EventsPage() {
                 placeholder="Operational Status"
                 selectedKeys={statusFilter}
                 onSelectionChange={setStatusFilter}
-                className="w-40"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
+                className="w-full"
+                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
+                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
+                <Select.Popover className="w-full">
                   <ListBox>
                     <ListBox.Item id="all" textValue="All Schedules">All Schedules</ListBox.Item>
                     <ListBox.Item id="active" textValue="Live & Upcoming">Live & Upcoming</ListBox.Item>
@@ -455,7 +455,7 @@ export default function EventsPage() {
             </div>
 
             {/* Scale filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-40">
               <Select
                 variant="bordered"
                 size="sm"
@@ -463,11 +463,11 @@ export default function EventsPage() {
                 placeholder="Audience Scale"
                 selectedKeys={capacityFilter}
                 onSelectionChange={setCapacityFilter}
-                className="w-40"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
+                className="w-full"
+                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
+                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
+                <Select.Popover className="w-full">
                   <ListBox>
                     <ListBox.Item id="all" textValue="All Scales">All Scales</ListBox.Item>
                     <ListBox.Item id="massive" textValue="Massive (>10k)">Massive (&gt;10k)</ListBox.Item>
@@ -501,7 +501,7 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto scrollbar-hide border border-chalk bg-white">
+        <div className="admin-table-container">
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/20">

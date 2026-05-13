@@ -393,7 +393,7 @@ export default function POIsPage() {
         {/* Toolbar - full width, flush with table */}
         <div className="w-full bg-white border border-chalk border-b-0">
           {/* Top row: title + matched count + create button */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-chalk/60">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-chalk/60 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">Points of Interest</h2>
               {!loading && (
@@ -413,7 +413,7 @@ export default function POIsPage() {
           </div>
 
           {/* Search + filters row */}
-          <div className="flex items-center gap-0 divide-x divide-chalk/60">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-chalk/60 divide-y lg:divide-y-0">
             {/* Search — takes up all remaining space */}
             <div className="flex-1 flex items-center gap-3 px-6 py-3.5">
               <Icons.Search className="w-4 h-4 text-gravel/40 shrink-0" />
@@ -435,7 +435,7 @@ export default function POIsPage() {
             </div>
 
             {/* Type filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-40">
               <Select
                 variant="bordered"
                 size="sm"
@@ -443,11 +443,11 @@ export default function POIsPage() {
                 placeholder="Asset Type"
                 selectedKeys={typeFilter}
                 onSelectionChange={setTypeFilter}
-                className="w-40"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
+                className="w-full"
+                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
+                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
+                <Select.Popover className="w-full">
                   <ListBox>
                     <ListBox.Item id="all" textValue="All Types">All Types</ListBox.Item>
                     {POI_TYPES.map((t) => (
@@ -459,7 +459,7 @@ export default function POIsPage() {
             </div>
 
             {/* Event filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0 lg:w-48">
               <Select
                 variant="bordered"
                 size="sm"
@@ -467,11 +467,11 @@ export default function POIsPage() {
                 placeholder="Parent Event"
                 selectedKeys={eventFilter}
                 onSelectionChange={setEventFilter}
-                className="w-48"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
+                className="w-full"
+                classNames={{ trigger: "rounded-full border-chalk h-10 w-full" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
+                <Select.Trigger className="w-full"><Select.Value /></Select.Trigger>
+                <Select.Popover className="w-full">
                   <ListBox>
                     <ListBox.Item id="all" textValue="Global Assets">Global Assets</ListBox.Item>
                     {events.map((e: any) => (
@@ -505,7 +505,7 @@ export default function POIsPage() {
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto scrollbar-hide border border-chalk bg-white">
+        <div className="admin-table-container">
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/20">

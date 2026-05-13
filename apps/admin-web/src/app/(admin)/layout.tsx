@@ -12,8 +12,8 @@ export default async function AdminLayout({
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-eggshell flex flex-col">
-      {/* Floating Logout - Fixed Left */}
-      <div className="fixed top-8 left-12 z-[110]">
+      {/* Floating Logout - Responsive Position */}
+      <div className="fixed top-8 left-12 sm:top-8 sm:left-12 bottom-8 left-8 sm:bottom-auto z-[110]">
         <FloatingLogout />
       </div>
 
@@ -23,7 +23,10 @@ export default async function AdminLayout({
       </div>
 
       {/* Main Content Canvas - Full screen to allow maps/backgrounds to show behind nav */}
-      <main className="flex-1 w-full overflow-y-auto">
+      <main 
+        className="flex-1 w-full overflow-y-auto"
+        style={{ paddingTop: 'var(--admin-safe-area)' }}
+      >
         {children}
       </main>
     </div>

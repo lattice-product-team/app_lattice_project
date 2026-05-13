@@ -167,7 +167,7 @@ export default function GlobalOperationsPage() {
     );
 
   return (
-    <div className="relative w-full h-screen bg-eggshell overflow-hidden">
+    <div className="relative w-full h-screen bg-eggshell overflow-hidden -mt-[var(--admin-safe-area)]">
       {/* Full-screen Map */}
       <div className="absolute inset-0 z-0">
         <AdminMap
@@ -181,8 +181,8 @@ export default function GlobalOperationsPage() {
       </div>
 
       {/* Floating Header - Shifted down to clear nav */}
-      <div className="absolute top-24 left-12 z-10 pointer-events-none">
-        <Card className="p-4 bg-white/80 backdrop-blur-md border-chalk shadow-subtle pointer-events-auto max-w-sm">
+      <div className="absolute top-24 left-4 sm:left-12 z-10 pointer-events-none">
+        <Card className="p-4 bg-white/80 backdrop-blur-md border-chalk shadow-subtle pointer-events-auto max-w-[calc(100vw-2rem)] sm:max-w-sm">
           <p className="text-gravel text-[9px] font-black uppercase tracking-[0.2em] mb-1">
             Operational Awareness
           </p>
@@ -193,7 +193,7 @@ export default function GlobalOperationsPage() {
       </div>
 
       {/* Event Layers Panel - Shifted down to clear header */}
-      <Card className="absolute left-12 top-52 w-64 bg-white/80 backdrop-blur-md p-4 border-chalk shadow-subtle z-10">
+      <Card className="absolute left-4 sm:left-12 top-52 w-64 max-w-[calc(100vw-2rem)] bg-white/80 backdrop-blur-md p-4 border-chalk shadow-subtle z-10">
         <h3 className="text-[9px] font-black uppercase tracking-widest text-gravel mb-3 border-b border-chalk pb-2">
           Active Layers
         </h3>
@@ -239,7 +239,7 @@ export default function GlobalOperationsPage() {
 
       {/* Asset Detail Panel - Shifted down to clear nav */}
       {selectedAsset && (
-        <Card className="absolute right-12 top-24 bottom-12 w-80 bg-white/95 backdrop-blur-md border-chalk shadow-massive z-20 flex flex-col animate-in slide-in-from-right duration-300">
+        <Card className="absolute right-4 sm:right-12 top-24 bottom-24 sm:bottom-12 w-auto sm:w-80 left-4 sm:left-auto bg-white/95 backdrop-blur-md border-chalk shadow-massive z-20 flex flex-col animate-in slide-in-from-right duration-300">
           <div className="p-6 border-b border-chalk flex justify-between items-start">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-gravel mb-1">
