@@ -28,11 +28,13 @@ export default function GlobalOperationsPage() {
   const [radarEventIds, setRadarEventIds] = useState<Set<string>>(new Set());
   const [radarData, setRadarData] = useState<any>(null);
   const [selectedAsset, setSelectedAsset] = useState<BaseAsset | null>(null);
-  const [mapInitialView, setMapInitialView] = useState({ longitude: 2.2575, latitude: 41.5641, zoom: 15 });
-  
-  const searchTerm = searchParams.get('q') || '';
-  const processedParams = React.useRef<string | null>(null);
+  const [selectionSource, setSelectionSource] = useState<'SEARCH' | 'CLICK' | null>(null);
+  const [mapInitialView, setMapInitialView] = useState({ longitude: 2.1734, latitude: 41.3851, zoom: 11 });
+  const [hasDoneInitialFit, setHasDoneInitialFit] = useState(false);
+  const [initialFitBoundary, setInitialFitBoundary] = useState<any>(null);
   const lastCenteredAssetId = React.useRef<string | null>(null);
+  const processedParams = React.useRef<string | null>(null);
+  const searchTerm = searchParams.get('q') || '';
 
   // Filtering events based on search
   const filteredEventsForList = useMemo(() => {
@@ -44,8 +46,28 @@ export default function GlobalOperationsPage() {
   useEffect(() => {
     if (!searchTerm && !searchParams.get('eventId') && !searchParams.get('poiId')) {
       setSelectedAsset(null);
+      setSelectionSource(null);
     }
   }, [searchTerm, searchParams]);
+
+  // Handle the one-time initial global fit
+  useEffect(() => {
+    if (!hasDoneInitialFit && !eventsLoading && events.length > 0) {
+      const boundaries = events.filter(e => e.boundary);
+      
+      if (boundaries.length > 0) {
+        setInitialFitBoundary({
+          type: 'FeatureCollection',
+          features: boundaries.map(e => ({
+            type: 'Feature',
+            geometry: e.boundary,
+            properties: { isGlobalFit: true }
+          }))
+        });
+        setHasDoneInitialFit(true);
+      }
+    }
+  }, [events, eventsLoading, hasDoneInitialFit]);
 
   const activeEventBoundary = useMemo(() => {
     // If a specific asset is selected, focus on its boundary
@@ -57,27 +79,26 @@ export default function GlobalOperationsPage() {
       };
     }
     
-    // If no specific asset but we have multiple events and it's initial load/no search,
-    // we can create a combined boundary to fit all events.
-    if (!searchTerm && !selectedAsset && events.length > 0 && !searchParams.get('eventId') && !searchParams.get('poiId')) {
-      // Simple combined bbox logic: create a feature that encompasses all event centers
-      const allCoords = events
-        .map(e => e.center?.coordinates)
-        .filter(Boolean) as [number, number][];
-      
-      if (allCoords.length > 1) {
-        return {
-          type: 'Feature',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [allCoords] // This is a hack to get AdminMap's getBBox to work with centers
-          },
-          properties: { isGlobalFit: true }
-        };
-      }
+    // Return the initial global fit only if we haven't done it yet
+    if (!hasDoneInitialFit && initialFitBoundary) {
+      return initialFitBoundary;
     }
+
+    // Return to global view only if a SEARCH was just cleared
+    if (searchTerm === '' && selectionSource === 'SEARCH' && events.length > 0) {
+      const boundaries = events.filter(e => e.boundary);
+      return {
+        type: 'FeatureCollection',
+        features: boundaries.map(e => ({
+          type: 'Feature',
+          geometry: e.boundary,
+          properties: { isGlobalFit: true }
+        }))
+      };
+    }
+
     return null;
-  }, [selectedAsset, events, searchTerm, searchParams]);
+  }, [selectedAsset, events, searchTerm, selectionSource, hasDoneInitialFit, initialFitBoundary]);
 
   // Center map on search result if unique
   useEffect(() => {
@@ -87,6 +108,7 @@ export default function GlobalOperationsPage() {
 
       // Only auto-center if this is a new result we haven't centered on yet
       if (lastCenteredAssetId.current !== eventId) {
+        setSelectionSource('SEARCH');
         setSelectedAsset(event);
         lastCenteredAssetId.current = eventId;
         
@@ -228,7 +250,10 @@ export default function GlobalOperationsPage() {
       setSelectedAsset(null);
     } else {
       setVisibleEventIds(new Set([id]));
-      if (event) setSelectedAsset(event);
+      if (event) {
+        setSelectionSource('CLICK');
+        setSelectedAsset(event);
+      }
     }
   };
 
@@ -281,7 +306,10 @@ export default function GlobalOperationsPage() {
           initialViewState={mapInitialView}
           events={activeEventsOnMap}
           pois={activePoisOnMap}
-          onAssetClick={setSelectedAsset}
+          onAssetClick={(asset) => {
+            setSelectionSource('CLICK');
+            setSelectedAsset(asset);
+          }}
           selectedAssetId={selectedAsset?.id}
           activeEventBoundary={activeEventBoundary}
           radarData={radarData}

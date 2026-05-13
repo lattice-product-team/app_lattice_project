@@ -180,15 +180,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   const lastFittedBoundary = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    if (activeEventBoundary?.geometry?.coordinates) {
-      const boundaryId = activeEventBoundary.properties?.isGlobalFit 
-        ? 'global-fit' 
-        : JSON.stringify(activeEventBoundary.geometry.coordinates);
+    if (activeEventBoundary) {
+      const isCollection = activeEventBoundary.type === 'FeatureCollection';
+      const isGlobal = isCollection ? activeEventBoundary.features?.[0]?.properties?.isGlobalFit : activeEventBoundary.properties?.isGlobalFit;
+      const boundaryId = isGlobal ? 'global-fit' : JSON.stringify(activeEventBoundary);
 
       // Only fit if the boundary is different from the last one we fitted
       if (lastFittedBoundary.current === boundaryId) return;
 
-      const bbox = getBBox(activeEventBoundary.geometry.coordinates);
+      const bbox = isCollection 
+        ? getBBox(activeEventBoundary.features.map((f: any) => f.geometry.coordinates))
+        : getBBox(activeEventBoundary.geometry.coordinates);
+
       const t = setTimeout(() => {
         mapRef.current?.fitBounds(
           [
@@ -343,7 +346,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               type="fill"
               paint={{
                 'fill-color': ['get', 'color'],
-                'fill-opacity': 0.1,
+                'fill-opacity': 0.15,
               }}
             />
             <Layer
@@ -351,7 +354,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               type="line"
               paint={{
                 'line-color': ['get', 'color'],
-                'line-width': 2,
+                'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 15, 1.5],
               }}
             />
           </Source>
@@ -362,11 +365,11 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="global-boundaries-labels"
               type="symbol"
-              minzoom={11}
+              minzoom={8}
               layout={{
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold'],
-                'text-size': 10,
+                'text-size': ['interpolate', ['linear'], ['zoom'], 8, 9, 14, 11],
                 'text-letter-spacing': 0.2,
                 'text-transform': 'uppercase',
                 'text-anchor': 'center',
