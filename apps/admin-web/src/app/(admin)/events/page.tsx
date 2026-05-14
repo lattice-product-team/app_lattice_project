@@ -10,7 +10,7 @@ import {
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useEvents } from '@/hooks/use-admin-data';
+import { useEvents, API_BASE } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
 import { useMapInteractions } from '@/components/map/use-map-interactions';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -163,8 +163,8 @@ export default function EventsPage() {
           : null;
 
       const url = editingEventId 
-        ? `http://localhost:3000/api/v1/events/${editingEventId}`
-        : 'http://localhost:3000/api/v1/events';
+        ? `${API_BASE}/events/${editingEventId}`
+        : `${API_BASE}/events`;
       
       const method = editingEventId ? 'PATCH' : 'POST';
 
@@ -194,7 +194,7 @@ export default function EventsPage() {
 
   const syncSocial = async (id: number) => {
     try {
-      const res = await fetch('http://localhost:3000/api/v1/social/sync', {
+      const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'event', id }),

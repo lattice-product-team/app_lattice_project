@@ -18,7 +18,7 @@ import {
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { usePOIs, useEvents } from '@/hooks/use-admin-data';
+import { usePOIs, useEvents, API_BASE } from '@/hooks/use-admin-data';
 import { useSocket } from '@/hooks/use-socket';
 import dynamic from 'next/dynamic';
 import { useMapInteractions } from '@/components/map/use-map-interactions';
@@ -151,8 +151,8 @@ export default function POIsPage() {
     setIsSubmitting(true);
     try {
       const url = editingPoiId 
-        ? `http://localhost:3000/api/v1/pois/${editingPoiId}`
-        : 'http://localhost:3000/api/v1/pois';
+        ? `${API_BASE}/pois/${editingPoiId}`
+        : `${API_BASE}/pois`;
       
       const method = editingPoiId ? 'PATCH' : 'POST';
 
@@ -193,7 +193,7 @@ export default function POIsPage() {
 
   const syncSocial = async (id: number) => {
     try {
-      const res = await fetch('http://localhost:3000/api/v1/social/sync', {
+      const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'poi', id }),

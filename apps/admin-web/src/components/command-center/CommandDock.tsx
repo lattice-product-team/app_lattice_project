@@ -21,7 +21,7 @@ export const CommandDock: React.FC<CommandDockProps> = ({
 }) => {
   return (
     <div className="w-full px-4 sm:px-6 pt-[calc(var(--admin-safe-area)+1.5rem)] pb-2 z-20">
-      <div className="max-w-4xl mx-auto bg-white/40 backdrop-blur-xl border border-white/20 shadow-massive rounded-full h-14 sm:h-16 flex items-center px-2 transition-all duration-500">
+      <div className="max-w-4xl mx-auto bg-white border border-chalk shadow-massive rounded-full h-14 sm:h-16 flex items-center px-2 transition-all duration-500">
         {!isSidebarOpen && (
           <Button 
             variant="ghost" 

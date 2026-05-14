@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { AdminMap } from '@/components/map/admin-map';
-import { useEvents, usePOIs } from '@/hooks/use-admin-data';
+import { useEvents, usePOIs, API_BASE } from '@/hooks/use-admin-data';
 import { useSearchParams } from 'next/navigation';
 import { Sidebar } from '@/components/command-center/Sidebar';
 import { AssetPanel } from '@/components/command-center/AssetPanel';
@@ -138,7 +138,7 @@ export default function GlobalOperationsPage() {
       try {
         const results = await Promise.all(
           Array.from(radarEventIds).map(async (id) => {
-            const res = await fetch(`/api/v1/geo/locations?eventId=${id}`);
+            const res = await fetch(`${API_BASE}/geo/locations?eventId=${id}`);
             if (!res.ok) return null;
             return res.json();
           })
