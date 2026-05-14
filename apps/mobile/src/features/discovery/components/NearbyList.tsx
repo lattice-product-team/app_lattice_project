@@ -10,7 +10,7 @@ interface Props {
   onPress: (item: any) => void;
 }
 
-export function NearbyList({ title, items, onPress }: Props) {
+export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
   const theme = useAppTheme();
 
   if (!items || items.length === 0) return null;
@@ -90,4 +90,4 @@ export function NearbyList({ title, items, onPress }: Props) {
       </View>
     </View>
   );
-}
+});

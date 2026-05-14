@@ -12,7 +12,7 @@ interface GalleryCarouselProps {
   images: string[];
 }
 
-export const GalleryCarousel = ({ images }: GalleryCarouselProps) => {
+export const GalleryCarousel = React.memo(({ images }: GalleryCarouselProps) => {
   const theme = useAppTheme();
   
   if (!images || images.length === 0) return null;
@@ -35,6 +35,8 @@ export const GalleryCarousel = ({ images }: GalleryCarouselProps) => {
               style={styles.image}
               contentFit="cover"
               transition={300}
+              cachePolicy="memory-dominant"
+              priority={index < 2 ? 'high' : 'normal'}
             />
           </View>
         ))}
@@ -43,7 +45,7 @@ export const GalleryCarousel = ({ images }: GalleryCarouselProps) => {
       </ScrollView>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -14,7 +14,7 @@ interface Props {
   onPress: (event: LatticeEvent) => void;
 }
 
-export function FeaturedCarousel({ events, onPress }: Props) {
+export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
   const theme = useAppTheme();
 
   return (
@@ -79,4 +79,4 @@ export function FeaturedCarousel({ events, onPress }: Props) {
       </ScrollView>
     </View>
   );
-}
+});

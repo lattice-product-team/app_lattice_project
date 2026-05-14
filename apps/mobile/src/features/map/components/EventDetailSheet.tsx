@@ -6,6 +6,7 @@ import {
   Pressable,
   Text,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -59,9 +60,12 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   };
 
   const snappySpring = {
-    damping: 25,
-    stiffness: 160,
+    damping: Platform.OS === 'android' ? 30 : 25,
+    stiffness: Platform.OS === 'android' ? 140 : 160,
     mass: 0.8,
+    overshootClamping: Platform.OS === 'android' ? true : false,
+    restDisplacementThreshold: 0.01,
+    restSpeedThreshold: 2,
   };
 
   const isPlanning = useNavigationStore((s) => s.isPlanning);

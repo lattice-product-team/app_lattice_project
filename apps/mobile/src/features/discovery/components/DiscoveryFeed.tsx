@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, RefreshControl, View, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, RefreshControl, View, Text, InteractionManager } from 'react-native';
 import { useDiscovery } from '../../../hooks/useDiscovery';
 import { FeaturedCarousel } from './FeaturedCarousel';
 import { CategoryChips } from './CategoryChips';
@@ -14,9 +14,17 @@ interface Props {
 export function DiscoveryFeed({ onItemPress }: Props) {
   const { data: feed, isLoading, refetch, isRefetching } = useDiscovery();
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isReady, setIsReady] = useState(false);
   const theme = useAppTheme();
 
-  if (isLoading && !feed) {
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
+    return () => task.cancel();
+  }, []);
+
+  if ((isLoading && !feed) || !isReady) {
     // Basic skeleton loading state
     return (
       <View style={{ flex: 1, padding: 20 }}>

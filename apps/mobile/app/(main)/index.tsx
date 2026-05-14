@@ -148,6 +148,7 @@ export default function MapIndexPage() {
 
   const [manualAR, setManualAR] = useState(false);
 
+
   const handleProfilePress = useCallback(() => {
     Haptics.selectionAsync();
     if (isGuest) {
@@ -158,6 +159,38 @@ export default function MapIndexPage() {
       islandState.value = withSpring(0, theme.motion.physics.magnetic);
     }
   }, [isGuest, theme.motion.physics.magnetic, islandState, openAuthPrompt]);
+
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text);
+    if (text.length > 0) setIsSearching(true);
+  }, []);
+
+  const handleSearchFocus = useCallback(() => {
+    setIsSearching(true);
+    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+  }, [theme.motion.physics.magnetic, islandState]);
+
+  const handleSearchSubmit = useCallback(() => {
+    saveSearch(searchQuery);
+    Keyboard.dismiss();
+  }, [searchQuery, saveSearch]);
+
+  const handleMicPress = useCallback(() => {
+    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, [theme.motion.physics.magnetic, islandState]);
+
+  const handleSearchPress = useCallback(() => {
+    if (selectedEvent) {
+      setSelectedEvent(null);
+      setCurrentEvent(null);
+    }
+    islandState.value = withSpring(1, theme.motion.physics.magnetic);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+  }, [selectedEvent, setSelectedEvent, setCurrentEvent, theme.motion.physics.magnetic, islandState]);
 
   // Sync React/Store state to UI Thread Layers
   useEffect(() => {
@@ -183,6 +216,22 @@ export default function MapIndexPage() {
   const profileSheetState = useSharedValue(0);
   const screenMode = useSharedValue(1); // 0: Explore, 1: Map
   const [activeMode, setActiveMode] = useState(1);
+
+  const [hasMapLoaded, setHasMapLoaded] = useState(false);
+  const [isMapActive, setIsMapActive] = useState(false);
+
+  useAnimatedReaction(
+    () => screenMode.value > 0.1,
+    (isActive) => {
+      if (isActive !== isMapActive) {
+        runOnJS(setIsMapActive)(isActive);
+        if (isActive && !hasMapLoaded) {
+          runOnJS(setHasMapLoaded)(true);
+        }
+      }
+    },
+    [isMapActive, hasMapLoaded]
+  );
 
   const SNAP_POINTS = [0, 0.5, 1];
 
@@ -649,15 +698,19 @@ export default function MapIndexPage() {
         </View>
 
         <View style={styles.screen}>
-          <MapContent
-            poisGeoJSON={mergedPois}
-            allEvents={events}
-            sheetPosition={sheetPosition}
-            islandState={islandState}
-            onDeselect={handleMapPress}
-            onSelectEvent={handleEventSelect}
-            is3DActive={manualAR}
-          />
+          {(hasMapLoaded || isMapActive) ? (
+            <MapContent
+              poisGeoJSON={mergedPois}
+              allEvents={events}
+              sheetPosition={sheetPosition}
+              islandState={islandState}
+              onDeselect={handleMapPress}
+              onSelectEvent={handleEventSelect}
+              is3DActive={manualAR}
+            />
+          ) : (
+            <View style={{ flex: 1, backgroundColor: theme.colors.bg.main }} />
+          )}
         </View>
       </Animated.View>
 
@@ -796,34 +849,12 @@ export default function MapIndexPage() {
                 <FloatingSearchBar
                   ref={searchInputRef}
                   value={searchQuery}
-                  onChangeText={(text) => {
-                    setSearchQuery(text);
-                    if (text.length > 0) setIsSearching(true);
-                  }}
+                  onChangeText={handleSearchChange}
                   onProfilePress={handleProfilePress}
-                  onFocus={() => {
-                    setIsSearching(true);
-                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                  }}
-                  onSubmit={() => {
-                    saveSearch(searchQuery);
-                    Keyboard.dismiss();
-                  }}
-                  onMicPress={() => {
-                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }}
-                  onPress={() => {
-                    if (selectedEvent) {
-                      setSelectedEvent(null);
-                      setCurrentEvent(null);
-                    }
-                    islandState.value = withSpring(1, theme.motion.physics.magnetic);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setTimeout(() => {
-                      searchInputRef.current?.focus();
-                    }, 100);
-                  }}
+                  onFocus={handleSearchFocus}
+                  onSubmit={handleSearchSubmit}
+                  onMicPress={handleMicPress}
+                  onPress={handleSearchPress}
                   avatarUrl={user?.avatarUrl}
                   isGuest={isGuest}
                   editable={isHeaderEditable}

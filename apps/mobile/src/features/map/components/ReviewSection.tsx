@@ -11,7 +11,7 @@ interface ReviewSectionProps {
   sourceUrl?: string;
 }
 
-export const ReviewSection = ({ rating, reviewsCount, snippets, sourceUrl }: ReviewSectionProps) => {
+export const ReviewSection = React.memo(({ rating, reviewsCount, snippets, sourceUrl }: ReviewSectionProps) => {
   const theme = useAppTheme();
 
   const renderStars = (score: number) => {
@@ -61,7 +61,7 @@ export const ReviewSection = ({ rating, reviewsCount, snippets, sourceUrl }: Rev
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

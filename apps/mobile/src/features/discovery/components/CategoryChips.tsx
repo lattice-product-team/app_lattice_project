@@ -23,7 +23,7 @@ const IconMap: Record<string, React.FC<any>> = {
   tent: Coffee, // Fallbacks
 };
 
-export function CategoryChips({ categories, activeCategory, onSelect }: Props) {
+export const CategoryChips = React.memo(({ categories, activeCategory, onSelect }: Props) => {
   const theme = useAppTheme();
 
   return (
@@ -79,4 +79,4 @@ export function CategoryChips({ categories, activeCategory, onSelect }: Props) {
       </ScrollView>
     </View>
   );
-}
+});

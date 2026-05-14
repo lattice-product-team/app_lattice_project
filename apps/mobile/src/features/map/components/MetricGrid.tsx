@@ -9,7 +9,7 @@ interface MetricGridProps {
   metrics: DetailMetric[];
 }
 
-export const MetricGrid = ({ metrics }: MetricGridProps) => {
+export const MetricGrid = React.memo(({ metrics }: MetricGridProps) => {
   const theme = useAppTheme();
 
   return (
@@ -43,7 +43,7 @@ export const MetricGrid = ({ metrics }: MetricGridProps) => {
       ))}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

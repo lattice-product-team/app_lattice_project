@@ -29,15 +29,11 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient();
 
-function AppStatusBar() {
-  const theme = useAppTheme();
-  return <StatusBar style={theme.dark ? 'light' : 'dark'} />;
-}
-
 export default function RootLayout() {
   const { loaded: fontsLoaded, error: fontsError } = useAppFonts();
   const isDataReady = useStartupStore((s) => s.isDataReady);
   const isMapReady = useStartupStore((s) => s.isMapReady);
+  const theme = useAppTheme();
 
   const [showSplashOverlay, setShowSplashOverlay] = useState(true);
   const splashOpacity = useSharedValue(1);
@@ -102,7 +98,7 @@ export default function RootLayout() {
                 </Stack>
 
                 <AuthPromptOverlay />
-                <AppStatusBar />
+                <StatusBar style={theme.dark ? 'light' : 'dark'} />
 
                 {showSplashOverlay && (
                   <Animated.View
@@ -119,3 +115,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({});

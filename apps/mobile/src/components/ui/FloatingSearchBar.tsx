@@ -32,81 +32,69 @@ interface FloatingSearchBarProps {
   onMicPress?: () => void;
 }
 
-export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarProps>(
-  (
-    {
-      value,
-      onChangeText,
-      onFocus,
-      onProfilePress,
-      onPress,
-      onSubmit,
-      placeholder = 'Search events, stages, food...',
-      avatarUrl,
-      isGuest,
-      editable = true,
-      onMicPress,
-    },
-    ref
-  ) => {
-    const theme = useAppTheme();
-    const [isListening, setIsListening] = React.useState(false);
-    const [permission, requestPermission] = useMicrophonePermissions();
-    const pulseValue = useSharedValue(1);
+export const FloatingSearchBar = React.memo(
+  React.forwardRef<TextInput, FloatingSearchBarProps>(
+    (
+      {
+        value,
+        onChangeText,
+        onFocus,
+        onProfilePress,
+        onPress,
+        onSubmit,
+        placeholder = 'Search events, stages, food...',
+        avatarUrl,
+        isGuest,
+        editable = true,
+        onMicPress,
+      },
+      ref
+    ) => {
+      const theme = useAppTheme();
+      const [isListening, setIsListening] = React.useState(false);
+      const [permission, requestPermission] = useMicrophonePermissions();
+      const pulseValue = useSharedValue(1);
 
-    // Use a ref for onChangeText to keep listeners stable without re-registering
-    const onChangeTextRef = React.useRef(onChangeText);
-    React.useEffect(() => {
-      onChangeTextRef.current = onChangeText;
-    }, [onChangeText]);
+      // Use a ref for onChangeText to keep listeners stable without re-registering
+      const onChangeTextRef = React.useRef(onChangeText);
+      React.useEffect(() => {
+        onChangeTextRef.current = onChangeText;
+      }, [onChangeText]);
 
-    // Setup Speech Recognition - Only once on mount
-    React.useEffect(() => {
-      console.log('[Voice] Initializing listeners...');
-      
-      Voice.onSpeechStart = (e: any) => {
-        console.log('[Voice] === EVENT: onSpeechStart ===', e);
-        setIsListening(true);
-        // Disable animation temporarily to rule out Reanimated crashes
-        /*
-        pulseValue.value = withRepeat(
-          withSequence(
-            withTiming(1.3, { duration: 400 }),
-            withTiming(1, { duration: 400 })
-          ),
-          -1,
-          true
-        );
-        */
-      };
+      // Setup Speech Recognition - Only once on mount
+      React.useEffect(() => {
+        console.log('[Voice] Initializing listeners...');
+        
+        Voice.onSpeechStart = (e: any) => {
+          console.log('[Voice] === EVENT: onSpeechStart ===', e);
+          setIsListening(true);
+        };
 
-      Voice.onSpeechEnd = (e: any) => {
-        console.log('[Voice] === EVENT: onSpeechEnd ===', e);
-        setIsListening(false);
-        pulseValue.value = withSpring(1);
-      };
+        Voice.onSpeechEnd = (e: any) => {
+          console.log('[Voice] === EVENT: onSpeechEnd ===', e);
+          setIsListening(false);
+          pulseValue.value = withSpring(1);
+        };
 
-      Voice.onSpeechResults = (e: any) => {
-        console.log('[Voice] === EVENT: onSpeechResults ===', e.value);
-        if (e.value && e.value.length > 0) {
-          onChangeTextRef.current(e.value[0]);
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-      };
+        Voice.onSpeechResults = (e: any) => {
+          console.log('[Voice] === EVENT: onSpeechResults ===', e.value);
+          if (e.value && e.value.length > 0) {
+            onChangeTextRef.current(e.value[0]);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
+        };
 
-      Voice.onSpeechError = (e: any) => {
-        console.error('[Voice] === EVENT: onSpeechError ===', e.error);
-        setIsListening(false);
-        pulseValue.value = withSpring(1);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      };
+        Voice.onSpeechError = (e: any) => {
+          console.error('[Voice] === EVENT: onSpeechError ===', e.error);
+          setIsListening(false);
+          pulseValue.value = withSpring(1);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        };
 
         return () => {
           console.log('[Voice] Cleaning up listeners...');
           try {
             if (Voice) {
-              // Manually nullify listeners to avoid calling removeAllListeners() which can fail
-              // if the internal native module has already been invalidated.
               Voice.onSpeechStart = undefined;
               Voice.onSpeechEnd = undefined;
               Voice.onSpeechResults = undefined;
@@ -115,154 +103,142 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
               Voice.destroy().then(() => {
                 console.log('[Voice] Destroyed successfully');
               }).catch((err) => {
-                // Ignore destruction errors during unmount
                 console.log('[Voice] Destroy error (ignored):', err);
               });
             }
           } catch (e) {
-            // Prevent cleanup errors from crashing the app during unmount
             console.log('[Voice] Cleanup error suppressed:', e);
           }
         };
-    }, []); // Empty dependency array for stability
+      }, []);
 
-    const isOperationInProgress = React.useRef(false);
+      const isOperationInProgress = React.useRef(false);
 
-    const startListening = React.useCallback(async () => {
-      if (!Voice || isOperationInProgress.current) return;
-      
-      try {
-        isOperationInProgress.current = true;
-        console.log('[Voice] Object keys:', Object.keys(Voice));
-        console.log('[Voice] NativeModule:', !!NativeModules.VoiceModule);
+      const startListening = React.useCallback(async () => {
+        if (!Voice || isOperationInProgress.current) return;
         
-        console.log('[Voice] Requesting permissions...');
+        try {
+          isOperationInProgress.current = true;
+          const currentPermission = await requestPermission();
+          if (!currentPermission.granted) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            return;
+          }
 
-        // Check/Request microphone permissions first
-        const currentPermission = await requestPermission();
-        if (!currentPermission.granted) {
-          console.warn('[Voice] Permission denied');
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          return;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          if (onMicPress) onMicPress();
+          
+          await Voice.start();
+          setIsListening(true);
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        } catch (e) {
+          console.error('[Voice] Critical start error:', e);
+          setIsListening(false);
+        } finally {
+          isOperationInProgress.current = false;
         }
+      }, [onMicPress, requestPermission]);
 
-        // Increase delay to let iOS register the new permission status
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      const stopListening = React.useCallback(async () => {
+        if (!Voice || isOperationInProgress.current) return;
 
-        if (onMicPress) onMicPress();
-        
-        console.log('[Voice] Calling Voice.start()...');
-        await Voice.start();
-        console.log('[Voice] Voice.start() promise resolved.');
-        setIsListening(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch (e) {
-        console.error('[Voice] Critical start error:', e);
-        setIsListening(false);
-      } finally {
-        isOperationInProgress.current = false;
-        console.log('[Voice] startListening operation finished.');
-      }
-    }, [onMicPress, requestPermission]);
+        try {
+          isOperationInProgress.current = true;
+          await Voice.stop();
+          setIsListening(false);
+          pulseValue.value = withSpring(1);
+        } catch (e) {
+          console.error('Failed to stop Voice:', e);
+        } finally {
+          isOperationInProgress.current = false;
+        }
+      }, [pulseValue]);
 
-    const stopListening = React.useCallback(async () => {
-      if (!Voice || isOperationInProgress.current) return;
+      const toggleListening = React.useCallback(async () => {
+        if (isListening) {
+          await stopListening();
+        } else {
+          await startListening();
+        }
+      }, [isListening, startListening, stopListening]);
 
-      try {
-        isOperationInProgress.current = true;
-        await Voice.stop();
-        setIsListening(false);
-        pulseValue.value = withSpring(1);
-      } catch (e) {
-        console.error('Failed to stop Voice:', e);
-      } finally {
-        isOperationInProgress.current = false;
-      }
-    }, [pulseValue]);
+      const micAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: pulseValue.value }],
+        opacity: interpolate(pulseValue.value, [1, 1.3], [0.9, 1]),
+      }));
 
-    const toggleListening = React.useCallback(async () => {
-      if (isListening) {
-        await stopListening();
-      } else {
-        await startListening();
-      }
-    }, [isListening, startListening, stopListening]);
+      const ringStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: interpolate(pulseValue.value, [1, 1.3], [1, 2]) }],
+        opacity: interpolate(pulseValue.value, [1, 1.3], [0.3, 0]),
+      }));
 
-    const micAnimatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: pulseValue.value }],
-      opacity: interpolate(pulseValue.value, [1, 1.3], [0.9, 1]),
-    }));
+      return (
+        <View style={styles.innerContainer}>
+          <Search size={20} color={theme.colors.text.primary} strokeWidth={2.2} style={styles.icon} />
 
-    const ringStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: interpolate(pulseValue.value, [1, 1.3], [1, 2]) }],
-      opacity: interpolate(pulseValue.value, [1, 1.3], [0.3, 0]),
-    }));
-
-    return (
-      <View style={styles.innerContainer}>
-        <Search size={20} color={theme.colors.text.primary} strokeWidth={2.2} style={styles.icon} />
-
-        <Pressable
-          style={{ flex: 1, justifyContent: 'center' }}
-          onPress={onPress}
-          disabled={editable}
-        >
-          <TextInput
-            ref={ref}
-            value={value}
-            onChangeText={onChangeText}
-            onFocus={onFocus}
-            placeholder={placeholder}
-            placeholderTextColor={theme.colors.text.muted}
-            style={[styles.input, { color: theme.colors.text.primary }]}
-            selectionColor={theme.colors.brand.primary}
-            returnKeyType="search"
-            onSubmitEditing={onSubmit}
-            editable={editable}
-            pointerEvents={editable ? 'auto' : 'none'}
-          />
-        </Pressable>
-
-        {value.length > 0 && (
-          <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
-            <XCircle size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
+          <Pressable
+            style={{ flex: 1, justifyContent: 'center' }}
+            onPress={onPress}
+            disabled={editable}
+          >
+            <TextInput
+              ref={ref}
+              value={value}
+              onChangeText={onChangeText}
+              onFocus={onFocus}
+              placeholder={placeholder}
+              placeholderTextColor={theme.colors.text.muted}
+              style={[styles.input, { color: theme.colors.text.primary }]}
+              selectionColor={theme.colors.brand.primary}
+              returnKeyType="search"
+              onSubmitEditing={onSubmit}
+              editable={editable}
+              pointerEvents={editable ? 'auto' : 'none'}
+            />
           </Pressable>
-        )}
 
-        <View style={styles.rightActions}>
-          <View style={styles.micContainer}>
-            {isListening && (
-              <Animated.View 
-                style={[
-                  styles.micRing, 
-                  { backgroundColor: theme.colors.brand.primary },
-                  ringStyle
-                ]} 
-              />
-            )}
-            <Pressable 
-              style={styles.micButton}
-              onPress={toggleListening}
-            >
-              <Animated.View style={micAnimatedStyle}>
-                <Mic 
-                   size={22} 
-                   color={isListening ? theme.colors.brand.primary : theme.colors.text.primary} 
-                   strokeWidth={isListening ? 3 : 2.2} 
+          {value.length > 0 && (
+            <Pressable onPress={() => onChangeText('')} style={styles.clearButton}>
+              <XCircle size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
+            </Pressable>
+          )}
+
+          <View style={styles.rightActions}>
+            <View style={styles.micContainer}>
+              {isListening && (
+                <Animated.View 
+                  style={[
+                    styles.micRing, 
+                    { backgroundColor: theme.colors.brand.primary },
+                    ringStyle
+                  ]} 
                 />
-              </Animated.View>
+              )}
+              <Pressable 
+                style={styles.micButton}
+                onPress={toggleListening}
+              >
+                <Animated.View style={micAnimatedStyle}>
+                  <Mic 
+                     size={22} 
+                     color={isListening ? theme.colors.brand.primary : theme.colors.text.primary} 
+                     strokeWidth={isListening ? 3 : 2.2} 
+                  />
+                </Animated.View>
+              </Pressable>
+            </View>
+
+            <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
+
+            <Pressable style={styles.profileButton} onPress={onProfilePress}>
+              <UserAvatar size={32} url={avatarUrl} isGuest={isGuest} />
             </Pressable>
           </View>
-
-          <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
-
-          <Pressable style={styles.profileButton} onPress={onProfilePress}>
-            <UserAvatar size={32} url={avatarUrl} isGuest={isGuest} />
-          </Pressable>
         </View>
-      </View>
-    );
-  }
+      );
+    }
+  )
 );
 
 const styles = StyleSheet.create({

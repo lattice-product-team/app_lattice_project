@@ -23,7 +23,7 @@ interface AdaptiveControlOverlayProps {
   bottomOffset?: number;
 }
 
-export const AdaptiveControlOverlay = ({
+export const AdaptiveControlOverlay = React.memo(({
   onToggle3D,
   onRecenter,
   is3DActive,
@@ -49,7 +49,7 @@ export const AdaptiveControlOverlay = ({
       pointerEvents: shouldHide ? 'none' : 'auto',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
-  }, [isARActive]);
+  }, [isARActive, bottomOffset]);
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
@@ -123,7 +123,7 @@ export const AdaptiveControlOverlay = ({
       </View>
     </Animated.View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

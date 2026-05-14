@@ -1,3 +1,4 @@
+import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { DetailAction } from '../../../types/models/detail';
@@ -8,7 +9,7 @@ interface ActionPillBarProps {
   actions: DetailAction[];
 }
 
-export const ActionPillBar = ({ actions }: ActionPillBarProps) => {
+export const ActionPillBar = React.memo(({ actions }: ActionPillBarProps) => {
   const theme = useAppTheme();
 
   return (
@@ -37,7 +38,7 @@ export const ActionPillBar = ({ actions }: ActionPillBarProps) => {
       ))}
     </ScrollView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
