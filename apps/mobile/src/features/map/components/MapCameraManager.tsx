@@ -21,6 +21,8 @@ interface MapCameraManagerProps {
   isPlanning: boolean;
   cameraMode: MapCameraMode;
   currentRoute: any | null;
+  transportMode: string;
+  isFetching: boolean;
 }
 
 export interface MapCameraHandle {
@@ -222,7 +224,14 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       // ONLY perform a default camera reset if we are NOT entering planning mode
       // If isPlanning is true, the planning effect will handle the camera (fitBounds)
       if (cameraRef.current && !isPlanning) {
+        const targetCoords = selectedCoords || 
+          selectedEvent?.coordinates || 
+          selectedEvent?.center?.coordinates ||
+          selectedEvent?.geometry?.coordinates;
+
         cameraRef.current.setCamera({
+          centerCoordinate: targetCoords || userCoordsRef.current || MAP_CENTER,
+          zoomLevel: targetCoords ? 18 : 17,
           pitch: is3DActive ? 60 : 0,
           animationDuration: 1000,
           animationMode: 'flyTo',
@@ -241,10 +250,19 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   // Planning fitBounds
   useEffect(() => {
-    if (isPlanning && cameraRef.current && !isNavigating) {
+    // Only trigger camera transition if we are planning and NOT currently fetching a new route.
+    // This prevents the "brutal cut" animation that happens when a pre-fetched route 
+    // starts animating and is immediately interrupted by a freshly fetched one.
+    if (isPlanning && cameraRef.current && !isNavigating && !isFetching) {
+      const destinationCoords = selectedCoords || 
+        selectedEvent?.coordinates || 
+        selectedEvent?.center?.coordinates || 
+        selectedEvent?.geometry?.coordinates ||
+        (selectedEvent?.boundary?.coordinates?.[0] ? calculateCentroid(selectedEvent.boundary.coordinates[0]) : null);
+
       const routeId = currentRoute 
-        ? `${currentRoute.id}-${currentRoute.duration}-${currentRoute.distance}` 
-        : (selectedCoords ? `planning-${selectedCoords.join(',')}` : null);
+        ? `${transportMode}-${currentRoute.properties?.durationEstimate}-${currentRoute.properties?.distance}` 
+        : (destinationCoords ? `planning-${destinationCoords.join(',')}` : null);
       
       // If this route is already being animated/displayed, don't restart the whole sequence
       if (lastPlanningRouteRef.current === routeId) return;
@@ -258,36 +276,40 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
         if (currentRoute?.geometry?.coordinates) {
           pointsToFit = currentRoute.geometry.coordinates;
-        } else if (userCoordsRef.current && selectedCoords) {
-          pointsToFit.push(userCoordsRef.current);
-          pointsToFit.push(selectedCoords);
+        } else if (userCoordsRef.current && destinationCoords) {
+          pointsToFit = [userCoordsRef.current, destinationCoords];
         }
 
-        if (pointsToFit.length < 2) return;
-
-        const bbox = calculateBBox(pointsToFit);
-        if (!bbox) return;
-
-        // Fit the bounds with generous padding for the UI elements
-        cameraRef.current.fitBounds(
-          [bbox[2], bbox[3]], // NE
-          [bbox[0], bbox[1]], // SW
-          [insets.top + 120, 70, 480, 70], // Top, Right, Bottom, Left
-          800
+        // Safety Filter: Remove [0,0] or invalid coordinates that cause extreme zoom-outs
+        // This is a common issue when GPS hasn't fired yet or state is partially initialized.
+        const validPoints = pointsToFit.filter(c => 
+          c && c.length === 2 && 
+          (Math.abs(c[0]) > 0.001 || Math.abs(c[1]) > 0.001) &&
+          !isNaN(c[0]) && !isNaN(c[1])
         );
 
-        // Pitch transition
-        const pitchTimer = setTimeout(() => {
-          if (cameraRef.current && isPlanning) {
-            cameraRef.current.setCamera({
-              pitch: is3DActive ? 45 : 0,
-              animationDuration: 600,
-            });
-          }
-        }, 850);
+        if (validPoints.length < 2) return;
 
-        return () => clearTimeout(pitchTimer);
-      }, 150);
+        const bbox = calculateBBox(validPoints);
+        if (!bbox) return;
+
+        // Use a single setCamera call to fit bounds and set pitch simultaneously.
+        // This avoids the jerky "animation cut" at the end of the transition
+        // that happened when separate fitBounds and pitch timers fought for control.
+        cameraRef.current.setCamera({
+          bounds: {
+            ne: [bbox[2], bbox[3]],
+            sw: [bbox[0], bbox[1]],
+            paddingTop: insets.top + 100,
+            paddingRight: 50,
+            paddingBottom: insets.bottom + 340,
+            paddingLeft: 50,
+          },
+          pitch: is3DActive ? 45 : 0,
+          animationDuration: 1200,
+          animationMode: 'flyTo',
+        });
+      }, 300); // Increased delay to allow UI (sheets) to stabilize
       
       return () => clearTimeout(timer);
     } else if (!isPlanning || isNavigating) {
@@ -295,7 +317,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       // the camera correctly re-fits the route.
       lastPlanningRouteRef.current = null;
     }
-  }, [isPlanning, isNavigating, selectedCoords, currentRoute, insets.top, is3DActive, transportMode, isFetching]);
+  }, [isPlanning, isNavigating, selectedCoords, currentRoute, insets.top, insets.bottom, is3DActive, transportMode, isFetching]);
 
   return (
     <MapLibreGL.Camera

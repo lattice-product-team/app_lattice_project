@@ -539,15 +539,27 @@ export default function MapIndexPage() {
 
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
+
+    // If we are in the middle of navigation or planning a route, 
+    // we should NOT clear the route just by tapping the map.
+    if (isNavigating || isPlanning) {
+      // If we were searching, we might want to collapse the search island though
+      if (islandState.value > 0.8) {
+        islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+        setIsSearching(false);
+      }
+      return;
+    }
+
     handleCloseDetails();
     setIsSearching(false);
 
-    // Clear any active navigation/planning state when deselecting
+    // Clear any active navigation/planning state when deselecting in normal mode
     useNavigationStore.getState().clearNavigation();
 
     // Always snap island back to base level if not searching
     islandState.value = withSpring(0, theme.motion.physics.magnetic);
-  }, [handleCloseDetails, islandState, theme.motion.physics.magnetic]);
+  }, [handleCloseDetails, islandState, theme.motion.physics.magnetic, isNavigating, isPlanning]);
 
   const { toggleCategoryFilter } = usePOIStore();
   const handleSelectCategory = useCallback(
