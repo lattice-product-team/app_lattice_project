@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Navigation } from 'lucide-react-native';
+import { Navigation, X } from 'lucide-react-native';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
@@ -27,12 +27,13 @@ export const NavigationInfo = () => {
   const handleCancel = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     
-    // Clear event details so they don't pop back up when exiting planning
+    // Clear event and POI details
     setSelectedEvent(null);
     setCurrentEvent(null);
+    usePOIStore.getState().deselect();
     
-    setNavigating(false);
-    setPlanning(true);
+    // Completely clear navigation state and return to normal map
+    useNavigationStore.getState().clearNavigation();
     setCameraMode(MapCameraMode.FREE);
   };
 
@@ -67,32 +68,6 @@ export const NavigationInfo = () => {
       exiting={FadeOutDown.duration(300)}
       style={[styles.container, { bottom: insets.bottom + 20 }]}
     >
-      {cameraMode === MapCameraMode.FREE && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.recenterContainer}>
-          <Pressable
-            onPress={handleRecenter}
-            style={({ pressed }) => [
-              styles.recenterButton,
-              {
-                backgroundColor: theme.colors.glass.background,
-                borderColor: theme.colors.glass.border,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <Navigation
-              size={18}
-              color={theme.colors.brand.primary}
-              strokeWidth={2.5}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={[styles.recenterText, { color: theme.colors.brand.primary }]}>
-              Re-center
-            </Text>
-          </Pressable>
-        </Animated.View>
-      )}
-
       <View
         style={[
           styles.card,
@@ -117,10 +92,14 @@ export const NavigationInfo = () => {
             onPress={handleCancel}
             style={({ pressed }) => [
               styles.exitButton,
-              { opacity: pressed ? 0.8 : 1 },
+              { 
+                backgroundColor: 'rgba(255, 59, 48, 0.15)', // Blurred red tint
+                borderColor: 'rgba(255, 59, 48, 0.3)',
+                opacity: pressed ? 0.7 : 1 
+              },
             ]}
           >
-            <Text style={styles.exitText}>Exit</Text>
+            <X size={20} color="#FF3B30" strokeWidth={3} />
           </Pressable>
         </View>
       </View>
@@ -186,6 +165,7 @@ const styles = StyleSheet.create({
   infoLeft: {
     flex: 1,
     justifyContent: 'center',
+    marginRight: 12,
   },
   durationText: {
     fontSize: 34,
@@ -199,21 +179,18 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   exitButton: {
-    backgroundColor: '#E53935', // Google Maps style red
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 30,
-    marginLeft: 16,
-    shadowColor: '#E53935',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    flexShrink: 0,
   },
   exitText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: -0.3,
   },
 });

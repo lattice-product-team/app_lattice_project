@@ -217,7 +217,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       setCameraMode(MapCameraMode.FREE);
       if (cameraRef.current) {
         cameraRef.current.setCamera({
-          pitch: 0,
+          pitch: is3DActive ? 60 : 0,
           animationDuration: 1000,
           animationMode: 'flyTo',
         });

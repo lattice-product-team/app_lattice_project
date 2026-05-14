@@ -32,7 +32,7 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
     iconFamily: metadata.iconFamily,
     mainColor: metadata.color,
     coordinates: [geometry.coordinates?.[0] || 0, geometry.coordinates?.[1] || 0],
-    parentId: properties.parentId || properties.event_id,
+    parentId: properties.parentId || properties.event_id || properties.eventId,
     description: properties.description,
     images: properties.images,
     rating: properties.metadata?.social?.rating,

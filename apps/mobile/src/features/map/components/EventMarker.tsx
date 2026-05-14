@@ -36,7 +36,12 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
         Extrapolation.CLAMP
       );
 
-      const opacity = interpolate(zoomSharedValue.value, [10, 11], [0, 1], Extrapolation.CLAMP);
+      const opacity = interpolate(
+        zoomSharedValue.value, 
+        [10, 11, 14, 15], 
+        [0, 1, 1, 0], 
+        Extrapolation.CLAMP
+      );
 
       return {
         transform: [{ scale: isSelected ? 1.4 : scale }],

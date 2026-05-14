@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Alert } from 'react-native';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { useEventDetails } from './useEventDetails';
@@ -33,6 +34,8 @@ export const useDetailModel = (): DetailModel | null => {
   const isFetching = useNavigationStore((s) => s.isFetching);
   const openAR = useARStore((s) => s.openAR);
   const userCoords = useLocationStore((s) => s.coords);
+  const deselectPoi = usePOIStore((s) => s.deselect);
+  const clearEvent = useEventStore((s) => s.clearEvent);
 
   const drivingDuration = navMetadata.driving?.duration;
   const drivingDistance = navMetadata.driving?.distance;
@@ -57,9 +60,15 @@ export const useDetailModel = (): DetailModel | null => {
       const metadata = typeof data.metadata === 'string' ? JSON.parse(data.metadata) : data.metadata || {};
       const social = metadata.social;
 
-      const isInside = userCoords && data.boundary?.coordinates?.[0]
-        ? isPointInPolygon([userCoords[0], userCoords[1]], data.boundary.coordinates[0])
-        : false;
+      let isInside = false;
+      if (userCoords && data.boundary?.coordinates) {
+        const pt: [number, number] = [userCoords[0], userCoords[1]];
+        if (data.boundary.type === 'Polygon') {
+          isInside = isPointInPolygon(pt, data.boundary.coordinates[0]);
+        } else if (data.boundary.type === 'MultiPolygon') {
+          isInside = data.boundary.coordinates.some((poly: any) => isPointInPolygon(pt, poly[0]));
+        }
+      }
 
       return {
         id: String(data.id),
@@ -122,9 +131,15 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'ar', 
             label: 'Use AR', 
             icon: 'BinocularsIcon', 
-            variant: isInside ? 'subdued' : 'disabled', 
+            variant: isInside ? 'subdued' : 'tertiary', 
             onPress: () => {
-              if (isInside) openAR(ARFilterMode.SELECTED_EVENT, data.id);
+              if (isInside) {
+                openAR(ARFilterMode.SELECTED_EVENT, data.id);
+                clearEvent();
+                deselectPoi();
+              } else {
+                Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
+              }
             } 
           },
           { 
@@ -159,11 +174,17 @@ export const useDetailModel = (): DetailModel | null => {
       const social = metadata.social;
       
       const parentEvent = allEvents?.find(e => String(e.id) === String(selectedPoi.parentId));
-      const parentName = parentEvent?.name;
+      const parentName = parentEvent?.name || selectedPoi.raw?.eventName;
 
-      const isInside = userCoords && parentEvent?.boundary?.coordinates?.[0]
-        ? isPointInPolygon([userCoords[0], userCoords[1]], parentEvent.boundary.coordinates[0])
-        : false;
+      let isInside = false;
+      if (userCoords && parentEvent?.boundary?.coordinates) {
+        const pt: [number, number] = [userCoords[0], userCoords[1]];
+        if (parentEvent.boundary.type === 'Polygon') {
+          isInside = isPointInPolygon(pt, parentEvent.boundary.coordinates[0]);
+        } else if (parentEvent.boundary.type === 'MultiPolygon') {
+          isInside = parentEvent.boundary.coordinates.some((poly: any) => isPointInPolygon(pt, poly[0]));
+        }
+      }
 
       return {
         id: selectedPoi.id,
@@ -232,9 +253,15 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'ar', 
             label: 'Use AR', 
             icon: 'BinocularsIcon', 
-            variant: isInside ? 'subdued' : 'disabled', 
+            variant: isInside ? 'subdued' : 'tertiary', 
             onPress: () => {
-              if (isInside) openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
+              if (isInside) {
+                openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
+                deselectPoi();
+                clearEvent();
+              } else {
+                Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
+              }
             } 
           },
           { 

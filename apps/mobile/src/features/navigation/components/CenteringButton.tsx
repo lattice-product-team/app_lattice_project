@@ -4,7 +4,7 @@ import { Navigation } from 'lucide-react-native';
 import Animated, { FadeInRight, FadeOutRight, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { useMapUIStore } from '../../map/store/useMapUIStore';
+import { useMapUIStore, MapCameraMode } from '../../map/store/useMapUIStore';
 import { useNavigationStore } from '../store/useNavigationStore';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
@@ -20,46 +20,48 @@ interface CenteringButtonProps {
 export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { isFollowingUser, setIsFollowingUser } = useMapUIStore();
+  const { cameraMode, setCameraMode } = useMapUIStore();
   const { isNavigating } = useNavigationStore();
 
   const handleCenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsFollowingUser(true);
+    setCameraMode(MapCameraMode.NAVIGATION);
   };
 
   const rStyle = useAnimatedStyle(() => {
-    const isLayerActive = uiLayer.value !== 0; // UILayer.BASE
-    const shouldShow = isNavigating && !isFollowingUser && !isLayerActive;
+    const shouldShow = isNavigating && cameraMode === MapCameraMode.FREE;
 
     return {
-      opacity: withTiming(shouldShow ? 1 : 0, { duration: 150 }),
+      opacity: withTiming(shouldShow ? 1 : 0, { duration: 200 }),
       pointerEvents: shouldShow ? 'auto' : 'none',
-      transform: [{ translateX: withTiming(shouldShow ? 0 : 50) }],
+      transform: [
+        { translateX: withTiming(shouldShow ? 0 : 80) },
+        { scale: withTiming(shouldShow ? 1 : 0.8) }
+      ],
     };
   });
 
   return (
     <Animated.View
-      style={[styles.container, { bottom: insets.bottom + 160 }, rStyle]}
+      style={[styles.container, { bottom: insets.bottom + 140 }, rStyle]}
     >
       <Pressable
         onPress={handleCenter}
         style={({ pressed }) => [
           styles.button,
           {
-            backgroundColor: theme.colors.brand.primary,
+            backgroundColor: '#FFFFFF',
             opacity: pressed ? 0.9 : 1,
-            shadowColor: theme.colors.brand.primary,
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.4,
-            shadowRadius: 10,
-            elevation: 10,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            elevation: 8,
           },
         ]}
       >
-        <Navigation size={22} color="#000000" strokeWidth={2.5} />
-        <Text style={[styles.text, { color: '#000000' }]}>CENTRAR</Text>
+        <Navigation size={18} color="#000000" strokeWidth={2.5} />
+        <Text style={[styles.text, { color: '#000000' }]}>RE-CENTER</Text>
       </Pressable>
     </Animated.View>
   );

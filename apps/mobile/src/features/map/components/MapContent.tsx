@@ -225,6 +225,7 @@ export const MapContent = function MapContent({
               id: poi.id,
               type: 'boundary',
               color: poi.mainColor,
+              name: poi.displayName,
             },
           });
         }

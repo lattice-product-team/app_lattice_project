@@ -75,7 +75,7 @@ export const MapLayers = React.memo(({
           id="eventBoundaryFill"
           style={{
             fillColor: ['get', 'color'],
-            fillOpacity: 0.15,
+            fillOpacity: 0.0,
             fillAntialias: true,
           }}
         />
@@ -85,7 +85,22 @@ export const MapLayers = React.memo(({
             lineColor: ['get', 'color'],
             lineWidth: 2,
             lineDasharray: [2, 2],
-            lineOpacity: 0.5,
+            lineOpacity: 0.0,
+          }}
+        />
+        <MapLibreGL.SymbolLayer
+          id="eventBoundaryLabel"
+          minZoomLevel={8}
+          maxZoomLevel={14.5}
+          style={{
+            textField: ['get', 'name'],
+            textSize: 15,
+            textColor: ['get', 'color'],
+            textHaloColor: theme.colors.bg.main,
+            textHaloWidth: 2,
+            textAnchor: 'top',
+            textOffset: [0, 1.5],
+            textAllowOverlap: false,
           }}
         />
       </MapLibreGL.ShapeSource>

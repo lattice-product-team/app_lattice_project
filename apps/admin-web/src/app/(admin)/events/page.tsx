@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Spinner, Select, ListBox, Selection } from '@heroui/react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEvents, API_BASE } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
   ssr: false,
@@ -20,16 +20,13 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 
 export default function EventsPage() {
   const router = useRouter();
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const searchParams = useSearchParams();
   const { events, loading, refetch } = useEvents();
-
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Selection>(new Set([]));
-  const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set([]));
 
   // Interface State
   const [isInterfaceOpen, setIsInterfaceOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDeleteId, setEventToDeleteId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
@@ -90,21 +87,28 @@ export default function EventsPage() {
         (statusValue === 'active' && isActive) ||
         (statusValue === 'past' && !isActive);
 
-      const capacityVal = selectionValue(capacityFilter);
-      const metadata = typeof e.metadata === 'string' ? JSON.parse(e.metadata) : e.metadata;
+      const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
       const capacity = metadata?.capacity || 0;
       const matchesCapacity =
         !capacityValue ||
         capacityValue === 'all' ||
         (capacityValue === 'massive' && capacity >= 10000) ||
         (capacityValue === 'medium' && capacity >= 1000 && capacity < 10000) ||
-        (capacityValue === 'boutique' && capacity < 1000);
+        (capacityValue === 'small' && capacity < 1000);
 
       return matchesSearch && matchesStatus && matchesCapacity;
-    });
-  }, [events, searchTerm, statusFilter, capacityFilter]);
+      });
+      }, [events, searchTerm, statusFilter, capacityFilter]);
 
-  const resetForm = React.useCallback(() => {
+  const clearBoundary = useCallback(() => {
+    setBoundaryPoints([]);
+  }, []);
+
+  const undoLastPoint = useCallback(() => {
+    setBoundaryPoints((prev) => prev.slice(0, -1));
+  }, []);
+
+  const resetForm = useCallback(() => {
     setEditingEventId(null);
     setName('');
     setStartDate('');
@@ -157,6 +161,36 @@ export default function EventsPage() {
     }
 
     setIsInterfaceOpen(true);
+  };
+
+  const handleDeleteEvent = async (id?: number) => {
+    if (id) {
+      setEventToDeleteId(id);
+      setIsDeleteModalOpen(true);
+      return;
+    }
+
+    if (!eventToDeleteId) return;
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch(`${API_BASE}/events/${eventToDeleteId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      await refetch();
+      setIsDeleteModalOpen(false);
+      setEventToDeleteId(null);
+    } catch (err) {
+      console.error('Delete error:', err);
+      setFormError('Failed to delete event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCreateEvent = async () => {
