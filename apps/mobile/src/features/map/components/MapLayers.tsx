@@ -89,18 +89,32 @@ export const MapLayers = React.memo(({
           }}
         />
         <MapLibreGL.SymbolLayer
-          id="eventBoundaryLabel"
-          minZoomLevel={8}
-          maxZoomLevel={14.5}
+          id="eventLabelLayer"
+          minZoomLevel={9}
+          maxZoomLevel={14}
           style={{
             textField: ['get', 'name'],
-            textSize: 15,
+            textSize: 11,
             textColor: ['get', 'color'],
-            textHaloColor: theme.colors.bg.main,
-            textHaloWidth: 2,
-            textAnchor: 'top',
-            textOffset: [0, 1.5],
-            textAllowOverlap: false,
+            textHaloColor: '#FFFFFF',
+            textHaloWidth: 1.5,
+            textHaloBlur: 0.5,
+            textTransform: 'uppercase',
+            textLetterSpacing: 0.1,
+            textAnchor: 'center',
+            textPitchAlignment: 'viewport',
+            textRotationAlignment: 'viewport',
+            textAllowOverlap: true,
+            textIgnorePlacement: true,
+            textOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 0,
+              10.5, 1,
+              12, 1,
+              13, 0
+            ]
           }}
         />
       </MapLibreGL.ShapeSource>
@@ -119,6 +133,7 @@ export const MapLayers = React.memo(({
             id={`ev-ann-${id}`}
             coordinate={coords}
             onSelected={() => onPoiPress(feature)}
+            style={{ zIndex: 1 }}
           >
             <View 
               style={[
@@ -157,6 +172,7 @@ export const MapLayers = React.memo(({
             id={`poi-ann-${id}`}
             coordinate={coords}
             onSelected={() => onPoiPress(feature)}
+            style={{ zIndex: 10 }}
           >
             <View 
               style={[

@@ -54,14 +54,14 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
             opacity: pressed ? 0.9 : 1,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 12,
-            elevation: 8,
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 5,
           },
         ]}
       >
-        <Navigation size={18} color="#000000" strokeWidth={2.5} />
-        <Text style={[styles.text, { color: '#000000' }]}>RE-CENTER</Text>
+        <Navigation size={16} color="#000000" strokeWidth={3} />
+        <Text style={styles.text}>RE-CENTER</Text>
       </Pressable>
     </Animated.View>
   );
@@ -76,15 +76,17 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 24,
-    gap: 8,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
   },
   text: {
-    color: 'white',
-    fontSize: 14,
+    color: '#000000',
+    fontSize: 12,
     fontFamily: typography.primary.bold,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
 });

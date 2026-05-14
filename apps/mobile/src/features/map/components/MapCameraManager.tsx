@@ -146,13 +146,12 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       lastTargetRef.current = `event-${eventId}`;
       lastActionTimestamp.current = now;
 
-      let targetCenter: [number, number] | null = null;
-
-      // Prioritize direct center/coordinates over boundary centroid for better consistency
+      // Robust center detection across different object formats
       targetCenter =
+        selectedEvent.coordinates ||
         selectedEvent.center?.coordinates ||
         selectedEvent.geometry?.coordinates ||
-        selectedEvent.coordinates;
+        (selectedEvent.latitude && selectedEvent.longitude ? [selectedEvent.longitude, selectedEvent.latitude] : null);
 
       if (!targetCenter && selectedEvent.boundary?.coordinates?.[0]) {
         targetCenter = calculateCentroid(selectedEvent.boundary.coordinates[0]);
@@ -212,10 +211,13 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       timer = setTimeout(() => {
         setCameraMode(MapCameraMode.NAVIGATION);
       }, 1500);
-    } else if (!isNavigating && prevIsNavigating.current && cameraMode === MapCameraMode.NAVIGATION) {
+      } else if (!isNavigating && prevIsNavigating.current && cameraMode === MapCameraMode.NAVIGATION) {
       // Exit navigation camera mode
       setCameraMode(MapCameraMode.FREE);
-      if (cameraRef.current) {
+      
+      // ONLY perform a default camera reset if we are NOT entering planning mode
+      // If isPlanning is true, the planning effect will handle the camera (fitBounds)
+      if (cameraRef.current && !isPlanning) {
         cameraRef.current.setCamera({
           pitch: is3DActive ? 60 : 0,
           animationDuration: 1000,
@@ -233,26 +235,50 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   // Planning fitBounds
   useEffect(() => {
-    if (isPlanning && cameraRef.current) {
-      let pointsToFit: number[][] = [];
+    if (isPlanning && cameraRef.current && !isNavigating) {
+      // Use a small delay to ensure navigation tracking has fully stopped
+      const timer = setTimeout(() => {
+        const pointsToFit: number[][] = [];
 
-      if (currentRoute?.geometry?.coordinates) {
-        pointsToFit = currentRoute.geometry.coordinates;
-      } else if (userCoordsRef.current && selectedCoords) {
-        pointsToFit = [userCoordsRef.current, selectedCoords];
-      }
+        if (currentRoute?.geometry?.coordinates) {
+          const coords = currentRoute.geometry.coordinates;
+          // Use start, middle, and end points for a reliable bbox
+          pointsToFit.push(coords[0]);
+          pointsToFit.push(coords[Math.floor(coords.length / 2)]);
+          pointsToFit.push(coords[coords.length - 1]);
+        } else if (userCoordsRef.current && selectedCoords) {
+          pointsToFit.push(userCoordsRef.current);
+          pointsToFit.push(selectedCoords);
+        }
 
-      if (pointsToFit.length < 2) return;
+        if (pointsToFit.length < 2) return;
 
-      const bbox = calculateBBox(pointsToFit);
-      cameraRef.current.fitBounds(
-        [bbox[2], bbox[3]], // NE
-        [bbox[0], bbox[1]], // SW
-        [insets.top + 100, 60, 320, 60], // Top, Right, Bottom, Left padding
-        800
-      );
+        const bbox = calculateBBox(pointsToFit);
+        if (!bbox) return;
+
+        // Fit the bounds first
+        cameraRef.current.fitBounds(
+          [bbox[2], bbox[3]], // NE
+          [bbox[0], bbox[1]], // SW
+          [insets.top + 80, 50, 340, 50], // Top, Right, Bottom, Left padding
+          1500
+        );
+
+        // After a slight delay, apply the 3D pitch if active
+        // This avoids conflicts with the fitBounds zoom calculation
+        setTimeout(() => {
+          if (cameraRef.current) {
+            cameraRef.current.setCamera({
+              pitch: is3DActive ? 45 : 0,
+              animationDuration: 1000,
+            });
+          }
+        }, 1500);
+      }, 200);
+      
+      return () => clearTimeout(timer);
     }
-  }, [isPlanning, selectedCoords, currentRoute, insets.top]);
+  }, [isPlanning, isNavigating, selectedCoords, currentRoute, insets.top, is3DActive]);
 
   return (
     <MapLibreGL.Camera

@@ -250,6 +250,9 @@ export default function MapIndexPage() {
       selectPoi(null); // Clear any active POI selection
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      
+      // Force camera to center on the new selection
+      useMapUIStore.getState().triggerForceCenter();
     },
     [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
   );

@@ -208,6 +208,31 @@ export const getEventMetadata = (type?: string): CategoryMetadata => {
 };
 
 // Legacy support and direct accessors
-export const getCategoryIcon = (category?: string): LucideIcon => getCategoryMetadata(category).icon;
-export const getCategoryColor = (category?: string): string => getCategoryMetadata(category).color;
 export const getCategoryLabel = (category?: string): string => getCategoryMetadata(category).label;
+
+/**
+ * Generates a stable, vibrant color based on a string ID.
+ * Useful for giving each event a distinct look.
+ */
+export const getStableColor = (id: string): string => {
+  const eventColors = [
+    '#FF3B30', // Red
+    '#FF9500', // Orange
+    '#FFCC00', // Yellow
+    '#34C759', // Green
+    '#007AFF', // Blue
+    '#5856D6', // Indigo
+    '#AF52DE', // Purple
+    '#FF2D55', // Pink
+    '#5AC8FA', // Light Blue
+  ];
+  
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const index = Math.abs(hash) % eventColors.length;
+  return eventColors[index];
+};

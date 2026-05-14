@@ -327,10 +327,12 @@ export const MapContent = function MapContent({
       const isNativePOI = 
         layer.id.includes('poi') || 
         layer.id.includes('place') || 
+        layer.id.includes('label') || 
         layer.id.includes('transit') || 
         layer.id.includes('transport') ||
         layer.id.includes('station') ||
         layer.id.includes('rail') ||
+        layer.id.includes('building-number') ||
         layer.id.includes('infrastructure');
         
       if (isNativePOI) {

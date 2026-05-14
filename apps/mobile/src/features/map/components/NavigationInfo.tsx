@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Navigation, X } from 'lucide-react-native';
+import { Navigation, X, Car, Footprints, Bike } from 'lucide-react-native';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
@@ -25,15 +25,12 @@ export const NavigationInfo = () => {
   if (!isNavigating || !routeMetadata) return null;
 
   const handleCancel = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
-    // Clear event and POI details
-    setSelectedEvent(null);
-    setCurrentEvent(null);
-    usePOIStore.getState().deselect();
-    
-    // Completely clear navigation state and return to normal map
-    useNavigationStore.getState().clearNavigation();
+    // Instead of exiting completely, return to the route planning overview
+    // This allows the user to see the whole route again
+    setNavigating(false);
+    setPlanning(true);
     setCameraMode(MapCameraMode.FREE);
   };
 
@@ -62,6 +59,15 @@ export const NavigationInfo = () => {
     return arrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const renderTransportIcon = () => {
+    const { transportMode } = useNavigationStore.getState();
+    const iconProps = { size: 24, color: theme.colors.brand.primary, style: { marginRight: 12 } };
+    
+    if (transportMode === 'driving') return <Car {...iconProps} />;
+    if (transportMode === 'bicycle') return <Bike {...iconProps} />;
+    return <Footprints {...iconProps} />;
+  };
+
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
@@ -80,12 +86,20 @@ export const NavigationInfo = () => {
         <View style={styles.handle} />
         <View style={styles.content}>
           <View style={styles.infoLeft}>
-            <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>
-              {formatDurationLarge(routeMetadata.duration)}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+              {renderTransportIcon()}
+              <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>
+                {formatDurationLarge(routeMetadata.duration)}
+              </Text>
+            </View>
             <Text style={[styles.subText, { color: theme.colors.text.secondary }]}>
               {formatDistance(routeMetadata.distance)} · {getArrivalTime(routeMetadata.duration)}
             </Text>
+            {routeMetadata.destinationName && (
+              <Text style={[styles.destinationText, { color: theme.colors.text.muted }]} numberOfLines={1}>
+                to {routeMetadata.destinationName}
+              </Text>
+            )}
           </View>
 
           <Pressable
@@ -93,8 +107,8 @@ export const NavigationInfo = () => {
             style={({ pressed }) => [
               styles.exitButton,
               { 
-                backgroundColor: 'rgba(255, 59, 48, 0.15)', // Blurred red tint
-                borderColor: 'rgba(255, 59, 48, 0.3)',
+                backgroundColor: 'rgba(255, 59, 48, 0.25)', // More visible red tint
+                borderColor: 'rgba(255, 59, 48, 0.4)',
                 opacity: pressed ? 0.7 : 1 
               },
             ]}
@@ -177,6 +191,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: -0.2,
+    marginBottom: 2,
+  },
+  destinationText: {
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: -0.1,
   },
   exitButton: {
     width: 44,
