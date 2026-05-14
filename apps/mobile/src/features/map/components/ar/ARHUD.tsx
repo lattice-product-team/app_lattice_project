@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { X, Compass, Plus, Minus } from 'lucide-react-native';
+import { X, Compass, Plus, Minus, MapPin } from 'lucide-react-native';
 import Animated, {
   useAnimatedStyle,
   withTiming,
   useSharedValue,
   withRepeat,
   withSequence,
+  FadeInDown,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme as useLatticeTheme } from '../../../../hooks/useAppTheme';
 import { typography } from '../../../../styles/typography';
+import { useARStore } from '../../store/useARStore';
 
 interface ARHUDProps {
   onExit: () => void;
@@ -26,6 +28,9 @@ export const ARHUD: React.FC<ARHUDProps> = ({
   const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
   const scanOpacity = useSharedValue(0.5);
+
+  const isWithinBoundary = useARStore((s) => s.isWithinBoundary);
+  const currentEvent = useARStore((s) => s.currentEventContext);
 
   useEffect(() => {
     scanOpacity.value = withRepeat(
@@ -53,12 +58,24 @@ export const ARHUD: React.FC<ARHUDProps> = ({
           ]}
           pointerEvents="box-none"
         >
-          <Animated.View style={[styles.statusBadge, scanAnimatedStyle]}>
-            <View style={[styles.statusDot, { backgroundColor: isScanning ? '#FF9F0A' : '#32D74B' }]} />
-            <Text style={styles.statusText}>
-              {isScanning ? 'SCANNING LATTICE…' : statusMessage.toUpperCase()}
-            </Text>
-          </Animated.View>
+          <View style={{ gap: 8 }}>
+            <Animated.View style={[styles.statusBadge, scanAnimatedStyle]}>
+              <View style={[styles.statusDot, { backgroundColor: isScanning ? '#FF9F0A' : '#32D74B' }]} />
+              <Text style={styles.statusText}>
+                {isScanning ? 'SCANNING LATTICE…' : statusMessage.toUpperCase()}
+              </Text>
+            </Animated.View>
+
+            {isWithinBoundary && currentEvent && (
+              <Animated.View 
+                entering={FadeInDown.duration(400)}
+                style={[styles.contextBadge, { backgroundColor: theme.colors.brand.primary + 'CC' }]}
+              >
+                <MapPin size={10} color="white" />
+                <Text style={styles.contextText}>{currentEvent.name.toUpperCase()}</Text>
+              </Animated.View>
+            )}
+          </View>
 
           <Pressable
             onPress={onExit}
@@ -84,11 +101,11 @@ export const ARHUD: React.FC<ARHUDProps> = ({
           <View style={styles.headingContainer}>
             <View style={styles.compassLine} />
             <View style={styles.compassCenter}>
-              <Text style={styles.headingText}>{statusMessage}</Text>
+              <Text style={styles.headingText}>{isWithinBoundary ? 'EVENT NAVIGATION' : 'GLOBAL DISCOVERY'}</Text>
               <View className="flex-row items-center mt-1">
                 <Compass size={12} color={theme.colors.brand.primary} strokeWidth={2.2} />
                 <Text style={[styles.subHeadingText, { color: 'rgba(255,255,255,0.6)' }]}>
-                  REAL-TIME SPATIAL SYNC
+                  {isWithinBoundary ? 'PRECISION SPATIAL SYNC' : 'CITY-SCALE OVERVIEW'}
                 </Text>
               </View>
             </View>
@@ -147,6 +164,21 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: typography.primary.bold,
     letterSpacing: 1,
+  },
+  contextBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    gap: 4,
+  },
+  contextText: {
+    color: 'white',
+    fontSize: 9,
+    fontFamily: typography.primary.bold,
+    letterSpacing: 0.5,
   },
   exitButton: {
     width: 44,

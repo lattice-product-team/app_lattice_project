@@ -60,6 +60,7 @@ import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { useProfileStore } from '../../src/features/profile/store/useProfileStore';
+import { useARStore } from '../../src/features/map/store/useARStore';
 import { normalizePOI } from '../../src/features/poi/adapters/poiAdapter';
 import { MAPTILER_KEY } from '../../src/constants/mapConstants';
 import { typography } from '../../src/styles/typography';
@@ -127,6 +128,7 @@ export default function MapIndexPage() {
   const setCurrentEvent = useEventStore((s) => s.setCurrentEvent);
 
   const { isNavigating, isPlanning } = useNavigationStore();
+  const isARActive = useARStore((s) => s.isVisible);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -187,9 +189,9 @@ export default function MapIndexPage() {
   const SNAP_POINTS = [0, 0.5, 1];
 
   const islandOpacity = useDerivedValue(() => {
-    if (uiLayer.value === UILayer.NAVIGATING) return withTiming(0);
+    if (uiLayer.value === UILayer.NAVIGATING || isARActive) return withTiming(0);
     return withTiming(1);
-  });
+  }, [isARActive]);
 
   // Derived Visibility for Overlays
   const profileVisibility = useDerivedValue(() => {
@@ -206,12 +208,13 @@ export default function MapIndexPage() {
 
   // Automatically collapse Island to Level 1 when any overlay is active
   useAnimatedReaction(
-    () => uiLayer.value !== UILayer.BASE,
+    () => uiLayer.value !== UILayer.BASE || isARActive,
     (isOverlayActive) => {
       if (isOverlayActive && islandState.value > 0.1) {
         islandState.value = withSpring(0, theme.motion.physics.magnetic);
       }
-    }
+    },
+    [isARActive]
   );
 
   const [isHeaderEditable, setIsHeaderEditable] = useState(false);
@@ -474,17 +477,17 @@ export default function MapIndexPage() {
   }));
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    // Hide if searching (Level 3) or if any overlay layer is active
+    // Hide if searching (Level 3), if any overlay layer is active, or if AR is active
     const isLevel3 = islandState.value > 0.8;
     const isLayerActive = uiLayer.value !== UILayer.BASE;
 
-    const shouldHide = isLevel3 || isLayerActive;
+    const shouldHide = isLevel3 || isLayerActive || isARActive;
 
     return {
       opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
     };
-  });
+  }, [isARActive]);
 
   const level2ContentStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.7, 0.85], [1, 0], Extrapolation.CLAMP);

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { LatticeEvent } from '../../../types';
 
 export enum ARFilterMode {
   CLOSEST_EVENT = 'CLOSEST_EVENT',
@@ -11,9 +12,14 @@ interface ARState {
   filterMode: ARFilterMode;
   targetId: string | number | null;
   
+  // Contextual Awareness
+  currentEventContext: LatticeEvent | null;
+  isWithinBoundary: boolean;
+
   // Actions
   openAR: (mode: ARFilterMode, id?: string | number) => void;
   closeAR: () => void;
+  setContext: (event: LatticeEvent | null, withinBoundary: boolean) => void;
 }
 
 /**
@@ -24,6 +30,8 @@ export const useARStore = create<ARState>((set) => ({
   isVisible: false,
   filterMode: ARFilterMode.CLOSEST_EVENT,
   targetId: null,
+  currentEventContext: null,
+  isWithinBoundary: false,
 
   openAR: (mode, id = null) => 
     set({ 
@@ -35,6 +43,14 @@ export const useARStore = create<ARState>((set) => ({
   closeAR: () => 
     set({ 
       isVisible: false, 
-      targetId: null 
+      targetId: null,
+      currentEventContext: null,
+      isWithinBoundary: false,
+    }),
+
+  setContext: (event, withinBoundary) =>
+    set({
+      currentEventContext: event,
+      isWithinBoundary: withinBoundary,
     }),
 }));

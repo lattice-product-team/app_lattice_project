@@ -131,6 +131,12 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     label: 'Tienda Oficial',
     strokeWidth: 2.5,
   },
+  event_beacon: {
+    icon: MapPin,
+    color: colors.brand.primary,
+    label: 'Evento',
+    strokeWidth: 2.5,
+  },
 };
 
 const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {

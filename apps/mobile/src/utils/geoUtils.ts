@@ -101,3 +101,42 @@ export const calculateCentroid = (coords: [number, number][]): [number, number] 
 
   return [sumLng / coords.length, sumLat / coords.length];
 };
+
+/**
+ * Checks if a point [lng, lat] is inside a polygon [[lng, lat], ...]
+ * using the Ray-casting algorithm.
+ */
+export const isPointInPolygon = (
+  point: [number, number],
+  polygon: [number, number][]
+): boolean => {
+  const x = point[0];
+  const y = point[1];
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0];
+    const yi = polygon[i][1];
+    const xj = polygon[j][0];
+    const yj = polygon[j][1];
+
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+};
+
+/**
+ * Calculates the approximate area of a polygon using the Shoelace formula.
+ * Used for prioritizing smaller (more specific) boundaries when overlapping.
+ */
+export const calculatePolygonArea = (polygon: [number, number][]): number => {
+  let area = 0;
+  for (let i = 0; i < polygon.length; i++) {
+    const j = (i + 1) % polygon.length;
+    area += polygon[i][0] * polygon[j][1];
+    area -= polygon[j][0] * polygon[i][1];
+  }
+  return Math.abs(area / 2);
+};

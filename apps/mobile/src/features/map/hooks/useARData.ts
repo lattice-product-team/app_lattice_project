@@ -1,16 +1,18 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useARStore, ARFilterMode } from '../store/useARStore';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useSearchEvents } from './useSearchEvents';
 import { geoService } from '../../../services/geoService';
-import { calculateDistance } from '../../../utils/geoUtils';
+import { calculateDistance, isPointInPolygon, calculatePolygonArea } from '../../../utils/geoUtils';
+import { LatticeEvent } from '../../../types';
 
 /**
  * Hook to manage data fetching and filtering for the AR view.
  * Handles three modes: Nearest Event, Selected Event, and Specific Pin.
+ * Now enhanced with Contextual Awareness for boundary-based switching.
  */
 export const useARData = () => {
-  const { isVisible, filterMode, targetId } = useARStore();
+  const { isVisible, filterMode, targetId, setContext } = useARStore();
   const userCoords = useLocationStore((s) => s.coords);
   const { allEvents } = useSearchEvents('');
   
@@ -19,69 +21,77 @@ export const useARData = () => {
   const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
-    if (!isVisible || !userCoords) {
+    if (!isVisible || !userCoords || !allEvents) {
       if (activePois.length > 0) setActivePois([]);
       return;
     }
 
     const [userLon, userLat] = userCoords;
+    const userPoint: [number, number] = [userLon, userLat];
 
     const loadData = async () => {
       setLoading(true);
       try {
-        if (filterMode === ARFilterMode.CLOSEST_EVENT) {
-          // 1. Find the nearest event
-          if (!allEvents || allEvents.length === 0) {
-            setStatusMessage('NO EVENTS FOUND');
-            if (activePois.length > 0) setActivePois([]);
-            return;
-          }
+        // 1. Determine Spatial Context (Are we inside an event boundary?)
+        const eventsWithBoundaries = allEvents.filter(e => e.boundary?.coordinates?.[0]);
+        let activeEvent: LatticeEvent | null = null;
+        let smallestArea = Infinity;
 
-          let nearestEvent = allEvents[0];
-          let minDistance = Infinity;
-
-          allEvents.forEach((event) => {
-            if (event.center?.coordinates) {
-              const [eLon, eLat] = event.center.coordinates;
-              const dist = calculateDistance(userLat, userLon, eLat, eLon);
-              if (dist < minDistance) {
-                minDistance = dist;
-                nearestEvent = event;
-              }
+        eventsWithBoundaries.forEach(event => {
+          const polygon = event.boundary!.coordinates[0];
+          if (isPointInPolygon(userPoint, polygon)) {
+            const area = calculatePolygonArea(polygon);
+            if (area < smallestArea) {
+              smallestArea = area;
+              activeEvent = event;
             }
-          });
+          }
+        });
 
-          setStatusMessage(`VIEWING ${nearestEvent.name.toUpperCase()}`);
-          const spatial = await geoService.getEventSpatial(nearestEvent.id);
-          const newPois = spatial?.features || [];
-          
-          // Only update if data changed (simple length check for now, could be deeper)
-          if (newPois.length !== activePois.length) {
-            setActivePois(newPois);
+        const isInside = !!activeEvent;
+        setContext(activeEvent, isInside);
+
+        // 2. Data Filtering based on Context and Mode
+        if (filterMode === ARFilterMode.CLOSEST_EVENT) {
+          if (isInside && activeEvent) {
+            // A. EVENT-SCALE MODE: Show POIs for the current event
+            setStatusMessage(`EXPLORING ${activeEvent.name.toUpperCase()}`);
+            const spatial = await geoService.getEventSpatial(activeEvent.id);
+            setActivePois(spatial?.features || []);
+          } else {
+            // B. CITY-SCALE MODE: Show distant events as Beacons
+            setStatusMessage('DISCOVERING EVENTS');
+            // We transform events into a POI-like structure for the AR renderer
+            const eventBeacons = allEvents.map(event => ({
+              type: 'Feature',
+              geometry: event.center,
+              properties: {
+                id: `event-${event.id}`,
+                name: event.name,
+                category: 'event_beacon', // Special category for custom rendering
+                isBeacon: true,
+              }
+            })).filter(e => e.geometry);
+            
+            setActivePois(eventBeacons);
           }
 
         } else if (filterMode === ARFilterMode.SELECTED_EVENT) {
-          // 2. Load pins for a specific event
+          // 3. Load pins for a specific event (Forced)
           const eventId = Number(targetId);
           const event = allEvents.find(e => e.id === eventId);
           
           setStatusMessage(`VIEWING ${event?.name.toUpperCase() || 'EVENT'}`);
           const spatial = await geoService.getEventSpatial(eventId);
-          const newPois = spatial?.features || [];
-          if (newPois.length !== activePois.length) {
-            setActivePois(newPois);
-          }
+          setActivePois(spatial?.features || []);
 
         } else if (filterMode === ARFilterMode.SPECIFIC_PIN) {
-          // 3. Load a single pin
+          // 4. Load a single pin (Forced)
           const poiId = Number(targetId);
           const poi = await geoService.getPOI(poiId);
           
           setStatusMessage(`TRACKING ${poi?.name?.toUpperCase() || 'POI'}`);
-          const newPois = poi ? [poi] : [];
-          if (newPois.length !== activePois.length) {
-            setActivePois(newPois);
-          }
+          setActivePois(poi ? [poi] : []);
         }
       } catch (error) {
         console.error('AR Data Load Error:', error);
@@ -90,11 +100,6 @@ export const useARData = () => {
         setLoading(false);
       }
     };
-
-    if (!isVisible || !userCoords) {
-      if (activePois.length > 0) setActivePois([]);
-      return;
-    }
 
     loadData();
   }, [isVisible, filterMode, targetId, userCoords?.join(','), allEvents?.length]);

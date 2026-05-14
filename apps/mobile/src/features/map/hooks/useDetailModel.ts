@@ -8,6 +8,8 @@ import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useSearchEvents } from './useSearchEvents';
 import { useARStore, ARFilterMode } from '../store/useARStore';
+import { useLocationStore } from '../../../store/useLocationStore';
+import { isPointInPolygon } from '../../../utils/geoUtils';
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -30,6 +32,7 @@ export const useDetailModel = (): DetailModel | null => {
   const setPlanning = useNavigationStore((s) => s.setPlanning);
   const isFetching = useNavigationStore((s) => s.isFetching);
   const openAR = useARStore((s) => s.openAR);
+  const userCoords = useLocationStore((s) => s.coords);
 
   const drivingDuration = navMetadata.driving?.duration;
   const drivingDistance = navMetadata.driving?.distance;
@@ -53,6 +56,10 @@ export const useDetailModel = (): DetailModel | null => {
       const data = eventDetails || selectedEvent;
       const metadata = typeof data.metadata === 'string' ? JSON.parse(data.metadata) : data.metadata || {};
       const social = metadata.social;
+
+      const isInside = userCoords && data.boundary?.coordinates?.[0]
+        ? isPointInPolygon([userCoords[0], userCoords[1]], data.boundary.coordinates[0])
+        : false;
 
       return {
         id: String(data.id),
@@ -115,9 +122,9 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'ar', 
             label: 'Use AR', 
             icon: 'BinocularsIcon', 
-            variant: 'subdued', 
+            variant: isInside ? 'subdued' : 'disabled', 
             onPress: () => {
-              openAR(ARFilterMode.SELECTED_EVENT, data.id);
+              if (isInside) openAR(ARFilterMode.SELECTED_EVENT, data.id);
             } 
           },
           { 
@@ -153,6 +160,10 @@ export const useDetailModel = (): DetailModel | null => {
       
       const parentEvent = allEvents?.find(e => String(e.id) === String(selectedPoi.parentId));
       const parentName = parentEvent?.name;
+
+      const isInside = userCoords && parentEvent?.boundary?.coordinates?.[0]
+        ? isPointInPolygon([userCoords[0], userCoords[1]], parentEvent.boundary.coordinates[0])
+        : false;
 
       return {
         id: selectedPoi.id,
@@ -221,9 +232,9 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'ar', 
             label: 'Use AR', 
             icon: 'BinocularsIcon', 
-            variant: 'subdued', 
+            variant: isInside ? 'subdued' : 'disabled', 
             onPress: () => {
-              openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
+              if (isInside) openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
             } 
           },
           { 
@@ -252,5 +263,5 @@ export const useDetailModel = (): DetailModel | null => {
     }
 
     return null;
-  }, [selectedEvent, eventDetails, selectedPoi, theme, navMetadata, isFetching, allEvents]);
+  }, [selectedEvent, eventDetails, selectedPoi, theme, navMetadata, isFetching, allEvents, userCoords]);
 };

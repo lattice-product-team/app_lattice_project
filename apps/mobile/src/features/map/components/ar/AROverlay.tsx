@@ -130,6 +130,8 @@ export const AROverlay: React.FC = () => {
       
       const [poiLon, poiLat] = coords;
       const distance = getDistance(userLat, userLon, poiLat, poiLon);
+      const isBeacon = poi.properties?.isBeacon;
+
       const metadata = getCategoryMetadata(poi.properties?.category);
       const CategoryIcon = metadata.icon;
 
@@ -143,36 +145,38 @@ export const AROverlay: React.FC = () => {
       // Only show if it's within the front hemisphere and reasonably centered
       if (Math.abs(angleDiff) > 45) return null;
 
-      // Use staggered height to prevent overlaps
-      const yOffset = (idx % 2) * 50 - 25;
+      // Use staggered height to prevent overlaps. Beacons are higher.
+      const yOffset = isBeacon ? -80 : (idx % 2) * 50 - 25;
 
       // Standard Portrait
       const xPos = (angleDiff / (FOV / 2)) * (width / 2) + width / 2;
-      const yPos = height / 2 + yOffset - 120;
+      const yPos = isBeacon ? height / 2 - 180 : height / 2 + yOffset - 120;
 
       return (
         <View
           key={`2d-label-${poi.properties?.id || idx}`}
           style={{
             position: 'absolute',
-            left: xPos - 100,
+            left: xPos - (isBeacon ? 120 : 100),
             top: yPos,
-            width: 200,
+            width: isBeacon ? 240 : 200,
             alignItems: 'center',
           }}
         >
-          <View style={styles.brandBubble}>
-            <View style={[styles.iconContainer, { backgroundColor: metadata.color }]}>
-              <CategoryIcon size={18} color="white" strokeWidth={2.5} />
+          <View style={[styles.brandBubble, isBeacon && styles.beaconBubble]}>
+            <View style={[styles.iconContainer, { backgroundColor: metadata.color }, isBeacon && styles.beaconIcon]}>
+              <CategoryIcon size={isBeacon ? 22 : 18} color="white" strokeWidth={2.5} />
             </View>
             <View style={styles.textContainer}>
-              <Text style={styles.brandLabelText} numberOfLines={1}>
+              <Text style={[styles.brandLabelText, isBeacon && styles.beaconLabelText]} numberOfLines={1}>
                 {poi.properties?.name || poi.name}
               </Text>
-              <Text style={styles.brandDistanceText}>{Math.round(distance)}m • Ahead</Text>
+              <Text style={styles.brandDistanceText}>
+                {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} • {isBeacon ? 'Event' : 'Ahead'}
+              </Text>
             </View>
           </View>
-          <View style={styles.verticalStalk} />
+          {!isBeacon && <View style={styles.verticalStalk} />}
         </View>
       );
     });
@@ -251,6 +255,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  beaconBubble: {
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+  },
+  beaconIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  beaconLabelText: {
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
   iconContainer: {
     width: 32,
