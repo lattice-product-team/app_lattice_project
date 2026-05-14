@@ -1,30 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { geoService } from '../../../services/geoService';
 
 export const useEventSpatial = (eventId?: number | null) => {
-  const [spatialData, setSpatialData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const { data: spatialData, isLoading: loading, refetch } = useQuery({
+    queryKey: ['eventSpatial', eventId],
+    queryFn: () => (eventId ? geoService.getEventSpatial(eventId) : null),
+    enabled: !!eventId,
+  });
 
-  useEffect(() => {
-    if (!eventId) {
-      setSpatialData(null);
-      return;
-    }
-
-    const fetchSpatial = async () => {
-      setLoading(true);
-      try {
-        const data = await geoService.getEventSpatial(eventId);
-        setSpatialData(data);
-      } catch (error) {
-        console.error('Failed to fetch event spatial data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSpatial();
-  }, [eventId]);
-
-  return { spatialData, loading };
+  return { spatialData, loading, refetch };
 };

@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppFonts } from '../src/hooks/useAppFonts';
 import { ThemeProvider, useAppTheme } from '../src/providers/ThemeProvider';
+import { RealtimeSyncProvider } from '../src/providers/RealtimeSyncProvider';
 import { AuthPromptOverlay } from '../src/components/ui/AuthPromptOverlay';
 import { SplashScreen as AppSplashScreen } from '../src/components/ui/SplashScreen';
 import * as SplashScreen from 'expo-splash-screen';
@@ -91,25 +92,27 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <View style={{ flex: 1 }}>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(main)" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="+not-found" />
-              </Stack>
+            <RealtimeSyncProvider>
+              <View style={{ flex: 1 }}>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(main)" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
 
-              <AuthPromptOverlay />
-              <AppStatusBar />
+                <AuthPromptOverlay />
+                <AppStatusBar />
 
-              {showSplashOverlay && (
-                <Animated.View
-                  style={[StyleSheet.absoluteFill, animatedSplashStyle, { zIndex: 99999 }]}
-                >
-                  <AppSplashScreen />
-                </Animated.View>
-              )}
-            </View>
+                {showSplashOverlay && (
+                  <Animated.View
+                    style={[StyleSheet.absoluteFill, animatedSplashStyle, { zIndex: 99999 }]}
+                  >
+                    <AppSplashScreen />
+                  </Animated.View>
+                )}
+              </View>
+            </RealtimeSyncProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

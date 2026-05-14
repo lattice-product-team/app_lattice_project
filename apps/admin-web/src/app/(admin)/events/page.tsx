@@ -143,6 +143,28 @@ export default function EventsPage() {
     setFormError('');
   }, []);
 
+  // Auto-resolve address when boundary changes
+  useEffect(() => {
+    if (boundaryPoints.length >= 3) {
+      const resolve = async () => {
+        try {
+          // Calculate centroid
+          const centroidLng = boundaryPoints.reduce((s, c) => s + c[0], 0) / boundaryPoints.length;
+          const centroidLat = boundaryPoints.reduce((s, c) => s + c[1], 0) / boundaryPoints.length;
+
+          const res = await fetch(`${API_BASE}/resolve-address?lat=${centroidLat}&lng=${centroidLng}`);
+          if (res.ok) {
+            const data = await res.json();
+            setAddress(data.address);
+          }
+        } catch (err) {
+          console.error('Failed to resolve boundary address', err);
+        }
+      };
+      resolve();
+    }
+  }, [boundaryPoints]);
+
   const handleOpenCreate = () => {
     resetForm();
     setIsInterfaceOpen(true);
@@ -283,172 +305,138 @@ export default function EventsPage() {
       </header>
 
       {/* Full-Screen Interface */}
+      {/* --- LATTICE STUDIO: EVENT INTERFACE --- */}
       {isInterfaceOpen && (
-        <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-in fade-in duration-300 w-screen h-screen transition-colors">
-          <div className="h-20 border-b border-border flex items-center justify-between px-12 shrink-0 bg-surface">
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gravel">
-                Lattice Studio
-              </span>
-              <div className="w-1 h-1 rounded-full bg-chalk" />
-              <h2 className="waldenburg-display text-admin-xl text-obsidian">
-                {editingEventId ? 'Configure Lifecycle' : 'Initialize Event'}
-              </h2>
-            </div>
-            <Button
-              variant="ghost"
-              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-chalk hover:border-obsidian"
+        <div className="fixed inset-0 z-[100] bg-background animate-in fade-in duration-300">
+          {/* Map Layer */}
+          <div className="absolute inset-0">
+            <AdminMap
+              mode="DRAW_BOUNDARY"
+              boundaryPoints={boundaryPoints}
+              onBoundaryChange={setBoundaryPoints}
+              initialViewState={mapInitialView || { longitude: 2.1734, latitude: 41.3851, zoom: 13 }}
+              activeEventBoundary={activeEventBoundaryGeoJSON}
+            />
+          </div>
+
+          {/* Floating Close Button */}
+          <div className="absolute top-10 left-10 z-[110]">
+            <Button 
+              variant="ghost" 
+              className="rounded-full w-14 h-14 p-0 flex items-center justify-center bg-surface border border-border hover:border-foreground shadow-massive transition-colors group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
-              <Icons.X className="w-5 h-5 text-gravel group-hover/close:text-foreground transition-colors" />
+              <Icons.X className="w-6 h-6 text-gravel group-hover/close:text-foreground transition-colors" />
             </Button>
           </div>
 
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-            {/* Left: Map */}
-            <div className="flex-1 bg-elevated/20 relative border-r border-border transition-colors">
-              <AdminMap
-                mode="DRAW_BOUNDARY"
-                boundaryPoints={boundaryPoints}
-                onBoundaryChange={setBoundaryPoints}
-                initialViewState={mapInitialView}
-                activeEventBoundary={activeEventBoundaryGeoJSON}
-              />
-              <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
-                <div className="bg-surface border-border shadow-massive max-w-[260px]">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-foreground mb-1.5">
-                    Boundary Definition
-                  </p>
-                  <p className="text-[11px] text-gravel leading-relaxed font-medium">
-                    Click on the map to draw the event perimeter.
-                  </p>
+          {/* Floating Studio Card */}
+          <div className="absolute right-12 top-12 bottom-12 w-[480px] bg-surface rounded-[48px] shadow-massive border border-border overflow-hidden flex flex-col z-[105] animate-in slide-in-from-right-8 duration-500">
+            
+            {/* Header */}
+            <div className="px-12 pt-12 pb-8 border-b border-border/40 shrink-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">Lattice Studio</p>
+              <h2 className="waldenburg-display text-3xl text-foreground">
+                {editingEventId ? 'Edit Event' : 'New Event'}
+              </h2>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-scroll custom-scrollbar px-12 py-10 space-y-12">
+              
+              {/* Section 1: Core Definition */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Event Definition</p>
+                
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Event Name</label>
+                  <input
+                    placeholder="e.g. Primavera Sound 2026"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
+                  />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Start Date</label>
+                    <input
+                      type="datetime-local"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full h-14 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">End Date</label>
+                    <input
+                      type="datetime-local"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full h-14 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Spatial Intelligence */}
+              <div className="space-y-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Spatial Intelligence</p>
+                
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-elevated/20 border border-border/40">
+                  <div className={`w-2 h-2 rounded-full ${boundaryPoints.length > 2 ? 'bg-success animate-pulse' : 'bg-gravel/30'}`} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gravel">
+                    {boundaryPoints.length > 2 ? `Boundary Active · ${boundaryPoints.length} nodes` : 'Draw area on map to define perimeter'}
+                  </span>
+                </div>
+
                 {boundaryPoints.length > 0 && (
                   <div className="flex gap-2">
                     <button
                       onClick={undoLastPoint}
-                      className="bg-surface border border-border/60 px-4 py-2 text-[10px] font-medium uppercase tracking-widest text-foreground hover:bg-elevated transition-all"
+                      className="bg-surface border border-border/60 px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest text-foreground hover:bg-elevated transition-colors shadow-subtle"
                     >
-                      Undo
+                      Undo Point
                     </button>
                     <button
                       onClick={clearBoundary}
-                      className="bg-surface border border-ember/30 px-4 py-2 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all"
+                      className="bg-surface border border-ember/30 px-5 py-2.5 rounded-full text-[9px] font-black uppercase tracking-widest text-ember hover:bg-ember/5 transition-colors shadow-subtle"
                     >
-                      Clear
+                      Reset Perimeter
                     </button>
+                  </div>
+                )}
+
+                {address && (
+                  <div className="p-6 rounded-[2rem] bg-elevated/40 border border-border/60 animate-in fade-in slide-in-from-bottom-2 mt-4">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-gravel/60 mb-2">Automated Address</p>
+                    <p className="text-[12px] text-foreground font-medium leading-relaxed">{address}</p>
+                    <p className="text-[9px] font-medium text-gravel/40 mt-3 uppercase tracking-tighter italic">Adjust boundary nodes to update location</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Right: Form */}
-            <div className="w-full lg:w-[480px] bg-surface flex flex-col overflow-hidden transition-colors">
-              <div className="flex-1 overflow-y-auto px-10 py-10 custom-scrollbar">
-                <p className="text-[9px] font-medium uppercase tracking-[0.25em] text-gravel/50 mb-8">
-                  {editingEventId ? 'Edit Event' : 'New Event'}
+            {/* Footer */}
+            <div className="px-12 py-10 border-t border-border bg-surface flex flex-col gap-4 shrink-0">
+              {formError && (
+                <p className="text-[10px] font-semibold text-ember uppercase tracking-widest mb-2 px-2">
+                  {formError}
                 </p>
-
-                <div className="space-y-6">
-                  {/* Name */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                      Event Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Primavera Sound 2026"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
-                    />
-                  </div>
-
-                  {/* Dates */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                        Start
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-all font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                        End
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-all font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                      Venue Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Parc del Fòrum"
-                      value={locationName}
-                      onChange={(e) => setLocationName(e.target.value)}
-                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
-                    />
-                  </div>
-
-                  {/* Address */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Street address..."
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
-                    />
-                  </div>
-
-                  {/* Boundary status */}
-                  <div className="flex items-center gap-2 py-3 border-t border-chalk/50">
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${boundaryPoints.length > 2 ? 'bg-success' : 'bg-chalk'}`}
-                    />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gravel/60">
-                      {boundaryPoints.length > 2
-                        ? `Boundary set · ${boundaryPoints.length} points`
-                        : 'No boundary defined'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer actions */}
-              <div className="px-10 py-8 border-t border-border bg-surface flex flex-col gap-4">
-                {formError && (
-                  <p className="text-[10px] font-medium text-ember uppercase tracking-widest mb-2">
-                    {formError}
-                  </p>
-                )}
-                <button
+              )}
+              
+              <div className="flex flex-col gap-3">
+                <button 
                   onClick={handleCreateEvent}
                   disabled={isSubmitting}
-                  className="w-full h-12 bg-obsidian text-eggshell text-[11px] font-black uppercase tracking-[0.2em] hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="w-full h-16 rounded-full bg-foreground text-background text-[12px] font-black uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all shadow-massive disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : editingEventId ? 'Save Changes' : 'Create Event'}
+                  {isSubmitting ? 'Saving...' : (editingEventId ? 'Save Changes' : 'Create Event')}
                 </button>
                 <button
                   onClick={() => setIsInterfaceOpen(false)}
-                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest text-gravel hover:text-ember transition-colors"
+                  className="w-full h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-gravel hover:text-foreground transition-colors bg-elevated/40 border border-border"
                 >
                   Cancel
                 </button>
@@ -461,33 +449,6 @@ export default function EventsPage() {
       <div className="space-y-0">
         {/* Toolbar - integrated with canvas */}
         <div className="w-full bg-surface/90 border border-border/60 border-b-0 shadow-subtle transition-colors">
-          {/* Top row: title + matched count + create button */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-border/60 gap-4">
-            <div className="flex items-center gap-3">
-              <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">
-                Active Schedule
-              </h2>
-              {!loading && (
-                <span
-                  className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${
-                    filteredEvents.length === 0
-                      ? 'bg-ember/10 text-ember border-ember/20'
-                      : 'bg-powder text-obsidian border-chalk'
-                  }`}
-                >
-                  {filteredEvents.length} matched
-                </span>
-              )}
-            </div>
-            <Button
-              variant="primary"
-              onClick={handleOpenCreate}
-              className="h-9 px-5 text-[11px] font-black uppercase tracking-widest"
-            >
-              <Icons.Plus className="w-3.5 h-3.5 mr-1.5" />
-              New Event
-            </Button>
-          </div>
 
           {/* Search + filters row */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-border/60 divide-y lg:divide-y-0">
@@ -598,7 +559,7 @@ export default function EventsPage() {
             {(searchTerm ||
               (selectionValue(statusFilter) && selectionValue(statusFilter) !== 'all') ||
               (selectionValue(capacityFilter) && selectionValue(capacityFilter) !== 'all')) && (
-              <div className="px-5 py-4 shrink-0">
+              <div className="px-4 py-4 shrink-0 border-l border-border/60">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -607,13 +568,25 @@ export default function EventsPage() {
                     setStatusFilter(new Set([]));
                     setCapacityFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-9 px-4 rounded-xl"
+                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-10 px-4 rounded-xl"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
-                  Clear filters
+                  Clear
                 </Button>
               </div>
             )}
+
+            {/* Create Button — Now integrated into the filters row */}
+            <div className="px-6 py-4 shrink-0 ml-auto border-l border-border/60 flex items-center">
+              <Button 
+                variant="primary" 
+                onClick={handleOpenCreate} 
+                className="h-10 px-8 text-[11px] font-bold uppercase tracking-[0.15em] shadow-massive"
+              >
+                <Icons.Plus className="w-4 h-4 mr-2" />
+                Create
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -691,23 +664,45 @@ export default function EventsPage() {
                         </span>
                       </td>
                       <td className="py-6 px-6">
-                        {social ? (
-                          <div className="flex items-center gap-2">
-                            <Icons.Star className="w-3 h-3 text-amber fill-amber" />
-                            <span className="text-admin-sm font-black text-obsidian">
-                              {social.rating}
-                            </span>
-                          </div>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-3 text-[9px] font-black uppercase tracking-widest"
-                            onClick={() => syncSocial(event.id)}
+                        <div className="flex justify-center">
+                          <button 
+                            onClick={() => !social && !syncingIds.has(event.id) && syncSocial(event.id)}
+                            disabled={syncingIds.has(event.id)}
+                            className={`flex flex-col items-center gap-1.5 transition-all ${!social && !syncingIds.has(event.id) ? 'hover:scale-110 cursor-pointer group/stars' : ''} ${syncingIds.has(event.id) ? 'opacity-50 cursor-wait' : ''}`}
+                            title={social ? `${social.rating} / 5 (${social.reviews_count} reviews)` : syncingIds.has(event.id) ? 'Syncing...' : 'Click to sync social proof'}
                           >
-                            Sync
-                          </Button>
-                        )}
+                            <div className="flex items-center gap-0.5">
+                              {syncingIds.has(event.id) ? (
+                                <Icons.RefreshCw className="w-4 h-4 text-amber animate-spin" />
+                              ) : (
+                                [1, 2, 3, 4, 5].map((star) => {
+                                  const rating = social?.rating || 0;
+                                  const isFilled = star <= Math.round(rating);
+                                  return (
+                                    <Icons.Star 
+                                      key={star} 
+                                      className={`w-3.5 h-3.5 ${
+                                        isFilled 
+                                          ? 'text-amber fill-amber' 
+                                          : 'text-gravel/20 group-hover/stars:text-gravel/40'
+                                      } transition-colors`} 
+                                    />
+                                  );
+                                })
+                              )}
+                            </div>
+                            {social && !syncingIds.has(event.id) && (
+                              <span className="text-[9px] font-bold text-gravel opacity-40 uppercase tracking-widest">
+                                {social.rating} ({social.reviews_count})
+                              </span>
+                            )}
+                            {!social && (
+                              <span className="text-[8px] font-bold text-gravel opacity-20 uppercase tracking-widest group-hover/stars:opacity-50">
+                                {syncingIds.has(event.id) ? 'Syncing...' : 'No Data · Sync'}
+                              </span>
+                            )}
+                          </button>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex flex-col text-[11px] font-medium text-gravel uppercase tracking-wider">
@@ -738,12 +733,19 @@ export default function EventsPage() {
                       <td className="py-6 px-6 font-mono text-admin-sm text-obsidian font-bold">
                         {metadata?.capacity?.toLocaleString() || '—'}
                       </td>
-                      <td className="py-6 px-6">
-                        <span
-                          className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 ${isActive ? 'bg-signal-blue text-white' : 'bg-chalk text-gravel opacity-50'}`}
-                        >
-                          {isActive ? 'Active' : 'Past'}
-                        </span>
+                      <td className="py-6 px-6 text-center">
+                        <div className="flex justify-center">
+                          <button
+                            className={`min-w-[110px] h-9 px-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] border transition-all shadow-subtle flex items-center justify-center gap-2.5
+                              ${isActive 
+                                ? 'bg-white border-border text-foreground hover:shadow-massive hover:border-foreground/20' 
+                                : 'bg-elevated/40 border-border/40 text-gravel opacity-60'
+                              }`}
+                          >
+                            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-success animate-pulse' : 'bg-gravel'}`} />
+                            {isActive ? 'Active' : 'Past'}
+                          </button>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center gap-3">

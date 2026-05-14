@@ -317,174 +317,177 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       </header>
 
       {/* Full-Screen Interface */}
+      {/* --- LATTICE STUDIO: POI INTERFACE --- */}
       {isInterfaceOpen && (
-        <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-in fade-in duration-300 w-screen h-screen transition-colors">
-          <div className="h-20 border-b border-border flex items-center justify-between px-12 shrink-0 bg-surface">
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-gravel">Lattice Studio</span>
-              <div className="w-1 h-1 rounded-full bg-border" />
-              <h2 className="waldenburg-display text-admin-xl text-foreground">
-                {editingPoiId ? 'Configure Asset' : 'Register Infrastructure'}
-              </h2>
-            </div>
+        <div className="fixed inset-0 z-[100] bg-background animate-in fade-in duration-300">
+          {/* Map Layer (Full Screen Background) */}
+          <div className="absolute inset-0">
+            <AdminMap
+              mode="PICK_COORDINATE"
+              selectedPoi={selectedPoi}
+              onPoiSelect={selectPoi}
+              activeEventBoundary={activeEventBoundary}
+              initialViewState={mapViewState || { longitude: 2.1734, latitude: 41.3851, zoom: 13 }}
+              selectedCategory={type}
+              selectionSource={selectionSource}
+            />
+          </div>
+
+          {/* Floating Close Button */}
+          <div className="absolute top-10 left-10 z-[110]">
             <Button 
               variant="ghost" 
-              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-border hover:border-foreground transition-all group/close"
+              className="rounded-full w-14 h-14 p-0 flex items-center justify-center bg-surface border border-border hover:border-foreground shadow-massive transition-colors group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
-              <Icons.X className="w-5 h-5 text-gravel group-hover/close:text-foreground transition-colors" />
+              <Icons.X className="w-6 h-6 text-gravel group-hover/close:text-foreground transition-colors" />
             </Button>
           </div>
 
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-            {/* Left: Map */}
-            <div className="flex-1 bg-elevated/20 relative border-r border-border transition-colors">
-              <AdminMap
-                mode="PICK_COORDINATE"
-                selectedPoi={selectedPoi}
-                onPoiSelect={selectPoi}
-                activeEventBoundary={activeEventBoundary}
-                initialViewState={mapViewState}
-                selectedCategory={type}
-                selectionSource={selectionSource}
-              />
-              <div className="absolute top-6 left-6 z-10">
-                <div className="bg-surface border-border shadow-massive max-w-[260px]">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-foreground mb-1.5">
-                    Location Picker
-                  </p>
-                  <p className="text-[11px] text-gravel leading-relaxed font-medium">
-                    {selectedEventId
-                      ? `Place pin within ${selectedEvent?.name}.`
-                      : 'Select an event context first.'}
-                  </p>
+          {/* Floating Studio Card */}
+          <div className="absolute right-12 top-12 bottom-12 w-[460px] bg-surface rounded-[48px] shadow-massive border border-border overflow-hidden flex flex-col z-[105] animate-in slide-in-from-right-8 duration-500">
+            
+            {/* Header */}
+            <div className="px-12 pt-12 pb-8 border-b border-border/40 shrink-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">Lattice Studio</p>
+              <h2 className="waldenburg-display text-3xl text-foreground">
+                {editingPoiId ? 'Edit Asset' : 'New Asset'}
+              </h2>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-scroll custom-scrollbar px-12 py-10 space-y-12">
+              
+              {/* Section 1: Context */}
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Operational Context</p>
+                <Select
+                  className="w-full"
+                  aria-label="Select parent event"
+                  selectedKey={selectedEventId}
+                  onSelectionChange={(key) => {
+                    const newKey = key && typeof key === 'object' && 'anchorKey' in key ? (key as any).anchorKey : (key as string);
+                    if (newKey && newKey !== selectedEventId) setSelectedEventId(newKey);
+                  }}
+                >
+                  <Select.Trigger className="bg-elevated/40 border border-border rounded-2xl h-14 px-6 outline-none transition-colors focus:border-foreground flex items-center justify-between">
+                    <Select.Value className="text-admin-sm font-medium text-foreground uppercase tracking-tight">
+                      {selectedEvent?.name || 'Choose parent event...'}
+                    </Select.Value>
+                  </Select.Trigger>
+                  <Select.Popover className="rounded-2xl border border-border shadow-massive bg-surface">
+                    <ListBox items={events} className="outline-none">
+                      {(e: { id: number | string; name: string }) => (
+                        <ListBox.Item
+                          id={e.id.toString()}
+                          textValue={e.name}
+                          className="flex items-center px-4 py-3 rounded-xl text-[11px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background"
+                        >
+                          {e.name}
+                        </ListBox.Item>
+                      )}
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              </div>
+
+              {/* Section 2: Definition */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Asset Definition</p>
+                
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Asset Name</label>
+                  <input
+                    placeholder="e.g. South Gate, Medical tent A"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
+                  />
                 </div>
+
+                <div className="space-y-4">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Category</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {POI_TYPES.map((t) => (
+                      <button
+                        key={t.value}
+                        onClick={() => setType(t.value)}
+                        className={`px-4 py-5 rounded-2xl border transition-colors flex items-center gap-3 active:scale-[0.97]
+                        ${type === t.value ? 'bg-foreground border-foreground text-background shadow-massive' : 'bg-elevated/20 border-border text-gravel hover:bg-elevated hover:text-foreground'}`}
+                      >
+                        <t.icon className="w-5 h-5 shrink-0" />
+                        <span className="text-[10px] font-bold uppercase tracking-tight truncate">
+                          {t.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Capacity</label>
+                  <input
+                    type="number"
+                    placeholder="Max occupancy"
+                    value={capacity}
+                    onChange={(e) => setCapacity(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
+                  />
+                </div>
+              </div>
+
+              {/* Section 3: Location (Auto) */}
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Location Intelligence</p>
+                {address ? (
+                  <div className="p-6 rounded-[2rem] bg-elevated/40 border border-border/60 animate-in fade-in slide-in-from-bottom-2">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-gravel/60 mb-2">Resolved Address</p>
+                    <p className="text-[12px] text-foreground font-medium leading-relaxed">{address}</p>
+                    <p className="text-[9px] font-medium text-gravel/40 mt-3 uppercase tracking-tighter italic">Drag the pin on the map to refine position</p>
+                  </div>
+                ) : (
+                  <div className="p-8 rounded-[2rem] border border-dashed border-border flex flex-col items-center justify-center text-center">
+                    <Icons.MapPin className="w-6 h-6 text-gravel/20 mb-3" />
+                    <p className="text-[10px] text-gravel/40 uppercase font-bold tracking-widest">Select position on map</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Right: Form */}
-            <div className="w-full lg:w-[450px] bg-surface overflow-hidden flex flex-col transition-colors">
-              <div className="flex-1 overflow-y-auto p-12 space-y-10 custom-scrollbar">
-                <div className="space-y-4">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-gravel">1. Operational Context</p>
-                  <Select
-                    className="w-full"
-                    aria-label="Select parent event"
-                    selectedKey={selectedEventId}
-                    onSelectionChange={(key) => {
-                      const newKey =
-                        key && typeof key === 'object' && 'anchorKey' in key
-                          ? (key as any).anchorKey
-                          : (key as string);
-                      if (newKey && newKey !== selectedEventId) {
-                        setSelectedEventId(newKey);
-                      }
-                    }}
-                  >
-                    <Select.Trigger className="bg-elevated/40 border border-border rounded-xl h-14 px-6 outline-none transition-all focus:border-foreground flex items-center justify-between">
-                      <Select.Value className="text-admin-sm font-medium text-foreground uppercase tracking-tight">
-                        {selectedEvent?.name || 'Choose context...'}
-                      </Select.Value>
-                    </Select.Trigger>
-                    <Select.Popover className="rounded-2xl border border-border shadow-massive bg-surface border border-border shadow-massive">
-                      <ListBox
-                        items={events}
-                        className="outline-none"
-                      >
-                        {(e: { id: number | string; name: string }) => (
-                          <ListBox.Item
-                            id={e.id.toString()}
-                            textValue={e.name}
-                            className="flex items-center px-4 py-3 rounded-xl text-[11px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background"
-                          >
-                            {e.name}
-                          </ListBox.Item>
-                        )}
-                      </ListBox>
-                    </Select.Popover>
-                  </Select>
-                </div>
+            {/* Footer */}
+            <div className="px-12 py-10 border-t border-border bg-surface flex flex-col gap-4 shrink-0">
+              {formError && (
+                <p className="text-[10px] font-semibold text-ember uppercase tracking-widest mb-2 px-2">
+                  {formError}
+                </p>
+              )}
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleRegisterAsset}
+                  disabled={isSubmitting}
+                  className="w-full h-16 rounded-full bg-foreground text-background text-[12px] font-black uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all shadow-massive disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Syncing...' : (editingPoiId ? 'Update Asset' : 'Confirm Asset')}
+                </button>
 
-                <div className="space-y-6">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-gravel">2. Asset Definition</p>
-                  
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-gravel">Asset Name</p>
-                    <input
-                      placeholder="e.g. South Gate, Medical tent A"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight rounded-xl"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-gravel">Category</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {POI_TYPES.map((t) => (
-                        <button
-                          key={t.value}
-                          onClick={() => setType(t.value)}
-                          className={`px-4 py-4 rounded-xl border transition-all flex items-center gap-3 active:scale-[0.97]
-                          ${type === t.value ? 'bg-foreground border-foreground text-background shadow-massive' : 'bg-elevated/20 border-border text-gravel hover:bg-elevated hover:text-foreground'}`}
-                        >
-                          <t.icon className="w-5 h-5 shrink-0" />
-                          <span className="text-[10px] font-medium uppercase tracking-tighter truncate">
-                            {t.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-gravel">Estimated Capacity</p>
-                    <input
-                      type="number"
-                      placeholder="Maximum occupancy"
-                      value={capacity}
-                      onChange={(e) => setCapacity(e.target.value)}
-                      className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight rounded-xl"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-surface border-t border-border p-10 flex flex-col gap-4">
-                {formError && (
-                  <p className="text-[10px] font-medium text-ember uppercase tracking-widest mb-2">
-                    {formError}
-                  </p>
-                )}
-                
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <button
-                    className="flex-1 h-14 text-[11px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
-                    onClick={() => {
-                      setIsInterfaceOpen(false);
-                      setFormError('');
-                    }}
+                    className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-gravel hover:text-foreground transition-colors bg-elevated/40 border border-border"
+                    onClick={() => setIsInterfaceOpen(false)}
                   >
-                    Abort
+                    Cancel
                   </button>
                   
                   {editingPoiId && (
                     <button
                       onClick={handleDeletePoi}
-                      className="flex-1 h-14 text-[11px] font-medium uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 rounded-xl flex items-center justify-center gap-2"
+                      className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 flex items-center justify-center gap-2"
                     >
                       <Icons.Trash className="w-3.5 h-3.5" />
                       Delete
                     </button>
                   )}
-
-                  <button 
-                    onClick={handleRegisterAsset}
-                    disabled={isSubmitting}
-                    className="flex-1 h-14 rounded-xl bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.2em] hover:opacity-90 active:scale-[0.95] transition-all shadow-massive disabled:opacity-50"
-                  >
-                    {isSubmitting ? 'Syncing...' : (editingPoiId ? 'Update Asset' : 'Confirm Asset')}
-                  </button>
                 </div>
               </div>
             </div>
@@ -495,29 +498,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       <div className="space-y-0">
         {/* Toolbar - integrated with canvas */}
         <div className="w-full bg-surface border border-border/60 border-b-0 shadow-subtle transition-colors">
-          {/* Top row: title + matched count + create button */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-border/60 gap-4">
-            <div className="flex items-center gap-3">
-              <h2 className="waldenburg-display text-[28px] text-foreground leading-none">Points of Interest</h2>
-              {!loading && (
-                <span className={`px-2.5 py-1 text-[9px] font-medium border uppercase tracking-widest ${
-                  filteredPois.length === 0
-                    ? 'bg-ember/10 text-ember border-ember/20'
-                    : 'bg-elevated text-foreground border-border'
-                }`}>
-                  {filteredPois.length} matched
-                </span>
-              )}
-            </div>
-            <Button 
-              variant="primary" 
-              onClick={handleOpenCreate} 
-              className="h-10 px-6 text-[11px] font-medium uppercase tracking-widest shadow-massive"
-            >
-              <Icons.Plus className="w-3.5 h-3.5 mr-2" />
-              New Asset
-            </Button>
-          </div>
 
           {/* Search + filters row */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-border/60 divide-y lg:divide-y-0">
@@ -595,7 +575,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             {(searchTerm || 
               (selectionValue(typeFilter) && selectionValue(typeFilter) !== 'all') || 
               (selectionValue(eventFilter) && selectionValue(eventFilter) !== 'all')) && (
-              <div className="px-5 py-4 shrink-0">
+              <div className="px-4 py-4 shrink-0 border-l border-border/60">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -604,13 +584,25 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                     setTypeFilter(new Set([]));
                     setEventFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-9 px-4 rounded-xl"
+                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-10 px-4 rounded-xl"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
-                  Clear filters
+                  Clear
                 </Button>
               </div>
             )}
+
+            {/* Create Button — Now integrated into the filters row */}
+            <div className="px-6 py-4 shrink-0 ml-auto border-l border-border/60 flex items-center">
+              <Button 
+                variant="primary" 
+                onClick={handleOpenCreate} 
+                className="h-10 px-8 text-[11px] font-bold uppercase tracking-[0.15em] shadow-massive"
+              >
+                <Icons.Plus className="w-4 h-4 mr-2" />
+                Create
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -711,13 +703,20 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <span className={`text-[9px] font-medium uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm inline-block ${
-                          status === 'open' ? 'bg-foreground text-background shadow-lg' : 
-                          status === 'maintenance' ? 'bg-ember text-white shadow-lg' : 
-                          'bg-border text-gravel opacity-40'
-                        }`}>
-                          {status}
-                        </span>
+                        <div className="flex justify-center">
+                          <button
+                            className={`min-w-[110px] h-9 px-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] border transition-all shadow-subtle flex items-center justify-center gap-2.5
+                              ${status === 'open' 
+                                ? 'bg-white border-border text-foreground hover:shadow-massive hover:border-foreground/20' 
+                                : status === 'maintenance'
+                                ? 'bg-white border-ember/20 text-ember hover:shadow-massive hover:border-ember/40'
+                                : 'bg-elevated/40 border-border/40 text-gravel opacity-60'
+                              }`}
+                          >
+                            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${status === 'open' ? 'bg-success' : status === 'maintenance' ? 'bg-ember' : 'bg-gravel'}`} />
+                            {status}
+                          </button>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center gap-3">

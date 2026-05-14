@@ -90,6 +90,7 @@ export const getIO = () => {
 // Helper for broadcasting (Opción A: Invalidation only)
 export const notifyAdmin = (event: string, payload: { type: string; id: string }) => {
   if (io) {
+    console.log(`[Socket] Notifying admin: ${event}`, payload);
     io.to('admin').emit(event, payload);
   }
 };
@@ -100,6 +101,9 @@ export const notifyAdmin = (event: string, payload: { type: string; id: string }
  */
 export const notifyAll = (event: string, payload: any) => {
   if (io) {
+    console.log(`[Socket] Broadcasting event "${event}" to all clients:`, payload);
     io.emit(event, payload);
+  } else {
+    console.warn(`[Socket] Cannot broadcast "${event}", io not initialized`);
   }
 };

@@ -278,6 +278,26 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary, events, onAssetClick]
   );
 
+  const handleMarkerDrag = useCallback(
+    (idx: number, e: any) => {
+      if (onBoundaryChange) {
+        const newPoints = [...boundaryPoints];
+        newPoints[idx] = [e.lngLat.lng, e.lngLat.lat];
+        onBoundaryChange(newPoints);
+      }
+    },
+    [boundaryPoints, onBoundaryChange]
+  );
+
+  const handlePoiDrag = useCallback(
+    (e: any) => {
+      if (onPoiSelect) {
+        onPoiSelect({ lng: e.lngLat.lng, lat: e.lngLat.lat });
+      }
+    },
+    [onPoiSelect]
+  );
+
   const boundaryGeoJSON = useMemo(() => {
     if (boundaryPoints.length < 3) return null;
     return {
@@ -359,6 +379,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         onClick={handleMapClick}
         onLoad={handleMapLoad}
         style={{ width: '100%', height: '100%' }}
+        cursor={mode === 'GLOBAL_VIEW' ? 'default' : 'crosshair'}
       >
         <NavigationControl position="top-right" />
 
@@ -508,10 +529,16 @@ export const AdminMap: React.FC<AdminMapProps> = ({
 
         {/* Selected POI Marker (New POI creation mode) */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
-          <Marker longitude={selectedPoi.lng} latitude={selectedPoi.lat} anchor="bottom">
-            <div className="flex flex-col items-center animate-bounce group">
+          <Marker 
+            longitude={selectedPoi.lng} 
+            latitude={selectedPoi.lat} 
+            anchor="bottom"
+            draggable
+            onDragEnd={handlePoiDrag}
+          >
+            <div className="flex flex-col items-center group cursor-grab active:cursor-grabbing">
               <div 
-                className="w-10 h-10 rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center transition-all duration-300"
+                className="w-10 h-10 rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center transition-all duration-300 animate-in fade-in zoom-in"
                 style={{ backgroundColor: POI_METADATA[selectedCategory || 'default']?.color || '#000' }}
               >
                 {React.createElement(POI_METADATA[selectedCategory || 'default']?.icon || Icons.MapPin, {
@@ -520,6 +547,9 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                   strokeWidth: 2.5
                 })}
               </div>
+              <div className="mt-2 bg-white px-3 py-1 rounded-full shadow-lg border border-border">
+                <span className="text-[8px] font-black uppercase tracking-widest text-foreground">Drag to adjust</span>
+              </div>
             </div>
           </Marker>
         )}
@@ -527,8 +557,16 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         {/* Boundary Control Points */}
         {mode === 'DRAW_BOUNDARY' &&
           boundaryPoints.map((point, i) => (
-            <Marker key={`bp-${i}`} longitude={point[0]} latitude={point[1]}>
-              <div className="w-3 h-3 bg-foreground rounded-full border-2 border-background shadow-hairline" />
+            <Marker 
+              key={`bp-${i}`} 
+              longitude={point[0]} 
+              latitude={point[1]}
+              draggable
+              onDragEnd={(e) => handleMarkerDrag(i, e)}
+            >
+              <div className="w-5 h-5 bg-foreground rounded-full border-2 border-background shadow-massive cursor-grab active:cursor-grabbing flex items-center justify-center">
+                <div className="w-1.5 h-1.5 bg-background rounded-full" />
+              </div>
             </Marker>
           ))}
       </Map>

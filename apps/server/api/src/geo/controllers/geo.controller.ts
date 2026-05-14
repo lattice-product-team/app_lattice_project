@@ -680,6 +680,7 @@ export const createPoi = async (req: Request, res: Response) => {
     res.status(201).json(newPoi);
 
     // Notify Admins & Clients
+    console.log(`[Geo] Notifying sync for new POI: ${newPoi.id}`);
     notifyAdmin('admin:pois:updated', { type: 'POI_CREATED', id: newPoi.id.toString() });
     notifyAll('sync:pois', { action: 'created', id: newPoi.id, eventId: parsedEventId });
   } catch (error) {
