@@ -7,14 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEvents, API_BASE } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
-import { useMapInteractions } from '@/components/map/use-map-interactions';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full bg-powder/20 animate-pulse flex items-center justify-center text-gravel uppercase text-[10px] font-black tracking-widest">
-      Initializing Map...
+    <div className="w-full h-full bg-elevated animate-pulse flex items-center justify-center text-gravel uppercase text-[10px] font-medium tracking-widest">
+      Initializing Map Engine...
     </div>
   ),
 });
@@ -22,8 +21,14 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 export default function EventsPage() {
   const router = useRouter();
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const searchParams = useSearchParams();
-  const { events, loading, error, refetch } = useEvents();
+  const { events, loading, refetch } = useEvents();
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<Selection>(new Set([]));
+  const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set([]));
+
+  // Interface State
   const [isInterfaceOpen, setIsInterfaceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -61,18 +66,15 @@ export default function EventsPage() {
   const [endDate, setEndDate] = useState('');
   const [locationName, setLocationName] = useState('');
   const [address, setAddress] = useState('');
+  const [boundaryPoints, setBoundaryPoints] = useState<[number, number][]>([]);
 
-  const { boundaryPoints, setBoundaryPoints, undoLastPoint, clearBoundary } =
-    useMapInteractions('DRAW_BOUNDARY');
-
-  // Helper: extract a plain string from HeroUI's Selection (which can be 'all' or a Set<Key>)
+  // Selection helpers
   const selectionValue = (sel: Selection): string => {
     if (sel === 'all') return 'all';
     const arr = Array.from(sel as Set<string | number>);
     return arr.length > 0 ? String(arr[0]) : '';
   };
 
-  // Filtering Logic
   const filteredEvents = useMemo(() => {
     const statusValue = selectionValue(statusFilter);
     const capacityValue = selectionValue(capacityFilter);
@@ -88,8 +90,8 @@ export default function EventsPage() {
         (statusValue === 'active' && isActive) ||
         (statusValue === 'past' && !isActive);
 
-      const metadata =
-        typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
+      const capacityVal = selectionValue(capacityFilter);
+      const metadata = typeof e.metadata === 'string' ? JSON.parse(e.metadata) : e.metadata;
       const capacity = metadata?.capacity || 0;
       const matchesCapacity =
         !capacityValue ||
@@ -102,14 +104,19 @@ export default function EventsPage() {
     });
   }, [events, searchTerm, statusFilter, capacityFilter]);
 
-  const handleOpenCreate = () => {
+  const resetForm = React.useCallback(() => {
     setEditingEventId(null);
     setName('');
     setStartDate('');
     setEndDate('');
     setLocationName('');
     setAddress('');
-    clearBoundary();
+    setBoundaryPoints([]);
+    setFormError('');
+  }, []);
+
+  const handleOpenCreate = () => {
+    resetForm();
     setIsInterfaceOpen(true);
   };
 
@@ -153,17 +160,24 @@ export default function EventsPage() {
   };
 
   const handleCreateEvent = async () => {
-    setFormError('');
-    if (!name || !startDate || !endDate) {
-      setFormError('Please fill in all required fields (Name, Start Date, End Date).');
+    if (!name || !startDate || !endDate || !locationName || !address) {
+      setFormError('All operational fields are required.');
       return;
     }
+
+    if (boundaryPoints.length < 3) {
+      setFormError('A valid boundary (at least 3 points) is required.');
+      return;
+    }
+
     setIsSubmitting(true);
+    setFormError('');
+
     try {
-      const boundary =
-        boundaryPoints.length > 2
-          ? { type: 'Polygon', coordinates: [[...boundaryPoints, boundaryPoints[0]]] }
-          : null;
+      const boundary = {
+        type: 'Polygon',
+        coordinates: [[...boundaryPoints, boundaryPoints[0]]],
+      };
 
       const url = editingEventId ? `${API_BASE}/events/${editingEventId}` : `${API_BASE}/events`;
 
@@ -184,6 +198,7 @@ export default function EventsPage() {
 
       if (res.ok) {
         setIsInterfaceOpen(false);
+        resetForm();
         refetch();
       }
     } catch (err) {
@@ -194,6 +209,8 @@ export default function EventsPage() {
   };
 
   const syncSocial = async (id: number) => {
+    if (syncingIds.has(id)) return;
+    setSyncingIds((prev) => new Set(prev).add(id));
     try {
       const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
@@ -203,6 +220,12 @@ export default function EventsPage() {
       if (res.ok) refetch();
     } catch (err) {
       console.error('Sync failed', err);
+    } finally {
+      setSyncingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -215,13 +238,13 @@ export default function EventsPage() {
   }, []);
 
   return (
-    <div className="space-y-12 px-8 pt-[calc(var(--admin-safe-area)+1.5rem)] pb-12 relative">
+    <div className="space-y-12 px-8 pt-[calc(var(--admin-safe-area)+1.5rem)] pb-12 relative transition-colors duration-300">
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-xl">
           <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">
             Event Operations
           </p>
-          <h1 className="waldenburg-display text-admin-display text-obsidian leading-[1.08] mb-4">
+          <h1 className="waldenburg-display text-admin-display text-foreground leading-[1.08] mb-4">
             Monitoring global event lifecycles.
           </h1>
           <p className="text-gravel text-admin-md leading-relaxed">
@@ -233,8 +256,8 @@ export default function EventsPage() {
 
       {/* Full-Screen Interface */}
       {isInterfaceOpen && (
-        <div className="fixed inset-0 z-[100] bg-eggshell flex flex-col animate-in fade-in duration-300 w-screen h-screen">
-          <div className="h-20 border-b border-chalk flex items-center justify-between px-12 shrink-0 bg-white/50 backdrop-blur-md">
+        <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-in fade-in duration-300 w-screen h-screen transition-colors">
+          <div className="h-20 border-b border-border flex items-center justify-between px-12 shrink-0 bg-surface">
             <div className="flex items-center gap-4">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gravel">
                 Lattice Studio
@@ -249,13 +272,13 @@ export default function EventsPage() {
               className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-chalk hover:border-obsidian"
               onClick={() => setIsInterfaceOpen(false)}
             >
-              <Icons.X className="w-5 h-5" />
+              <Icons.X className="w-5 h-5 text-gravel group-hover/close:text-foreground transition-colors" />
             </Button>
           </div>
 
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
             {/* Left: Map */}
-            <div className="flex-1 bg-[#f0ede8] relative border-r border-chalk">
+            <div className="flex-1 bg-elevated/20 relative border-r border-border transition-colors">
               <AdminMap
                 mode="DRAW_BOUNDARY"
                 boundaryPoints={boundaryPoints}
@@ -264,11 +287,11 @@ export default function EventsPage() {
                 activeEventBoundary={activeEventBoundaryGeoJSON}
               />
               <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
-                <div className="bg-white/90 backdrop-blur-sm px-5 py-4 border border-chalk/60 shadow-subtle-2 max-w-[260px]">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-obsidian mb-1.5">
+                <div className="bg-surface border-border shadow-massive max-w-[260px]">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-foreground mb-1.5">
                     Boundary Definition
                   </p>
-                  <p className="text-[11px] text-gravel leading-relaxed">
+                  <p className="text-[11px] text-gravel leading-relaxed font-medium">
                     Click on the map to draw the event perimeter.
                   </p>
                 </div>
@@ -276,13 +299,13 @@ export default function EventsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={undoLastPoint}
-                      className="bg-white/90 backdrop-blur-sm border border-chalk/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-obsidian hover:bg-white transition-colors"
+                      className="bg-surface border border-border/60 px-4 py-2 text-[10px] font-medium uppercase tracking-widest text-foreground hover:bg-elevated transition-all"
                     >
                       Undo
                     </button>
                     <button
                       onClick={clearBoundary}
-                      className="bg-white/90 backdrop-blur-sm border border-ember/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-ember hover:bg-ember/5 transition-colors"
+                      className="bg-surface border border-ember/30 px-4 py-2 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all"
                     >
                       Clear
                     </button>
@@ -292,9 +315,9 @@ export default function EventsPage() {
             </div>
 
             {/* Right: Form */}
-            <div className="w-full lg:w-[480px] bg-white flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-10 py-10">
-                <p className="text-[9px] font-black uppercase tracking-[0.25em] text-gravel/50 mb-8">
+            <div className="w-full lg:w-[480px] bg-surface flex flex-col overflow-hidden transition-colors">
+              <div className="flex-1 overflow-y-auto px-10 py-10 custom-scrollbar">
+                <p className="text-[9px] font-medium uppercase tracking-[0.25em] text-gravel/50 mb-8">
                   {editingEventId ? 'Edit Event' : 'New Event'}
                 </p>
 
@@ -309,7 +332,7 @@ export default function EventsPage() {
                       placeholder="e.g. Primavera Sound 2026"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full h-11 px-4 bg-powder/40 border border-chalk text-admin-base text-obsidian placeholder:text-gravel/30 outline-none focus:border-obsidian transition-colors font-medium"
+                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
                     />
                   </div>
 
@@ -323,7 +346,7 @@ export default function EventsPage() {
                         type="datetime-local"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full h-11 px-4 bg-powder/40 border border-chalk text-admin-xs text-obsidian outline-none focus:border-obsidian transition-colors"
+                        className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-all font-medium"
                       />
                     </div>
                     <div>
@@ -334,7 +357,7 @@ export default function EventsPage() {
                         type="datetime-local"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full h-11 px-4 bg-powder/40 border border-chalk text-admin-xs text-obsidian outline-none focus:border-obsidian transition-colors"
+                        className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-all font-medium"
                       />
                     </div>
                   </div>
@@ -349,7 +372,7 @@ export default function EventsPage() {
                       placeholder="e.g. Parc del Fòrum"
                       value={locationName}
                       onChange={(e) => setLocationName(e.target.value)}
-                      className="w-full h-11 px-4 bg-powder/40 border border-chalk text-admin-base text-obsidian placeholder:text-gravel/30 outline-none focus:border-obsidian transition-colors font-medium"
+                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
                     />
                   </div>
 
@@ -363,7 +386,7 @@ export default function EventsPage() {
                       placeholder="Street address..."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      className="w-full h-11 px-4 bg-powder/40 border border-chalk text-admin-base text-obsidian placeholder:text-gravel/30 outline-none focus:border-obsidian transition-colors font-medium"
+                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
                     />
                   </div>
 
@@ -382,9 +405,9 @@ export default function EventsPage() {
               </div>
 
               {/* Footer actions */}
-              <div className="px-10 py-6 border-t border-chalk bg-powder/20 flex flex-col gap-3">
+              <div className="px-10 py-8 border-t border-border bg-surface flex flex-col gap-4">
                 {formError && (
-                  <p className="text-[10px] font-black text-ember uppercase tracking-widest">
+                  <p className="text-[10px] font-medium text-ember uppercase tracking-widest mb-2">
                     {formError}
                   </p>
                 )}
@@ -407,17 +430,11 @@ export default function EventsPage() {
         </div>
       )}
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-admin-base font-medium">
-          Failed to load events: {error}
-        </div>
-      )}
-
       <div className="space-y-0">
         {/* Toolbar - integrated with canvas */}
-        <div className="w-full bg-white/40 backdrop-blur-md border border-chalk/60 border-b-0 shadow-subtle">
-          {/* Top row: title + create button */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-chalk/60 gap-4">
+        <div className="w-full bg-surface/90 border border-border/60 border-b-0 shadow-subtle transition-colors">
+          {/* Top row: title + matched count + create button */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-border/60 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">
                 Active Schedule
@@ -445,21 +462,21 @@ export default function EventsPage() {
           </div>
 
           {/* Search + filters row */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-chalk/60 divide-y lg:divide-y-0">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-border/60 divide-y lg:divide-y-0">
             {/* Search — takes up all remaining space */}
-            <div className="flex-1 flex items-center gap-3 px-6 py-3.5">
+            <div className="flex-1 flex items-center gap-3 px-6 py-4">
               <Icons.Search className="w-4 h-4 text-gravel/40 shrink-0" />
               <input
                 type="text"
-                placeholder="Search events by name..."
+                placeholder="Search lifecycles by name or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-transparent text-admin-base text-obsidian placeholder:text-gravel/40 outline-none font-medium"
+                className="flex-1 bg-transparent text-admin-base text-foreground placeholder:text-gravel/40 outline-none font-medium uppercase tracking-tight"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="text-gravel/40 hover:text-obsidian transition-colors shrink-0"
+                  className="text-gravel/40 hover:text-foreground transition-colors shrink-0"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
                 </button>
@@ -467,16 +484,16 @@ export default function EventsPage() {
             </div>
 
             {/* Status filter */}
-            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48">
+            <div className="flex items-center justify-center px-4 py-4 shrink-0 lg:w-56">
               <Select
-                placeholder="Operational Status"
+                placeholder="Lifecycle Status"
                 selectedKeys={statusFilter}
                 onSelectionChange={setStatusFilter}
               >
-                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
-                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                <Select.Trigger className="rounded-xl border border-border/60 h-10 px-5 bg-surface/50 hover:bg-surface transition-all flex items-center justify-center outline-none focus:border-foreground min-w-[160px]">
+                  <Select.Value className="text-[10px] font-medium text-foreground uppercase tracking-wider text-center" />
                 </Select.Trigger>
-                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                <Select.Popover className="rounded-2xl border border-border/60 shadow-massive bg-surface border border-border/60 shadow-massive">
                   <ListBox className="outline-none">
                     <ListBox.Item
                       id="all"
@@ -504,17 +521,17 @@ export default function EventsPage() {
               </Select>
             </div>
 
-            {/* Scale filter */}
-            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48 border-l border-chalk/60">
+            {/* Capacity filter */}
+            <div className="flex items-center justify-center px-4 py-4 shrink-0 lg:w-56 border-l border-border/60">
               <Select
                 placeholder="Audience Scale"
                 selectedKeys={capacityFilter}
                 onSelectionChange={setCapacityFilter}
               >
-                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
-                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                <Select.Trigger className="rounded-xl border border-border/60 h-10 px-5 bg-surface/50 hover:bg-surface transition-all flex items-center justify-center outline-none focus:border-foreground min-w-[160px]">
+                  <Select.Value className="text-[10px] font-medium text-foreground uppercase tracking-wider text-center" />
                 </Select.Trigger>
-                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                <Select.Popover className="rounded-2xl border border-border/60 shadow-massive bg-surface border border-border/60 shadow-massive">
                   <ListBox className="outline-none">
                     <ListBox.Item
                       id="all"
@@ -553,7 +570,7 @@ export default function EventsPage() {
             {(searchTerm ||
               (selectionValue(statusFilter) && selectionValue(statusFilter) !== 'all') ||
               (selectionValue(capacityFilter) && selectionValue(capacityFilter) !== 'all')) && (
-              <div className="px-5 py-3.5 shrink-0">
+              <div className="px-5 py-4 shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -562,7 +579,7 @@ export default function EventsPage() {
                     setStatusFilter(new Set([]));
                     setCapacityFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-8 px-3 rounded-lg"
+                  className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-9 px-4 rounded-xl"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
                   Clear filters
@@ -572,7 +589,7 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="admin-table-container">
+        <div className="admin-table-container transition-colors">
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/20">
@@ -605,7 +622,7 @@ export default function EventsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="transition-colors divide-y divide-border/30">
               {loading ? (
                 <tr>
                   <td colSpan={9} className="py-24 text-center">
@@ -664,7 +681,7 @@ export default function EventsPage() {
                           </Button>
                         )}
                       </td>
-                      <td className="py-6 px-6">
+                      <td className="py-4 px-6 text-center">
                         <div className="flex flex-col text-[11px] font-medium text-gravel uppercase tracking-wider">
                           <span className="text-obsidian">
                             {start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -700,19 +717,26 @@ export default function EventsPage() {
                           {isActive ? 'Active' : 'Past'}
                         </span>
                       </td>
-                      <td className="py-6 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="py-4 px-6 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => router.push(`/?eventId=${event.id}`)}
-                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
+                            className="h-9 px-5 text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border rounded-xl transition-all hover:shadow-massive active:scale-95"
                           >
                             View
                           </button>
                           <button
                             onClick={() => handleOpenEdit(event)}
-                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
+                            className="h-9 px-5 text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border rounded-xl transition-all hover:shadow-massive active:scale-95"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="h-9 w-9 flex items-center justify-center text-gravel hover:text-ember bg-surface/50 hover:bg-ember/5 border border-border rounded-xl transition-all active:scale-95 shrink-0"
+                            title="Delete Event"
+                          >
+                            <Icons.Trash className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -724,6 +748,48 @@ export default function EventsPage() {
           </table>
         </div>
       </div>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-md"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
+          <div className="relative w-full max-w-md bg-surface border border-border/60 shadow-massive p-10 animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-ember/10 flex items-center justify-center">
+                <Icons.AlertTriangle className="w-8 h-8 text-ember" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="waldenburg-display text-2xl text-foreground">Delete Event</h3>
+                <p className="text-admin-base text-gravel font-medium uppercase tracking-tight opacity-60">
+                  Are you sure you want to remove this event lifecycle? All associated data and
+                  boundaries will be permanently erased.
+                </p>
+              </div>
+
+              <div className="flex flex-col w-full gap-3 pt-4">
+                <button
+                  onClick={() => handleDeleteEvent()}
+                  className="w-full h-14 bg-ember text-white text-[11px] font-medium uppercase tracking-[0.2em] hover:bg-ember/90 transition-all shadow-lg active:scale-[0.98]"
+                >
+                  Confirm Permanent Deletion
+                </button>
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setEventToDeleteId(null);
+                  }}
+                  className="w-full h-14 text-[11px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
+                >
+                  Keep Event
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

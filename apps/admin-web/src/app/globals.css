@@ -76,15 +76,15 @@
 
 [data-theme='dark'],
 .dark {
-  /* Dark Variant (Obsidian) */
+  /* Dark Variant (Refined Obsidian) */
   --background: #000000;
   --foreground: #fdfcfc;
 
-  --surface: #141413;
-  --elevated: #1c1c1b;
-  --overlay: #262625;
+  --surface: #121212;
+  --elevated: #1a1a1a;
+  --overlay: #262626;
 
-  --border: #262625;
+  --border: #262626;
   --glass-border: rgba(255, 255, 255, 0.08);
 }
 
@@ -103,6 +103,7 @@ body {
   font-family: var(--font-sans);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .waldenburg-display {
@@ -122,7 +123,7 @@ body {
 .hairline-card {
   background: var(--surface);
   box-shadow: var(--shadow-hairline), var(--shadow-subtle);
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 1rem; /* 16px */
   transition: all 0.2s ease-in-out;
 }
@@ -136,12 +137,10 @@ body {
   overflow-x: auto;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .admin-table-container::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
-

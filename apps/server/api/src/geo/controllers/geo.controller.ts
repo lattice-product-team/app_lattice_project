@@ -916,3 +916,60 @@ export const updateEvent = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
   }
 };
+
+export const deletePoi = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const poiId = parseInt(id as string, 10);
+
+    if (isNaN(poiId)) {
+      return res.status(400).json({ error: 'Invalid POI ID' });
+    }
+
+    const [poi] = await db.select().from(pointsOfInterest).where(eq(pointsOfInterest.id, poiId));
+    if (!poi) return res.status(404).json({ error: 'POI not found' });
+
+    await db.delete(pointsOfInterest).where(eq(pointsOfInterest.id, poiId));
+
+    // Invalidate Cache
+    await deleteByPrefix('geo:pois:');
+    if (poi.eventId) {
+      await deleteCache(`geo:event:${poi.eventId}:spatial`);
+    }
+
+    // Notify Admins & Clients
+    notifyAdmin('admin:pois:updated', { type: 'POI_DELETED', id: poiId.toString() });
+    notifyAll('sync:pois', { action: 'deleted', id: poiId, eventId: poi.eventId });
+
+    res.json({ success: true, message: 'POI deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting POI:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const deleteEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const eventId = parseInt(id as string, 10);
+
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: 'Invalid Event ID' });
+    }
+
+    await db.delete(events).where(eq(events.id, eventId));
+
+    // Invalidate Caches
+    await deleteByPrefix('geo:pois:');
+    await deleteCache(`geo:event:${eventId}:spatial`);
+
+    // Notify Admins & Clients
+    notifyAdmin('admin:events:updated', { type: 'EVENT_DELETED', id: eventId.toString() });
+    notifyAll('sync:events', { action: 'deleted', id: eventId });
+
+    res.json({ success: true, message: 'Event deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};

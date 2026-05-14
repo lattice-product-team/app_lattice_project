@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTheme } from 'next-themes';
 import { Icons } from '@/components/icons';
 import Map, {
   NavigationControl,
@@ -13,7 +14,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 // AdminMap component with integrated SVG icons
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
-const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
+const MAP_STYLE_LIGHT = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
+const MAP_STYLE_DARK = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`;
 
 const DEFAULT_VIEW_STATE = {
   longitude: 2.128,
@@ -41,6 +43,7 @@ interface AdminMapProps {
   radarData?: any;
   selectedCategory?: string;
   selectedAssetId?: string | number;
+  selectionSource?: 'SEARCH' | 'CLICK' | null;
 }
 
 const POI_METADATA: Record<string, { icon: any; color: string }> = {
@@ -174,8 +177,13 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   radarData,
   selectedCategory,
   selectedAssetId,
+  selectionSource,
 }) => {
   const mapRef = React.useRef<any>(null);
+
+  const { theme } = useTheme();
+  const mapStyle = theme === 'dark' ? MAP_STYLE_DARK : MAP_STYLE_LIGHT;
+
   const [_internalViewState, setInternalViewState] = useState(initialViewState);
   const lastFittedBoundary = React.useRef<string | null>(null);
 
@@ -184,9 +192,11 @@ export const AdminMap: React.FC<AdminMapProps> = ({
       const isCollection = activeEventBoundary.type === 'FeatureCollection';
       const isGlobal = isCollection ? activeEventBoundary.features?.[0]?.properties?.isGlobalFit : activeEventBoundary.properties?.isGlobalFit;
       const boundaryId = isGlobal ? 'global-fit' : JSON.stringify(activeEventBoundary);
+      const isManualSelection = selectionSource === 'CLICK' || selectionSource === 'SEARCH';
 
-      // Only fit if the boundary is different from the last one we fitted
-      if (lastFittedBoundary.current === boundaryId) return;
+      // Only fit if the boundary is different from the last one we fitted,
+      // OR if this was a manual selection (click/search) to ensure it centers
+      if (lastFittedBoundary.current === boundaryId && !isManualSelection) return;
 
       const bbox = isCollection 
         ? getBBox(activeEventBoundary.features.map((f: any) => f.geometry.coordinates))
@@ -220,7 +230,20 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     initialViewState.latitude,
     initialViewState.zoom,
     activeEventBoundary,
+    selectionSource,
   ]);
+
+  // Center on selected POI when picking coordinate
+  React.useEffect(() => {
+    if (selectedPoi && selectionSource === 'CLICK' && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [selectedPoi.lng, selectedPoi.lat],
+        zoom: 17,
+        duration: 1500,
+        padding: { top: 0, bottom: 0, left: 350, right: 0 } // Offset for the sidebar
+      });
+    }
+  }, [selectedPoi?.lng, selectedPoi?.lat, selectionSource]);
 
   const handleMapClick = useCallback(
     (e: MapLayerMouseEvent) => {
@@ -331,7 +354,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         ref={mapRef}
         initialViewState={initialViewState}
         onMoveEnd={(evt) => setInternalViewState(evt.viewState)}
-        mapStyle={MAP_STYLE}
+        mapStyle={mapStyle}
         interactiveLayerIds={['global-boundaries-fill']}
         onClick={handleMapClick}
         onLoad={handleMapLoad}
@@ -378,7 +401,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               }}
               paint={{
                 'text-color': ['get', 'color'],
-                'text-halo-color': '#fff',
+                'text-halo-color': theme === 'dark' ? '#000' : '#fff',
                 'text-halo-width': 2,
               }}
             />
@@ -431,12 +454,19 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="context-boundary-fill"
               type="fill"
-              paint={{ 'fill-color': '#000', 'fill-opacity': 0.05 }}
+              paint={{ 
+                'fill-color': theme === 'dark' ? '#fff' : '#000', 
+                'fill-opacity': 0.05 
+              }}
             />
             <Layer
               id="context-boundary-outline"
               type="line"
-              paint={{ 'line-color': '#000', 'line-width': 1, 'line-dasharray': [2, 2] }}
+              paint={{ 
+                'line-color': theme === 'dark' ? '#fff' : '#000', 
+                'line-width': 1, 
+                'line-dasharray': [2, 2] 
+              }}
             />
           </Source>
         )}
@@ -446,12 +476,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="current-boundary-fill"
               type="fill"
-              paint={{ 'fill-color': '#000', 'fill-opacity': 0.1 }}
+              paint={{ 
+                'fill-color': theme === 'dark' ? '#fff' : '#000', 
+                'fill-opacity': 0.1 
+              }}
             />
             <Layer
               id="current-boundary-outline"
               type="line"
-              paint={{ 'line-color': '#000', 'line-width': 2 }}
+              paint={{ 
+                'line-color': theme === 'dark' ? '#fff' : '#000', 
+                'line-width': 2 
+              }}
             />
           </Source>
         )}
@@ -492,7 +528,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         {mode === 'DRAW_BOUNDARY' &&
           boundaryPoints.map((point, i) => (
             <Marker key={`bp-${i}`} longitude={point[0]} latitude={point[1]}>
-              <div className="w-3 h-3 bg-white rounded-full border-2 border-obsidian shadow-hairline" />
+              <div className="w-3 h-3 bg-foreground rounded-full border-2 border-background shadow-hairline" />
             </Marker>
           ))}
       </Map>
