@@ -25,7 +25,7 @@ export async function login(prevState: any, formData: FormData) {
       path: '/',
     });
 
-    redirect('/');
+    redirect('./');
   } else {
     return { error: 'Invalid email or password' };
   }
@@ -34,5 +34,5 @@ export async function login(prevState: any, formData: FormData) {
 export async function logout() {
   // Destroy the session
   (await cookies()).set('session', '', { expires: new Date(0), path: '/' });
-  redirect('/login');
+  redirect('./login');
 }

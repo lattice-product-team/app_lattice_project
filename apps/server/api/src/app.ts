@@ -105,20 +105,11 @@ v1Router.use('/auth', authRouter);
 v1Router.use(geoRouter);
 v1Router.use(socialRouter);
 
-// --- MOUNTING STRATEGY ---
-// Use a more explicit mounting strategy to avoid overlapping issues
-app.use('/api/v1', v1Router);
-app.use('/v1', v1Router);
-app.use('/api', v1Router);
-
-// Root fallback to v1 for simpler clients
-app.use('/', (req: Request, res: Response, next: express.NextFunction) => {
-  // If we already hit a prefix, don't run again (though Express handles this usually)
-  if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/v1')) {
-    return next();
-  }
-  v1Router(req, res, next);
-});
+// --- API ROUTING ---
+// Mount the main router at the root level to simplify external proxying.
+// The browser will use https://domain.com/lattice/api/auth/login
+// and Nginx will proxy to http://api:3000/auth/login
+app.use('/', v1Router);
 
 // Fallback for unhandled API routes
 app.use('*', (req: Request, res: Response) => {

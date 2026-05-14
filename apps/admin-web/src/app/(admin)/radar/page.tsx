@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useEvents } from '@/hooks/use-admin-data';
 
-const API_BASE = 'http://localhost:3000/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 

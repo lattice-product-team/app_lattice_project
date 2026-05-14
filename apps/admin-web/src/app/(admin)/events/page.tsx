@@ -26,6 +26,7 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 
 export default function EventsPage() {
   const router = useRouter();
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const { events, loading, error, refetch } = useEvents();
   const [isInterfaceOpen, setIsInterfaceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,8 +148,8 @@ export default function EventsPage() {
           : null;
 
       const url = editingEventId 
-        ? `http://localhost:3000/api/v1/events/${editingEventId}`
-        : 'http://localhost:3000/api/v1/events';
+        ? `${API_BASE}/events/${editingEventId}`
+        : `${API_BASE}/events`;
       
       const method = editingEventId ? 'PATCH' : 'POST';
 
@@ -178,7 +179,7 @@ export default function EventsPage() {
 
   const syncSocial = async (id: number) => {
     try {
-      const res = await fetch('http://localhost:3000/api/v1/social/sync', {
+      const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'event', id }),

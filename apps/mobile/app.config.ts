@@ -28,7 +28,7 @@ if (fs.existsSync(rootEnvPath)) {
  */
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  API_URL: z.string().url().default('http://localhost:3000/api/v1'),
+  API_URL: z.string().url().default('http://localhost:3000'),
   GATEWAY_HOST: z.string().default('localhost'),
   GATEWAY_PORT: z.string().default('3000'),
   VALHALLA_PORT: z.string().default('8002'),
@@ -58,8 +58,8 @@ const env = parsedEnv.data;
  * Prioritizes Tunnel > LAN IP > Default Host
  */
 const resolveApiUrl = () => {
-  if (env.TUNNEL_URL) return `${env.TUNNEL_URL}/api/v1`;
-  if (env.LAN_IP) return `http://${env.LAN_IP}:${env.GATEWAY_PORT}/api/v1`;
+  if (env.TUNNEL_URL) return env.TUNNEL_URL;
+  if (env.LAN_IP) return `http://${env.LAN_IP}:${env.GATEWAY_PORT}`;
   return env.API_URL;
 };
 
