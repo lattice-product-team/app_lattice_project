@@ -67,7 +67,7 @@ import { LatticeEvent } from '../../src/types';
 import { useLocationService } from '../../src/hooks/useLocationService';
 import { ProfileSheet } from '../../src/features/profile/components/ProfileSheet';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
 
 // UI Layer Constants
 enum UILayer {
@@ -881,11 +881,11 @@ const styles = StyleSheet.create({
   canvas: {
     flexDirection: 'row',
     width: SCREEN_WIDTH * 2,
-    height: SCREEN_HEIGHT,
+    flex: 1,
   },
   screen: {
     width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+    flex: 1,
   },
   islandContainer: { position: 'absolute', left: 0, right: 0, top: 0, zIndex: 1000 },
   islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },

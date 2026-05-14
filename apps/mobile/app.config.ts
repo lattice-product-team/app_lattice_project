@@ -120,6 +120,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: './assets/images/android-icon-monochrome.png',
     },
     edgeToEdgeEnabled: true,
+    navigationBar: {
+      barStyle: 'dark-content',
+      backgroundColor: '#00000000',
+    },
     predictiveBackGestureEnabled: false,
     permissions: [
       'INTERNET',

@@ -31,7 +31,7 @@ import { GalleryCarousel } from './GalleryCarousel';
 import { ReviewSection } from './ReviewSection';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get('screen');
 
 interface EventDetailSheetProps {
   islandState: Animated.SharedValue<number>;
