@@ -7,10 +7,10 @@ const getApiBase = () => {
     // Dynamically use the current hostname to avoid localhost issues in tunnels or LAN
     const host = window.location.hostname;
     const protocol = window.location.protocol;
-    return process.env.NEXT_PUBLIC_API_URL || `${protocol}//${host}:3000/api/v1`;
+    return process.env.NEXT_PUBLIC_API_URL || `${protocol}//${host}:3000`;
   }
   // When running on the server (SSR), use the internal Docker service name
-  return process.env.INTERNAL_API_URL || 'http://api:3000/api/v1';
+  return process.env.INTERNAL_API_URL || 'http://api:3000';
 };
 
 export const API_BASE = getApiBase();

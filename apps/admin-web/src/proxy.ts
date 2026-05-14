@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from '@/lib/auth';
 
 // 1. Specify protected and public routes
-const basePath = '/lattice/web-admin';
+const isProd = process.env.NODE_ENV === 'production';
+const basePath = isProd ? '/lattice/web-admin' : '';
 const protectedRoutes = ['/', '/events', '/map', '/pois', '/radar'];
 const publicRoutes = ['/login'];
 
