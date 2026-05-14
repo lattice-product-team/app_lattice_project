@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { AdminMap } from '@/components/map/admin-map';
+import dynamic from 'next/dynamic';
 import { useEvents, usePOIs, API_BASE } from '@/hooks/use-admin-data';
 import { useSearchParams } from 'next/navigation';
 import { Sidebar } from '@/components/command-center/Sidebar';
 import { AssetPanel } from '@/components/command-center/AssetPanel';
 import { useSidebar } from '@/hooks/use-sidebar';
+
+const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
+  ssr: false,
+});
 
 interface BaseAsset {
   id: string | number;
@@ -162,17 +166,15 @@ export default function GlobalOperationsPage() {
     return () => clearInterval(interval);
   }, [radarEventIds]);
 
-  // Center map on selected asset (especially for POIs which don't have boundaries)
   useEffect(() => {
     if (selectedAsset) {
-      const isPoi = (selectedAsset as any).geometry?.type === 'Point' || (selectedAsset as any).category && (selectedAsset as any).category !== 'EVENT';
       const coords = (selectedAsset as any).geometry?.coordinates || (selectedAsset as any).center?.coordinates;
       
-      if (isPoi && coords) {
+      if (coords) {
         setMapInitialView({
           longitude: coords[0],
           latitude: coords[1],
-          zoom: 18,
+          zoom: (selectedAsset as any).category === 'EVENT' || !(selectedAsset as any).category ? 15 : 18,
         });
       }
     }
@@ -313,6 +315,7 @@ export default function GlobalOperationsPage() {
           selectedAssetId={selectedAsset?.id}
           activeEventBoundary={activeEventBoundary}
           radarData={radarData}
+          selectionSource={selectionSource}
         />
 
         {selectedAsset && (
