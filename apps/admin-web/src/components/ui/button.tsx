@@ -9,11 +9,11 @@ interface ButtonProps extends Omit<HeroButtonProps, 'variant'> {
 
 export function Button({ variant = 'primary', className, children, ...props }: ButtonProps) {
   const variantStyles = {
-    primary: 'bg-obsidian text-eggshell font-medium hover:opacity-90 shadow-subtle-2',
-    ghost: 'bg-white text-obsidian border border-chalk hover:bg-powder shadow-subtle',
-    tab: 'bg-transparent text-obsidian border border-chalk hover:bg-powder font-bold tracking-pill uppercase text-admin-base',
+    primary: 'bg-foreground text-background font-medium hover:opacity-90 shadow-subtle-2',
+    ghost: 'bg-transparent text-foreground border border-border hover:bg-elevated shadow-subtle',
+    tab: 'bg-transparent text-foreground border border-border hover:bg-elevated font-bold tracking-pill uppercase text-admin-base',
     compact:
-      'bg-transparent text-obsidian border border-chalk hover:bg-powder px-2 py-1 h-auto min-w-0 shadow-none',
+      'bg-transparent text-foreground border border-border hover:bg-elevated px-2 py-1 h-auto min-w-0 shadow-none',
   };
 
   return (

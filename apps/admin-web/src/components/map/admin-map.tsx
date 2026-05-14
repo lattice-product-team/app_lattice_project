@@ -233,6 +233,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     selectionSource,
   ]);
 
+  // Center on selected POI when picking coordinate
+  React.useEffect(() => {
+    if (selectedPoi && selectionSource === 'CLICK' && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [selectedPoi.lng, selectedPoi.lat],
+        zoom: 17,
+        duration: 1500,
+        padding: { top: 0, bottom: 0, left: 350, right: 0 } // Offset for the sidebar
+      });
+    }
+  }, [selectedPoi?.lng, selectedPoi?.lat, selectionSource]);
+
   const handleMapClick = useCallback(
     (e: MapLayerMouseEvent) => {
       const { lng, lat } = e.lngLat;

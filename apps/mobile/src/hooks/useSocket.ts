@@ -5,7 +5,8 @@ import Constants from 'expo-constants';
 import { useAuthStore } from '../store/useAuthStore';
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl as string;
-const SOCKET_URL = API_URL?.replace('/api/v1', '').replace('/v1', '') || '';
+const SOCKET_URL = (API_URL?.replace('/api/v1', '').replace('/v1', '') || '').replace(/\/$/, '');
+console.log('[Socket] Initializing with URL:', SOCKET_URL);
 
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
@@ -33,9 +34,12 @@ export const useSocket = () => {
     
     const socketInstance = io(SOCKET_URL, {
       auth: { token },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'], // Prioritize websocket for tunnel stability
+      timeout: 30000, // Increase timeout to 30s for slow tunnels
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+      forceNew: true,
     });
 
     socketInstance.on('connect', () => {
@@ -49,7 +53,10 @@ export const useSocket = () => {
     });
 
     socketInstance.on('connect_error', (err) => {
-      console.error('[Socket] Connection error:', err.message);
+      // Avoid spamming the console with generic websocket errors during connection attempts
+      if (err.message !== 'websocket error') {
+        console.error('[Socket] Connection error:', err.message);
+      }
     });
 
     socketRef.current = socketInstance;

@@ -107,7 +107,7 @@ export const users = pgTable('users', {
 export const passkeyCredentials = pgTable('passkey_credentials', {
   id: varchar('id').primaryKey(), // Credential ID
   userId: integer('user_id')
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
   publicKey: text('public_key').notNull(),
   counter: integer('counter').default(0),
@@ -118,8 +118,8 @@ export const passkeyCredentials = pgTable('passkey_credentials', {
 
 export const tickets = pgTable('tickets', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
-  eventId: integer('event_id').references(() => events.id),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),
   code: varchar('code').unique(),
   ownerEmail: varchar('owner_email'),
   gate: varchar('gate'),
@@ -133,7 +133,7 @@ export const tickets = pgTable('tickets', {
 
 export const pointsOfInterest = pgTable('points_of_interest', {
   id: serial('id').primaryKey(),
-  eventId: integer('event_id').references(() => events.id),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),
   name: varchar('name').unique().notNull(),
   description: text('description'),
   type: poiTypeEnum('type').notNull(),
@@ -153,20 +153,20 @@ export const pointsOfInterest = pgTable('points_of_interest', {
 
 export const nodes = pgTable('nodes', {
   id: serial('id').primaryKey(),
-  eventId: integer('event_id').references(() => events.id),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),
   location: geometry('location').notNull(),
   name: varchar('name'), // Optional name for key intersections
 });
 
 export const pathSegments = pgTable('path_segments', {
   id: serial('id').primaryKey(),
-  eventId: integer('event_id').references(() => events.id),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),
   sourceNodeId: integer('source_node_id')
     .notNull()
-    .references(() => nodes.id),
+    .references(() => nodes.id, { onDelete: 'cascade' }),
   targetNodeId: integer('target_node_id')
     .notNull()
-    .references(() => nodes.id),
+    .references(() => nodes.id, { onDelete: 'cascade' }),
   distance: doublePrecision('distance').notNull(), // Pre-calculated meters
   surface: surfaceTypeEnum('surface').default('asphalt'),
   slopePercentage: doublePrecision('slope_percentage').default(0),
@@ -178,7 +178,7 @@ export const groups = pgTable('groups', {
   id: serial('id').primaryKey(),
   name: varchar('name'),
   inviteCode: varchar('invite_code').unique(),
-  createdBy: integer('created_by').references(() => users.id),
+  createdBy: integer('created_by').references(() => users.id, { onDelete: 'cascade' }),
   meetingPoint: geometry('meeting_point'),
   createdAt: timestamp('created_at'),
 });
@@ -186,8 +186,8 @@ export const groups = pgTable('groups', {
 export const groupMembers = pgTable(
   'group_members',
   {
-    userId: integer('user_id').references(() => users.id),
-    groupId: integer('group_id').references(() => groups.id),
+    userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    groupId: integer('group_id').references(() => groups.id, { onDelete: 'cascade' }),
     joinedAt: timestamp('joined_at'),
     lastLocation: geometry('last_location'),
     lastUpdated: timestamp('last_updated'),
@@ -199,7 +199,7 @@ export const groupMembers = pgTable(
 
 export const savedLocations = pgTable('saved_locations', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
   label: varchar('label'),
   location: geometry('location'),
   createdAt: timestamp('created_at'),
@@ -215,8 +215,8 @@ export const offlinePackages = pgTable('offline_packages', {
 
 export const telemetryLogs = pgTable('telemetry_logs', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
-  eventId: integer('event_id').references(() => events.id),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  eventId: integer('event_id').references(() => events.id, { onDelete: 'cascade' }),
   location: geometry('location').notNull(),
   timestamp: timestamp('timestamp').defaultNow(),
 });

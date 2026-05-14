@@ -45,6 +45,9 @@ export default function EventsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDeleteId, setEventToDeleteId] = useState<number | null>(null);
+  const [syncingIds, setSyncingIds] = useState<Set<number>>(new Set());
 
   // Form State
   const [name, setName] = useState('');
@@ -84,7 +87,7 @@ export default function EventsPage() {
     });
   }, [events, searchTerm, statusFilter, capacityFilter]);
 
-  const handleOpenCreate = () => {
+  const resetForm = React.useCallback(() => {
     setEditingEventId(null);
     setName('');
     setStartDate('');
@@ -92,6 +95,11 @@ export default function EventsPage() {
     setLocationName('');
     setAddress('');
     setBoundaryPoints([]);
+    setFormError('');
+  }, []);
+
+  const handleOpenCreate = () => {
+    resetForm();
     setIsInterfaceOpen(true);
   };
 
@@ -132,6 +140,32 @@ export default function EventsPage() {
     return undefined;
   }, [boundaryPoints]);
 
+  const handleDeleteEvent = async (id?: number) => {
+    const targetId = id || editingEventId || eventToDeleteId;
+    if (!targetId) return;
+    
+    if (!isDeleteModalOpen) {
+      setEventToDeleteId(targetId);
+      setIsDeleteModalOpen(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/events/${targetId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setIsInterfaceOpen(false);
+        setIsDeleteModalOpen(false);
+        setEventToDeleteId(null);
+        resetForm();
+        refetch();
+      }
+    } catch (err) {
+      console.error('Failed to delete event', err);
+    }
+  };
   const handleCreateEvent = async () => {
     if (!name || !startDate || !endDate || !locationName || !address) {
       setFormError('All operational fields are required.');
@@ -170,6 +204,7 @@ export default function EventsPage() {
 
       if (res.ok) {
         setIsInterfaceOpen(false);
+        resetForm();
         refetch();
       }
     } catch (err) {
@@ -180,6 +215,8 @@ export default function EventsPage() {
   };
 
   const syncSocial = async (id: number) => {
+    if (syncingIds.has(id)) return;
+    setSyncingIds(prev => new Set(prev).add(id));
     try {
       const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
@@ -189,6 +226,12 @@ export default function EventsPage() {
       if (res.ok) refetch();
     } catch (err) {
       console.error('Sync failed', err);
+    } finally {
+      setSyncingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -230,10 +273,10 @@ export default function EventsPage() {
             </div>
             <Button 
               variant="ghost" 
-              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-border hover:border-foreground transition-all"
+              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-border hover:border-foreground transition-all group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
-              <Icons.X className="w-5 h-5 text-foreground" />
+              <Icons.X className="w-5 h-5 text-gravel group-hover/close:text-foreground transition-colors" />
             </Button>
           </div>
 
@@ -354,25 +397,41 @@ export default function EventsPage() {
               </div>
 
               {/* Footer actions */}
-              <div className="px-10 py-8 border-t border-border bg-surface border-t border-border">
+              <div className="px-10 py-8 border-t border-border bg-surface flex flex-col gap-4">
                 {formError && (
                   <p className="text-[10px] font-medium text-ember uppercase tracking-widest mb-2">
                     {formError}
                   </p>
                 )}
-                <button
-                  onClick={handleCreateEvent}
-                  disabled={isSubmitting}
-                  className="w-full h-14 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-massive"
-                >
-                  {isSubmitting ? 'Processing Signal...' : (editingEventId ? 'Commit Lifecycle Changes' : 'Initialize Event Instance')}
-                </button>
-                <button
-                  onClick={() => setIsInterfaceOpen(false)}
-                  className="w-full h-10 text-[9px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
-                >
-                  Cancel Operation
-                </button>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      setIsInterfaceOpen(false);
+                      resetForm();
+                    }}
+                    className="flex-1 h-14 text-[11px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
+                  >
+                    Abort
+                  </button>
+                  
+                  {editingEventId && (
+                    <button
+                      onClick={() => handleDeleteEvent()}
+                      className="flex-1 h-14 text-[11px] font-medium uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 rounded-xl flex items-center justify-center gap-2"
+                    >
+                      <Icons.Trash className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleCreateEvent}
+                    disabled={isSubmitting}
+                    className="flex-[2] h-14 bg-foreground text-background text-[11px] font-medium uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-massive"
+                  >
+                    {isSubmitting ? 'Processing Signal...' : (editingEventId ? 'Commit Changes' : 'Initialize Event')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -513,15 +572,15 @@ export default function EventsPage() {
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-border bg-elevated/20">
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">ID</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Event Details</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Rating</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Schedule</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Occupancy</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Location</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Capacity</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Status</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-right">Operations</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">ID</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Event Details</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Rating</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Schedule</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Occupancy</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Location</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Capacity</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Status</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Operations</th>
               </tr>
             </thead>
             <tbody className="transition-colors divide-y divide-border/30">
@@ -539,56 +598,99 @@ export default function EventsPage() {
 
                   return (
                     <tr key={event.id} className="border-b border-border hover:bg-elevated/10 transition-all group">
-                      <td className="py-6 px-6 font-mono text-admin-xs text-slate opacity-40">EVT-{event.id.toString().padStart(3, '0')}</td>
-                      <td className="py-6 px-6">
+                      <td className="py-4 px-6 font-mono text-admin-xs text-slate opacity-40">EVT-{event.id.toString().padStart(3, '0')}</td>
+                      <td className="py-4 px-6">
                         <span className="font-medium text-foreground text-admin-base uppercase tracking-tight transition-colors">
                           {event.name}
                         </span>
                       </td>
-                      <td className="py-6 px-6">
-                        {social ? (
-                          <div className="flex items-center gap-2">
-                            <Icons.Star className="w-3 h-3 text-amber fill-amber" />
-                            <span className="text-admin-sm font-medium text-foreground">{social.rating}</span>
-                          </div>
-                        ) : (
-                          <Button variant="ghost" size="sm" className="h-8 px-4 text-[9px] font-medium uppercase tracking-widest border border-border/50" onClick={() => syncSocial(event.id)}>Sync</Button>
-                        )}
+                      <td className="py-4 px-6">
+                        <div className="flex justify-center">
+                          <button 
+                            onClick={() => !social && !syncingIds.has(event.id) && syncSocial(event.id)}
+                            disabled={syncingIds.has(event.id)}
+                            className={`flex flex-col items-center gap-1.5 transition-all ${!social && !syncingIds.has(event.id) ? 'hover:scale-110 cursor-pointer group/stars' : ''} ${syncingIds.has(event.id) ? 'opacity-50 cursor-wait' : ''}`}
+                            title={social ? `${social.rating} / 5 (${social.reviews_count} reviews)` : syncingIds.has(event.id) ? 'Syncing...' : 'Click to sync social proof'}
+                          >
+                            <div className="flex items-center gap-0.5">
+                              {syncingIds.has(event.id) ? (
+                                <Icons.RefreshCw className="w-4 h-4 text-amber animate-spin" />
+                              ) : (
+                                [1, 2, 3, 4, 5].map((star) => {
+                                  const rating = social?.rating || 0;
+                                  const isFilled = star <= Math.round(rating);
+                                  return (
+                                    <Icons.Star 
+                                      key={star} 
+                                      className={`w-3.5 h-3.5 ${
+                                        isFilled 
+                                          ? 'text-amber fill-amber' 
+                                          : 'text-gravel/20 group-hover/stars:text-gravel/40'
+                                      } transition-colors`} 
+                                    />
+                                  );
+                                })
+                              )}
+                            </div>
+                            {social && !syncingIds.has(event.id) && (
+                              <span className="text-[9px] font-bold text-gravel opacity-40 uppercase tracking-widest">
+                                {social.rating} ({social.reviews_count})
+                              </span>
+                            )}
+                            {!social && (
+                              <span className="text-[8px] font-bold text-gravel opacity-20 uppercase tracking-widest group-hover/stars:opacity-50">
+                                {syncingIds.has(event.id) ? 'Syncing...' : 'No Data · Sync'}
+                              </span>
+                            )}
+                          </button>
+                        </div>
                       </td>
-                      <td className="py-6 px-6">
+                      <td className="py-4 px-6 text-center">
                         <div className="flex flex-col text-[11px] font-medium text-gravel uppercase tracking-wider">
                           <span className="text-foreground">{start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                           <span className="opacity-40 text-[9px]">{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </td>
-                      <td className="py-6 px-6">
-                        <div className="flex items-center gap-4">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center justify-center gap-4">
                           <div className="w-20 h-1.5 bg-border/40 rounded-full overflow-hidden">
                             <div className="h-full bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.2)]" style={{ width: `${metadata?.currentOccupancy || 0}%` }} />
                           </div>
-                          <span className="text-[10px] font-medium text-foreground">{metadata?.currentOccupancy || 0}%</span>
+                          <span className="text-[10px] font-medium text-foreground w-8">{metadata?.currentOccupancy || 0}%</span>
                         </div>
                       </td>
-                      <td className="py-6 px-6 text-admin-xs text-gravel font-medium uppercase tracking-tight truncate max-w-[150px]">{event.locationName}</td>
-                      <td className="py-6 px-6 font-mono text-admin-sm text-foreground font-medium tabular-nums">{metadata?.capacity?.toLocaleString() || '—'}</td>
-                      <td className="py-6 px-6">
-                        <span className={`text-[9px] font-medium uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm ${isActive ? 'bg-signal-blue text-white shadow-lg' : 'bg-border text-gravel opacity-40'}`}>
+                      <td className="py-4 px-6 text-admin-xs text-gravel font-medium uppercase tracking-tight max-w-[200px]">
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="text-foreground font-bold">{event.locationName}</span>
+                          <span className="opacity-40 leading-tight line-clamp-2">{event.address}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center font-mono text-admin-sm text-foreground font-medium tabular-nums">{metadata?.capacity?.toLocaleString() || '—'}</td>
+                      <td className="py-4 px-6 text-center">
+                        <span className={`text-[9px] font-medium uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm inline-block ${isActive ? 'bg-signal-blue text-white shadow-lg' : 'bg-border text-gravel opacity-40'}`}>
                           {isActive ? 'Active' : 'Past'}
                         </span>
                       </td>
-                      <td className="py-6 px-6 text-right">
-                        <div className="flex items-center justify-end gap-3">
+                      <td className="py-4 px-6 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => router.push(`/?eventId=${event.id}`)}
-                            className="text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border px-5 py-2 rounded-xl transition-all hover:shadow-massive active:scale-95"
+                            className="h-9 px-5 text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border rounded-xl transition-all hover:shadow-massive active:scale-95"
                           >
                             View
                           </button>
                           <button
                             onClick={() => handleOpenEdit(event)}
-                            className="text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border px-5 py-2 rounded-xl transition-all hover:shadow-massive active:scale-95"
+                            className="h-9 px-5 text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border rounded-xl transition-all hover:shadow-massive active:scale-95"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEvent(event.id)}
+                            className="h-9 w-9 flex items-center justify-center text-gravel hover:text-ember bg-surface/50 hover:bg-ember/5 border border-border rounded-xl transition-all active:scale-95 shrink-0"
+                            title="Delete Event"
+                          >
+                            <Icons.Trash className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -600,6 +702,44 @@ export default function EventsPage() {
           </table>
         </div>
       </div>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setIsDeleteModalOpen(false)} />
+          <div className="relative w-full max-w-md bg-surface border border-border/60 shadow-massive p-10 animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-ember/10 flex items-center justify-center">
+                <Icons.AlertTriangle className="w-8 h-8 text-ember" />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="waldenburg-display text-2xl text-foreground">Delete Event</h3>
+                <p className="text-admin-base text-gravel font-medium uppercase tracking-tight opacity-60">
+                  Are you sure you want to remove this event lifecycle? All associated data and boundaries will be permanently erased.
+                </p>
+              </div>
+
+              <div className="flex flex-col w-full gap-3 pt-4">
+                <button
+                  onClick={() => handleDeleteEvent()}
+                  className="w-full h-14 bg-ember text-white text-[11px] font-medium uppercase tracking-[0.2em] hover:bg-ember/90 transition-all shadow-lg active:scale-[0.98]"
+                >
+                  Confirm Permanent Deletion
+                </button>
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setEventToDeleteId(null);
+                  }}
+                  className="w-full h-14 text-[11px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
+                >
+                  Keep Event
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -79,6 +79,7 @@ export default function POIsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [editingPoiId, setEditingPoiId] = useState<number | null>(null);
+  const [syncingIds, setSyncingIds] = useState<Set<number>>(new Set());
 
   // Form State
   const [selectedEventId, setSelectedEventId] = useState<string>('');
@@ -90,15 +91,18 @@ export default function POIsPage() {
 
   const [address, setAddress] = useState('');
   const [locationName, setLocationName] = useState('');
+  const [selectionSource, setSelectionSource] = useState<'CLICK' | 'SEARCH' | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [poiToDeleteId, setPoiToDeleteId] = useState<number | null>(null);
 
   const { selectedPoi, selectPoi, clearPoi } = useMapInteractions('PICK_COORDINATE');
 
   // Auto-resolve address when pin is placed
   useEffect(() => {
-    if (selectedPoi && selectedPoi.latitude && selectedPoi.longitude) {
+    if (selectedPoi && selectedPoi.lat && selectedPoi.lng) {
       const resolve = async () => {
         try {
-          const res = await fetch(`${API_BASE}/resolve-address?lat=${selectedPoi.latitude}&lng=${selectedPoi.longitude}`);
+          const res = await fetch(`${API_BASE}/resolve-address?lat=${selectedPoi.lat}&lng=${selectedPoi.lng}`);
           if (res.ok) {
             const data = await res.json();
             setAddress(data.address);
@@ -113,7 +117,7 @@ export default function POIsPage() {
       };
       resolve();
     }
-  }, [selectedPoi?.latitude, selectedPoi?.longitude]);
+  }, [selectedPoi?.lat, selectedPoi?.lng]);
 
   const selectedEvent = useMemo(
     () => events.find((e) => e.id.toString() === selectedEventId),
@@ -134,7 +138,7 @@ export default function POIsPage() {
     });
   }, [pois, searchTerm, typeFilter, eventFilter]);
 
-  const handleOpenCreate = () => {
+  const resetForm = React.useCallback(() => {
     setEditingPoiId(null);
     setName('');
     setDescription('');
@@ -143,7 +147,13 @@ export default function POIsPage() {
     setIsWheelchairAccessible(true);
     setAddress('');
     setLocationName('');
+    setSelectionSource(null);
     clearPoi();
+    setFormError('');
+  }, [clearPoi]);
+
+  const handleOpenCreate = () => {
+    resetForm();
     setIsInterfaceOpen(true);
   };
 
@@ -157,13 +167,18 @@ export default function POIsPage() {
     setSelectedEventId(poi.eventId?.toString() || '');
     setAddress(poi.address || '');
     setLocationName(poi.locationName || '');
-    selectPoi({
-      id: poi.id,
-      name: poi.name,
-      longitude: poi.center.coordinates[0],
-      latitude: poi.center.coordinates[1],
-      category: poi.type,
-    });
+    setSelectionSource('CLICK');
+    
+    const coords = poi.geometry?.coordinates || poi.center?.coordinates;
+    if (coords) {
+      selectPoi({
+        id: poi.id,
+        name: poi.name,
+        lng: coords[0],
+        lat: coords[1],
+        category: poi.type,
+      });
+    }
     setIsInterfaceOpen(true);
   };
 
@@ -188,7 +203,7 @@ export default function POIsPage() {
         locationName,
         geometry: {
           type: 'Point',
-          coordinates: [selectedPoi.longitude, selectedPoi.latitude],
+          coordinates: [selectedPoi.lng, selectedPoi.lat],
         },
       };
 
@@ -203,6 +218,7 @@ export default function POIsPage() {
 
       if (res.ok) {
         setIsInterfaceOpen(false);
+        resetForm();
         refetch();
       } else {
         const err = await res.json();
@@ -215,7 +231,38 @@ export default function POIsPage() {
     }
   };
 
+  const handleDeletePoi = async (id?: number) => {
+    const targetId = id || editingPoiId || poiToDeleteId;
+    if (!targetId) return;
+    
+    // Instead of native confirm, we open our custom modal
+    if (!isDeleteModalOpen) {
+      setPoiToDeleteId(targetId);
+      setIsDeleteModalOpen(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/pois/${targetId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setIsInterfaceOpen(false);
+        setIsDeleteModalOpen(false);
+        setPoiToDeleteId(null);
+        resetForm();
+        refetch();
+      }
+    } catch (err) {
+      console.error('Failed to delete POI', err);
+    }
+  };
+
   const syncSocial = async (id: number) => {
+    if (syncingIds.has(id)) return;
+    
+    setSyncingIds(prev => new Set(prev).add(id));
     try {
       const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
@@ -225,6 +272,12 @@ export default function POIsPage() {
       if (res.ok) refetch();
     } catch (err) {
       console.error('Sync failed', err);
+    } finally {
+      setSyncingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -275,10 +328,10 @@ export default function POIsPage() {
             </div>
             <Button 
               variant="ghost" 
-              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-border hover:border-foreground transition-all"
+              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-border hover:border-foreground transition-all group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
-              <Icons.X className="w-5 h-5 text-foreground" />
+              <Icons.X className="w-5 h-5 text-gravel group-hover/close:text-foreground transition-colors" />
             </Button>
           </div>
 
@@ -292,6 +345,7 @@ export default function POIsPage() {
                 activeEventBoundary={activeEventBoundary}
                 initialViewState={mapViewState}
                 selectedCategory={type}
+                selectionSource={selectionSource}
               />
               <div className="absolute top-6 left-6 z-10">
                 <div className="bg-surface border-border shadow-massive max-w-[260px]">
@@ -401,6 +455,7 @@ export default function POIsPage() {
                     {formError}
                   </p>
                 )}
+                
                 <div className="flex gap-4">
                   <button
                     className="flex-1 h-14 text-[11px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
@@ -411,6 +466,17 @@ export default function POIsPage() {
                   >
                     Abort
                   </button>
+                  
+                  {editingPoiId && (
+                    <button
+                      onClick={handleDeletePoi}
+                      className="flex-1 h-14 text-[11px] font-medium uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 rounded-xl flex items-center justify-center gap-2"
+                    >
+                      <Icons.Trash className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  )}
+
                   <button 
                     onClick={handleRegisterAsset}
                     disabled={isSubmitting}
@@ -551,14 +617,14 @@ export default function POIsPage() {
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-border bg-elevated/20">
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">ID</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Asset Details</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Social Proof</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Location / Address</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Occupancy (Live)</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Accessibility</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Status</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-right">Operations</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">ID</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Asset Details</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Social Proof</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Location / Address</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Occupancy (Live)</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Accessibility</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Status</th>
+                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Operations</th>
               </tr>
             </thead>
             <tbody className="transition-colors divide-y divide-border/30">
@@ -574,46 +640,77 @@ export default function POIsPage() {
 
                   return (
                     <tr key={poi.id} className="border-b border-border hover:bg-elevated/10 transition-all group">
-                      <td className="py-6 px-6 font-mono text-admin-xs text-slate opacity-40">POI-{poi.id.toString().padStart(3, '0')}</td>
-                      <td className="py-6 px-6">
+                      <td className="py-4 px-6 font-mono text-admin-xs text-slate opacity-40">POI-{poi.id.toString().padStart(3, '0')}</td>
+                      <td className="py-4 px-6">
                         <div className="flex flex-col">
                           <span className="font-medium text-foreground text-admin-base uppercase tracking-tight transition-colors">{poi.name}</span>
                           <span className="text-[10px] text-gravel uppercase tracking-wider font-medium opacity-40">{poi.eventName || 'Global Asset'}</span>
                         </div>
                       </td>
-                      <td className="py-6 px-6">
-                        {social ? (
-                          <div className="flex items-center gap-2">
-                            <Icons.Star className="w-3 h-3 text-amber fill-amber" />
-                            <span className="text-admin-sm font-medium text-foreground">{social.rating}</span>
-                            <span className="text-[10px] text-gravel font-medium opacity-40">({social.reviews_count})</span>
-                          </div>
-                        ) : (
-                          <Button variant="ghost" size="sm" className="h-8 px-4 text-[9px] font-medium uppercase tracking-widest border border-border/50" onClick={() => syncSocial(poi.id)}>Sync</Button>
-                        )}
-                      </td>
-                      <td className="py-6 px-6">
-                        <div className="flex flex-col max-w-[250px]">
-                          <span className="text-admin-base font-medium text-foreground truncate uppercase tracking-tight">{poi.address || 'Location Pending'}</span>
-                          <span className="text-[10px] text-gravel leading-tight truncate opacity-40 font-medium">Coordinates resolved</span>
+                      <td className="py-4 px-6">
+                        <div className="flex justify-center">
+                          <button 
+                            onClick={() => !social && !syncingIds.has(poi.id) && syncSocial(poi.id)}
+                            disabled={syncingIds.has(poi.id)}
+                            className={`flex flex-col items-center gap-1.5 transition-all ${!social && !syncingIds.has(poi.id) ? 'hover:scale-110 cursor-pointer group/stars' : ''} ${syncingIds.has(poi.id) ? 'opacity-50 cursor-wait' : ''}`}
+                            title={social ? `${social.rating} / 5 (${social.reviews_count} reviews)` : syncingIds.has(poi.id) ? 'Syncing...' : 'Click to sync social proof'}
+                          >
+                            <div className="flex items-center gap-0.5">
+                              {syncingIds.has(poi.id) ? (
+                                <Icons.RefreshCw className="w-4 h-4 text-amber animate-spin" />
+                              ) : (
+                                [1, 2, 3, 4, 5].map((star) => {
+                                  const rating = social?.rating || 0;
+                                  const isFilled = star <= Math.round(rating);
+                                  return (
+                                    <Icons.Star 
+                                      key={star} 
+                                      className={`w-3.5 h-3.5 ${
+                                        isFilled 
+                                          ? 'text-amber fill-amber' 
+                                          : 'text-gravel/20 group-hover/stars:text-gravel/40'
+                                      } transition-colors`} 
+                                    />
+                                  );
+                                })
+                              )}
+                            </div>
+                            {social && !syncingIds.has(poi.id) && (
+                              <span className="text-[9px] font-bold text-gravel opacity-40 uppercase tracking-widest">
+                                {social.rating} ({social.reviews_count})
+                              </span>
+                            )}
+                            {!social && (
+                              <span className="text-[8px] font-bold text-gravel opacity-20 uppercase tracking-widest group-hover/stars:opacity-50">
+                                {syncingIds.has(poi.id) ? 'Syncing...' : 'No Data · Sync'}
+                              </span>
+                            )}
+                          </button>
                         </div>
                       </td>
-                      <td className="py-6 px-6">
-                        <div className="flex items-center gap-4">
+                      <td className="py-4 px-6">
+                        <div className="flex flex-col items-start justify-center max-w-[300px]">
+                          <span className="text-[10px] text-gravel leading-tight opacity-40 font-medium uppercase tracking-wider">
+                            {poi.address || 'Location Pending'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center justify-center gap-4">
                           <div className="w-20 h-1.5 bg-border/40 rounded-full overflow-hidden">
                             <div className={`h-full ${occupancy > 80 ? 'bg-ember' : 'bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.2)]'}`} style={{ width: `${occupancy}%` }} />
                           </div>
-                          <span className="text-[10px] font-medium text-foreground">{occupancy}%</span>
+                          <span className="text-[10px] font-medium text-foreground w-8">{occupancy}%</span>
                         </div>
                       </td>
-                      <td className="py-6 px-6 text-center">
+                      <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center gap-3 text-gravel opacity-40">
                           {poi.isWheelchairAccessible && <Icons.Accessibility className="w-5 h-5" />}
                           {poi.hasPriorityLane && <Icons.UserCheck className="w-5 h-5 text-signal-blue" />}
                         </div>
                       </td>
-                      <td className="py-6 px-6">
-                        <span className={`text-[9px] font-medium uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm ${
+                      <td className="py-4 px-6 text-center">
+                        <span className={`text-[9px] font-medium uppercase tracking-[0.2em] px-3 py-1.5 rounded-sm inline-block ${
                           status === 'open' ? 'bg-foreground text-background shadow-lg' : 
                           status === 'maintenance' ? 'bg-ember text-white shadow-lg' : 
                           'bg-border text-gravel opacity-40'
@@ -621,19 +718,28 @@ export default function POIsPage() {
                           {status}
                         </span>
                       </td>
-                      <td className="py-6 px-6 text-right">
-                        <div className="flex items-center justify-end gap-3">
+                      <td className="py-4 px-6 text-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => router.push(`/?poiId=${poi.id}`)}
-                            className="text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border px-5 py-2 rounded-xl transition-all hover:shadow-massive active:scale-95"
+                            className="h-9 px-5 text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border rounded-xl transition-all hover:shadow-massive active:scale-95"
                           >
                             View
                           </button>
                           <button
                             onClick={() => handleOpenEdit(poi)}
-                            className="text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border px-5 py-2 rounded-xl transition-all hover:shadow-massive active:scale-95"
+                            className="h-9 px-5 text-[10px] font-medium uppercase tracking-widest text-foreground bg-surface/50 hover:bg-surface border border-border rounded-xl transition-all hover:shadow-massive active:scale-95"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleDeletePoi(poi.id);
+                            }}
+                            className="h-9 w-9 flex items-center justify-center text-gravel hover:text-ember bg-surface/50 hover:bg-ember/5 border border-border rounded-xl transition-all active:scale-95 shrink-0"
+                            title="Delete Asset"
+                          >
+                            <Icons.Trash className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -645,6 +751,44 @@ export default function POIsPage() {
           </table>
         </div>
       </div>
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setIsDeleteModalOpen(false)} />
+          <div className="relative w-full max-w-md bg-surface border border-border/60 shadow-massive p-10 animate-in fade-in zoom-in duration-300">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="w-16 h-16 rounded-full bg-ember/10 flex items-center justify-center">
+                <Icons.AlertTriangle className="w-8 h-8 text-ember" />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="waldenburg-display text-2xl text-foreground">Confirm Deletion</h3>
+                <p className="text-admin-base text-gravel font-medium uppercase tracking-tight opacity-60">
+                  Are you sure you want to remove this asset? This action is permanent and cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex flex-col w-full gap-3 pt-4">
+                <button
+                  onClick={() => handleDeletePoi()}
+                  className="w-full h-14 bg-ember text-white text-[11px] font-medium uppercase tracking-[0.2em] hover:bg-ember/90 transition-all shadow-lg active:scale-[0.98]"
+                >
+                  Delete Asset Permanently
+                </button>
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setPoiToDeleteId(null);
+                  }}
+                  className="w-full h-14 text-[11px] font-medium uppercase tracking-widest text-gravel hover:text-foreground transition-colors"
+                >
+                  Keep Asset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

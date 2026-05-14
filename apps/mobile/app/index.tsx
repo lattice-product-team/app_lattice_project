@@ -47,6 +47,18 @@ export default function Index() {
       };
 
       prepare();
+
+      // Absolute safety timeout for data pre-fetching
+      const dataTimer = setTimeout(() => {
+        if (!useStartupStore.getState().isDataReady) {
+          console.log('⚠️ [Index] Data pre-fetch safety timeout triggered');
+          setDataReady(true);
+        }
+      }, 5000);
+
+      return () => {
+        clearTimeout(dataTimer);
+      };
     }
   }, [navigationState?.key, queryClient]);
 

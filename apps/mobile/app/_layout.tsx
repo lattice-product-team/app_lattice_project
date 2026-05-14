@@ -63,21 +63,23 @@ export default function RootLayout() {
       console.log(
         `⏳ [RootLayout] Waiting for: ${!fontsLoaded ? 'Fonts ' : ''}${!isDataReady ? 'Data ' : ''}${!isMapReady ? 'Map' : ''}`
       );
-
-      // Master Safety Timeout: If not ready in 6 seconds, force it.
-      const timer = setTimeout(() => {
-        if (showSplashOverlay) {
-          console.warn('🚨 [RootLayout] Master Safety Timeout Triggered: Forcing Splash Hide');
-          splashOpacity.value = withTiming(0, { duration: 800 }, (finished) => {
-            if (finished) {
-              runOnJS(setShowSplashOverlay)(false);
-            }
-          });
-        }
-      }, 6000);
-      return () => clearTimeout(timer);
     }
-  }, [isAppFullyReady, fontsLoaded, isDataReady, isMapReady]);
+  }, [isAppFullyReady]);
+
+  // Master Safety Timeout: Absolute 10-second limit to hide splash no matter what
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (showSplashOverlay) {
+        console.warn('🚨 [RootLayout] Master Safety Timeout Triggered: Forcing Splash Hide');
+        splashOpacity.value = withTiming(0, { duration: 800 }, (finished) => {
+          if (finished) {
+            runOnJS(setShowSplashOverlay)(false);
+          }
+        });
+      }
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const animatedSplashStyle = useAnimatedStyle(() => ({
     opacity: splashOpacity.value,
