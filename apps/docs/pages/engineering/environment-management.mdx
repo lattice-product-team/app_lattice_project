@@ -1,0 +1,52 @@
+# Environment Management
+
+Lattice uses a `.env` based configuration system to decouple infrastructure settings from business logic.
+
+## Environment Files
+
+The project uses two primary files in the root directory:
+
+| File | Usage | Description |
+| :--- | :--- | :--- |
+| `.env` | **Local** | Configuration for local development on your machine (localhost, LAN IP). |
+| `.env.production` | **Production** | Configuration for the production server (external IPs, SSL, prod DBs). |
+| `.env.example` | **Template** | Reference guide with no sensitive data. |
+
+## Core Variables
+
+### Networking
+- `LAN_IP`: Your local network IP address (e.g., `192.168.1.XX`). This is **critical** for physical mobile devices to communicate with your local API.
+- `API_URL`: The base URL used by the mobile app. Locally it auto-generates using `LAN_IP`; in production, it points to your domain.
+
+### Security
+- `JWT_SECRET`: The key used to sign session tokens. Change this to a long, random string in production.
+
+### Infrastructure (DB & Redis)
+- `DATABASE_URL`: Connection string for PostgreSQL.
+- `REDIS_URL`: Connection string for Redis. In Docker Production, it uses the service name `lattice_redis`.
+
+## How to Obtain External Keys
+
+### 1. Google OAuth (`GOOGLE_..._CLIENT_ID`)
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project.
+3. Under "APIs & Services" > "Credentials", create "OAuth client IDs" for Android and iOS.
+4. For Android, you will need the SHA-1 of your development certificate (obtain it with `cd android && ./gradlew signingReport`).
+
+### 2. DataForSEO
+1. Register at [DataForSEO](https://dataforseo.com/).
+2. Go to your Dashboard and copy your `Login` and `Password` (API Key) to your `.env`.
+
+### 3. MapTiler (`MAPTILER_KEY`)
+1. Create an account at [MapTiler](https://www.maptiler.com/).
+2. Create an "API Key" and paste it into your `.env`. This is required for maps to load correctly.
+
+---
+
+## Switching Environments
+
+To test the mobile app against production without a full deployment:
+```bash
+NODE_ENV=production pnpm dev:android
+```
+This command forces the app to load `.env.production` instead of the local `.env`.

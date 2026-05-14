@@ -4,9 +4,9 @@ This guide describes how to develop efficiently within the Lattice monorepo. We 
 
 ## Prerequisites
 
--   **Node.js**: >= 18.x
--   **pnpm**: >= 8.x
--   **Docker & Docker Compose**
+- **Node.js**: >= 18.x
+- **pnpm**: >= 8.x
+- **Docker & Docker Compose**
 
 ## Local Setup
 
@@ -26,29 +26,58 @@ This guide describes how to develop efficiently within the Lattice monorepo. We 
 
 Our monorepo is organized into several workspaces:
 
--   `apps/`: Contains the primary applications (Admin Web, Mobile).
--   `packages/`: Shared libraries and configurations used across the apps.
--   `openspec/`: Design documents, specifications, and change management.
+- `apps/`: Contains the primary applications (Admin Web, Mobile).
+- `packages/`: Shared libraries and configurations used across the apps.
+- `openspec/`: Design documents, specifications, and change management.
 
 ## Common Commands
 
-### Adding a Dependency
-To add a package to a specific workspace:
-```bash
-pnpm add <package-name> --filter <workspace-name>
-```
+### Development
 
-### Running Scripts
-To run a script in all workspaces:
-```bash
-pnpm run <script-name> -r
-```
+| Command                 | Description                                              |
+| :---------------------- | :------------------------------------------------------- |
+| `pnpm dev`              | Starts all apps (API, Web, Docs) in development mode.    |
+| `pnpm dev:api`          | Starts only the Backend API.                             |
+| `pnpm dev:mobile`       | Starts the Expo dev server for the mobile app.           |
+| `pnpm dev:android`      | Builds and runs the app on a physical Android device.    |
+| `pnpm dev:android:prod` | Runs the mobile app connected to the **Production** API. |
 
-## Docker Management
+### Build & Deploy
 
--   **Rebuild images**: `docker-compose build`
--   **View logs**: `docker-compose logs -f`
--   **Stop services**: `docker-compose down`
+| Command                     | Description                                       |
+| :-------------------------- | :------------------------------------------------ |
+| `pnpm build`                | Builds all applications for production.           |
+| `pnpm build:mobile:cloud`   | Generates a production build via EAS Cloud.       |
+| `pnpm build:mobile:local`   | Generates a production build locally on your Mac. |
+| `pnpm build:mobile:preview` | Generates an installable APK for testing.         |
+
+### Database
+
+| Command           | Description                               |
+| :---------------- | :---------------------------------------- |
+| `pnpm db:migrate` | Runs database migrations.                 |
+| `pnpm db:studio`  | Opens Drizzle Studio to visualize data.   |
+| `pnpm db:seed`    | Populates the database with initial data. |
+
+## Mobile Deployment Strategy
+
+When building the mobile app, you need to consider **where** it's built and **what** format is generated.
+
+### Build Locations (Cloud vs. Local)
+
+| Type      | Command Suffix | Location     | Pros                                     | Cons                    |
+| :-------- | :------------- | :----------- | :--------------------------------------- | :---------------------- |
+| **Cloud** | `:cloud`       | Expo Servers | No local setup needed, provides QR code. | Waiting queues, slower. |
+| **Local** | `:local`       | Your MacBook | Super fast, no queues, total control.    | Uses local CPU/RAM.     |
+
+### Build Profiles (Format & Usage)
+
+| Profile        | Format     | Purpose           | Installation                   |
+| :------------- | :--------- | :---------------- | :----------------------------- |
+| **Production** | `.aab`     | App Store Release | via Google Play Store only.    |
+| **Preview**    | **`.apk`** | Internal Testing  | **Direct download & install**. |
+
+---
 
 ## Deployment
 

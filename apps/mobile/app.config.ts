@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { ExpoConfig, ConfigContext } from 'expo/config';
 import * as dotenv from 'dotenv';
 import { expand } from 'dotenv-expand';
@@ -7,10 +8,11 @@ import { z } from 'zod';
 // Load environment variables from the root .env if it exists
 const projectRoot = __dirname;
 const rootDir = path.resolve(projectRoot, '../../');
-const rootEnvPath = path.join(rootDir, '.env');
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+const rootEnvPath = path.join(rootDir, envFile);
 
-import * as fs from 'fs';
 if (fs.existsSync(rootEnvPath)) {
+  console.log(`ℹ️ [Config] Loading environment from ${envFile}`);
   const envOutput = dotenv.config({ path: rootEnvPath });
   expand(envOutput);
 
@@ -19,7 +21,15 @@ if (fs.existsSync(rootEnvPath)) {
     process.env.LAN_IP = envOutput.parsed.LAN_IP;
   }
 } else {
-  console.log('ℹ️ [Config] No .env file found at root, relying on environment variables.');
+  // Fallback to .env if .env.production doesn't exist
+  const fallbackPath = path.join(rootDir, '.env');
+  if (fs.existsSync(fallbackPath)) {
+    console.log('ℹ️ [Config] Falling back to .env');
+    const envOutput = dotenv.config({ path: fallbackPath });
+    expand(envOutput);
+  } else {
+    console.log('ℹ️ [Config] No .env files found, relying on environment variables.');
+  }
 }
 
 /**

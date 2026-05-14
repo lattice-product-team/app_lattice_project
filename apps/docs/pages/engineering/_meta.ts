@@ -3,4 +3,5 @@ export default {
   'coding-standards': 'Coding Standards',
   'git-standards': 'Git & Collaboration',
   'monorepo-workflow': 'Monorepo Workflow',
+  'environment-management': 'Environment Management',
 };

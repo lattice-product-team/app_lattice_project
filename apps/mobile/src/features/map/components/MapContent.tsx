@@ -16,7 +16,6 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 
 // Components
 import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
-import { MapImageManager } from './MapImageManager';
 import { MapLayers } from './MapLayers';
 
 // Constants & Utilities
@@ -150,14 +149,15 @@ export const MapContent = function MapContent({
       features: Array.from(
         new Map(
           filteredList
-            .filter((poi) => 
-              poi.category !== 'event' && 
-              poi.coordinates && 
-              poi.coordinates.length === 2 &&
-              typeof poi.coordinates[0] === 'number' &&
-              typeof poi.coordinates[1] === 'number' &&
-              !isNaN(poi.coordinates[0]) &&
-              !isNaN(poi.coordinates[1])
+            .filter(
+              (poi) =>
+                poi.category !== 'event' &&
+                poi.coordinates &&
+                poi.coordinates.length === 2 &&
+                typeof poi.coordinates[0] === 'number' &&
+                typeof poi.coordinates[1] === 'number' &&
+                !isNaN(poi.coordinates[0]) &&
+                !isNaN(poi.coordinates[1])
             )
             .map((poi) => [poi.id, poi])
         ).values()
@@ -186,19 +186,20 @@ export const MapContent = function MapContent({
       features: Array.from(
         new Map(
           events
-            .filter((poi) => 
-              poi.coordinates && 
-              poi.coordinates.length === 2 &&
-              typeof poi.coordinates[0] === 'number' &&
-              typeof poi.coordinates[1] === 'number' &&
-              !isNaN(poi.coordinates[0]) &&
-              !isNaN(poi.coordinates[1])
+            .filter(
+              (poi) =>
+                poi.coordinates &&
+                poi.coordinates.length === 2 &&
+                typeof poi.coordinates[0] === 'number' &&
+                typeof poi.coordinates[1] === 'number' &&
+                !isNaN(poi.coordinates[0]) &&
+                !isNaN(poi.coordinates[1])
             )
             .map((poi) => [poi.id, poi])
         ).values()
       ).flatMap((poi) => {
         const features = [];
-        
+
         // 1. Add the Point Marker
         features.push({
           type: 'Feature',
@@ -323,15 +324,15 @@ export const MapContent = function MapContent({
     // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
     // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
     const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
-      const isNativePOI = 
-        layer.id.includes('poi') || 
-        layer.id.includes('place') || 
-        layer.id.includes('transit') || 
+      const isNativePOI =
+        layer.id.includes('poi') ||
+        layer.id.includes('place') ||
+        layer.id.includes('transit') ||
         layer.id.includes('transport') ||
         layer.id.includes('station') ||
         layer.id.includes('rail') ||
         layer.id.includes('infrastructure');
-        
+
       if (isNativePOI) {
         return {
           ...layer,
@@ -387,7 +388,7 @@ export const MapContent = function MapContent({
           androidRenderMode="gps"
         />
 
-        <MapImageManager events={events} />
+        {/* <MapImageManager events={events} /> */}
 
         <MapCameraManager
           ref={cameraRef}
