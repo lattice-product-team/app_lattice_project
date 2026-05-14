@@ -4,6 +4,7 @@ import React, { useActionState, useState } from 'react';
 import { login } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Icons } from '@/components/icons';
 
 export default function LoginPage() {
