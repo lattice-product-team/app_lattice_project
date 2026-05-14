@@ -18,7 +18,7 @@ import {
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { usePOIs, useEvents } from '@/hooks/use-admin-data';
+import { usePOIs, useEvents, API_BASE } from '@/hooks/use-admin-data';
 import { useSocket } from '@/hooks/use-socket';
 import dynamic from 'next/dynamic';
 import { useMapInteractions } from '@/components/map/use-map-interactions';
@@ -34,15 +34,15 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 });
 
 const POI_TYPES = [
-  { value: 'wc', label: 'Toilets', emoji: '🚽' },
-  { value: 'restaurant', label: 'Restaurant', emoji: '🍔' },
-  { value: 'bar', label: 'Bar', emoji: '🍺' },
-  { value: 'medical', label: 'Medical', emoji: '🏥' },
-  { value: 'gate', label: 'Entrance/Gate', emoji: '🚪' },
-  { value: 'information', label: 'Info', emoji: 'ℹ️' },
-  { value: 'emergency', label: 'Emergency', emoji: '🚨' },
-  { value: 'parking', label: 'Parking', emoji: '🅿️' },
-  { value: 'shop', label: 'Shop', emoji: '🛍️' },
+  { value: 'wc', label: 'Toilets', icon: Icons.Baby },
+  { value: 'restaurant', label: 'Restaurant', icon: Icons.Utensils },
+  { value: 'bar', label: 'Bar', icon: Icons.Wine },
+  { value: 'medical', label: 'Medical', icon: Icons.Hospital },
+  { value: 'gate', label: 'Entrance/Gate', icon: Icons.LogIn },
+  { value: 'information', label: 'Info', icon: Icons.Info },
+  { value: 'emergency', label: 'Emergency', icon: Icons.AlertTriangle },
+  { value: 'parking', label: 'Parking', icon: Icons.MapPin },
+  { value: 'shop', label: 'Shop', icon: Icons.ShoppingBag },
 ];
 
 export default function POIsPage() {
@@ -127,7 +127,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     setEditingPoiId(poi.id);
     setName(poi.name);
     setDescription(poi.description || '');
-    setType(poi.type);
+    // Support both 'type' and 'category' from backend
+    setType(poi.category || poi.type || 'wc');
     setCapacity(poi.capacity?.toString() || '');
     setSelectedEventId(poi.eventId?.toString() || '');
     setIsWheelchairAccessible(poi.isWheelchairAccessible);
@@ -163,9 +164,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           eventId: selectedEventId,
           name,
           description,
-          type,
+          category: type, // API often expects category
+          type: type,     // Legacy support
           geometry: { type: 'Point', coordinates: [selectedPoi.lng, selectedPoi.lat] },
-          capacity,
+          capacity: parseInt(capacity) || 0,
           isWheelchairAccessible,
         }),
       });
@@ -178,9 +180,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
         setDescription('');
         setCapacity('');
         clearPoi();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setFormError(errorData.message || `Server error: ${res.status}`);
       }
     } catch (err) {
       console.error('Failed to register asset', err);
+      setFormError('Network error. Please check if the API is running.');
     } finally {
       setIsSubmitting(false);
     }
@@ -217,7 +223,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   );
 
   return (
-    <div className="space-y-12 px-8 py-12 pb-24">
+    <div className="space-y-12 px-8 pt-[calc(var(--admin-safe-area)+1.5rem)] pb-24">
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-xl">
           <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">
@@ -262,6 +268,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                 onPoiSelect={selectPoi}
                 activeEventBoundary={activeEventBoundary}
                 initialViewState={mapViewState}
+                selectedCategory={type}
               />
               <div className="absolute top-6 left-6 z-10">
                 <div className="bg-white/90 backdrop-blur-sm px-5 py-4 border border-chalk/60 shadow-subtle-2 max-w-[260px]">
@@ -342,7 +349,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                         className={`px-4 py-3 rounded-xl border transition-all flex items-center gap-3
                         ${type === t.value ? 'bg-obsidian border-obsidian text-eggshell shadow-subtle' : 'bg-white border-chalk text-gravel hover:bg-powder/50'}`}
                       >
-                        <span className="text-xl">{t.emoji}</span>
+                        <t.icon className="w-5 h-5 shrink-0" />
                         <span className="text-[11px] font-black uppercase tracking-tighter truncate">
                           {t.label}
                         </span>
@@ -391,10 +398,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       )}
 
       <div className="space-y-0">
-        {/* Toolbar - full width, flush with table */}
-        <div className="w-full bg-white border border-chalk border-b-0">
+        {/* Toolbar - integrated with canvas */}
+        <div className="w-full bg-white/40 backdrop-blur-md border border-chalk/60 border-b-0 shadow-subtle">
           {/* Top row: title + matched count + create button */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-chalk/60">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-chalk/60 gap-4">
             <div className="flex items-center gap-3">
               <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">Points of Interest</h2>
               {!loading && (
@@ -414,7 +421,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           </div>
 
           {/* Search + filters row */}
-          <div className="flex items-center gap-0 divide-x divide-chalk/60">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-chalk/60 divide-y lg:divide-y-0">
             {/* Search — takes up all remaining space */}
             <div className="flex-1 flex items-center gap-3 px-6 py-3.5">
               <Icons.Search className="w-4 h-4 text-gravel/40 shrink-0" />
@@ -436,23 +443,24 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             </div>
 
             {/* Type filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Type"
                 placeholder="Asset Type"
                 selectedKeys={typeFilter}
                 onSelectionChange={setTypeFilter}
-                className="w-40"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="All Types">All Types</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item id="all" textValue="All Types" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      All Types
+                    </ListBox.Item>
                     {POI_TYPES.map((t) => (
-                      <ListBox.Item key={t.value} id={t.value} textValue={t.label}>{t.label}</ListBox.Item>
+                      <ListBox.Item key={t.value} id={t.value} textValue={t.label} className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                        {t.label}
+                      </ListBox.Item>
                     ))}
                   </ListBox>
                 </Select.Popover>
@@ -460,23 +468,24 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             </div>
 
             {/* Event filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-56 border-l border-chalk/60">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Event"
                 placeholder="Parent Event"
                 selectedKeys={eventFilter}
                 onSelectionChange={setEventFilter}
-                className="w-48"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="Global Assets">Global Assets</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item id="all" textValue="Global Assets" className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                      Global Assets
+                    </ListBox.Item>
                     {events.map((e: any) => (
-                      <ListBox.Item key={e.id} id={e.id.toString()} textValue={e.name}>{e.name}</ListBox.Item>
+                      <ListBox.Item key={e.id.toString()} id={e.id.toString()} textValue={e.name} className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center">
+                        {e.name}
+                      </ListBox.Item>
                     ))}
                   </ListBox>
                 </Select.Popover>
@@ -496,7 +505,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                     setTypeFilter(new Set([]));
                     setEventFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-ember border-ember/20 hover:bg-ember/5 transition-all h-8 px-3"
+                  className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-8 px-3 rounded-lg"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
                   Clear filters
@@ -506,7 +515,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto scrollbar-hide border border-chalk bg-white">
+        <div className="admin-table-container">
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/20">
@@ -582,20 +591,18 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                       </td>
                       <td className="py-6 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:bg-signal-blue hover:text-white hover:border-signal-blue transition-colors"
-                            onClick={() => router.push(`/map?poiId=${poi.id}`)}
+                          <button
+                            onClick={() => router.push(`/?poiId=${poi.id}`)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             View
-                          </Button>
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:border-obsidian"
+                          </button>
+                          <button
                             onClick={() => handleOpenEdit(poi)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             Edit
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>

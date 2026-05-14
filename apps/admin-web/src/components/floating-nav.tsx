@@ -5,25 +5,47 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from './icons';
+import { logout } from '@/app/actions';
+import { useSidebar } from '@/hooks/use-sidebar';
 
 const NAV_ITEMS = [
-  { label: 'Dash', href: '/', icon: 'LayoutDashboard' },
+  { label: 'Map', href: '/', icon: 'Map' },
   { label: 'Events', href: '/events', icon: 'Calendar' },
-  { label: 'Map', href: '/map', icon: 'Map' },
   { label: 'POIs', href: '/pois', icon: 'MapPin' },
-  { label: 'Radar', href: '/radar', icon: 'TrendingUp' },
 ];
+
+export function FloatingSidebarToggle() {
+  const pathname = usePathname();
+  const { isOpen: isSidebarOpen, toggle: toggleSidebar } = useSidebar();
+
+  if (isSidebarOpen || pathname !== '/') return null;
+
+  return (
+    <button 
+      onClick={toggleSidebar}
+      className={cn(
+        "fixed top-8 left-8 sm:left-12 z-[100] h-11 px-5 rounded-full border border-chalk shadow-hairline flex items-center gap-3 transition-all duration-300 active:scale-95 group pointer-events-auto bg-white text-obsidian hover:bg-white/90"
+      )}
+      title="Open Control Panel"
+    >
+      <Icons.Menu className="w-3.5 h-3.5" />
+      <span className="text-[10px] font-bold uppercase tracking-[0.15em]">Menu</span>
+    </button>
+  );
+}
 
 export function FloatingNav() {
   const pathname = usePathname();
+  const { close: closeSidebar } = useSidebar();
+
+  // Close sidebar on every route change
+  React.useEffect(() => {
+    closeSidebar();
+  }, [pathname, closeSidebar]);
 
   return (
     <nav className="flex items-center">
-      <div className="bg-white border border-chalk/40 shadow-hairline rounded-full px-2 py-1.5 flex items-center gap-2">
-        <Link href="/" className="px-2 hover:opacity-80 transition-opacity">
-          <img src="/icon.png" height="24" width="24" className="rounded-md" alt="Lattice" />
-        </Link>
-        <div className="w-[1px] h-4 bg-chalk/40 mx-1" />
+      <div className="bg-white border border-chalk shadow-hairline rounded-full px-2 py-1.5 flex items-center gap-2">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           const Icon = (Icons as any)[item.icon];
@@ -38,8 +60,8 @@ export function FloatingNav() {
                   : "text-gravel hover:text-obsidian hover:bg-powder/30"
               )}
             >
-              {Icon && <Icon className={cn("w-3 h-3", isActive ? "text-obsidian" : "text-gravel")} />}
-              {item.label}
+              {Icon && <Icon className={cn("w-3.5 h-3.5", isActive ? "text-obsidian" : "text-gravel")} />}
+              <span className="hidden xs:inline">{item.label}</span>
             </Link>
           );
         })}
@@ -51,11 +73,11 @@ export function FloatingNav() {
 export function FloatingLogout() {
   return (
     <button 
-      onClick={() => {/* Logout logic */}}
-      className="h-11 px-6 rounded-full bg-white border border-chalk/40 shadow-hairline flex items-center gap-3 text-obsidian hover:bg-powder transition-all duration-500 group"
+      onClick={() => logout()}
+      className="fixed top-8 right-8 sm:right-12 z-[100] h-11 px-5 rounded-full bg-white border border-chalk shadow-hairline flex items-center gap-3 text-obsidian hover:bg-white/90 transition-all duration-300 group active:scale-95 pointer-events-auto"
     >
       <Icons.LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-      <span className="text-[10px] font-bold uppercase tracking-[0.15em]">Logout</span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.15em] hidden sm:inline">Logout</span>
     </button>
   );
 }

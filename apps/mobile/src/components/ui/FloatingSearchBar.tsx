@@ -101,17 +101,29 @@ export const FloatingSearchBar = React.forwardRef<TextInput, FloatingSearchBarPr
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       };
 
-      return () => {
-        console.log('[Voice] Cleaning up listeners...');
-        if (Voice) {
-          Voice.destroy().then(() => {
-            console.log('[Voice] Destroyed successfully');
-            Voice.removeAllListeners();
-          }).catch((err) => {
-            console.error('[Voice] Cleanup error:', err);
-          });
-        }
-      };
+        return () => {
+          console.log('[Voice] Cleaning up listeners...');
+          try {
+            if (Voice) {
+              // Manually nullify listeners to avoid calling removeAllListeners() which can fail
+              // if the internal native module has already been invalidated.
+              Voice.onSpeechStart = undefined;
+              Voice.onSpeechEnd = undefined;
+              Voice.onSpeechResults = undefined;
+              Voice.onSpeechError = undefined;
+              
+              Voice.destroy().then(() => {
+                console.log('[Voice] Destroyed successfully');
+              }).catch((err) => {
+                // Ignore destruction errors during unmount
+                console.log('[Voice] Destroy error (ignored):', err);
+              });
+            }
+          } catch (e) {
+            // Prevent cleanup errors from crashing the app during unmount
+            console.log('[Voice] Cleanup error suppressed:', e);
+          }
+        };
     }, []); // Empty dependency array for stability
 
     const isOperationInProgress = React.useRef(false);

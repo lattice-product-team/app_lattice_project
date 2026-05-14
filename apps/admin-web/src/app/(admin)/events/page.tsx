@@ -1,19 +1,14 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import {
-  Spinner,
-  Select,
-  ListBox,
-  Selection,
-} from '@heroui/react';
+import { Spinner, Select, ListBox, Selection } from '@heroui/react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useEvents } from '@/hooks/use-admin-data';
+import { useEvents, API_BASE } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
 import { useMapInteractions } from '@/components/map/use-map-interactions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
   ssr: false,
@@ -27,18 +22,38 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 export default function EventsPage() {
   const router = useRouter();
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const searchParams = useSearchParams();
   const { events, loading, error, refetch } = useEvents();
   const [isInterfaceOpen, setIsInterfaceOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
   const [activeEventBoundaryGeoJSON, setActiveEventBoundaryGeoJSON] = useState<any>(null);
-  const [mapInitialView, setMapInitialView] = useState({ longitude: 2.2575, latitude: 41.5641, zoom: 15 });
+  const [mapInitialView, setMapInitialView] = useState({
+    longitude: 2.2575,
+    latitude: 41.5641,
+    zoom: 15,
+  });
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<Selection>(new Set([]));
   const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set([]));
+
+  // Handle incoming eventId from Manage action
+  useEffect(() => {
+    const targetId = searchParams.get('eventId');
+    if (targetId && events.length > 0) {
+      const targetEvent = events.find((e) => e.id.toString() === targetId);
+      if (targetEvent) {
+        setSearchTerm(targetEvent.name);
+        // Optional: clear param to avoid re-filtering on refresh
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('eventId');
+        router.replace(`/events?${params.toString()}`, { scroll: false });
+      }
+    }
+  }, [searchParams, events, router]);
 
   // Form State
   const [name, setName] = useState('');
@@ -64,18 +79,19 @@ export default function EventsPage() {
 
     return events.filter((event: any) => {
       const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
+
       const end = new Date(event.endDate);
       const isActive = end > new Date();
-      const matchesStatus = 
+      const matchesStatus =
         !statusValue ||
-        statusValue === 'all' || 
-        (statusValue === 'active' && isActive) || 
+        statusValue === 'all' ||
+        (statusValue === 'active' && isActive) ||
         (statusValue === 'past' && !isActive);
 
-      const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
+      const metadata =
+        typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
       const capacity = metadata?.capacity || 0;
-      const matchesCapacity = 
+      const matchesCapacity =
         !capacityValue ||
         capacityValue === 'all' ||
         (capacityValue === 'massive' && capacity >= 10000) ||
@@ -122,15 +138,17 @@ export default function EventsPage() {
 
       // Compute centroid for initial view
       const allCoords = boundary.coordinates[0] as [number, number][];
-      const centroidLng = allCoords.reduce((s: number, c: [number, number]) => s + c[0], 0) / allCoords.length;
-      const centroidLat = allCoords.reduce((s: number, c: [number, number]) => s + c[1], 0) / allCoords.length;
+      const centroidLng =
+        allCoords.reduce((s: number, c: [number, number]) => s + c[0], 0) / allCoords.length;
+      const centroidLat =
+        allCoords.reduce((s: number, c: [number, number]) => s + c[1], 0) / allCoords.length;
       setMapInitialView({ longitude: centroidLng, latitude: centroidLat, zoom: 16 });
     } else {
       clearBoundary();
       setActiveEventBoundaryGeoJSON(null);
       setMapInitialView({ longitude: 2.2575, latitude: 41.5641, zoom: 15 });
     }
-    
+
     setIsInterfaceOpen(true);
   };
 
@@ -147,10 +165,8 @@ export default function EventsPage() {
           ? { type: 'Polygon', coordinates: [[...boundaryPoints, boundaryPoints[0]]] }
           : null;
 
-      const url = editingEventId 
-        ? `${API_BASE}/events/${editingEventId}`
-        : `${API_BASE}/events`;
-      
+      const url = editingEventId ? `${API_BASE}/events/${editingEventId}` : `${API_BASE}/events`;
+
       const method = editingEventId ? 'PATCH' : 'POST';
 
       const res = await fetch(url, {
@@ -199,7 +215,7 @@ export default function EventsPage() {
   }, []);
 
   return (
-    <div className="space-y-12 px-8 py-12 pb-24 relative">
+    <div className="space-y-12 px-8 pt-[calc(var(--admin-safe-area)+1.5rem)] pb-12 relative">
       <header className="flex justify-between items-start">
         <div className="flex flex-col max-w-xl">
           <p className="text-gravel text-admin-base font-medium mb-2 uppercase tracking-widest">
@@ -220,14 +236,16 @@ export default function EventsPage() {
         <div className="fixed inset-0 z-[100] bg-eggshell flex flex-col animate-in fade-in duration-300 w-screen h-screen">
           <div className="h-20 border-b border-chalk flex items-center justify-between px-12 shrink-0 bg-white/50 backdrop-blur-md">
             <div className="flex items-center gap-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gravel">Lattice Studio</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gravel">
+                Lattice Studio
+              </span>
               <div className="w-1 h-1 rounded-full bg-chalk" />
               <h2 className="waldenburg-display text-admin-xl text-obsidian">
                 {editingEventId ? 'Configure Lifecycle' : 'Initialize Event'}
               </h2>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-chalk hover:border-obsidian"
               onClick={() => setIsInterfaceOpen(false)}
             >
@@ -283,7 +301,9 @@ export default function EventsPage() {
                 <div className="space-y-6">
                   {/* Name */}
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">Event Name</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
+                      Event Name
+                    </label>
                     <input
                       type="text"
                       placeholder="e.g. Primavera Sound 2026"
@@ -296,7 +316,9 @@ export default function EventsPage() {
                   {/* Dates */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">Start</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
+                        Start
+                      </label>
                       <input
                         type="datetime-local"
                         value={startDate}
@@ -305,7 +327,9 @@ export default function EventsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">End</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
+                        End
+                      </label>
                       <input
                         type="datetime-local"
                         value={endDate}
@@ -317,7 +341,9 @@ export default function EventsPage() {
 
                   {/* Location */}
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">Venue Name</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
+                      Venue Name
+                    </label>
                     <input
                       type="text"
                       placeholder="e.g. Parc del Fòrum"
@@ -329,7 +355,9 @@ export default function EventsPage() {
 
                   {/* Address */}
                   <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">Address</label>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
+                      Address
+                    </label>
                     <input
                       type="text"
                       placeholder="Street address..."
@@ -341,7 +369,9 @@ export default function EventsPage() {
 
                   {/* Boundary status */}
                   <div className="flex items-center gap-2 py-3 border-t border-chalk/50">
-                    <div className={`w-1.5 h-1.5 rounded-full ${boundaryPoints.length > 2 ? 'bg-success' : 'bg-chalk'}`} />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${boundaryPoints.length > 2 ? 'bg-success' : 'bg-chalk'}`}
+                    />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gravel/60">
                       {boundaryPoints.length > 2
                         ? `Boundary set · ${boundaryPoints.length} points`
@@ -363,11 +393,7 @@ export default function EventsPage() {
                   disabled={isSubmitting}
                   className="w-full h-12 bg-obsidian text-eggshell text-[11px] font-black uppercase tracking-[0.2em] hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {isSubmitting
-                    ? 'Saving...'
-                    : editingEventId
-                    ? 'Save Changes'
-                    : 'Create Event'}
+                  {isSubmitting ? 'Saving...' : editingEventId ? 'Save Changes' : 'Create Event'}
                 </button>
                 <button
                   onClick={() => setIsInterfaceOpen(false)}
@@ -388,30 +414,38 @@ export default function EventsPage() {
       )}
 
       <div className="space-y-0">
-        {/* Toolbar - full width, flush with table */}
-        <div className="w-full bg-white border border-chalk border-b-0">
+        {/* Toolbar - integrated with canvas */}
+        <div className="w-full bg-white/40 backdrop-blur-md border border-chalk/60 border-b-0 shadow-subtle">
           {/* Top row: title + create button */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-chalk/60">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-5 border-b border-chalk/60 gap-4">
             <div className="flex items-center gap-3">
-              <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">Active Schedule</h2>
+              <h2 className="waldenburg-display text-[28px] text-obsidian leading-none">
+                Active Schedule
+              </h2>
               {!loading && (
-                <span className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${
-                  filteredEvents.length === 0
-                    ? 'bg-ember/10 text-ember border-ember/20'
-                    : 'bg-powder text-obsidian border-chalk'
-                }`}>
+                <span
+                  className={`px-2.5 py-1 text-[9px] font-black border uppercase tracking-widest ${
+                    filteredEvents.length === 0
+                      ? 'bg-ember/10 text-ember border-ember/20'
+                      : 'bg-powder text-obsidian border-chalk'
+                  }`}
+                >
                   {filteredEvents.length} matched
                 </span>
               )}
             </div>
-            <Button variant="primary" onClick={handleOpenCreate} className="h-9 px-5 text-[11px] font-black uppercase tracking-widest">
+            <Button
+              variant="primary"
+              onClick={handleOpenCreate}
+              className="h-9 px-5 text-[11px] font-black uppercase tracking-widest"
+            >
               <Icons.Plus className="w-3.5 h-3.5 mr-1.5" />
               New Event
             </Button>
           </div>
 
           {/* Search + filters row */}
-          <div className="flex items-center gap-0 divide-x divide-chalk/60">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-chalk/60 divide-y lg:divide-y-0">
             {/* Search — takes up all remaining space */}
             <div className="flex-1 flex items-center gap-3 px-6 py-3.5">
               <Icons.Search className="w-4 h-4 text-gravel/40 shrink-0" />
@@ -433,55 +467,91 @@ export default function EventsPage() {
             </div>
 
             {/* Status filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Status"
                 placeholder="Operational Status"
                 selectedKeys={statusFilter}
                 onSelectionChange={setStatusFilter}
-                className="w-40"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="All Schedules">All Schedules</ListBox.Item>
-                    <ListBox.Item id="active" textValue="Live & Upcoming">Live & Upcoming</ListBox.Item>
-                    <ListBox.Item id="past" textValue="Past Events">Past Events</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item
+                      id="all"
+                      textValue="All Schedules"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      All Schedules
+                    </ListBox.Item>
+                    <ListBox.Item
+                      id="active"
+                      textValue="Live & Upcoming"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      Live & Upcoming
+                    </ListBox.Item>
+                    <ListBox.Item
+                      id="past"
+                      textValue="Past Events"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      Past Events
+                    </ListBox.Item>
                   </ListBox>
                 </Select.Popover>
               </Select>
             </div>
 
             {/* Scale filter */}
-            <div className="flex items-center gap-2 px-5 py-3.5 shrink-0">
+            <div className="flex items-center justify-center px-4 py-3 shrink-0 lg:w-48 border-l border-chalk/60">
               <Select
-                variant="bordered"
-                size="sm"
-                label="Scale"
                 placeholder="Audience Scale"
                 selectedKeys={capacityFilter}
                 onSelectionChange={setCapacityFilter}
-                className="w-40"
-                classNames={{ trigger: "rounded-full border-chalk h-10" }}
               >
-                <Select.Trigger><Select.Value /></Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="all" textValue="All Scales">All Scales</ListBox.Item>
-                    <ListBox.Item id="massive" textValue="Massive (>10k)">Massive (&gt;10k)</ListBox.Item>
-                    <ListBox.Item id="medium" textValue="Medium (1k-10k)">Medium (1k-10k)</ListBox.Item>
-                    <ListBox.Item id="boutique" textValue="Boutique (<1k)">Boutique (&lt;1k)</ListBox.Item>
+                <Select.Trigger className="rounded-xl border border-chalk/60 h-10 px-4 bg-white/50 hover:bg-white transition-all flex items-center justify-center outline-none focus:border-obsidian min-w-[140px]">
+                  <Select.Value className="text-[11px] font-bold text-obsidian uppercase tracking-wider text-center" />
+                </Select.Trigger>
+                <Select.Popover className="rounded-2xl border border-chalk/60 shadow-massive bg-white/80 backdrop-blur-xl p-1 min-w-[200px] max-w-[240px] z-[500]">
+                  <ListBox className="outline-none">
+                    <ListBox.Item
+                      id="all"
+                      textValue="All Scales"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      All Scales
+                    </ListBox.Item>
+                    <ListBox.Item
+                      id="massive"
+                      textValue="Massive (>10k)"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      Massive (&gt;10k)
+                    </ListBox.Item>
+                    <ListBox.Item
+                      id="medium"
+                      textValue="Medium (1k-10k)"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      Medium (1k-10k)
+                    </ListBox.Item>
+                    <ListBox.Item
+                      id="boutique"
+                      textValue="Boutique (<1k)"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                    >
+                      Boutique (&lt;1k)
+                    </ListBox.Item>
                   </ListBox>
                 </Select.Popover>
               </Select>
             </div>
 
             {/* Clear filters — only shown when active */}
-            {(searchTerm || 
-              (selectionValue(statusFilter) && selectionValue(statusFilter) !== 'all') || 
+            {(searchTerm ||
+              (selectionValue(statusFilter) && selectionValue(statusFilter) !== 'all') ||
               (selectionValue(capacityFilter) && selectionValue(capacityFilter) !== 'all')) && (
               <div className="px-5 py-3.5 shrink-0">
                 <Button
@@ -492,7 +562,7 @@ export default function EventsPage() {
                     setStatusFilter(new Set([]));
                     setCapacityFilter(new Set([]));
                   }}
-                  className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-ember border-ember/20 hover:bg-ember/5 transition-all h-8 px-3"
+                  className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-ember hover:bg-ember/5 transition-all h-8 px-3 rounded-lg"
                 >
                   <Icons.X className="w-3.5 h-3.5" />
                   Clear filters
@@ -502,85 +572,148 @@ export default function EventsPage() {
           </div>
         </div>
 
-        <div className="w-full overflow-x-auto scrollbar-hide border border-chalk bg-white">
+        <div className="admin-table-container">
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-chalk bg-powder/20">
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Event Details</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Rating</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Schedule</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Occupancy</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Capacity</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Status</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-right">Operations</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  ID
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Event Details
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Rating
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Schedule
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Occupancy
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Location
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Capacity
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Status
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-right">
+                  Operations
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={9} className="py-24 text-center"><Spinner color="current" size="sm" /></td></tr>
+                <tr>
+                  <td colSpan={9} className="py-24 text-center">
+                    <Spinner color="current" size="sm" />
+                  </td>
+                </tr>
               ) : filteredEvents.length === 0 ? (
-                <tr><td colSpan={9} className="py-24 text-center text-gravel font-medium uppercase text-[10px] tracking-[0.2em]">No operational matches found.</td></tr>
+                <tr>
+                  <td
+                    colSpan={9}
+                    className="py-24 text-center text-gravel font-medium uppercase text-[10px] tracking-[0.2em]"
+                  >
+                    No operational matches found.
+                  </td>
+                </tr>
               ) : (
                 filteredEvents.map((event: any) => {
-                  const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
+                  const metadata =
+                    typeof event.metadata === 'string'
+                      ? JSON.parse(event.metadata)
+                      : event.metadata;
                   const social = metadata?.social;
                   const start = new Date(event.startDate);
                   const end = new Date(event.endDate);
                   const isActive = end > new Date();
 
                   return (
-                    <tr key={event.id} className="border-b border-chalk hover:bg-powder/10 transition-colors group">
-                      <td className="py-6 px-6 font-mono text-admin-xs text-slate opacity-50">EVT-{event.id.toString().padStart(3, '0')}</td>
-                      <td className="py-6 px-6"><span className="font-bold text-obsidian text-admin-base uppercase tracking-tight">{event.name}</span></td>
+                    <tr
+                      key={event.id}
+                      className="border-b border-chalk hover:bg-powder/10 transition-colors group"
+                    >
+                      <td className="py-6 px-6 font-mono text-admin-xs text-slate opacity-50">
+                        EVT-{event.id.toString().padStart(3, '0')}
+                      </td>
+                      <td className="py-6 px-6">
+                        <span className="font-bold text-obsidian text-admin-base uppercase tracking-tight">
+                          {event.name}
+                        </span>
+                      </td>
                       <td className="py-6 px-6">
                         {social ? (
                           <div className="flex items-center gap-2">
                             <Icons.Star className="w-3 h-3 text-amber fill-amber" />
-                            <span className="text-admin-sm font-black text-obsidian">{social.rating}</span>
+                            <span className="text-admin-sm font-black text-obsidian">
+                              {social.rating}
+                            </span>
                           </div>
                         ) : (
-                          <Button variant="ghost" size="sm" className="h-7 px-3 text-[9px] font-black uppercase tracking-widest" onClick={() => syncSocial(event.id)}>Sync</Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-3 text-[9px] font-black uppercase tracking-widest"
+                            onClick={() => syncSocial(event.id)}
+                          >
+                            Sync
+                          </Button>
                         )}
                       </td>
                       <td className="py-6 px-6">
                         <div className="flex flex-col text-[11px] font-medium text-gravel uppercase tracking-wider">
-                          <span className="text-obsidian">{start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                          <span className="opacity-50 text-[9px]">{start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          <span className="text-obsidian">
+                            {start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                          <span className="opacity-50 text-[9px]">
+                            {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         </div>
                       </td>
                       <td className="py-6 px-6">
                         <div className="flex items-center gap-3">
                           <div className="w-16 h-1 bg-chalk rounded-full overflow-hidden">
-                            <div className="h-full bg-obsidian" style={{ width: `${metadata?.currentOccupancy || 0}%` }} />
+                            <div
+                              className="h-full bg-obsidian"
+                              style={{ width: `${metadata?.currentOccupancy || 0}%` }}
+                            />
                           </div>
-                          <span className="text-[10px] font-black text-obsidian">{metadata?.currentOccupancy || 0}%</span>
+                          <span className="text-[10px] font-black text-obsidian">
+                            {metadata?.currentOccupancy || 0}%
+                          </span>
                         </div>
                       </td>
-                      <td className="py-6 px-6 text-admin-xs text-gravel font-medium uppercase tracking-tight truncate max-w-[150px]">{event.locationName}</td>
-                      <td className="py-6 px-6 font-mono text-admin-sm text-obsidian font-bold">{metadata?.capacity?.toLocaleString() || '—'}</td>
+                      <td className="py-6 px-6 text-admin-xs text-gravel font-medium uppercase tracking-tight truncate max-w-[150px]">
+                        {event.locationName}
+                      </td>
+                      <td className="py-6 px-6 font-mono text-admin-sm text-obsidian font-bold">
+                        {metadata?.capacity?.toLocaleString() || '—'}
+                      </td>
                       <td className="py-6 px-6">
-                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 ${isActive ? 'bg-signal-blue text-white' : 'bg-chalk text-gravel opacity-50'}`}>
+                        <span
+                          className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 ${isActive ? 'bg-signal-blue text-white' : 'bg-chalk text-gravel opacity-50'}`}
+                        >
                           {isActive ? 'Active' : 'Past'}
                         </span>
                       </td>
                       <td className="py-6 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:bg-signal-blue hover:text-white hover:border-signal-blue transition-colors"
-                            onClick={() => router.push(`/map?eventId=${event.id}`)}
+                          <button
+                            onClick={() => router.push(`/?eventId=${event.id}`)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             View
-                          </Button>
-                          <Button 
-                            variant="compact" 
-                            className="bg-white border-chalk hover:border-obsidian"
+                          </button>
+                          <button
                             onClick={() => handleOpenEdit(event)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-obsidian bg-white/50 hover:bg-white border border-chalk/60 px-4 py-1.5 rounded-xl transition-all hover:shadow-sm"
                           >
                             Edit
-                          </Button>
+                          </button>
                         </div>
                       </td>
                     </tr>

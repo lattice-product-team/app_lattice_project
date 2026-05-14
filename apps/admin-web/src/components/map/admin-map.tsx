@@ -15,6 +15,12 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 const MAPTILER_KEY = 'iqk4irD5FCOr6M6VHVWZ';
 const MAP_STYLE = `https://api.maptiler.com/maps/streets-v2/style.json?key=${MAPTILER_KEY}`;
 
+const DEFAULT_VIEW_STATE = {
+  longitude: 2.128,
+  latitude: 41.353,
+  zoom: 13,
+};
+
 export type InteractionMode = 'GLOBAL_VIEW' | 'DRAW_BOUNDARY' | 'PICK_COORDINATE';
 
 interface AdminMapProps {
@@ -32,6 +38,9 @@ interface AdminMapProps {
   onPoiSelect?: (coords: { lng: number; lat: number }) => void;
   onAssetClick?: (asset: any) => void;
   activeEventBoundary?: any;
+  radarData?: any;
+  selectedCategory?: string;
+  selectedAssetId?: string | number;
 }
 
 const POI_METADATA: Record<string, { icon: any; color: string }> = {
@@ -47,30 +56,56 @@ const POI_METADATA: Record<string, { icon: any; color: string }> = {
   default: { icon: Icons.MapPin, color: '#F8D548' },
 };
 
-const getCentroid = (coordinates: [number, number][][]): [number, number] => {
-  let totalLng = 0;
-  let totalLat = 0;
-  let count = 0;
-  for (const ring of coordinates) {
-    for (const point of ring) {
-      totalLng += point[0];
-      totalLat += point[1];
-      count++;
+const getBBox = (coords: any): [number, number, number, number] => {
+  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  
+  const process = (c: any) => {
+    if (typeof c[0] === 'number') {
+      minLng = Math.min(minLng, c[0]);
+      minLat = Math.min(minLat, c[1]);
+      maxLng = Math.max(maxLng, c[0]);
+      maxLat = Math.max(maxLat, c[1]);
+    } else {
+      c.forEach(process);
     }
+  };
+  
+  process(coords);
+  return [minLng, minLat, maxLng, maxLat];
+};
+
+const isPointInPolygon = (point: [number, number], vs: [number, number][][]): boolean => {
+  const x = point[0], y = point[1];
+  let inside = false;
+  // Use the first ring for simplicity
+  const polygon = vs[0];
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    const intersect = ((yi > y) !== (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
   }
-  return [totalLng / count, totalLat / count];
+  return inside;
+};
+
+const getCentroid = (coordinates: [number, number][][]): [number, number] => {
+  const [minLng, minLat, maxLng, maxLat] = getBBox(coordinates);
+  return [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 };
 
 const MapMarker = React.memo(({ 
   type, 
   data, 
   isSelected, 
-  onClick 
+  onClick,
+  currentZoom = 0
 }: { 
   type: 'event' | 'poi'; 
   data: any; 
   isSelected?: boolean;
   onClick?: (data: any) => void;
+  currentZoom?: number;
 }) => {
   const metadata = POI_METADATA[data.category] || POI_METADATA.default;
   const size = type === 'event' ? 'w-10 h-10' : 'w-8 h-8';
@@ -83,6 +118,14 @@ const MapMarker = React.memo(({
 
   if (!coords) return null;
 
+  // Dynamic scaling based on zoom to prevent markers from overwhelming boundaries
+  const zoomScale = isSelected ? 1.25 : (currentZoom < 14 ? 0.75 : 1);
+  const hideLabelByZoom = type === 'event' && currentZoom < 15;
+
+  // Stability: Don't render markers if we are too far out
+  if (type === 'event' && currentZoom < 11) return null;
+  if (type === 'poi' && currentZoom < 14.5) return null;
+
   return (
     <Marker
       longitude={coords[0]}
@@ -93,16 +136,21 @@ const MapMarker = React.memo(({
         onClick?.(data);
       }}
     >
-      <div className={`group relative cursor-pointer flex flex-col items-center`}>
+      <div 
+        className="group relative cursor-pointer flex flex-col items-center transition-transform duration-300"
+        style={{ transform: `scale(${zoomScale})` }}
+      >
         <div 
-          className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 transform ${isSelected ? 'scale-125 ring-4 ring-white/30' : 'hover:scale-110'}`}
+          className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 ${isSelected ? 'ring-4 ring-white/30' : 'hover:scale-110'}`}
           style={{ backgroundColor: color }}
         >
           <Icon className={type === 'event' ? "w-5 h-5" : "w-4 h-4"} color="white" strokeWidth={2.5} />
         </div>
         
-        {/* Label - visible on hover or if selected */}
-        <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-bold uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-200 whitespace-nowrap ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'}`}>
+        {/* Label - visible on hover, if selected, or if it's an event and we are zoomed in */}
+        <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-black uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-300 whitespace-nowrap ${
+          (isSelected || (type === 'event' && !hideLabelByZoom)) ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'
+        }`}>
           {data.name}
         </div>
       </div>
@@ -123,26 +171,44 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   onPoiSelect,
   onAssetClick,
   activeEventBoundary,
+  radarData,
+  selectedCategory,
+  selectedAssetId,
 }) => {
   const mapRef = React.useRef<any>(null);
   const [_internalViewState, setInternalViewState] = useState(initialViewState);
+  const lastFittedBoundary = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    if (activeEventBoundary?.geometry?.coordinates) {
-      const bbox = getBBox(activeEventBoundary.geometry.coordinates);
-      // Delay so the overlay animation (300ms) finishes before fitBounds,
-      // ensuring the map container has its final size.
+    if (activeEventBoundary) {
+      const isCollection = activeEventBoundary.type === 'FeatureCollection';
+      const isGlobal = isCollection ? activeEventBoundary.features?.[0]?.properties?.isGlobalFit : activeEventBoundary.properties?.isGlobalFit;
+      const boundaryId = isGlobal ? 'global-fit' : JSON.stringify(activeEventBoundary);
+
+      // Only fit if the boundary is different from the last one we fitted
+      if (lastFittedBoundary.current === boundaryId) return;
+
+      const bbox = isCollection 
+        ? getBBox(activeEventBoundary.features.map((f: any) => f.geometry.coordinates))
+        : getBBox(activeEventBoundary.geometry.coordinates);
+
       const t = setTimeout(() => {
         mapRef.current?.fitBounds(
           [
             [bbox[0], bbox[1]],
             [bbox[2], bbox[3]],
           ],
-          { padding: 80, duration: 800, maxZoom: 17 }
+          { 
+            padding: { top: 100, bottom: 100, left: 380, right: 480 }, 
+            duration: 1000, 
+            maxZoom: 16 
+          }
         );
+        lastFittedBoundary.current = boundaryId;
       }, 350);
       return () => clearTimeout(t);
-    } else if (initialViewState) {
+    } else if (initialViewState && !activeEventBoundary) {
+      // Only fly to initial view if no boundary is being fitted
       mapRef.current?.flyTo({
         center: [initialViewState.longitude, initialViewState.latitude],
         zoom: initialViewState.zoom,
@@ -153,12 +219,25 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     initialViewState.longitude,
     initialViewState.latitude,
     initialViewState.zoom,
-    activeEventBoundary?.geometry,
+    activeEventBoundary,
   ]);
 
   const handleMapClick = useCallback(
     (e: MapLayerMouseEvent) => {
       const { lng, lat } = e.lngLat;
+
+      // Handle layer clicks first (Events via boundaries)
+      const features = e.features;
+      const boundaryFeature = features?.find(f => f.layer.id === 'global-boundaries-fill');
+      
+      if (boundaryFeature && mode === 'GLOBAL_VIEW' && onAssetClick) {
+        const eventId = boundaryFeature.properties?.id;
+        const event = events.find(ev => String(ev.id) === String(eventId));
+        if (event) {
+          onAssetClick(event);
+          return;
+        }
+      }
 
       if (mode === 'DRAW_BOUNDARY' && onBoundaryChange) {
         onBoundaryChange([...boundaryPoints, [lng, lat]]);
@@ -173,7 +252,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         onPoiSelect({ lng, lat });
       }
     },
-    [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary]
+    [mode, boundaryPoints, onBoundaryChange, onPoiSelect, activeEventBoundary, events, onAssetClick]
   );
 
   const boundaryGeoJSON = useMemo(() => {
@@ -188,17 +267,42 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   }, [boundaryPoints]);
 
   const allBoundariesGeoJSON = useMemo(() => {
+    // If an asset is selected, only show that one (Focus Mode)
+    const filteredEvents = selectedAssetId 
+      ? events.filter(e => String(e.id) === String(selectedAssetId))
+      : events;
+
     return {
       type: 'FeatureCollection',
-      features: events
+      features: filteredEvents
         .filter((e) => e.boundary)
         .map((e) => ({
           type: 'Feature',
-          properties: { id: e.id, name: e.name, color: e.primaryColor },
+          properties: { id: e.id, name: e.name?.toUpperCase(), color: e.primaryColor },
           geometry: e.boundary,
         })),
     } as any;
-  }, [events]);
+  }, [events, selectedAssetId]);
+
+  const allLabelsGeoJSON = useMemo(() => {
+    const filteredEvents = selectedAssetId 
+      ? events.filter(e => String(e.id) === String(selectedAssetId))
+      : events;
+
+    return {
+      type: 'FeatureCollection',
+      features: filteredEvents
+        .filter((e) => e.boundary)
+        .map((e) => ({
+          type: 'Feature',
+          properties: { id: e.id, name: e.name?.toUpperCase(), color: e.primaryColor },
+          geometry: {
+            type: 'Point',
+            coordinates: getCentroid(e.boundary.coordinates),
+          },
+        })),
+    } as any;
+  }, [events, selectedAssetId]);
 
   const handleMapLoad = useCallback((e: any) => {
     const map = e.target;
@@ -228,6 +332,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         initialViewState={initialViewState}
         onMoveEnd={(evt) => setInternalViewState(evt.viewState)}
         mapStyle={MAP_STYLE}
+        interactiveLayerIds={['global-boundaries-fill']}
         onClick={handleMapClick}
         onLoad={handleMapLoad}
         style={{ width: '100%', height: '100%' }}
@@ -241,7 +346,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               type="fill"
               paint={{
                 'fill-color': ['get', 'color'],
-                'fill-opacity': 0.1,
+                'fill-opacity': 0.15,
               }}
             />
             <Layer
@@ -249,7 +354,73 @@ export const AdminMap: React.FC<AdminMapProps> = ({
               type="line"
               paint={{
                 'line-color': ['get', 'color'],
-                'line-width': 2,
+                'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 15, 1.5],
+              }}
+            />
+          </Source>
+        )}
+
+        {mode === 'GLOBAL_VIEW' && (
+          <Source type="geojson" data={allLabelsGeoJSON}>
+            <Layer
+              id="global-boundaries-labels"
+              type="symbol"
+              minzoom={8}
+              layout={{
+                'text-field': ['get', 'name'],
+                'text-font': ['Open Sans Bold'],
+                'text-size': ['interpolate', ['linear'], ['zoom'], 8, 9, 14, 11],
+                'text-letter-spacing': 0.2,
+                'text-transform': 'uppercase',
+                'text-anchor': 'center',
+                'text-max-width': 8,
+                'text-allow-overlap': false,
+              }}
+              paint={{
+                'text-color': ['get', 'color'],
+                'text-halo-color': '#fff',
+                'text-halo-width': 2,
+              }}
+            />
+          </Source>
+        )}
+
+        {radarData && (
+          <Source type="geojson" data={radarData}>
+            <Layer
+              id="radar-heatmap"
+              type="heatmap"
+              maxzoom={18}
+              paint={{
+                // Increase the heatmap weight based on frequency and property magnitude
+                'heatmap-weight': ['interpolate', ['linear'], ['get', 'mag'], 0, 0, 6, 1],
+                // Increase the heatmap color weight by zoom level
+                // heatmap-intensity is a multiplier on top of heatmap-weight
+                'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 18, 3],
+                // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+                // Begin color ramp at 0-stop with a 0-transparency color
+                // to create a blur-like effect.
+                'heatmap-color': [
+                  'interpolate',
+                  ['linear'],
+                  ['heatmap-density'],
+                  0,
+                  'rgba(33,102,172,0)',
+                  0.2,
+                  'rgb(103,169,207)',
+                  0.4,
+                  'rgb(209,229,240)',
+                  0.6,
+                  'rgb(253,219,199)',
+                  0.8,
+                  'rgb(239,138,98)',
+                  1,
+                  'rgb(178,24,43)',
+                ],
+                // Adjust the heatmap radius by zoom level
+                'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 2, 18, 20],
+                // Transition from heatmap to circle layer by zoom level
+                'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 7, 1, 18, 0],
               }}
             />
           </Source>
@@ -285,23 +456,15 @@ export const AdminMap: React.FC<AdminMapProps> = ({
           </Source>
         )}
 
-        {/* Markers */}
         {mode === 'GLOBAL_VIEW' && (
           <>
-            {events.map((event) => (
-              <MapMarker 
-                key={`event-${event.id}`} 
-                type="event" 
-                data={event} 
-                onClick={onAssetClick} 
-              />
-            ))}
             {pois.map((poi) => (
               <MapMarker 
                 key={`poi-${poi.id}`} 
                 type="poi" 
                 data={poi} 
-                onClick={onAssetClick} 
+                onClick={onAssetClick}
+                currentZoom={_internalViewState.zoom}
               />
             ))}
           </>
@@ -310,8 +473,17 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         {/* Selected POI Marker (New POI creation mode) */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
           <Marker longitude={selectedPoi.lng} latitude={selectedPoi.lat} anchor="bottom">
-            <div className="w-10 h-10 bg-obsidian rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center animate-bounce">
-              <span className="text-xl">📍</span>
+            <div className="flex flex-col items-center animate-bounce group">
+              <div 
+                className="w-10 h-10 rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center transition-all duration-300"
+                style={{ backgroundColor: POI_METADATA[selectedCategory || 'default']?.color || '#000' }}
+              >
+                {React.createElement(POI_METADATA[selectedCategory || 'default']?.icon || Icons.MapPin, {
+                  className: "w-5 h-5",
+                  color: "white",
+                  strokeWidth: 2.5
+                })}
+              </div>
             </div>
           </Marker>
         )}

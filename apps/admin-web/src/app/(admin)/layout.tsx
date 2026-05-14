@@ -1,4 +1,5 @@
-import { FloatingNav, FloatingLogout } from '@/components/floating-nav';
+import { Suspense } from 'react';
+import { FloatingWrapper } from '@/components/command-center/FloatingWrapper';
 import { getSession } from '@/lib/auth';
 
 export default async function AdminLayout({
@@ -11,20 +12,18 @@ export default async function AdminLayout({
   const displayName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-eggshell flex flex-col">
-      {/* Floating Logout - Fixed Left */}
-      <div className="fixed top-8 left-12 z-[110]">
-        <FloatingLogout />
-      </div>
-
-      {/* Floating Nav - Mathematically Centered */}
-      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100]">
-        <FloatingNav />
-      </div>
+    <div className="relative h-screen w-full overflow-hidden bg-eggshell flex flex-col font-sans antialiased">
+      <FloatingWrapper />
 
       {/* Main Content Canvas - Full screen to allow maps/backgrounds to show behind nav */}
-      <main className="flex-1 w-full overflow-y-auto">
-        {children}
+      <main className="flex-1 w-full overflow-y-auto h-full">
+        <Suspense fallback={
+          <div className="flex-1 flex items-center justify-center bg-eggshell h-screen">
+            <div className="w-8 h-8 border-2 border-obsidian border-t-transparent rounded-full animate-spin" />
+          </div>
+        }>
+          {children}
+        </Suspense>
       </main>
     </div>
   );

@@ -2,7 +2,13 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
-import Animated, { useAnimatedStyle, withSpring, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
+  Extrapolation,
+  SharedValue,
+} from 'react-native-reanimated';
 import { getEventMetadata } from '../../../utils/poiUtils';
 
 interface EventMarkerProps {
@@ -16,23 +22,39 @@ interface EventMarkerProps {
 }
 
 export const EventMarker: React.FC<EventMarkerProps> = React.memo(
-  ({ event, isSelected = false, theme, onPress }) => {
+  ({ event, isSelected = false, theme, onPress, zoomSharedValue }) => {
     const { properties } = event;
     const metadata = getEventMetadata(properties.category);
     const color = metadata.color || theme.colors.brand.primary;
     const IconComponent = metadata.icon;
 
+    const animatedStyle = useAnimatedStyle(() => {
+      const scale = interpolate(
+        zoomSharedValue.value,
+        [10, 13, 16],
+        [0.5, 0.8, 1],
+        Extrapolation.CLAMP
+      );
+
+      const opacity = interpolate(zoomSharedValue.value, [10, 11], [0, 1], Extrapolation.CLAMP);
+
+      return {
+        transform: [{ scale: isSelected ? 1.4 : scale }],
+        opacity: isSelected ? 1 : opacity,
+      };
+    });
+
     return (
-      <View style={mapPinStyles.markerWrapper}>
-        <View
-          style={[
-            {
-              alignItems: 'center',
-              justifyContent: 'center',
-              transform: [{ scale: isSelected ? 1.4 : 1 }]
-            }
-          ]}
-        >
+      <Animated.View style={[mapPinStyles.markerWrapper, animatedStyle]}>
+        <TouchableOpacity onPress={() => onPress(event)} activeOpacity={0.9}>
+          <View
+            style={[
+              {
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+          >
             <MapPinFrame
               size="event"
               borderColor="#FFFFFF"
@@ -47,10 +69,10 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                 />
               ) : (
                 <View style={[mapPinStyles.placeholder, { backgroundColor: color }]}>
-                  <IconComponent 
-                    size={24} 
-                    color="#FFFFFF" 
-                    strokeWidth={metadata.strokeWidth || 2.5} 
+                  <IconComponent
+                    size={24}
+                    color="#FFFFFF"
+                    strokeWidth={metadata.strokeWidth || 2.5}
                   />
                 </View>
               )}
@@ -75,7 +97,8 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
               </View>
             )}
           </View>
-      </View>
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
 );

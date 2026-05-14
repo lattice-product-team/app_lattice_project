@@ -41,7 +41,11 @@
   /* Elevation */
   --shadow-hairline: rgba(0, 0, 0, 0.4) 0px 0px 1px 0px;
   --shadow-subtle: rgba(0, 0, 0, 0.04) 0px 2px 4px 0px;
+  --shadow-subtle-2: rgba(0, 0, 0, 0.08) 0px 8px 24px 0px;
   --shadow-subtle-3: rgba(0, 0, 0, 0.06) 0px 4px 12px 0px;
+  --shadow-massive: rgba(0, 0, 0, 0.12) 0px 32px 64px -12px;
+
+  --breakpoint-xs: 380px;
 }
 
 :root {
@@ -55,6 +59,19 @@
 
   --border: #e5e5e5; /* Chalk */
   --glass-border: rgba(0, 0, 0, 0.06);
+
+  /* Safe Area for fixed navigation */
+  --admin-safe-area: 120px;
+  
+  /* Command Center Redesign Variables */
+  --sidebar-width: 320px;
+  --command-dock-height: 80px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --admin-safe-area: 96px;
+  }
 }
 
 [data-theme='dark'],
@@ -112,5 +129,19 @@ body {
 
 .hairline-card:hover {
   box-shadow: var(--shadow-hairline), var(--shadow-subtle-3);
+}
+
+.admin-table-container {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.admin-table-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 

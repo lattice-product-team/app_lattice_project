@@ -757,3 +757,162 @@ export const getDiscoveryFeed = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+export const updatePoi = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const poiId = parseInt(id as string, 10);
+    const {
+      eventId,
+      name,
+      description,
+      type,
+      geometry,
+      locationName,
+      address,
+      capacity,
+      isWheelchairAccessible,
+      hasPriorityLane,
+      status,
+    } = req.body;
+
+    if (isNaN(poiId)) {
+      return res.status(400).json({ error: 'Invalid POI ID' });
+    }
+
+    const [existingPoi] = await db
+      .select()
+      .from(pointsOfInterest)
+      .where(eq(pointsOfInterest.id, poiId));
+
+    if (!existingPoi) {
+      return res.status(404).json({ error: 'POI not found' });
+    }
+
+    const parsedEventId = eventId ? parseInt(eventId as string, 10) : existingPoi.eventId;
+
+    // Optional Spatial Validation
+    if (geometry && parsedEventId) {
+      try {
+        const result = await db.execute(sql`
+          SELECT ST_Contains(
+            boundary,
+            ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)
+          ) as is_valid
+          FROM events 
+          WHERE id = ${parsedEventId} AND boundary IS NOT NULL
+        `);
+        const rows = (result as any).rows || result;
+        if (rows && rows.length > 0 && !rows[0].is_valid) {
+          console.warn(`[Geo] Updated POI "${name || existingPoi.name}" is outside the boundary of event ${parsedEventId}`);
+        }
+      } catch (err) {
+        console.warn(`[Geo] Spatial validation query failed during update:`, err);
+      }
+    }
+
+    const [updatedPoi] = await db
+      .update(pointsOfInterest)
+      .set({
+        eventId: parsedEventId,
+        name: name ?? existingPoi.name,
+        description: description ?? existingPoi.description,
+        type: (type ?? existingPoi.type) as any,
+        locationName: locationName ?? existingPoi.locationName,
+        address: address ?? existingPoi.address,
+        capacity: capacity !== undefined ? parseInt(capacity as string, 10) : existingPoi.capacity,
+        status: status ?? existingPoi.status,
+        isWheelchairAccessible: isWheelchairAccessible ?? existingPoi.isWheelchairAccessible,
+        hasPriorityLane: hasPriorityLane ?? existingPoi.hasPriorityLane,
+        location: geometry 
+          ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`
+          : undefined,
+      })
+      .where(eq(pointsOfInterest.id, poiId))
+      .returning();
+
+    // Invalidate Cache
+    await deleteByPrefix('geo:pois:');
+    if (parsedEventId) {
+      await deleteCache(`geo:event:${parsedEventId}:spatial`);
+    }
+
+    // Notify Admins & Clients
+    notifyAdmin('admin:pois:updated', { type: 'POI_UPDATED', id: poiId.toString() });
+    notifyAll('sync:pois', { action: 'updated', id: poiId, eventId: parsedEventId });
+
+    res.json(updatedPoi);
+  } catch (error) {
+    console.error('Error updating POI:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const updateEvent = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const eventId = parseInt(id as string, 10);
+    const {
+      name,
+      description,
+      type,
+      startDate,
+      endDate,
+      locationName,
+      address,
+      boundary,
+      primaryColor,
+      isPermanent,
+      center,
+    } = req.body;
+
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: 'Invalid Event ID' });
+    }
+
+    const [existingEvent] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, eventId));
+
+    if (!existingEvent) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const [updatedEvent] = await db
+      .update(events)
+      .set({
+        name: name ?? existingEvent.name,
+        description: description ?? existingEvent.description,
+        type: type ?? existingEvent.type,
+        startDate: startDate ? new Date(startDate) : existingEvent.startDate,
+        endDate: endDate ? new Date(endDate) : existingEvent.endDate,
+        locationName: locationName ?? existingEvent.locationName,
+        address: address ?? existingEvent.address,
+        primaryColor: primaryColor ?? existingEvent.primaryColor,
+        isPermanent: isPermanent ?? existingEvent.isPermanent,
+        location: center
+          ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(center)}), 4326)`
+          : boundary
+            ? sql`ST_Centroid(ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326))`
+            : undefined,
+        boundary: boundary
+          ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`
+          : undefined,
+      })
+      .where(eq(events.id, eventId))
+      .returning();
+
+    // Invalidate Caches
+    await deleteByPrefix('geo:pois:');
+    await deleteCache(`geo:event:${eventId}:spatial`);
+
+    // Notify Admins & Clients
+    notifyAdmin('admin:events:updated', { type: 'EVENT_UPDATED', id: eventId.toString() });
+    notifyAll('sync:events', { action: 'updated', id: eventId });
+
+    res.json(updatedEvent);
+  } catch (error) {
+    console.error('Error updating event:', error);
+    res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
