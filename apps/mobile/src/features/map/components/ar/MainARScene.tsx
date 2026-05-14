@@ -85,6 +85,7 @@ interface MainARSceneProps {
 export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
   const userCoords = useLocationStore((s) => s.coords);
   const heading = useOrientationStore((s) => s.heading);
+  const pitch = useOrientationStore((s) => s.pitch);
 
   const poiNodes = useMemo(() => {
     if (!userCoords || pois.length === 0) return [];
@@ -135,5 +136,10 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
       .filter(Boolean);
   }, [userCoords, heading, pois]);
 
-  return <group>{poiNodes}</group>;
+  return (
+    /* eslint-disable-next-line react/no-unknown-property */
+    <group rotation={[-pitch * (Math.PI / 180), 0, 0]}>
+      {poiNodes}
+    </group>
+  );
 };

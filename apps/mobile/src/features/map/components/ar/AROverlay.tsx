@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, useWindowDimensions } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { DeviceMotion } from 'expo-sensors';
 import { Canvas } from '@react-three/fiber/native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as Location from 'expo-location';
@@ -50,8 +51,14 @@ export const AROverlay: React.FC = () => {
   const { width, height } = useWindowDimensions();
 
   const userCoords = useLocationStore((s) => s.coords);
+  
+  // High-frequency shared values to avoid React re-renders
+  const sharedHeading = useSharedValue(0);
+  const sharedPitch = useSharedValue(0);
+  const isHoldingVertical = useSharedValue(false);
+
   const setHeading = useOrientationStore((s) => s.setHeading);
-  const heading = useOrientationStore((s) => s.heading);
+  const setPitch = useOrientationStore((s) => s.setPitch);
 
   // 1. Orientation Lock (Strict Portrait)
   useEffect(() => {
@@ -74,7 +81,17 @@ export const AROverlay: React.FC = () => {
       if (status !== 'granted') return;
 
       subscription = await Location.watchHeadingAsync((data) => {
-        setHeading(data.trueHeading !== -1 ? data.trueHeading : data.magHeading);
+        const h = data.trueHeading !== -1 ? data.trueHeading : data.magHeading;
+        
+        // Handle wrap-around for smooth animation
+        let lastHeading = sharedHeading.value;
+        let newHeading = h;
+        if (newHeading - lastHeading > 180) newHeading -= 360;
+        else if (lastHeading - newHeading > 180) newHeading += 360;
+        
+        // Faster timing to reduce "floaty" feeling while keeping it smooth
+        sharedHeading.value = withTiming(newHeading, { duration: 250 });
+        setHeading(h); // Keep store in sync for 3D scene
       });
     };
 
@@ -88,6 +105,38 @@ export const AROverlay: React.FC = () => {
       }
     };
   }, [isVisible, setHeading]);
+
+  // 3. Real-time Pitch (Device Motion)
+  useEffect(() => {
+    if (isVisible) {
+      DeviceMotion.setUpdateInterval(16); // 60fps for zero-delay movement
+      const subscription = DeviceMotion.addListener((data) => {
+        if (data.rotation) {
+          const betaDegrees = (data.rotation.beta * 180) / Math.PI;
+          const gammaDegrees = (data.rotation.gamma * 180) / Math.PI;
+          
+          // iOS Gimbal Lock Fix: beta is restricted to [-90, 90]
+          // When looking up past 90deg, beta drops and gamma flips to ~180
+          let trueBeta = betaDegrees;
+          if (Math.abs(gammaDegrees) > 90) {
+            trueBeta = 180 - Math.abs(betaDegrees);
+          }
+          
+          // Verticality Check: Hide AR if phone is lying flat (less than 45deg or more than 135deg)
+          const vertical = trueBeta > 45 && trueBeta < 135;
+          isHoldingVertical.value = vertical;
+
+          // Correct Pitch: trueBeta=90 is vertical.
+          // Looking down (trueBeta < 90) -> p is negative -> moves labels UP.
+          // Looking up (trueBeta > 90) -> p is positive -> moves labels DOWN.
+          const p = trueBeta - 90;
+          sharedPitch.value = p;
+          setPitch(p);
+        }
+      });
+      return () => subscription.remove();
+    }
+  }, [isVisible, setPitch]);
 
   useEffect(() => {
     if (isVisible && isCameraReady) {
@@ -119,67 +168,76 @@ export const AROverlay: React.FC = () => {
   const isScanning = loading || activePois.length === 0;
 
   // Calculate 2D Screen Overlay Positions for Text Labels
-  const render2DLabels = (poisToRender: any[]) => {
-    if (!userCoords || poisToRender.length === 0) return null;
+  // Internal component for high-performance projected labels
+  const ProjectedLabel = ({ poi, index }: { poi: any; index: number }) => {
+    const coords = poi.geometry?.coordinates;
+    if (!coords || !userCoords) return null;
+
     const [userLon, userLat] = userCoords;
-    const FOV = 60; // Camera Field of View
+    const [poiLon, poiLat] = coords;
+    const distance = getDistance(userLat, userLon, poiLat, poiLon);
+    const bearing = getBearing(userLat, userLon, poiLat, poiLon);
+    const isBeacon = poi.properties?.isBeacon;
+    const metadata = getCategoryMetadata(poi.properties?.category);
+    const CategoryIcon = metadata.icon;
 
-    return poisToRender.map((poi, idx) => {
-      const coords = poi.geometry?.coordinates;
-      if (!coords) return null;
-      
-      const [poiLon, poiLat] = coords;
-      const distance = getDistance(userLat, userLon, poiLat, poiLon);
-      const isBeacon = poi.properties?.isBeacon;
-
-      const metadata = getCategoryMetadata(poi.properties?.category);
-      const CategoryIcon = metadata.icon;
-
-      const bearing = getBearing(userLat, userLon, poiLat, poiLon);
-      let angleDiff = bearing - heading;
-
-      // Normalize to -180...180
+    const animatedStyle = useAnimatedStyle(() => {
+      // 1. Horizontal Projection
+      let angleDiff = bearing - sharedHeading.value;
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
 
-      // Only show if it's within the front hemisphere and reasonably centered
-      if (Math.abs(angleDiff) > 45) return null;
+      // 2. Vertical Projection (Fixed inversion: looking down moves horizon up)
+      const vFOV = 45;
+      const verticalOffset = (sharedPitch.value / (vFOV / 2)) * (height / 2);
 
-      // Use staggered height to prevent overlaps. Beacons are higher.
-      const yOffset = isBeacon ? -80 : (idx % 2) * 50 - 25;
-
-      // Standard Portrait
-      const xPos = (angleDiff / (FOV / 2)) * (width / 2) + width / 2;
-      const yPos = isBeacon ? height / 2 - 180 : height / 2 + yOffset - 120;
-
-      return (
-        <View
-          key={`2d-label-${poi.properties?.id || idx}`}
-          style={{
-            position: 'absolute',
-            left: xPos - (isBeacon ? 120 : 100),
-            top: yPos,
-            width: isBeacon ? 240 : 200,
-            alignItems: 'center',
-          }}
-        >
-          <View style={[styles.brandBubble, isBeacon && styles.beaconBubble]}>
-            <View style={[styles.iconContainer, { backgroundColor: metadata.color }, isBeacon && styles.beaconIcon]}>
-              <CategoryIcon size={isBeacon ? 22 : 18} color="white" strokeWidth={2.5} />
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={[styles.brandLabelText, isBeacon && styles.beaconLabelText]} numberOfLines={1}>
-                {poi.properties?.name || poi.name}
-              </Text>
-              <Text style={styles.brandDistanceText}>
-                {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} • {isBeacon ? 'Event' : 'Ahead'}
-              </Text>
-            </View>
-          </View>
-          {!isBeacon && <View style={styles.verticalStalk} />}
-        </View>
+      // 3. Visibility Logic
+      // Let vertical labels naturally move off screen, but fade out if turning away horizontally
+      // or if the phone is placed flat on a table.
+      const isVisibleHorizontally = Math.abs(angleDiff) < 40;
+      
+      const opacity = withTiming(
+        isVisibleHorizontally && isHoldingVertical.value ? 1 : 0,
+        { duration: 250 }
       );
+
+      const xPos = (angleDiff / (30)) * (width / 2) + width / 2;
+      const yOffset = isBeacon ? -80 : (index % 2) * 50 - 25;
+      const yPos = height / 2 + verticalOffset + yOffset - 40; // Lowered from -120 to be more centered
+
+      return {
+        transform: [
+          { translateX: xPos - (isBeacon ? 120 : 100) },
+          { translateY: yPos },
+        ],
+        opacity,
+      };
     });
+
+    return (
+      <Animated.View style={[styles.labelWrapper, { width: isBeacon ? 240 : 200 }, animatedStyle]}>
+        <View style={[styles.brandBubble, isBeacon && styles.beaconBubble]}>
+          <View style={[styles.iconContainer, { backgroundColor: metadata.color }, isBeacon && styles.beaconIcon]}>
+            <CategoryIcon size={isBeacon ? 22 : 18} color="white" strokeWidth={2.5} />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={[styles.brandLabelText, isBeacon && styles.beaconLabelText]} numberOfLines={1}>
+              {poi.properties?.name || poi.name}
+            </Text>
+            <Text style={styles.brandDistanceText}>
+              {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} • {isBeacon ? 'Event' : 'Ahead'}
+            </Text>
+          </View>
+        </View>
+        {!isBeacon && <View style={styles.verticalStalk} />}
+      </Animated.View>
+    );
+  };
+
+  const render2DLabels = (poisToRender: any[]) => {
+    return poisToRender.map((poi, idx) => (
+      <ProjectedLabel key={`ar-label-${poi.properties?.id || idx}`} poi={poi} index={idx} />
+    ));
   };
 
   return (
@@ -233,6 +291,10 @@ export const AROverlay: React.FC = () => {
 const styles = StyleSheet.create({
   camera: {
     flex: 1,
+  },
+  labelWrapper: {
+    position: 'absolute',
+    alignItems: 'center',
   },
   permissionContainer: {
     ...StyleSheet.absoluteFillObject,

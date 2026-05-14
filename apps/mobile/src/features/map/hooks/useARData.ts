@@ -90,7 +90,19 @@ export const useARData = () => {
           const poiId = Number(targetId);
           const poi = await geoService.getPOI(poiId);
           
-          setStatusMessage(`TRACKING ${poi?.name?.toUpperCase() || 'POI'}`);
+          if (poi && poi.geometry?.coordinates) {
+            const [poiLon, poiLat] = poi.geometry.coordinates;
+            const distance = calculateDistance(userLat, userLon, poiLat, poiLon);
+            
+            if (distance < 15) {
+              setStatusMessage(`🎯 ARRIVED AT ${poi.name.toUpperCase()}`);
+            } else {
+              setStatusMessage(`TRACKING ${poi.name.toUpperCase()} (${Math.round(distance)}m)`);
+            }
+          } else {
+            setStatusMessage(`TRACKING POI`);
+          }
+          
           setActivePois(poi ? [poi] : []);
         }
       } catch (error) {
