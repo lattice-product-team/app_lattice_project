@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: any = {
-  basePath: process.env.NODE_ENV === 'production' ? '/lattice/web-admin' : undefined,
+  basePath: '/lattice/web-admin',
   transpilePackages: ['@heroui/react', '@heroui/styles', 'lucide-react'],
   typescript: {
     ignoreBuildErrors: true,
