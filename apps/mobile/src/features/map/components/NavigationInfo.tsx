@@ -78,8 +78,8 @@ export const NavigationInfo = () => {
         style={[
           styles.card,
           {
-            backgroundColor: theme.colors.glass.background,
-            borderColor: theme.colors.glass.border,
+            backgroundColor: '#FFFFFF',
+            borderColor: 'rgba(0,0,0,0.05)',
           },
         ]}
       >

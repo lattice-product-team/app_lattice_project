@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, Pressable } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Navigation } from 'lucide-react-native';
 import Animated, { FadeInRight, FadeOutRight, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,7 +35,7 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
       opacity: withTiming(shouldShow ? 1 : 0, { duration: 200 }),
       pointerEvents: shouldShow ? 'auto' : 'none',
       transform: [
-        { translateX: withTiming(shouldShow ? 0 : 80) },
+        { translateX: withTiming(shouldShow ? 0 : -80) }, // Slide from left, not right!
         { scale: withTiming(shouldShow ? 1 : 0.8) }
       ],
     };
@@ -43,26 +43,17 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
 
   return (
     <Animated.View
-      style={[styles.container, { bottom: insets.bottom + 140 }, rStyle]}
+      style={[styles.container, { bottom: insets.bottom + 160 }, rStyle]}
     >
-      <Pressable
+      <TouchableOpacity
         onPress={handleCenter}
-        style={({ pressed }) => [
-          styles.button,
-          {
-            backgroundColor: '#FFFFFF',
-            opacity: pressed ? 0.9 : 1,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 5,
-          },
-        ]}
+        activeOpacity={0.8}
       >
-        <Navigation size={16} color="#000000" strokeWidth={3} />
-        <Text style={styles.text}>RE-CENTER</Text>
-      </Pressable>
+        <View style={styles.button}>
+          <Navigation size={18} color="#222222" fill="#222222" />
+          <Text style={styles.text}>Centrar</Text>
+        </View>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -70,23 +61,28 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    right: 16,
-    zIndex: 4000,
+    left: 20,
+    zIndex: 5000,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
-    gap: 6,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    gap: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   text: {
     color: '#000000',
-    fontSize: 12,
-    fontFamily: typography.primary.bold,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

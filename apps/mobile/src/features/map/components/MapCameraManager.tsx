@@ -240,14 +240,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     if (isPlanning && cameraRef.current && !isNavigating) {
       // Use a small delay to ensure navigation tracking has fully stopped
       const timer = setTimeout(() => {
-        const pointsToFit: number[][] = [];
+        let pointsToFit: number[][] = [];
 
         if (currentRoute?.geometry?.coordinates) {
-          const coords = currentRoute.geometry.coordinates;
-          // Use start, middle, and end points for a reliable bbox
-          pointsToFit.push(coords[0]);
-          pointsToFit.push(coords[Math.floor(coords.length / 2)]);
-          pointsToFit.push(coords[coords.length - 1]);
+          // Use the entire coordinate array for accurate fitBounds
+          pointsToFit = currentRoute.geometry.coordinates;
         } else if (userCoordsRef.current && selectedCoords) {
           pointsToFit.push(userCoordsRef.current);
           pointsToFit.push(selectedCoords);
@@ -258,25 +255,27 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         const bbox = calculateBBox(pointsToFit);
         if (!bbox) return;
 
-        // Fit the bounds first
+        // Transition to FREE mode to stop any tracking
+        setCameraMode(MapCameraMode.FREE);
+
+        // Fit the bounds with faster animation and better bottom padding for the sheet
         cameraRef.current.fitBounds(
           [bbox[2], bbox[3]], // NE
           [bbox[0], bbox[1]], // SW
-          [insets.top + 80, 50, 340, 50], // Top, Right, Bottom, Left padding
-          1500
+          [insets.top + 100, 60, 420, 60], // Top, Right, Bottom, Left padding
+          800
         );
 
-        // After a slight delay, apply the 3D pitch if active
-        // This avoids conflicts with the fitBounds zoom calculation
+        // Apply pitch quickly after
         setTimeout(() => {
           if (cameraRef.current) {
             cameraRef.current.setCamera({
               pitch: is3DActive ? 45 : 0,
-              animationDuration: 1000,
+              animationDuration: 600,
             });
           }
-        }, 1500);
-      }, 200);
+        }, 800);
+      }, 100);
       
       return () => clearTimeout(timer);
     }
