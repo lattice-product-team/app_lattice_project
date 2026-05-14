@@ -42,6 +42,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     isPlanning,
     cameraMode,
     currentRoute,
+    transportMode,
+    isFetching,
   } = props;
 
   const cameraRef = React.useRef<any>(null);
@@ -235,15 +237,26 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     };
   }, [isNavigating, setCameraMode]); // Removed cameraMode from dependencies to prevent infinite loops/fighting user drag
 
+  const lastPlanningRouteRef = React.useRef<string | null>(null);
+
   // Planning fitBounds
   useEffect(() => {
     if (isPlanning && cameraRef.current && !isNavigating) {
-      // Use a small delay to ensure navigation tracking has fully stopped
+      const routeId = currentRoute 
+        ? `${currentRoute.id}-${currentRoute.duration}-${currentRoute.distance}` 
+        : (selectedCoords ? `planning-${selectedCoords.join(',')}` : null);
+      
+      // If this route is already being animated/displayed, don't restart the whole sequence
+      if (lastPlanningRouteRef.current === routeId) return;
+      lastPlanningRouteRef.current = routeId;
+
+      // STOP any ongoing tracking IMMEDIATELY
+      setCameraMode(MapCameraMode.FREE);
+
       const timer = setTimeout(() => {
         let pointsToFit: number[][] = [];
 
         if (currentRoute?.geometry?.coordinates) {
-          // Use the entire coordinate array for accurate fitBounds
           pointsToFit = currentRoute.geometry.coordinates;
         } else if (userCoordsRef.current && selectedCoords) {
           pointsToFit.push(userCoordsRef.current);
@@ -255,31 +268,34 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         const bbox = calculateBBox(pointsToFit);
         if (!bbox) return;
 
-        // Transition to FREE mode to stop any tracking
-        setCameraMode(MapCameraMode.FREE);
-
-        // Fit the bounds with faster animation and better bottom padding for the sheet
+        // Fit the bounds with generous padding for the UI elements
         cameraRef.current.fitBounds(
           [bbox[2], bbox[3]], // NE
           [bbox[0], bbox[1]], // SW
-          [insets.top + 100, 60, 420, 60], // Top, Right, Bottom, Left padding
+          [insets.top + 120, 70, 480, 70], // Top, Right, Bottom, Left
           800
         );
 
-        // Apply pitch quickly after
-        setTimeout(() => {
-          if (cameraRef.current) {
+        // Pitch transition
+        const pitchTimer = setTimeout(() => {
+          if (cameraRef.current && isPlanning) {
             cameraRef.current.setCamera({
               pitch: is3DActive ? 45 : 0,
               animationDuration: 600,
             });
           }
-        }, 800);
-      }, 100);
+        }, 850);
+
+        return () => clearTimeout(pitchTimer);
+      }, 150);
       
       return () => clearTimeout(timer);
+    } else if (!isPlanning || isNavigating) {
+      // Clear the ref so that when we return from navigation to planning, 
+      // the camera correctly re-fits the route.
+      lastPlanningRouteRef.current = null;
     }
-  }, [isPlanning, isNavigating, selectedCoords, currentRoute, insets.top, is3DActive]);
+  }, [isPlanning, isNavigating, selectedCoords, currentRoute, insets.top, is3DActive, transportMode, isFetching]);
 
   return (
     <MapLibreGL.Camera

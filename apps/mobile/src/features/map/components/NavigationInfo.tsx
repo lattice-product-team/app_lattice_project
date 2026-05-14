@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import { Navigation, X, Car, Footprints, Bike } from 'lucide-react-native';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
@@ -102,19 +102,22 @@ export const NavigationInfo = () => {
             )}
           </View>
 
-          <Pressable
+          <TouchableOpacity
             onPress={handleCancel}
-            style={({ pressed }) => [
-              styles.exitButton,
-              { 
-                backgroundColor: 'rgba(255, 59, 48, 0.25)', // More visible red tint
-                borderColor: 'rgba(255, 59, 48, 0.4)',
-                opacity: pressed ? 0.7 : 1 
-              },
-            ]}
+            activeOpacity={0.8}
           >
-            <X size={20} color="#FF3B30" strokeWidth={3} />
-          </Pressable>
+            <View
+              style={[
+                styles.exitButton,
+                { 
+                  backgroundColor: 'rgba(255, 59, 48, 0.8)', // Translucent red for blur effect
+                  borderWidth: 0,
+                },
+              ]}
+            >
+              <X size={24} color="#FFFFFF" strokeWidth={3} />
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
     </Animated.View>

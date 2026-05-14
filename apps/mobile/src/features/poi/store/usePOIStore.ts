@@ -82,7 +82,19 @@ export const usePOIStore = create<POIState>((set) => ({
 
   clearFilters: () => set({ activeCategoryFilters: [] }),
   getFilteredPOIs: (allPOIs, zoom = 0) => {
-    const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
+    const { selectedEventId, userInsideEventId, activeCategoryFilters, selectedPoiId } = usePOIStore.getState();
+
+    // 0. Navigation Mode Override
+    try {
+      // Access navigation state directly to avoid circular dependency
+      const isNavigating = require('../../navigation/store/useNavigationStore').useNavigationStore.getState().isNavigating;
+      if (isNavigating) {
+        // Only show the destination POI if one is selected
+        return allPOIs.filter(p => p.id === selectedPoiId);
+      }
+    } catch (e) {
+      // Fallback silently if store is not accessible
+    }
 
     // 1. Zoom-based visibility threshold
     if (zoom < 14.0) return [];

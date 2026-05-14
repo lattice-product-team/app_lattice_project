@@ -53,7 +53,7 @@ export const MapContent = function MapContent({
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
-  const { currentRoute, isNavigating, isPlanning, transportMode } = useNavigationStore();
+  const { currentRoute, isNavigating, isPlanning, transportMode, isFetching } = useNavigationStore();
   const {
     recenterCount,
     forceCenterCount,
@@ -406,6 +406,8 @@ export const MapContent = function MapContent({
           isPlanning={isPlanning}
           cameraMode={cameraMode}
           currentRoute={currentRoute}
+          transportMode={transportMode}
+          isFetching={isFetching}
         />
 
         <MapLayers
