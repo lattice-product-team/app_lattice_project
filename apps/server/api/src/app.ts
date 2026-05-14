@@ -77,6 +77,7 @@ const healthHandler = (req: Request, res: Response) => {
     timestamp: new Date(),
     env: env.NODE_ENV,
     service: 'lattice_api',
+    path: req.originalUrl
   });
 };
 
@@ -96,6 +97,10 @@ v1Router.use(['/login', '/register', '/google', '/apple', '/passkey*'], authRate
  * are defined relative to root (e.g., /login, /register).
  * Geo and Social routers are mounted at root to support /events, /pois, etc.
  */
+// Health checks also available under v1
+v1Router.get('/status', healthHandler);
+v1Router.get('/health', healthHandler);
+
 v1Router.use('/auth', authRouter);
 v1Router.use(geoRouter);
 v1Router.use(socialRouter);

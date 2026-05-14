@@ -68,6 +68,7 @@ FROM builder AS admin-web-builder
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Next.js still needs its own build process
+ENV NODE_ENV=production
 RUN pnpm build --filter=admin-web
 
 FROM base AS admin-web-prod
@@ -75,10 +76,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 # Copy production dependencies and the built next.js app
 COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=prod-deps /app/apps/admin-web/package.json ./apps/admin-web/package.json
-COPY --from=admin-web-builder /app/apps/admin-web/.next ./apps/admin-web/.next
-COPY --from=admin-web-builder /app/apps/admin-web/public ./apps/admin-web/public
-COPY --from=admin-web-builder /app/apps/admin-web/next.config.ts ./apps/admin-web/next.config.ts
+COPY --from=admin-web-builder /app/apps/admin-web ./apps/admin-web
 
 WORKDIR /app/apps/admin-web
 CMD ["sh", "-c", "npx next start -p ${PORT:-3000}"]

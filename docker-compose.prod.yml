@@ -9,8 +9,14 @@ services:
       - API_BASE_PATH=${BASE_PATH:-/}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
-      - REDIS_URL=redis://redis:6379
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+      - REDIS_URL=redis://lattice_redis:6379
+      - VALHALLA_HOST=lattice_valhalla
+      - VALHALLA_PORT=8002
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - DATAFORSEO_LOGIN=${DATAFORSEO_LOGIN}
+      - DATAFORSEO_PASSWORD=${DATAFORSEO_PASSWORD}
     networks:
       - red_proxy
     depends_on:
@@ -35,8 +41,24 @@ services:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     depends_on:
       - api
+    networks:
+      - red_proxy
+
+  valhalla:
+    container_name: lattice_valhalla
+    image: ghcr.io/gis-ops/docker-valhalla/valhalla:latest
+    restart: always
+    volumes:
+      - ./.docker/valhalla:/custom_files
+    environment:
+      - build_tiles=True
+      - build_admins=True
+      - build_timezones=True
+      - force_rebuild=False
     networks:
       - red_proxy
 
@@ -46,3 +68,4 @@ networks:
 
 volumes:
   redis_data:
+  next_cache_admin:
