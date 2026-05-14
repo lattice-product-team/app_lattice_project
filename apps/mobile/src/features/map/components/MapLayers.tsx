@@ -110,17 +110,17 @@ export const MapLayers = React.memo(({
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 0,
-              10.5, 1,
-              12, 1,
-              13, 0
+              9, 0,
+              10, 1,
+              13, 1,
+              14, 0
             ]
           }}
         />
       </MapLibreGL.ShapeSource>
 
-      {/* 1. EVENTS LAYER - Only visible below zoom 14.0 */}
-      {zoomLevel < 14.0 && eventMarkers?.features?.map((feature: any) => {
+      {/* 1. EVENTS LAYER - Mounted in a wider range for smoothness */}
+      {zoomLevel > 10.5 && zoomLevel < 16.0 && eventMarkers?.features?.map((feature: any) => {
         const id = feature.properties?.id || feature.id;
         const isSelected = String(selectedEventId) === String(id);
         const coords = feature.geometry?.coordinates;
@@ -157,8 +157,8 @@ export const MapLayers = React.memo(({
         );
       })}
 
-      {/* 2. POI LAYER - Only visible at zoom 14.0 and above */}
-      {zoomLevel >= 14.0 && poisGeoJSON?.features?.map((feature: any) => {
+      {/* 2. POI LAYER - Mounted in a wider range for smoothness */}
+      {zoomLevel >= 13.0 && poisGeoJSON?.features?.map((feature: any) => {
         const id = feature.properties?.id || feature.id;
         const isSelected = String(selectedPoiId) === String(id);
         const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);

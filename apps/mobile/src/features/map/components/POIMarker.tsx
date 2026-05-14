@@ -45,7 +45,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
         Extrapolation.CLAMP
       );
 
-      const opacity = interpolate(zoomSharedValue.value, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
+      const opacity = interpolate(zoomSharedValue.value, [13.5, 14.0], [0, 1], Extrapolation.CLAMP);
 
       return {
         transform: [{ scale: isSelected ? 1.4 : scale }],
