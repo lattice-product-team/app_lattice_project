@@ -146,6 +146,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       lastTargetRef.current = `event-${eventId}`;
       lastActionTimestamp.current = now;
 
+      let targetCenter: [number, number] | null = null;
+
       // Robust center detection across different object formats
       targetCenter =
         selectedEvent.coordinates ||
@@ -166,7 +168,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         // Use a slight timeout or ensure state has propagated before animating
         cameraRef.current.setCamera({
           centerCoordinate: targetCenter,
-          zoomLevel: 15.5,
+          zoomLevel: 13.0,
           animationDuration: 1200,
           animationMode: 'flyTo',
           pitch: 0,

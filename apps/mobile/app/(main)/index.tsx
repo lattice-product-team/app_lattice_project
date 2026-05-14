@@ -56,7 +56,7 @@ import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useSocket } from '../../src/hooks/useSocket';
 import { useLocationStore } from '../../src/store/useLocationStore';
-import { useMapUIStore } from '../../src/features/map/store/useMapUIStore';
+import { useMapUIStore, MapCameraMode } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { useProfileStore } from '../../src/features/profile/store/useProfileStore';
@@ -248,11 +248,15 @@ export default function MapIndexPage() {
       setSelectedEvent(event.id);
       setCurrentEvent(event);
       selectPoi(null); // Clear any active POI selection
+      
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      
-      // Force camera to center on the new selection
-      useMapUIStore.getState().triggerForceCenter();
+
+      // Force camera to center on the new selection with a small delay to ensure state propagation
+      setTimeout(() => {
+        useMapUIStore.getState().setCameraMode(MapCameraMode.FREE);
+        useMapUIStore.getState().triggerForceCenter();
+      }, 250);
     },
     [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
   );

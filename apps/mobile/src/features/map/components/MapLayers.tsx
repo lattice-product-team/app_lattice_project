@@ -119,8 +119,8 @@ export const MapLayers = React.memo(({
         />
       </MapLibreGL.ShapeSource>
 
-      {/* 1. EVENTS LAYER (Ultra-stable PointAnnotations) */}
-      {eventMarkers?.features?.map((feature: any) => {
+      {/* 1. EVENTS LAYER - Only visible below zoom 14.0 */}
+      {zoomLevel < 14.0 && eventMarkers?.features?.map((feature: any) => {
         const id = feature.properties?.id || feature.id;
         const isSelected = String(selectedEventId) === String(id);
         const coords = feature.geometry?.coordinates;
@@ -157,8 +157,8 @@ export const MapLayers = React.memo(({
         );
       })}
 
-      {/* 2. POI LAYER (Ultra-stable PointAnnotations) */}
-      {poisGeoJSON?.features?.map((feature: any) => {
+      {/* 2. POI LAYER - Only visible at zoom 14.0 and above */}
+      {zoomLevel >= 14.0 && poisGeoJSON?.features?.map((feature: any) => {
         const id = feature.properties?.id || feature.id;
         const isSelected = String(selectedPoiId) === String(id);
         const isLinkedToSelectedEvent = selectedEventId && String(feature.properties?.parentId) === String(selectedEventId);

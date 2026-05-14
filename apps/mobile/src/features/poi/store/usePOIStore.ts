@@ -85,7 +85,7 @@ export const usePOIStore = create<POIState>((set) => ({
     const { selectedEventId, userInsideEventId, activeCategoryFilters } = usePOIStore.getState();
 
     // 1. Zoom-based visibility threshold
-    if (zoom < 13.0) return [];
+    if (zoom < 14.0) return [];
 
     // 2. Category Filtering Logic
     if (activeCategoryFilters.length > 0) {

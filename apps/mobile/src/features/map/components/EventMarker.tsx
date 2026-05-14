@@ -31,7 +31,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
     const iconStyle = useAnimatedStyle(() => {
       const opacity = interpolate(
         zoomSharedValue.value,
-        [11.5, 12.5, 14.5, 15.5],
+        [11.0, 12.0, 13.5, 14.5],
         [0, 1, 1, 0],
         Extrapolation.CLAMP
       );
