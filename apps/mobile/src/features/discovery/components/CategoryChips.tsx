@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, Pressable, Text, View } from 'react-native';
-import { Music, MapPin, Coffee, GlassWater } from 'lucide-react-native';
+import { Headphones, UtensilsCrossed, Zap, Trophy, Sparkles, MapPin } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
@@ -17,10 +17,11 @@ interface Props {
 }
 
 const IconMap: Record<string, React.FC<any>> = {
-  music: Music,
-  'glass-martini': GlassWater,
-  palette: MapPin,
-  tent: Coffee, // Fallbacks
+  music: Headphones,
+  utensils: UtensilsCrossed,
+  cpu: Zap,
+  trophy: Trophy,
+  sparkles: Sparkles,
 };
 
 export const CategoryChips = React.memo(({ categories, activeCategory, onSelect }: Props) => {

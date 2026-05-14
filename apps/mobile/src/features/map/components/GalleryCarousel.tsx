@@ -35,7 +35,7 @@ export const GalleryCarousel = React.memo(({ images }: GalleryCarouselProps) => 
               style={styles.image}
               contentFit="cover"
               transition={300}
-              cachePolicy="memory-dominant"
+              cachePolicy="memory-disk"
               priority={index < 2 ? 'high' : 'normal'}
             />
           </View>

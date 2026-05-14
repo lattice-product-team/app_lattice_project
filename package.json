@@ -21,18 +21,15 @@
     "dev:android": "pnpm --filter @app/mobile android:device",
     "dev:android:prod": "NODE_ENV=production pnpm dev:android",
     "dev:ios": "pnpm --filter @app/mobile ios:device",
-
     "build": "turbo build",
     "build:mobile:cloud": "NODE_ENV=production cd apps/mobile && eas build --platform android --profile production",
     "build:mobile:local": "NODE_ENV=production cd apps/mobile && eas build --platform android --profile production --local",
     "build:mobile:preview": "cd apps/mobile && eas build --platform android --profile preview",
-
     "db:migrate": "turbo run db:migrate",
     "db:generate": "turbo run db:generate",
     "db:seed": "turbo run db:seed",
     "db:studio": "turbo run db:studio",
     "db:check": "npx tsx scripts/check-db.ts",
-
     "lint": "turbo lint",
     "format": "prettier --write .",
     "clean": "rm -rf node_modules && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.turbo' -type d -prune -exec rm -rf '{}' + && find . -name 'build' -type d -prune -exec rm -rf '{}' + && pnpm install"

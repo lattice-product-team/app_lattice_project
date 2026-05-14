@@ -62,6 +62,8 @@ async function seed() {
         'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=800'
       ],
       primaryColor: '#e10600',
+      isFeatured: true,
+      isTrending: true,
       metadata: JSON.stringify({ capacity: 140000, category: 'Sports' }),
     })
     .onConflictDoNothing();
@@ -97,6 +99,8 @@ async function seed() {
         'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&q=80&w=800'
       ],
       primaryColor: '#bc00ff',
+      isFeatured: true,
+      isTrending: true,
       metadata: JSON.stringify({ capacity: 50000, category: 'Music' }),
     })
     .onConflictDoNothing();
@@ -136,6 +140,8 @@ async function seed() {
         'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&q=80&w=800'
       ],
       primaryColor: '#ff4704',
+      isFeatured: true,
+      isTrending: true,
       metadata: JSON.stringify({ capacity: 12000, currentOccupancy: 45, category: 'Technology' }),
     })
     .onConflictDoNothing();
@@ -241,6 +247,7 @@ async function seed() {
           capacity: Math.floor(1000 + Math.random() * 4000),
           currentOccupancy: Math.floor(Math.random() * 100),
           status: 'open',
+          isTrending: true,
           metadata: JSON.stringify({
             website: 'https://lattice.app',
             rating: (4 + Math.random()).toFixed(1),

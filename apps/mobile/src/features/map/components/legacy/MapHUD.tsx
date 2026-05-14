@@ -63,6 +63,14 @@ export const MapHUD = React.memo(function MapHUD({
     return savedData?.features?.map((f: any) => normalizePOI(f)) || [];
   }, [savedData]);
 
+  const handleFocusSearch = React.useCallback(() => {
+    setIsSearching(true);
+  }, [setIsSearching]);
+
+  const handleCloseSearch = React.useCallback(() => {
+    setIsSearching(false);
+  }, [setIsSearching]);
+
   return (
     <>
       <MapSheetManager
@@ -74,10 +82,10 @@ export const MapHUD = React.memo(function MapHUD({
             value={searchQuery}
             onChangeText={setSearchQuery}
             onProfilePress={onProfilePress}
-            onFocus={() => setIsSearching(true)}
+            onFocus={handleFocusSearch}
           />
         }
-        onFocusSearch={() => setIsSearching(true)}
+        onFocusSearch={handleFocusSearch}
         searchResults={searchResults}
         poiCarousel={<POICarousel pois={carouselPois} onSelectPoi={onSelectPoi} />}
         savedContent={

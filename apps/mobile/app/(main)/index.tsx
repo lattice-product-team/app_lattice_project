@@ -859,6 +859,12 @@ export default function MapIndexPage() {
                   isGuest={isGuest}
                   editable={isHeaderEditable}
                 />
+                <Animated.View 
+                  style={[
+                    styles.islandGrabber, 
+                    { backgroundColor: theme.colors.border.subtle }
+                  ]} 
+                />
               </Animated.View>
 
               <Animated.ScrollView
@@ -920,7 +926,19 @@ const styles = StyleSheet.create({
   },
   islandContainer: { position: 'absolute', left: 0, right: 0, top: 0, zIndex: 1000 },
   islandBackground: { flex: 1, borderRadius: 32, overflow: 'hidden', borderWidth: 1 },
-  islandHeader: { paddingBottom: 11 },
+  islandHeader: {
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  islandGrabber: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 2,
+    marginBottom: 8,
+    opacity: 0.5,
+  },
   islandScrollContent: { paddingBottom: 30 },
   modeToggleContainer: {
     position: 'absolute',

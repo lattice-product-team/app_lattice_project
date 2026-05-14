@@ -55,11 +55,6 @@ export const useSocket = () => {
     });
 
     socketInstance.on('connect_error', (err) => {
-      // Avoid spamming the console with generic websocket errors during connection attempts
-      if (err.message !== 'websocket error') {
-        console.error('[Socket] Connection error:', err.message);
-      }
-      // Auth errors are expected for guests / expired tokens — log as warning, not error
       if (err.message.includes('Authentication error')) {
         console.warn('[Socket] Auth error (token may be expired):', err.message);
         socketInstance.disconnect(); // Stop retrying

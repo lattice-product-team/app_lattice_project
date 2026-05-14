@@ -20,6 +20,7 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import * as LucideIcons from 'lucide-react-native';
 import { MapPin as MapPinIcon } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,9 +61,9 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   };
 
   const snappySpring = {
-    damping: Platform.OS === 'android' ? 30 : 25,
-    stiffness: Platform.OS === 'android' ? 140 : 160,
-    mass: 0.8,
+    damping: Platform.OS === 'android' ? 35 : 25,
+    stiffness: Platform.OS === 'android' ? 200 : 160,
+    mass: Platform.OS === 'android' ? 0.6 : 0.8,
     overshootClamping: Platform.OS === 'android' ? true : false,
     restDisplacementThreshold: 0.01,
     restSpeedThreshold: 2,

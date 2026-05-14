@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, RefreshControl, View, Text, InteractionManager } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiscovery } from '../../../hooks/useDiscovery';
 import { FeaturedCarousel } from './FeaturedCarousel';
 import { CategoryChips } from './CategoryChips';
@@ -16,6 +17,28 @@ export function DiscoveryFeed({ onItemPress }: Props) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isReady, setIsReady] = useState(false);
   const theme = useAppTheme();
+  const insets = useSafeAreaInsets();
+
+  const handleSelectCategory = (id: string) => {
+    setActiveCategory((prev) => (prev === id ? 'all' : id));
+  };
+
+  const filteredSections = React.useMemo(() => {
+    if (!feed?.sections || activeCategory === 'all') return feed?.sections || [];
+
+    return feed.sections.map((section) => {
+      if (section.type === 'featured' || section.type === 'trending' || section.type === 'nearby') {
+        return {
+          ...section,
+          items: section.items.filter((item: any) => {
+            const itemCategory = (item.type || item.category || '').toLowerCase();
+            return itemCategory === activeCategory.toLowerCase();
+          }),
+        };
+      }
+      return section;
+    });
+  }, [feed, activeCategory]);
 
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
@@ -27,7 +50,7 @@ export function DiscoveryFeed({ onItemPress }: Props) {
   if ((isLoading && !feed) || !isReady) {
     // Basic skeleton loading state
     return (
-      <View style={{ flex: 1, padding: 20 }}>
+      <View style={{ flex: 1, padding: 20, paddingTop: insets.top + 20 }}>
         <View style={{ height: 300, borderRadius: 32, backgroundColor: theme.colors.glass.background, marginBottom: 24 }} />
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
           {[1, 2, 3, 4].map(i => (
@@ -49,7 +72,7 @@ export function DiscoveryFeed({ onItemPress }: Props) {
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingTop: 20, paddingBottom: 100 }}
+      contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -59,7 +82,9 @@ export function DiscoveryFeed({ onItemPress }: Props) {
         />
       }
     >
-      {feed.sections.map((section, index) => {
+      {filteredSections.map((section, index) => {
+        if (section.items.length === 0 && section.type !== 'categories') return null;
+
         switch (section.type) {
           case 'featured':
             return (
@@ -75,7 +100,7 @@ export function DiscoveryFeed({ onItemPress }: Props) {
                 key={index}
                 categories={section.items}
                 activeCategory={activeCategory}
-                onSelect={setActiveCategory}
+                onSelect={handleSelectCategory}
               />
             );
           case 'trending':

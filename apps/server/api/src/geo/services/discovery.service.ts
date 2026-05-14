@@ -33,10 +33,11 @@ export class DiscoveryService {
       type: 'categories',
       title: null,
       items: [
-        { id: 'music', label: 'Concerts', icon: 'music' },
-        { id: 'nightlife', label: 'Nightlife', icon: 'glass-martini' },
-        { id: 'art', label: 'Art', icon: 'palette' },
-        { id: 'festival', label: 'Festivals', icon: 'tent' },
+        { id: 'music', label: 'Música', icon: 'music' },
+        { id: 'food', label: 'Comida', icon: 'utensils' },
+        { id: 'tech', label: 'Tech', icon: 'cpu' },
+        { id: 'sports', label: 'Deporte', icon: 'trophy' },
+        { id: 'generic', label: 'Otros', icon: 'sparkles' },
       ],
     });
 
