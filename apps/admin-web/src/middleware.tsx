@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from '@/lib/auth';
 
 // 1. Specify protected and public routes
+const basePath = '/lattice/web-admin';
 const protectedRoutes = ['/', '/events', '/map', '/pois', '/radar'];
 const publicRoutes = ['/login'];
 
 export default async function proxy(req: NextRequest) {
   // 2. Check if the current route is protected or public
-  const path = req.nextUrl.pathname;
+  // We strip the basePath to match our route definitions
+  const path = req.nextUrl.pathname.replace(basePath, '') || '/';
+
   const isProtectedRoute = protectedRoutes.includes(path);
   const isPublicRoute = publicRoutes.includes(path);
 
@@ -24,12 +27,14 @@ export default async function proxy(req: NextRequest) {
 
   // 4. Redirect to /login if the user is not authenticated
   if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl));
+    const loginUrl = new URL(`${basePath}/login`, req.nextUrl);
+    return NextResponse.redirect(loginUrl);
   }
 
   // 5. Redirect to / if the user is authenticated
   if (isPublicRoute && session) {
-    return NextResponse.redirect(new URL('/', req.nextUrl));
+    const homeUrl = new URL(`${basePath}/`, req.nextUrl);
+    return NextResponse.redirect(homeUrl);
   }
 
   return NextResponse.next();
