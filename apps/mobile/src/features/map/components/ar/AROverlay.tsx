@@ -180,56 +180,126 @@ export const AROverlay: React.FC = () => {
     const isBeacon = poi.properties?.isBeacon;
     const metadata = getCategoryMetadata(poi.properties?.category);
     const CategoryIcon = metadata.icon;
+    
+    const isTrackingSingleTarget = activePois.length === 1 && !isBeacon;
 
     const animatedStyle = useAnimatedStyle(() => {
-      // 1. Horizontal Projection
       let angleDiff = bearing - sharedHeading.value;
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
 
-      // 2. Vertical Projection (Fixed inversion: looking down moves horizon up)
       const vFOV = 45;
       const verticalOffset = (sharedPitch.value / (vFOV / 2)) * (height / 2);
 
-      // 3. Visibility Logic
-      // Let vertical labels naturally move off screen, but fade out if turning away horizontally
-      // or if the phone is placed flat on a table.
-      const isVisibleHorizontally = Math.abs(angleDiff) < 40;
+      // Clamp angle for horizontal position to keep navigation targets on-screen
+      const maxAngle = 35; 
+      let clampedAngle = angleDiff;
+      let isOffscreen = false;
+      
+      if (angleDiff > maxAngle) {
+        clampedAngle = maxAngle;
+        isOffscreen = true;
+      } else if (angleDiff < -maxAngle) {
+        clampedAngle = -maxAngle;
+        isOffscreen = true;
+      }
+
+      // If tracking a single destination, always show the HUD (clamp to edge)
+      const shouldShow = isTrackingSingleTarget ? true : !isOffscreen;
       
       const opacity = withTiming(
-        isVisibleHorizontally && isHoldingVertical.value ? 1 : 0,
+        shouldShow && isHoldingVertical.value ? 1 : 0,
         { duration: 250 }
       );
 
-      const xPos = (angleDiff / (30)) * (width / 2) + width / 2;
+      const xPos = (clampedAngle / 30) * (width / 2) + width / 2;
       const yOffset = isBeacon ? -80 : (index % 2) * 50 - 25;
-      const yPos = height / 2 + verticalOffset + yOffset - 40; // Lowered from -120 to be more centered
+      
+      // Keep clamped navigation targets centered vertically for better visibility
+      const yPos = isOffscreen && isTrackingSingleTarget 
+        ? height / 2 - 80
+        : height / 2 + verticalOffset + yOffset - 40;
+
+      // Scale down based on distance to simulate depth perception (logarithmic drop-off)
+      let scaleFactor = 1;
+      if (distance > 30) {
+        const minScale = 0.55; // Never get smaller than 55%
+        const maxDist = 25000; // Cap distance effect at 25km
+        const clampedDist = Math.min(Math.max(distance, 30), maxDist);
+        const logDist = Math.log10(clampedDist);
+        const logMin = Math.log10(30);
+        const logMax = Math.log10(maxDist);
+        const progress = (logDist - logMin) / (logMax - logMin);
+        scaleFactor = 1 - (progress * (1 - minScale));
+      }
+
+      // If we are clamping an offscreen target, we want it slightly smaller to act as a HUD element
+      if (isOffscreen && isTrackingSingleTarget) {
+        scaleFactor *= 0.85; 
+      }
 
       return {
         transform: [
           { translateX: xPos - (isBeacon ? 120 : 100) },
           { translateY: yPos },
+          { scale: withTiming(scaleFactor, { duration: 300 }) }, // Smooth scaling
         ],
         opacity,
       };
     });
 
+    // Sub-animations for directional arrows
+    const leftArrowStyle = useAnimatedStyle(() => {
+      let angleDiff = bearing - sharedHeading.value;
+      if (angleDiff > 180) angleDiff -= 360;
+      if (angleDiff < -180) angleDiff += 360;
+      return { opacity: withTiming(angleDiff < -35 ? 1 : 0, { duration: 200 }) };
+    });
+
+    const rightArrowStyle = useAnimatedStyle(() => {
+      let angleDiff = bearing - sharedHeading.value;
+      if (angleDiff > 180) angleDiff -= 360;
+      if (angleDiff < -180) angleDiff += 360;
+      return { opacity: withTiming(angleDiff > 35 ? 1 : 0, { duration: 200 }) };
+    });
+
+    const centerContentStyle = useAnimatedStyle(() => {
+      let angleDiff = bearing - sharedHeading.value;
+      if (angleDiff > 180) angleDiff -= 360;
+      if (angleDiff < -180) angleDiff += 360;
+      const isOffscreen = Math.abs(angleDiff) > 35;
+      // Fade out the vertical stalk and detailed text when offscreen, 
+      // focusing only on the turn direction and icon.
+      return { opacity: withTiming(isOffscreen && isTrackingSingleTarget ? 0.3 : 1, { duration: 200 }) };
+    });
+
     return (
       <Animated.View style={[styles.labelWrapper, { width: isBeacon ? 240 : 200 }, animatedStyle]}>
-        <View style={[styles.brandBubble, isBeacon && styles.beaconBubble]}>
+        <View style={[styles.brandBubble, isBeacon && styles.beaconBubble, isTrackingSingleTarget && styles.navigationBubble]}>
+          
+          <Animated.View style={[styles.directionIndicator, styles.directionLeft, leftArrowStyle]}>
+            <Text style={styles.directionArrow}>«</Text>
+          </Animated.View>
+
           <View style={[styles.iconContainer, { backgroundColor: metadata.color }, isBeacon && styles.beaconIcon]}>
             <CategoryIcon size={isBeacon ? 22 : 18} color="white" strokeWidth={2.5} />
           </View>
-          <View style={styles.textContainer}>
+          
+          <Animated.View style={[styles.textContainer, centerContentStyle]}>
             <Text style={[styles.brandLabelText, isBeacon && styles.beaconLabelText]} numberOfLines={1}>
               {poi.properties?.name || poi.name}
             </Text>
             <Text style={styles.brandDistanceText}>
-              {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} • {isBeacon ? 'Event' : 'Ahead'}
+              {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} • {isTrackingSingleTarget ? 'Destino' : 'Ahead'}
             </Text>
-          </View>
+          </Animated.View>
+
+          <Animated.View style={[styles.directionIndicator, styles.directionRight, rightArrowStyle]}>
+            <Text style={styles.directionArrow}>»</Text>
+          </Animated.View>
+          
         </View>
-        {!isBeacon && <View style={styles.verticalStalk} />}
+        {!isBeacon && <Animated.View style={[styles.verticalStalk, centerContentStyle]} />}
       </Animated.View>
     );
   };
@@ -303,13 +373,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   brandBubble: {
-    backgroundColor: 'rgba(20, 20, 20, 0.85)',
+    backgroundColor: 'rgba(15, 15, 18, 0.85)',
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
-    borderRadius: 12,
+    paddingRight: 14,
+    borderRadius: 30, // Pill shaped
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     minWidth: 160,
     maxWidth: 240,
     shadowColor: '#000',
@@ -319,11 +390,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   beaconBubble: {
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    padding: 10,
+    paddingHorizontal: 16,
+    borderRadius: 30, // Pill shaped
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(10, 10, 12, 0.95)',
   },
   beaconIcon: {
     width: 44,
@@ -361,5 +433,42 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
     marginTop: -2,
+  },
+  navigationBubble: {
+    backgroundColor: 'rgba(10, 10, 10, 0.9)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 24,
+    padding: 12,
+    paddingHorizontal: 16,
+    minWidth: 220,
+    shadowColor: '#000',
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  directionIndicator: {
+    position: 'absolute',
+    top: '50%',
+    width: 44,
+    height: 44,
+    marginTop: -22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  directionLeft: {
+    left: -54,
+  },
+  directionRight: {
+    right: -54,
+  },
+  directionArrow: {
+    color: '#FFF',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginTop: -4,
   },
 });
