@@ -81,45 +81,45 @@ const healthHandler = (req: Request, res: Response) => {
   });
 };
 
+// --- API ROUTING ---
+// Health checks and Root
 app.get('/status', healthHandler);
 app.get('/health', healthHandler);
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    name: 'Lattice API Monolith',
+    version: '1.0.0',
+    documentation: 'See README for endpoint details',
+    health: '/health',
+    status: 'running',
+    timestamp: new Date()
+  });
+});
 
-// --- API ROUTING (v1) ---
-const v1Router = express.Router();
+// Apply rate limiter to auth routes
+app.use(['/auth/login', '/auth/register', '/auth/google', '/auth/apple', '/auth/passkey*'], authRateLimiter);
 
-// 4. Rate Limiting Scoping
-// Only apply strict auth limits to actual auth routes to avoid blocking polling (e.g. /events)
-v1Router.use(['/login', '/register', '/google', '/apple', '/passkey*'], authRateLimiter);
-
-/**
- * MOUNTING SERVICES
- * Note: authRouter needs an explicit '/auth' prefix because its routes 
- * are defined relative to root (e.g., /login, /register).
- * Geo and Social routers are mounted at root to support /events, /pois, etc.
- */
-// Health checks also available under v1
-v1Router.get('/status', healthHandler);
-v1Router.get('/health', healthHandler);
-
-v1Router.use('/auth', authRouter);
-v1Router.use(geoRouter);
-v1Router.use(socialRouter);
-
-// --- API ROUTING ---
-// Mount the main router at the root level to simplify external proxying.
-// The browser will use https://domain.com/lattice/api/auth/login
-// and Nginx will proxy to http://api:3000/auth/login
-app.use('/', v1Router);
+// Mount Service Routers
+app.use('/auth', authRouter);
+app.use(geoRouter);
+app.use(socialRouter);
 
 // Fallback for unhandled API routes
 app.use('*', (req: Request, res: Response) => {
+  const diagnostic = {
+    error: 'Route not found at API Monolith level',
+    requestedUrl: req.originalUrl,
+    method: req.method,
+    path: req.path,
+    protocol: req.protocol,
+    headers: req.headers
+  };
+  
   if (env.NODE_ENV !== 'test') {
     console.log(`[API Monolith] 404 Fallback reached for: ${req.method} ${req.originalUrl}`);
   }
-  res.status(404).json({
-    error: 'Route not found at API Monolith level',
-    requestedUrl: req.originalUrl,
-  });
+  
+  res.status(404).json(diagnostic);
 });
 
 app.use(errorHandler);
