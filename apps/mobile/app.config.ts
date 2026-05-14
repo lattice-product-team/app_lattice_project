@@ -141,9 +141,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-dev-client',
       {
-        newArchEnabled: false,
+        newArchEnabled: true,
       },
     ],
+    'react-native-screens',
     'expo-router',
     [
       'expo-splash-screen',
