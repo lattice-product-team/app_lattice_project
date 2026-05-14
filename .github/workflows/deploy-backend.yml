@@ -48,7 +48,7 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/admin-web:latest
           build-args: |
-            NEXT_PUBLIC_API_URL=https://projects.kore29.com/lattice/api/v1
+            NEXT_PUBLIC_API_URL=https://projects.kore29.com/lattice/api
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

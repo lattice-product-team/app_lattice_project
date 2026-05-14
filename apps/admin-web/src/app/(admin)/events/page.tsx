@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Spinner, Select, ListBox, Selection } from '@heroui/react';
 import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEvents, API_BASE } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
   ssr: false,
@@ -20,6 +20,7 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 
 export default function EventsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const { events, loading, refetch } = useEvents();
 
@@ -40,10 +41,37 @@ export default function EventsPage() {
     zoom: 15,
   });
 
-  // Filters State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<Selection>(new Set([]));
-  const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set([]));
+  const [syncingIds, setSyncingIds] = useState<Set<number>>(new Set());
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [eventToDeleteId, setEventToDeleteId] = useState<number | null>(null);
+
+  const clearBoundary = () => setBoundaryPoints([]);
+  const undoLastPoint = () => setBoundaryPoints((prev) => prev.slice(0, -1));
+
+  const handleDeleteEvent = async (id?: number) => {
+    const targetId = id || eventToDeleteId;
+    if (!targetId) return;
+
+    if (!id) {
+      // Logic for modal confirmation
+      setIsDeleteModalOpen(true);
+      setEventToDeleteId(targetId);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/events/${targetId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setIsDeleteModalOpen(false);
+        setEventToDeleteId(null);
+        refetch();
+      }
+    } catch (err) {
+      console.error('Failed to delete event', err);
+    }
+  };
 
   // Handle incoming eventId from Manage action
   useEffect(() => {
@@ -91,7 +119,7 @@ export default function EventsPage() {
         (statusValue === 'past' && !isActive);
 
       const capacityVal = selectionValue(capacityFilter);
-      const metadata = typeof e.metadata === 'string' ? JSON.parse(e.metadata) : e.metadata;
+      const metadata = typeof event.metadata === 'string' ? JSON.parse(event.metadata) : event.metadata;
       const capacity = metadata?.capacity || 0;
       const matchesCapacity =
         !capacityValue ||

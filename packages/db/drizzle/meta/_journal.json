@@ -64,6 +64,13 @@
       "when": 1778745117705,
       "tag": "0008_typical_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1778747690997,
+      "tag": "0009_stale_starjammers",
+      "breakpoints": true
     }
   ]
 }
