@@ -81,21 +81,6 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               </View>
             </MapPinFrame>
 
-            {isSelected && (
-              <View style={mapPinStyles.labelBadge}>
-                <Text
-                  style={[
-                    mapPinStyles.labelText,
-                    {
-                      color: color,
-                    },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {properties.name}
-                </Text>
-              </View>
-            )}
           </View>
         </TouchableOpacity>
       </Animated.View>

@@ -50,15 +50,21 @@ export const mapPinStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
   labelBadge: {
-    marginTop: 4, // Back to vertical
-    maxWidth: 160,
+    marginTop: 6,
+    maxWidth: 180,
     alignItems: 'center',
     justifyContent: 'center',
   },
   labelText: {
-    fontSize: 13, // Uniform size for both
-    fontWeight: '600',
+    fontSize: 12,
+    fontFamily: 'Outfit-Bold',
+    fontWeight: '900',
     textAlign: 'center',
+    textTransform: 'uppercase',
+    textShadowColor: '#FFFFFF',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8, // Stronger halo
+    letterSpacing: 0.6,
   },
   // Stem no longer used
   stem: {

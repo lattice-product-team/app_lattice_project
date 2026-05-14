@@ -92,15 +92,16 @@ export const MapLayers = React.memo(({
           id="eventLabelLayer"
           minZoomLevel={9}
           maxZoomLevel={14}
+          filter={selectedEventId ? ['!=', ['to-string', ['get', 'id']], String(selectedEventId)] : undefined}
           style={{
             textField: ['get', 'name'],
             textSize: 11,
             textColor: ['get', 'color'],
             textHaloColor: '#FFFFFF',
-            textHaloWidth: 1.5,
+            textHaloWidth: 2,
             textHaloBlur: 0.5,
             textTransform: 'uppercase',
-            textLetterSpacing: 0.1,
+            textLetterSpacing: 0.2,
             textAnchor: 'center',
             textPitchAlignment: 'viewport',
             textRotationAlignment: 'viewport',
@@ -197,29 +198,75 @@ export const MapLayers = React.memo(({
         );
       })}
 
-      {/* 4. ROUTE VISUALS (Stays in GL) */}
+      {/* 4. SELECTED LABELS (Using native SymbolLayer for perfect halo/border effect) */}
+      {(selectedPoiId || selectedEventId) && (
+        <MapLibreGL.ShapeSource 
+          id="selectedLabelsSource" 
+          shape={{
+            type: 'FeatureCollection',
+            features: Object.values([
+              ...(poisGeoJSON?.features || []),
+              ...(eventsGeoJSON?.features || [])
+            ].reduce((acc: Record<string, any>, f) => {
+              const id = String(f.properties?.id || f.id);
+              const isSelected = (selectedPoiId && id === String(selectedPoiId)) ||
+                               (selectedEventId && id === String(selectedEventId));
+              
+              if (isSelected) {
+                // If multiple geometries exist for the same ID (e.g. Point and Polygon),
+                // we prefer the Point for labeling as it's more predictable.
+                if (!acc[id] || f.geometry.type === 'Point') {
+                  acc[id] = f;
+                }
+              }
+              return acc;
+            }, {}))
+          }}
+        >
+          <MapLibreGL.SymbolLayer
+            id="selectedLabelLayer"
+            style={{
+              textField: ['get', 'name'],
+              textSize: 13,
+              textColor: ['get', 'color'],
+              textHaloColor: '#FFFFFF',
+              textHaloWidth: 2.5,
+              textHaloBlur: 0,
+              textTransform: 'uppercase',
+              textLetterSpacing: 0.1,
+              textAnchor: 'top',
+              textOffset: [0, 1.8], // Positioned perfectly below the marker
+              textPitchAlignment: 'viewport',
+              textRotationAlignment: 'viewport',
+              textAllowOverlap: true,
+              textIgnorePlacement: true,
+            }}
+          />
+        </MapLibreGL.ShapeSource>
+      )}
+
+      {/* 5. ROUTE VISUALS (Stays in GL) */}
       <MapLibreGL.ShapeSource 
         id="routeSource" 
         shape={routeGeoJSON}
-        tolerance={0.1} // Slight tolerance for smoother rendering on mobile
+        tolerance={0.1}
         buffer={64}
         maxZoomLevel={20}
       >
-        {/* Layer order: Glow UNDER, Fill ON TOP */}
         <MapLibreGL.LineLayer
           id="routeGlow"
           style={{ 
             ...mapLayerStyles.routeGlow, 
             lineBlur: 6, 
             lineOpacity: 0.3,
-            lineOpacityTransition: { duration: 400 } // Smooth entrance
+            lineOpacityTransition: { duration: 400 }
           }}
         />
         <MapLibreGL.LineLayer 
           id="routeFill" 
           style={{
             ...mapLayerStyles.routeFill,
-            lineOpacityTransition: { duration: 400 } // Smooth entrance
+            lineOpacityTransition: { duration: 400 }
           }} 
         />
       </MapLibreGL.ShapeSource>
