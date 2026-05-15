@@ -157,7 +157,6 @@ export default function MapIndexPage() {
 
   const [manualAR, setManualAR] = useState(false);
 
-
   const handleProfilePress = useCallback(() => {
     Haptics.selectionAsync();
     if (isGuest) {
@@ -199,7 +198,13 @@ export default function MapIndexPage() {
     setTimeout(() => {
       searchInputRef.current?.focus();
     }, 100);
-  }, [selectedEvent, setSelectedEvent, setCurrentEvent, theme.motion.physics.magnetic, islandState]);
+  }, [
+    selectedEvent,
+    setSelectedEvent,
+    setCurrentEvent,
+    theme.motion.physics.magnetic,
+    islandState,
+  ]);
 
   // Sync React/Store state to UI Thread Layers
   useEffect(() => {
@@ -307,7 +312,7 @@ export default function MapIndexPage() {
       setSelectedEvent(event.id);
       setCurrentEvent(event);
       selectPoi(null); // Clear any active POI selection
-      
+
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
@@ -599,7 +604,7 @@ export default function MapIndexPage() {
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
 
-    // If we are in the middle of navigation or planning a route, 
+    // If we are in the middle of navigation or planning a route,
     // we should NOT clear the route just by tapping the map.
     if (isNavigating || isPlanning) {
       // If we were searching, we might want to collapse the search island though
@@ -673,14 +678,18 @@ export default function MapIndexPage() {
   const handleDiscoveryItemPress = useCallback(
     (item: any) => {
       // Basic heuristic to distinguish POI vs Event
-      if (item.capacity !== undefined || item.currentOccupancy !== undefined || item.crowdLevel !== undefined) {
+      if (
+        item.capacity !== undefined ||
+        item.currentOccupancy !== undefined ||
+        item.crowdLevel !== undefined
+      ) {
         selectPoi(item);
         if (setSelectedEvent as any) (setSelectedEvent as any)(null);
         setCurrentEvent(null);
       } else {
         handleEventSelect(item);
       }
-      
+
       // Auto-switch to Map mode when an item is selected from Explore
       const nextMode = 1;
       toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
@@ -688,7 +697,15 @@ export default function MapIndexPage() {
       setActiveMode(nextMode);
       setLastScreenMode(nextMode);
     },
-    [handleEventSelect, selectPoi, setSelectedEvent, setCurrentEvent, toggleDrag, screenMode, theme.motion.physics.magnetic]
+    [
+      handleEventSelect,
+      selectPoi,
+      setSelectedEvent,
+      setCurrentEvent,
+      toggleDrag,
+      screenMode,
+      theme.motion.physics.magnetic,
+    ]
   );
 
   const exploreTextStyle = useAnimatedStyle(() => ({
@@ -755,7 +772,10 @@ export default function MapIndexPage() {
       </Animated.View>
 
       {/* 2. Persistent HUD & Navigation Info (Z-Index: 500) */}
-      <Animated.View style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 500 }]} pointerEvents="box-none">
+      <Animated.View
+        style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 500 }]}
+        pointerEvents="box-none"
+      >
         <InstructionBanner />
         <NavigationInfo />
       </Animated.View>
@@ -798,7 +818,7 @@ export default function MapIndexPage() {
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               const nextMode = toggleDrag.value > 0.5 ? 0 : 1;
-              
+
               if (nextMode === 0 && lastCameraPosition?.center) {
                 setDiscoveryLocation(lastCameraPosition.center);
               } else if (nextMode === 1) {
@@ -907,11 +927,8 @@ export default function MapIndexPage() {
                   isGuest={isGuest}
                   editable={isHeaderEditable}
                 />
-                <Animated.View 
-                  style={[
-                    styles.islandGrabber, 
-                    { backgroundColor: theme.colors.border.subtle }
-                  ]} 
+                <Animated.View
+                  style={[styles.islandGrabber, { backgroundColor: theme.colors.border.subtle }]}
                 />
               </Animated.View>
 
