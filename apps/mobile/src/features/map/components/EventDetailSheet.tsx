@@ -96,6 +96,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
 
   const gesture = Gesture.Pan()
     .activeOffsetY([-10, 10]) 
+    .failOffsetX([-20, 20]) // Allow horizontal gestures to pass through to carousels
     .onStart(() => {
       startState.value = islandState.value;
     })

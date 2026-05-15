@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { ScrollView, Pressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import { getEventMetadata } from '../../../utils/poiUtils';

@@ -3,12 +3,10 @@ import {
   View,
   StyleSheet,
   Dimensions,
-  Pressable,
-  Text,
-  ScrollView,
   Keyboard,
   TextInput,
 } from 'react-native';
+import { ScrollView, Pressable } from 'react-native-gesture-handler';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import * as Haptics from 'expo-haptics';

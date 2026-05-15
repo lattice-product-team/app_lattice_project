@@ -1,5 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
+
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { DetailAction } from '../../../types/models/detail';
 import { Button } from '../../../components/ui/Button';

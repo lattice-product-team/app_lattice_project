@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, StyleSheet, Pressable, Platform, View } from 'react-native';
+import { Text, StyleSheet, Platform, View } from 'react-native';
+import { Pressable } from 'react-native-gesture-handler';
 import { typography } from '../../styles/typography';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
