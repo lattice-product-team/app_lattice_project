@@ -89,6 +89,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const [type, setType] = useState('wc');
   const [capacity, setCapacity] = useState('');
   const [isWheelchairAccessible, setIsWheelchairAccessible] = useState(true);
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
 
   const [address, setAddress] = useState('');
   const [locationName, setLocationName] = useState('');
@@ -151,6 +154,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     setSelectionSource(null);
     clearPoi();
     setFormError('');
+    setBannerUrl('');
+    setGalleryUrls([]);
   }, [clearPoi]);
 
   const handleOpenCreate = () => {
@@ -168,6 +173,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     setSelectedEventId(poi.eventId?.toString() || '');
     setAddress(poi.address || '');
     setLocationName(poi.locationName || '');
+    setBannerUrl(poi.bannerUrl || '');
+    setGalleryUrls(poi.galleryUrls || []);
     setSelectionSource('CLICK');
     
     const coords = poi.geometry?.coordinates || poi.center?.coordinates;
@@ -206,6 +213,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           type: 'Point',
           coordinates: [selectedPoi.lng, selectedPoi.lat],
         },
+        bannerUrl,
+        galleryUrls
       };
 
       const url = editingPoiId ? `${API_BASE}/pois/${editingPoiId}` : `${API_BASE}/pois`;
@@ -405,6 +414,80 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                   />
                 </div>
 
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Description</label>
+                  <textarea
+                    placeholder="Brief description of the asset's purpose..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full h-32 p-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium rounded-3xl resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Section 3: Media */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Media Assets</p>
+                
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Banner Image URL</label>
+                  <input
+                    placeholder="https://example.com/banner.jpg"
+                    value={bannerUrl}
+                    onChange={(e) => setBannerUrl(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                  />
+                  {bannerUrl && (
+                    <div className="mt-2 h-32 w-full rounded-2xl overflow-hidden border border-border">
+                      <img src={bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Gallery Images</label>
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="https://example.com/image.jpg"
+                      value={newGalleryUrl}
+                      onChange={(e) => setNewGalleryUrl(e.target.value)}
+                      className="flex-1 h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                    />
+                    <button
+                      onClick={() => {
+                        if (newGalleryUrl) {
+                          setGalleryUrls([...galleryUrls, newGalleryUrl]);
+                          setNewGalleryUrl('');
+                        }
+                      }}
+                      className="h-14 w-14 bg-foreground text-background rounded-2xl flex items-center justify-center hover:opacity-90"
+                    >
+                      <Icons.Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {galleryUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3 mt-4">
+                      {galleryUrls.map((url, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
+                          <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => setGalleryUrls(galleryUrls.filter((_, i) => i !== idx))}
+                            className="absolute top-1 right-1 bg-ember text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Icons.X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Section 4: Specifications */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">4. Technical Specifications</p>
+                
                 <div className="space-y-4">
                   <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Category</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -610,14 +693,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-border bg-elevated/20">
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">ID</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Asset Details</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Social Proof</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium">Location / Address</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Occupancy (Live)</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Accessibility</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Status</th>
-                <th className="py-3 px-6 text-gravel uppercase text-[10px] tracking-widest font-medium text-center">Operations</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Asset Details</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Social Proof</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location / Address</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Occupancy (Live)</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Accessibility</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Status</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-right">Operations</th>
               </tr>
             </thead>
             <tbody className="transition-colors divide-y divide-border/30">
@@ -635,9 +718,20 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                     <tr key={poi.id} className="border-b border-border hover:bg-elevated/10 transition-all group">
                       <td className="py-4 px-6 font-mono text-admin-xs text-slate opacity-40">POI-{poi.id.toString().padStart(3, '0')}</td>
                       <td className="py-4 px-6">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-foreground text-admin-base uppercase tracking-tight transition-colors">{poi.name}</span>
-                          <span className="text-[10px] text-gravel uppercase tracking-wider font-medium opacity-40">{poi.eventName || 'Global Asset'}</span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-elevated border border-border overflow-hidden shrink-0 shadow-sm">
+                            {poi.bannerUrl ? (
+                              <img src={poi.bannerUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gravel/20 bg-elevated/40">
+                                <Icons.Image className="w-5 h-5" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-foreground text-admin-base uppercase tracking-tight truncate">{poi.name}</span>
+                            <span className="text-[10px] text-gravel uppercase tracking-wider font-medium opacity-40 truncate">{poi.eventName || 'Global Asset'}</span>
+                          </div>
                         </div>
                       </td>
                       <td className="py-4 px-6">

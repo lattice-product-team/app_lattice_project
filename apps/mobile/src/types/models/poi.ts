@@ -17,6 +17,8 @@ export interface StandardUIPOI {
   description?: string;
   images?: string[];
   imageKey?: string;
+  bannerUrl?: string;
+  galleryUrls?: string[];
   distance?: string;
   duration?: string;
   rating?: number;

@@ -87,6 +87,10 @@ export default function EventsPage() {
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
+  const [description, setDescription] = useState('');
   const [locationName, setLocationName] = useState('');
   const [address, setAddress] = useState('');
   const [boundaryPoints, setBoundaryPoints] = useState<[number, number][]>([]);
@@ -138,8 +142,11 @@ export default function EventsPage() {
   const resetForm = useCallback(() => {
     setEditingEventId(null);
     setName('');
+    setDescription('');
     setStartDate('');
     setEndDate('');
+    setBannerUrl('');
+    setGalleryUrls([]);
     setLocationName('');
     setAddress('');
     setBoundaryPoints([]);
@@ -154,10 +161,14 @@ export default function EventsPage() {
   const handleOpenEdit = (event: any) => {
     setEditingEventId(event.id);
     setName(event.name);
-    setStartDate(new Date(event.startDate).toISOString().slice(0, 16));
-    setEndDate(new Date(event.endDate).toISOString().slice(0, 16));
+    setDescription(event.description || '');
+    setStartDate(event.startDate ? new Date(event.startDate).toISOString().slice(0, 16) : '');
+    setEndDate(event.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : '');
     setLocationName(event.locationName || '');
     setAddress(event.address || '');
+    setBoundaryPoints(event.boundaryPoints || []);
+    setBannerUrl(event.bannerUrl || '');
+    setGalleryUrls(event.galleryUrls || []);
 
     // boundary is returned as a top-level GeoJSON Polygon from the API
     const boundary = event.boundary;
@@ -215,17 +226,22 @@ export default function EventsPage() {
 
       const method = editingEventId ? 'PATCH' : 'POST';
 
+      const eventData = {
+        name,
+        description,
+        locationName,
+        address,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        bannerUrl,
+        galleryUrls,
+        boundary,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          startDate,
-          endDate,
-          locationName,
-          address,
-          boundary,
-        }),
+        body: JSON.stringify(eventData),
       });
 
       if (res.ok) {
@@ -391,6 +407,18 @@ export default function EventsPage() {
                     className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
                   />
                 </div>
+                
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Description
+                  </label>
+                  <textarea
+                    placeholder="Event description..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full h-32 p-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium rounded-3xl resize-none"
+                  />
+                </div>
               </div>
 
               {/* Section 2: Schedule */}
@@ -419,9 +447,68 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              {/* Section 3: Boundary */}
+              {/* Section 3: Media */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Media Assets</p>
+                
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Banner Image URL</label>
+                  <input
+                    placeholder="https://example.com/banner.jpg"
+                    value={bannerUrl}
+                    onChange={(e) => setBannerUrl(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                  />
+                  {bannerUrl && (
+                    <div className="mt-2 h-32 w-full rounded-2xl overflow-hidden border border-border">
+                      <img src={bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Gallery Images</label>
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="https://example.com/image.jpg"
+                      value={newGalleryUrl}
+                      onChange={(e) => setNewGalleryUrl(e.target.value)}
+                      className="flex-1 h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                    />
+                    <button
+                      onClick={() => {
+                        if (newGalleryUrl) {
+                          setGalleryUrls([...galleryUrls, newGalleryUrl]);
+                          setNewGalleryUrl('');
+                        }
+                      }}
+                      className="h-14 w-14 bg-foreground text-background rounded-2xl flex items-center justify-center hover:opacity-90"
+                    >
+                      <Icons.Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {galleryUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3 mt-4">
+                      {galleryUrls.map((url, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
+                          <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => setGalleryUrls(galleryUrls.filter((_, i) => i !== idx))}
+                            className="absolute top-1 right-1 bg-ember text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Icons.X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Section 4: Boundary */}
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Geospatial Perimeter</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">4. Geospatial Perimeter</p>
                 <div className={`p-6 rounded-[2rem] border ${boundaryPoints.length > 2 ? 'bg-success/5 border-success/20' : 'border-dashed border-border'} flex flex-col items-center justify-center text-center gap-3`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${boundaryPoints.length > 2 ? 'bg-success text-white' : 'bg-elevated text-gravel/40'}`}>
                     <Icons.Map className="w-5 h-5" />
@@ -691,9 +778,25 @@ export default function EventsPage() {
                         EVT-{event.id.toString().padStart(3, '0')}
                       </td>
                       <td className="py-6 px-6">
-                        <span className="font-bold text-foreground text-admin-base uppercase tracking-tight">
-                          {event.name}
-                        </span>
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-elevated border border-border overflow-hidden shrink-0 shadow-sm">
+                            {event.bannerUrl ? (
+                              <img src={event.bannerUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gravel/20 bg-elevated/40">
+                                <Icons.Image className="w-5 h-5" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-foreground text-admin-base uppercase tracking-tight truncate">
+                              {event.name}
+                            </span>
+                            <span className="text-[10px] text-gravel uppercase tracking-wider font-medium opacity-40 truncate">
+                              {event.type || 'Activity'}
+                            </span>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-6 px-6">
                         {social ? (
@@ -745,7 +848,7 @@ export default function EventsPage() {
                       </td>
                       <td className="py-6 px-6">
                         <span
-                          className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 ${isActive ? 'bg-signal-blue text-white' : 'bg-elevated text-gravel opacity-50'}`}
+                          className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg ${isActive ? 'bg-signal-blue text-white shadow-lg shadow-signal-blue/20' : 'bg-elevated text-gravel opacity-50'}`}
                         >
                           {isActive ? 'Active' : 'Past'}
                         </span>

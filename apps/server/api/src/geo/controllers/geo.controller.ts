@@ -103,6 +103,8 @@ export const getEventSpatial = async (req: Request, res: Response) => {
         id: pointsOfInterest.id,
         name: pointsOfInterest.name,
         type: pointsOfInterest.type,
+        bannerUrl: pointsOfInterest.bannerUrl,
+        galleryUrls: pointsOfInterest.galleryUrls,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
       })
       .from(pointsOfInterest)
@@ -129,6 +131,8 @@ export const getEventSpatial = async (req: Request, res: Response) => {
           id: poi.id,
           type: poi.type,
           name: poi.name,
+          bannerUrl: poi.bannerUrl,
+          galleryUrls: poi.galleryUrls,
         },
       });
     });
@@ -569,6 +573,8 @@ export const createEvent = async (req: Request, res: Response) => {
       primaryColor,
       isPermanent,
       center,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (!name || !startDate || !endDate) {
@@ -595,6 +601,8 @@ export const createEvent = async (req: Request, res: Response) => {
         boundary: boundary
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`
           : null,
+        bannerUrl,
+        galleryUrls,
       })
       .returning();
 
@@ -625,6 +633,8 @@ export const createPoi = async (req: Request, res: Response) => {
       capacity,
       isWheelchairAccessible,
       hasPriorityLane,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (!name || !type || !geometry) {
@@ -672,6 +682,8 @@ export const createPoi = async (req: Request, res: Response) => {
         isWheelchairAccessible: isWheelchairAccessible ?? true,
         hasPriorityLane: hasPriorityLane ?? false,
         location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`,
+        bannerUrl,
+        galleryUrls,
       })
       .returning();
 
@@ -778,6 +790,8 @@ export const updatePoi = async (req: Request, res: Response) => {
       isWheelchairAccessible,
       hasPriorityLane,
       status,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (isNaN(poiId)) {
@@ -831,6 +845,8 @@ export const updatePoi = async (req: Request, res: Response) => {
         location: geometry 
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`
           : undefined,
+        bannerUrl: bannerUrl ?? existingPoi.bannerUrl,
+        galleryUrls: galleryUrls ?? existingPoi.galleryUrls,
       })
       .where(eq(pointsOfInterest.id, poiId))
       .returning();
@@ -868,6 +884,8 @@ export const updateEvent = async (req: Request, res: Response) => {
       primaryColor,
       isPermanent,
       center,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (isNaN(eventId)) {
@@ -903,6 +921,8 @@ export const updateEvent = async (req: Request, res: Response) => {
         boundary: boundary
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`
           : undefined,
+        bannerUrl: bannerUrl ?? existingEvent.bannerUrl,
+        galleryUrls: galleryUrls ?? existingEvent.galleryUrls,
       })
       .where(eq(events.id, eventId))
       .returning();

@@ -35,6 +35,8 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
     parentId: properties.parentId || properties.event_id || properties.eventId,
     description: properties.description,
     images: properties.images,
+    bannerUrl: properties.bannerUrl,
+    galleryUrls: properties.galleryUrls,
     rating: properties.metadata?.social?.rating,
     reviewsCount: properties.metadata?.social?.reviews_count,
     raw: properties,
@@ -58,6 +60,8 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     mainColor: color,
     coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
     images: event.bannerUrl ? [event.bannerUrl] : [],
+    bannerUrl: event.bannerUrl,
+    galleryUrls: event.galleryUrls || [],
     imageKey: event.bannerUrl ? `event-img-${id}` : 'placeholder-event',
     raw: event,
   };

@@ -174,6 +174,8 @@ export const MapContent = function MapContent({
           color: poi.mainColor,
           parentId: poi.parentId,
           rating: poi.rating,
+          bannerUrl: poi.bannerUrl,
+          galleryUrls: poi.galleryUrls,
         },
       })),
     };
@@ -212,7 +214,8 @@ export const MapContent = function MapContent({
             category: poi.category,
             color: poi.mainColor,
             imageKey: poi.imageKey,
-            bannerUrl: (poi.raw as any)?.bannerUrl,
+            bannerUrl: poi.bannerUrl,
+            galleryUrls: poi.galleryUrls,
             raw: poi.raw,
           },
         });
