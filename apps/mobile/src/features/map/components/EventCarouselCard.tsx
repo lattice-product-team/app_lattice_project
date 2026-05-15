@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import { Pressable } from 'react-native-gesture-handler';
+import { View, StyleSheet, Text, Platform, Pressable as NativePressable } from 'react-native';
+import { Pressable as GHPressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { 
   Star, 
@@ -26,6 +26,8 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
+
+const Pressable = Platform.OS === 'android' ? NativePressable : GHPressable;
 
 interface Event {
   id: string | number;

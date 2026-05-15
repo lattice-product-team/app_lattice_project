@@ -97,6 +97,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   const gesture = Gesture.Pan()
     .activeOffsetY([-10, 10]) 
     .failOffsetX([-20, 20]) // Allow horizontal gestures to pass through to carousels
+    .activeOffsetX(Platform.OS === 'android' ? [-500, 500] : [-20, 20]) // Prevent horizontal takeover on Android
     .onStart(() => {
       startState.value = islandState.value;
     })
@@ -204,11 +205,13 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                 
                 <Animated.ScrollView 
                   showsVerticalScrollIndicator={false}
+                  decelerationRate="fast"
                   contentContainerStyle={styles.scrollContent}
                   bounces={true}
                   scrollEnabled={scrollEnabled}
                   onScroll={scrollHandler}
                   scrollEventThrottle={16}
+                  disallowInterruption={true}
                 >
                   <ActionPillBar actions={displayModel.actions} />
                   <MetricGrid metrics={displayModel.metrics} />

@@ -5,6 +5,7 @@ import {
   Dimensions,
   Keyboard,
   TextInput,
+  Platform,
 } from 'react-native';
 import { ScrollView, Pressable } from 'react-native-gesture-handler';
 import { Stack, useRouter } from 'expo-router';
@@ -371,7 +372,7 @@ export default function MapIndexPage() {
   const gesture = Gesture.Pan()
     .enabled(!selectedEvent && !selectedPoi) // DISABLE search gesture when details are open
     .activeOffsetY([-10, 10])
-    .failOffsetX([-20, 20])
+    .failOffsetX(Platform.OS === 'android' ? [-10, 10] : [-20, 20])
     .onStart(() => {
       isPanning.value = true;
       startState.value = islandState.value;
