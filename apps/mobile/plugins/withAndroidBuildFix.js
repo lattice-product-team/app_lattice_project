@@ -19,17 +19,24 @@ const withAndroidBuildFix = (config) => {
 
       // Attributes we want to ensure are in tools:replace
       const attributesToReplace = ['android:appComponentFactory', 'android:usesCleartextTraffic'];
-      
+
       const currentReplace = application.$['tools:replace'] || '';
-      let replaceArray = currentReplace ? currentReplace.split(',').map(s => s.trim()) : [];
-      
-      attributesToReplace.forEach(attr => {
+      let replaceArray = currentReplace ? currentReplace.split(',').map((s) => s.trim()) : [];
+
+      attributesToReplace.forEach((attr) => {
         if (!replaceArray.includes(attr)) {
           replaceArray.push(attr);
         }
       });
 
       application.$['tools:replace'] = replaceArray.join(',');
+
+      if (!application.$['android:appComponentFactory']) {
+        application.$['android:appComponentFactory'] = 'androidx.core.app.CoreComponentFactory';
+      }
+      if (!application.$['android:usesCleartextTraffic']) {
+        application.$['android:usesCleartextTraffic'] = 'true';
+      }
     }
 
     return config;

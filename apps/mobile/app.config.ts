@@ -63,11 +63,9 @@ if (!parsedEnv.success) {
 
 const env = parsedEnv.data;
 
-/**
- * Dynamic URL Resolution
- * Prioritizes Tunnel > LAN IP > Default Host
- */
 const resolveApiUrl = () => {
+  // Always use API_URL in production, ignore LAN_IP
+  if (process.env.NODE_ENV === 'production') return env.API_URL;
   if (env.TUNNEL_URL) return env.TUNNEL_URL;
   if (env.LAN_IP) return `http://${env.LAN_IP}:${env.GATEWAY_PORT}`;
   return env.API_URL;
@@ -80,6 +78,11 @@ const resolveValhallaUrl = () => {
 
 const API_URL = resolveApiUrl();
 const VALHALLA_URL = resolveValhallaUrl();
+
+console.log('------------------------------------');
+console.log(`🚀 [Config] Mode: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔗 [Config] API_URL: ${API_URL}`);
+console.log('------------------------------------');
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
