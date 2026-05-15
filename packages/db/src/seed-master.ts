@@ -11,6 +11,32 @@ import {
 } from './schema.js';
 import { seedCommon } from './seed-common.js';
 
+interface SeedPoi {
+  name: string;
+  type: string;
+  offset?: [number, number];
+  bannerUrl?: string;
+  galleryUrls?: string[];
+}
+
+interface SeedEvent {
+  name: string;
+  description: string;
+  type: string;
+  locationName: string;
+  address: string;
+  location: [number, number];
+  primaryColor: string;
+  bannerUrl: string;
+  galleryUrls: string[];
+  category: string;
+  pois: SeedPoi[];
+}
+
+interface SeedData {
+  events: SeedEvent[];
+}
+
 async function seed() {
   console.log('🚀 Starting Master Seed...');
 
@@ -30,7 +56,7 @@ async function seed() {
   const [koreUser] = await db.select().from(users).where(eq(users.email, 'kore@example.com'));
 
   // 3. Seed Rich Data
-  const seedData = (await import('./seed.json', { assert: { type: 'json' } })).default;
+  const seedData = (await import('./seed.json', { assert: { type: 'json' } })).default as SeedData;
   console.log(`📅 Creating ${seedData.events.length} events from seed.json...`);
 
   for (let i = 0; i < seedData.events.length; i++) {
