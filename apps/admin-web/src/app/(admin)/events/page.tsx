@@ -289,174 +289,190 @@ export default function EventsPage() {
       {/* Full-Screen Interface */}
       {/* --- LATTICE STUDIO: EVENT INTERFACE --- */}
       {isInterfaceOpen && (
-        <div className="fixed inset-0 z-[100] bg-background flex flex-col animate-in fade-in duration-300 w-screen h-screen transition-colors">
-          <div className="h-20 border-b border-border flex items-center justify-between px-12 shrink-0 bg-surface">
-            <div className="flex items-center gap-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gravel">
-                Lattice Studio
-              </span>
-              <div className="w-1 h-1 rounded-full bg-chalk" />
-              <h2 className="waldenburg-display text-admin-xl text-obsidian">
-                {editingEventId ? 'Configure Lifecycle' : 'Initialize Event'}
-              </h2>
+        <div className="fixed inset-0 z-[100] bg-background animate-in fade-in duration-300">
+          {/* Map Layer (Full Screen Background) */}
+          <div className="absolute inset-0">
+            <AdminMap
+              mode="DRAW_BOUNDARY"
+              boundaryPoints={boundaryPoints}
+              onBoundaryChange={setBoundaryPoints}
+              initialViewState={mapInitialView}
+              activeEventBoundary={activeEventBoundaryGeoJSON}
+            />
+
+
+            
+            {/* Map Interaction Controls */}
+            <div className="absolute top-32 left-10 z-[110] flex flex-col gap-3">
+              <div className="bg-surface/80 backdrop-blur-md border border-border/60 shadow-massive p-6 rounded-3xl max-w-[240px]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground mb-2">
+                  Boundary Definition
+                </p>
+                <p className="text-[11px] text-gravel leading-relaxed font-medium">
+                  Click on the map to draw the event perimeter.
+                </p>
+              </div>
+              {boundaryPoints.length > 0 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={undoLastPoint}
+                    className="flex-1 bg-surface/80 backdrop-blur-md border border-border/60 h-12 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-surface transition-all flex items-center justify-center gap-2"
+                  >
+                    <Icons.RefreshCw className="w-3.5 h-3.5" />
+                    Undo
+                  </button>
+                  <button
+                    onClick={clearBoundary}
+                    className="flex-1 bg-surface/80 backdrop-blur-md border border-ember/30 h-12 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-ember hover:bg-ember/5 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Icons.Trash className="w-3.5 h-3.5" />
+                    Clear
+                  </button>
+                </div>
+              )}
             </div>
-            <Button
-              variant="ghost"
-              className="rounded-full w-12 h-12 p-0 flex items-center justify-center border-chalk hover:border-obsidian"
+          </div>
+
+          {/* Floating Close Button */}
+          <div className="absolute top-10 left-10 z-[110]">
+            <Button 
+              variant="ghost" 
+              className="rounded-full w-14 h-14 p-0 flex items-center justify-center bg-surface border border-border hover:border-foreground shadow-massive transition-colors group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
               <Icons.X className="w-6 h-6 text-gravel group-hover/close:text-foreground transition-colors" />
             </Button>
           </div>
 
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-            {/* Left: Map */}
-            <div className="flex-1 bg-elevated/20 relative border-r border-border transition-colors">
-              <AdminMap
-                mode="DRAW_BOUNDARY"
-                boundaryPoints={boundaryPoints}
-                onBoundaryChange={setBoundaryPoints}
-                initialViewState={mapInitialView}
-                activeEventBoundary={activeEventBoundaryGeoJSON}
-              />
-              <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
-                <div className="bg-surface border-border shadow-massive max-w-[260px]">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-foreground mb-1.5">
-                    Boundary Definition
-                  </p>
-                  <p className="text-[11px] text-gravel leading-relaxed font-medium">
-                    Click on the map to draw the event perimeter.
-                  </p>
+          {/* Floating Studio Card */}
+          <div className="absolute right-12 top-12 bottom-12 w-[460px] bg-surface rounded-[48px] shadow-massive border border-border overflow-hidden flex flex-col z-[105] animate-in slide-in-from-right-8 duration-500">
+            
+            {/* Header */}
+            <div className="px-12 pt-12 pb-8 border-b border-border/40 shrink-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">Lattice Studio</p>
+              <h2 className="waldenburg-display text-admin-xl text-foreground">
+                {editingEventId ? 'Configure Lifecycle' : 'Initialize Event'}
+              </h2>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-scroll custom-scrollbar px-12 py-10 space-y-12">
+              
+              {/* Section 1: Definition */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Event Identity</p>
+                
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Event Name</label>
+                  <input
+                    placeholder="e.g. Primavera Sound 2026"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
+                  />
                 </div>
-                {boundaryPoints.length > 0 && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={undoLastPoint}
-                      className="bg-surface border border-border/60 px-4 py-2 text-[10px] font-medium uppercase tracking-widest text-foreground hover:bg-elevated transition-all"
-                    >
-                      Undo
-                    </button>
-                    <button
-                      onClick={clearBoundary}
-                      className="bg-surface border border-ember/30 px-4 py-2 text-[10px] font-medium uppercase tracking-widest text-ember hover:bg-ember/5 transition-all"
-                    >
-                      Clear
-                    </button>
+
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Venue Name</label>
+                  <input
+                    placeholder="e.g. Parc del Fòrum"
+                    value={locationName}
+                    onChange={(e) => setLocationName(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Address</label>
+                  <input
+                    placeholder="Street address..."
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
+                  />
+                </div>
+              </div>
+
+              {/* Section 2: Schedule */}
+              <div className="space-y-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Temporal Context</p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Start Date</label>
+                    <input
+                      type="datetime-local"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                    />
                   </div>
-                )}
+                  <div className="space-y-3">
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">End Date</label>
+                    <input
+                      type="datetime-local"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-colors font-medium rounded-2xl"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Boundary */}
+              <div className="space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Geospatial Perimeter</p>
+                <div className={`p-6 rounded-[2rem] border ${boundaryPoints.length > 2 ? 'bg-success/5 border-success/20' : 'border-dashed border-border'} flex flex-col items-center justify-center text-center gap-3`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${boundaryPoints.length > 2 ? 'bg-success text-white' : 'bg-elevated text-gravel/40'}`}>
+                    <Icons.Map className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${boundaryPoints.length > 2 ? 'text-success' : 'text-gravel/40'}`}>
+                      {boundaryPoints.length > 2 ? 'Boundary Defined' : 'No boundary defined'}
+                    </p>
+                    <p className="text-[9px] font-medium text-gravel/40 mt-1 uppercase tracking-tighter italic">
+                      {boundaryPoints.length > 2 ? `${boundaryPoints.length} control points synchronized` : 'Tap on the map to create points'}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Right: Form */}
-            <div className="w-full lg:w-[480px] bg-surface flex flex-col overflow-hidden transition-colors">
-              <div className="flex-1 overflow-y-auto px-10 py-10 custom-scrollbar">
-                <p className="text-[9px] font-medium uppercase tracking-[0.25em] text-gravel/50 mb-8">
-                  {editingEventId ? 'Edit Event' : 'New Event'}
+            {/* Footer */}
+            <div className="px-12 py-10 border-t border-border bg-surface flex flex-col gap-4 shrink-0">
+              {formError && (
+                <p className="text-[10px] font-semibold text-ember uppercase tracking-widest mb-2 px-2">
+                  {formError}
                 </p>
-
-                <div className="space-y-6">
-                  {/* Name */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                      Event Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Primavera Sound 2026"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
-                    />
-                  </div>
-
-                  {/* Dates */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                        Start
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-all font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                        End
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-xs text-foreground outline-none focus:border-foreground transition-all font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                      Venue Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Parc del Fòrum"
-                      value={locationName}
-                      onChange={(e) => setLocationName(e.target.value)}
-                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
-                    />
-                  </div>
-
-                  {/* Address */}
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-widest text-gravel mb-2">
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Street address..."
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full h-12 px-4 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-all font-medium uppercase tracking-tight"
-                    />
-                  </div>
-
-                  {/* Boundary status */}
-                  <div className="flex items-center gap-2 py-3 border-t border-chalk/50">
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${boundaryPoints.length > 2 ? 'bg-success' : 'bg-chalk'}`}
-                    />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gravel/60">
-                      {boundaryPoints.length > 2
-                        ? `Boundary set · ${boundaryPoints.length} points`
-                        : 'No boundary defined'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer actions */}
-              <div className="px-10 py-8 border-t border-border bg-surface flex flex-col gap-4">
-                {formError && (
-                  <p className="text-[10px] font-medium text-ember uppercase tracking-widest mb-2">
-                    {formError}
-                  </p>
-                )}
-                <button
+              )}
+              
+              <div className="flex flex-col gap-3">
+                <button 
                   onClick={handleCreateEvent}
                   disabled={isSubmitting}
                   className="w-full h-16 rounded-full bg-foreground text-background text-[12px] font-black uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all shadow-massive disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : editingEventId ? 'Save Changes' : 'Create Event'}
+                  {isSubmitting ? 'Syncing...' : (editingEventId ? 'Update Event' : 'Confirm Event')}
                 </button>
-                <button
-                  onClick={() => setIsInterfaceOpen(false)}
-                  className="w-full h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-gravel hover:text-foreground transition-colors bg-elevated/40 border border-border"
-                >
-                  Cancel
-                </button>
+
+                <div className="flex gap-3">
+                  <button
+                    className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-gravel hover:text-foreground transition-colors bg-elevated/40 border border-border"
+                    onClick={() => setIsInterfaceOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  
+                  {editingEventId && (
+                    <button
+                      onClick={() => handleDeleteEvent(editingEventId)}
+                      className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 flex items-center justify-center gap-2"
+                    >
+                      <Icons.Trash className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -503,21 +519,21 @@ export default function EventsPage() {
                     <ListBox.Item
                       id="all"
                       textValue="All Schedules"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       All Schedules
                     </ListBox.Item>
                     <ListBox.Item
                       id="active"
                       textValue="Live & Upcoming"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       Live & Upcoming
                     </ListBox.Item>
                     <ListBox.Item
                       id="past"
                       textValue="Past Events"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       Past Events
                     </ListBox.Item>
@@ -541,28 +557,28 @@ export default function EventsPage() {
                     <ListBox.Item
                       id="all"
                       textValue="All Scales"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       All Scales
                     </ListBox.Item>
                     <ListBox.Item
                       id="massive"
                       textValue="Massive (>10k)"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       Massive (&gt;10k)
                     </ListBox.Item>
                     <ListBox.Item
                       id="medium"
                       textValue="Medium (1k-10k)"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       Medium (1k-10k)
                     </ListBox.Item>
                     <ListBox.Item
                       id="boutique"
                       textValue="Boutique (<1k)"
-                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-powder hover:text-obsidian cursor-pointer outline-none data-[selected=true]:bg-obsidian data-[selected=true]:text-white text-center"
+                      className="flex items-center px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
                     >
                       Boutique (&lt;1k)
                     </ListBox.Item>
@@ -591,13 +607,25 @@ export default function EventsPage() {
                 </Button>
               </div>
             )}
+
+            {/* Create Button — Now integrated into the filters row */}
+            <div className="px-6 py-4 shrink-0 ml-auto border-l border-border/60 flex items-center">
+              <Button 
+                variant="primary" 
+                onClick={handleOpenCreate} 
+                className="h-10 px-8 text-[11px] font-bold uppercase tracking-[0.15em] shadow-massive"
+              >
+                <Icons.Plus className="w-4 h-4 mr-2" />
+                Create
+              </Button>
+            </div>
           </div>
         </div>
 
         <div className="admin-table-container transition-colors">
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
-              <tr className="border-b border-chalk bg-powder/20">
+              <tr className="border-b border-border bg-elevated/20">
                 <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
                   ID
                 </th>
@@ -663,7 +691,7 @@ export default function EventsPage() {
                         EVT-{event.id.toString().padStart(3, '0')}
                       </td>
                       <td className="py-6 px-6">
-                        <span className="font-bold text-obsidian text-admin-base uppercase tracking-tight">
+                        <span className="font-bold text-foreground text-admin-base uppercase tracking-tight">
                           {event.name}
                         </span>
                       </td>
@@ -671,7 +699,7 @@ export default function EventsPage() {
                         {social ? (
                           <div className="flex items-center gap-2">
                             <Icons.Star className="w-3 h-3 text-amber fill-amber" />
-                            <span className="text-admin-sm font-black text-obsidian">
+                            <span className="text-admin-sm font-black text-foreground">
                               {social.rating}
                             </span>
                           </div>
@@ -688,7 +716,7 @@ export default function EventsPage() {
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex flex-col text-[11px] font-medium text-gravel uppercase tracking-wider">
-                          <span className="text-obsidian">
+                          <span className="text-foreground">
                             {start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </span>
                           <span className="opacity-50 text-[9px]">
@@ -698,13 +726,13 @@ export default function EventsPage() {
                       </td>
                       <td className="py-6 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-16 h-1 bg-chalk rounded-full overflow-hidden">
+                          <div className="w-16 h-1 bg-border rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-obsidian"
+                              className="h-full bg-foreground"
                               style={{ width: `${metadata?.currentOccupancy || 0}%` }}
                             />
                           </div>
-                          <span className="text-[10px] font-black text-obsidian">
+                          <span className="text-[10px] font-black text-foreground">
                             {metadata?.currentOccupancy || 0}%
                           </span>
                         </div>
@@ -712,12 +740,12 @@ export default function EventsPage() {
                       <td className="py-6 px-6 text-admin-xs text-gravel font-medium uppercase tracking-tight truncate max-w-[150px]">
                         {event.locationName}
                       </td>
-                      <td className="py-6 px-6 font-mono text-admin-sm text-obsidian font-bold">
+                      <td className="py-6 px-6 font-mono text-admin-sm text-foreground font-bold">
                         {metadata?.capacity?.toLocaleString() || '—'}
                       </td>
                       <td className="py-6 px-6">
                         <span
-                          className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 ${isActive ? 'bg-signal-blue text-white' : 'bg-chalk text-gravel opacity-50'}`}
+                          className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 ${isActive ? 'bg-signal-blue text-white' : 'bg-elevated text-gravel opacity-50'}`}
                         >
                           {isActive ? 'Active' : 'Past'}
                         </span>

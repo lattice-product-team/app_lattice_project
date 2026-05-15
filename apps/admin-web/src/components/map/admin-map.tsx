@@ -571,7 +571,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                   strokeWidth: 2.5
                 })}
               </div>
-              <div className="mt-2 bg-white px-3 py-1 rounded-full shadow-lg border border-border">
+              <div className="mt-2 bg-surface px-3 py-1 rounded-full shadow-lg border border-border transition-colors">
                 <span className="text-[8px] font-black uppercase tracking-widest text-foreground">Drag to adjust</span>
               </div>
             </div>

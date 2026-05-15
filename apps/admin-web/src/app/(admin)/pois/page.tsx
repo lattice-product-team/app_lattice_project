@@ -707,11 +707,11 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                           <button
                             className={`min-w-[110px] h-9 px-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] border transition-all shadow-subtle flex items-center justify-center gap-2.5
                               ${status === 'open' 
-                                ? 'bg-white border-border text-foreground hover:shadow-massive hover:border-foreground/20' 
+                                ? 'bg-surface border-border text-foreground hover:shadow-massive hover:border-foreground/20' 
                                 : status === 'maintenance'
-                                ? 'bg-white border-ember/20 text-ember hover:shadow-massive hover:border-ember/40'
+                                ? 'bg-surface border-ember/20 text-ember hover:shadow-massive hover:border-ember/40'
                                 : 'bg-elevated/40 border-border/40 text-gravel opacity-60'
-                              }`}
+                              } transition-colors`}
                           >
                             <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${status === 'open' ? 'bg-success' : status === 'maintenance' ? 'bg-ember' : 'bg-gravel'}`} />
                             {status}
