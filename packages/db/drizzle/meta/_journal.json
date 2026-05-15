@@ -78,6 +78,13 @@
       "when": 1778747690997,
       "tag": "0009_stale_starjammers",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1778850839831,
+      "tag": "0010_fair_the_fury",
+      "breakpoints": true
     }
   ]
 }

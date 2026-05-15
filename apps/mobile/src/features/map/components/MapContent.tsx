@@ -212,7 +212,7 @@ export const MapContent = function MapContent({
             category: poi.category,
             color: poi.mainColor,
             imageKey: poi.imageKey,
-            imageUrl: poi.images?.[0],
+            bannerUrl: (poi.raw as any)?.bannerUrl,
             raw: poi.raw,
           },
         });
@@ -326,18 +326,15 @@ export const MapContent = function MapContent({
     // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
     // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
     const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
-      const isNativePOI =
-        layer.id.includes('poi') ||
-        layer.id.includes('place') ||
-        layer.id.includes('label') ||
-        layer.id.includes('transit') ||
-        layer.id.includes('transport') ||
-        layer.id.includes('station') ||
-        layer.id.includes('rail') ||
-        layer.id.includes('building-number') ||
-        layer.id.includes('infrastructure');
+      // Robust approach: Hide most symbol/label layers except essential geographical names
+      const isSymbolLayer = layer.type === 'symbol';
+      const isEssentialLabel = 
+        layer.id.includes('place_label') || 
+        layer.id.includes('road_label') || 
+        layer.id.includes('water_label') ||
+        layer.id.includes('country_label');
 
-      if (isNativePOI) {
+      if (isSymbolLayer && !isEssentialLabel) {
         return {
           ...layer,
           layout: {

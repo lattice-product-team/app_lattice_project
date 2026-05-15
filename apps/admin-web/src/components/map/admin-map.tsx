@@ -347,26 +347,50 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     } as any;
   }, [events, selectedAssetId]);
 
-  const handleMapLoad = useCallback((e: any) => {
-    const map = e.target;
+  const applyLayerFiltering = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    
     const style = map.getStyle();
     if (!style || !style.layers) return;
 
     style.layers.forEach((layer: any) => {
-      const isNativePOI =
-        layer.id.includes('poi') ||
-        layer.id.includes('place') ||
-        layer.id.includes('transit') ||
-        layer.id.includes('transport') ||
-        layer.id.includes('station') ||
-        layer.id.includes('rail') ||
-        layer.id.includes('infrastructure');
+      // Robust approach: Hide most symbol/label layers except essential geographical names
+      const isSymbolLayer = layer.type === 'symbol';
+      const isEssentialLabel = 
+        layer.id.includes('place_label') || 
+        layer.id.includes('road_label') || 
+        layer.id.includes('water_label') ||
+        layer.id.includes('country_label');
 
-      if (isNativePOI) {
+      if (isSymbolLayer && !isEssentialLabel) {
         map.setLayoutProperty(layer.id, 'visibility', 'none');
       }
     });
   }, []);
+
+  // Apply filtering on load and when style changes
+  React.useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    if (map.isStyleLoaded()) {
+      applyLayerFiltering();
+    }
+
+    const onStyleData = () => {
+      applyLayerFiltering();
+    };
+
+    map.on('styledata', onStyleData);
+    return () => {
+      map.off('styledata', onStyleData);
+    };
+  }, [mapStyle, applyLayerFiltering]);
+
+  const handleMapLoad = useCallback((e: any) => {
+    applyLayerFiltering();
+  }, [applyLayerFiltering]);
 
   return (
     <div className="w-full h-full relative">

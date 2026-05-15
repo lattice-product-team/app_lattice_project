@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { useEvents, API_BASE } from '@/hooks/use-admin-data';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) => mod.AdminMap), {
   ssr: false,
@@ -26,6 +25,9 @@ export default function EventsPage() {
 
   // Interface State
   const [isInterfaceOpen, setIsInterfaceOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<Selection>(new Set(['all']));
+  const [capacityFilter, setCapacityFilter] = useState<Selection>(new Set(['all']));
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [eventToDeleteId, setEventToDeleteId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,11 +41,7 @@ export default function EventsPage() {
   });
 
   const [syncingIds, setSyncingIds] = useState<Set<number>>(new Set());
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [eventToDeleteId, setEventToDeleteId] = useState<number | null>(null);
 
-  const clearBoundary = () => setBoundaryPoints([]);
-  const undoLastPoint = () => setBoundaryPoints((prev) => prev.slice(0, -1));
 
   const handleDeleteEvent = async (id?: number) => {
     const targetId = id || eventToDeleteId;
@@ -192,35 +190,6 @@ export default function EventsPage() {
     setIsInterfaceOpen(true);
   };
 
-  const handleDeleteEvent = async (id?: number) => {
-    if (id) {
-      setEventToDeleteId(id);
-      setIsDeleteModalOpen(true);
-      return;
-    }
-
-    if (!eventToDeleteId) return;
-
-    try {
-      setIsSubmitting(true);
-      const res = await fetch(`${API_BASE}/events/${eventToDeleteId}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to delete event');
-      }
-
-      await refetch();
-      setIsDeleteModalOpen(false);
-      setEventToDeleteId(null);
-    } catch (err) {
-      console.error('Delete error:', err);
-      setFormError('Failed to delete event. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleCreateEvent = async () => {
     if (!name || !startDate || !endDate || !locationName || !address) {

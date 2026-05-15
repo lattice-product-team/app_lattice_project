@@ -75,7 +75,6 @@ export const events = pgTable('events', {
   locationName: varchar('location_name'),
   address: text('address'),
   boundary: polygon('boundary'),
-  imageUrl: text('image_url'),
   startDate: timestamp('start_date').notNull(),
   endDate: timestamp('end_date').notNull(),
   isPermanent: boolean('is_permanent').default(false),
@@ -152,7 +151,6 @@ export const pointsOfInterest = pgTable('points_of_interest', {
   hasPriorityLane: boolean('has_priority_lane'),
   isFeatured: boolean('is_featured').default(false),
   isTrending: boolean('is_trending').default(false),
-  imageUrl: text('image_url'),
   bannerUrl: text('banner_url'),
   galleryUrls: jsonb('gallery_urls').default([]),
 });

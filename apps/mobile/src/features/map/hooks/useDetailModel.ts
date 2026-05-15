@@ -112,7 +112,6 @@ export const useDetailModel = (): DetailModel | null => {
         description:
           (data as any).description ||
           'Explore this event and discover unique experiences in the city.',
-        imageUrl: data.imageUrl || (data as any).images?.[0],
         bannerUrl: (data as any).bannerUrl,
         galleryUrls: (data as any).galleryUrls || [],
         logoUrl: (data as any).logoUrl,
@@ -189,13 +188,6 @@ export const useDetailModel = (): DetailModel | null => {
             },
           },
           {
-            id: 'offline',
-            label: 'Offline',
-            icon: 'DownloadIcon',
-            variant: 'subdued',
-            onPress: () => console.log('DownloadIcon offline'),
-          },
-          {
             id: 'website',
             label: 'Website',
             icon: 'GlobeIcon',
@@ -243,7 +235,6 @@ export const useDetailModel = (): DetailModel | null => {
         name: selectedPoi.displayName,
         subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
-        imageUrl: selectedPoi.imageUrl || selectedPoi.images?.[0],
         bannerUrl: (selectedPoi as any).bannerUrl,
         galleryUrls: (selectedPoi as any).galleryUrls || [],
         categoryIcon: catMetadata.icon,
@@ -328,13 +319,6 @@ export const useDetailModel = (): DetailModel | null => {
                 Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
               }
             },
-          },
-          {
-            id: 'offline',
-            label: 'Offline',
-            icon: 'DownloadIcon',
-            variant: 'subdued',
-            onPress: () => {},
           },
           {
             id: 'website',

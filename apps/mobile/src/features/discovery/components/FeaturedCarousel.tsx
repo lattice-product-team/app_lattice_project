@@ -35,7 +35,7 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
             className="rounded-[32px] overflow-hidden"
           >
             <Image
-              source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
+              source={{ uri: event.bannerUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
               style={{ width: '100%', height: '100%' }}
               contentFit="cover"
               transition={200}

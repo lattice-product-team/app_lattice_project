@@ -52,7 +52,8 @@ export interface LatticeEvent {
   name: string;
   type: EventType;
   locationName?: string;
-  imageUrl?: string;
+  bannerUrl?: string;
+  galleryUrls?: string[];
   startDate?: string;
   endDate?: string;
   metadata?: any;

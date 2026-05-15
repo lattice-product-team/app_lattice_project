@@ -57,8 +57,8 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     iconFamily: 'material' as const,
     mainColor: color,
     coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
-    images: event.imageUrl ? [event.imageUrl] : [],
-    imageKey: event.imageUrl ? `event-img-${id}` : 'placeholder-event',
+    images: event.bannerUrl ? [event.bannerUrl] : [],
+    imageKey: event.bannerUrl ? `event-img-${id}` : 'placeholder-event',
     raw: event,
   };
 };
