@@ -9,6 +9,7 @@ import { StandardUIPOI as UIPOI } from '../../../types/models/poi';
 import * as Haptics from 'expo-haptics';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
+import { useMapUIStore } from '../store/useMapUIStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
@@ -38,7 +39,11 @@ interface POICarouselCardProps {
 
 const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
   const theme = useLatticeTheme();
-  const userCoords = useLocationStore((s) => s.logicalCoords);
+  const logicalCoords = useLocationStore((s) => s.logicalCoords);
+  const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
+  
+  const userCoords = discoveryLocation || logicalCoords;
+
   const metadata = getCategoryMetadata(poi.category);
   const CategoryIcon = metadata.icon;
   const imageUrl =
@@ -137,7 +142,10 @@ interface POICarouselProps {
 
 export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
   const theme = useLatticeTheme();
-  const userCoords = useLocationStore((s) => s.logicalCoords);
+  const logicalCoords = useLocationStore((s) => s.logicalCoords);
+  const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
+  
+  const userCoords = discoveryLocation || logicalCoords;
 
   const sortedPois = useMemo(() => {
     if (!userCoords || !pois) return pois;

@@ -14,6 +14,7 @@ import {
 import { useNavigationStore } from '../../features/navigation/store/useNavigationStore';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 /**
  * InstructionBanner: Top-mounted banner for turn-by-turn navigation instructions.
@@ -23,6 +24,7 @@ export const InstructionBanner = () => {
   const nextInstruction = useNavigationStore((state) => state.nextInstruction);
   const isNavigating = useNavigationStore((state) => state.isNavigating);
   const insets = useSafeAreaInsets();
+  const theme = useAppTheme();
 
   if (!isNavigating) return null;
 
@@ -30,7 +32,11 @@ export const InstructionBanner = () => {
 
   // Helper to get the correct icon based on maneuver text
   const renderIcon = () => {
-    const iconProps = { size: 42, color: '#FFFFFF', strokeWidth: 2.5 };
+    const iconProps = { 
+      size: 42, 
+      color: theme.dark ? '#FFFFFF' : theme.colors.text.primary, 
+      strokeWidth: 2.5 
+    };
 
     const instructionStr = text?.toLowerCase() || '';
     if (instructionStr.includes('left')) return <CornerUpLeft {...iconProps} />;
@@ -56,8 +62,9 @@ export const InstructionBanner = () => {
         style={[
           styles.container,
           {
-            backgroundColor: 'rgba(28, 28, 30, 0.95)',
-            borderColor: 'rgba(255, 255, 255, 0.15)',
+            backgroundColor: theme.colors.glass.background,
+            borderColor: theme.colors.glass.border,
+            ...(theme.dark ? {} : { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 })
           },
         ]}
       >
@@ -65,16 +72,23 @@ export const InstructionBanner = () => {
           <>
             <View style={styles.iconContainer}>{renderIcon()}</View>
             <View style={styles.textContainer}>
-              <Text style={styles.distanceText}>{formatDistance(distance)}</Text>
-              <Text style={styles.instructionText} numberOfLines={2}>
+              <Text style={[styles.distanceText, { color: theme.dark ? '#FFFFFF' : theme.colors.text.primary }]}>
+                {formatDistance(distance)}
+              </Text>
+              <Text 
+                style={[styles.instructionText, { color: theme.dark ? 'rgba(255, 255, 255, 0.8)' : theme.colors.text.secondary }]} 
+                numberOfLines={2}
+              >
                 {text}
               </Text>
             </View>
           </>
         ) : (
           <View style={styles.loadingContainer}>
-            <Loader2 size={24} color="#FFFFFF" style={styles.loader} />
-            <Text style={styles.loadingText}>Calculating next move...</Text>
+            <Loader2 size={24} color={theme.dark ? '#FFFFFF' : theme.colors.text.primary} style={styles.loader} />
+            <Text style={[styles.loadingText, { color: theme.dark ? '#FFFFFF' : theme.colors.text.primary }]}>
+              Calculating next move...
+            </Text>
           </View>
         )}
       </View>

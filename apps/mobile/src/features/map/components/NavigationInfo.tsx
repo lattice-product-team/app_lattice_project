@@ -9,6 +9,8 @@ import Animated, { FadeInDown, FadeOutDown, FadeIn, FadeOut } from 'react-native
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
+import { typography } from '../../../styles/typography';
+import { Button } from '../../../components/ui/Button';
 
 /**
  * NavigationInfo: Bottom arrival summary sheet.
@@ -69,27 +71,30 @@ export const NavigationInfo = () => {
     >
       {cameraMode === MapCameraMode.FREE && (
         <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.recenterContainer}>
-          <Pressable
+          <Button
             onPress={handleRecenter}
-            style={({ pressed }) => [
-              styles.recenterButton,
-              {
-                backgroundColor: theme.colors.glass.background,
-                borderColor: theme.colors.glass.border,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <Navigation
-              size={18}
-              color={theme.colors.brand.primary}
-              strokeWidth={2.5}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={[styles.recenterText, { color: theme.colors.brand.primary }]}>
-              Re-center
-            </Text>
-          </Pressable>
+            label="VOLVER"
+            leftIcon={
+              <Navigation
+                size={16}
+                color={theme.colors.brand.primary}
+                strokeWidth={3}
+              />
+            }
+            style={{
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border,
+              borderWidth: 1.5,
+              height: 40,
+              borderRadius: 20,
+              paddingHorizontal: 16,
+            }}
+            labelStyle={{
+              color: theme.colors.brand.primary,
+              fontSize: 12,
+              letterSpacing: 1,
+            }}
+          />
         </Animated.View>
       )}
 
@@ -113,15 +118,21 @@ export const NavigationInfo = () => {
             </Text>
           </View>
 
-          <Pressable
+          <Button
             onPress={handleCancel}
-            style={({ pressed }) => [
-              styles.exitButton,
-              { opacity: pressed ? 0.8 : 1 },
-            ]}
-          >
-            <Text style={styles.exitText}>Exit</Text>
-          </Pressable>
+            label="SALIR"
+            style={{ 
+              backgroundColor: '#FF3B30',
+              height: 48,
+              borderRadius: 24,
+              minWidth: 100,
+              marginLeft: 16
+            }}
+            labelStyle={{ 
+              fontSize: 14,
+              letterSpacing: 1,
+            }}
+          />
         </View>
       </View>
     </Animated.View>
@@ -143,9 +154,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    borderWidth: 1,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    borderWidth: 1.5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -153,9 +164,10 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   recenterText: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: -0.3,
+    fontSize: 14,
+    fontFamily: typography.primary.bold,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   card: {
     borderRadius: 32,
@@ -199,21 +211,21 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   exitButton: {
-    backgroundColor: '#E53935', // Google Maps style red
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 30,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
     marginLeft: 16,
-    shadowColor: '#E53935',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 4,
   },
   exitText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: -0.3,
+    fontSize: 13,
+    fontFamily: typography.primary.bold,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
 });

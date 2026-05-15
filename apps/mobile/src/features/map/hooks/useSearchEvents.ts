@@ -23,6 +23,7 @@ export const useSearchEvents = (query: string) => {
   } = useQuery({
     queryKey: ['events-search', ''], // Static key for pre-fetching
     queryFn: () => geoService.getEvents(),
+    placeholderData: (previousData) => previousData,
   });
 
   const filteredEvents = useMemo(() => {

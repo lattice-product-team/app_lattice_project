@@ -16,5 +16,6 @@ export const usePOIs = (category?: string, eventId?: number) => {
         throw error;
       }
     },
+    placeholderData: (previousData) => previousData,
   });
 };

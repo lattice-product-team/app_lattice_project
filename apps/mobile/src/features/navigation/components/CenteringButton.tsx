@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet, Pressable } from 'react-native';
+import { Text, StyleSheet, Pressable, View } from 'react-native';
 import { Navigation } from 'lucide-react-native';
 import Animated, { FadeInRight, FadeOutRight, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { useMapUIStore } from '../../map/store/useMapUIStore';
 import { useNavigationStore } from '../store/useNavigationStore';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { Button } from '../../../components/ui/Button';
 
 /**
  * CenteringButton: Appears only during navigation when the user has manually
@@ -43,24 +44,22 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
     <Animated.View
       style={[styles.container, { bottom: insets.bottom + 160 }, rStyle]}
     >
-      <Pressable
+      <Button
         onPress={handleCenter}
-        style={({ pressed }) => [
-          styles.button,
-          {
-            backgroundColor: theme.colors.brand.primary,
-            opacity: pressed ? 0.9 : 1,
-            shadowColor: theme.colors.brand.primary,
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.4,
-            shadowRadius: 10,
-            elevation: 10,
-          },
-        ]}
-      >
-        <Navigation size={22} color="#000000" strokeWidth={2.5} />
-        <Text style={[styles.text, { color: '#000000' }]}>CENTRAR</Text>
-      </Pressable>
+        label="VOLVER"
+        leftIcon={<Navigation size={18} color="#000000" strokeWidth={3} />}
+        style={{
+          backgroundColor: theme.colors.brand.primary,
+          height: 44,
+          borderRadius: 22,
+          paddingHorizontal: 20,
+        }}
+        labelStyle={{
+          color: '#000000',
+          fontSize: 13,
+          letterSpacing: 1,
+        }}
+      />
     </Animated.View>
   );
 };
@@ -74,15 +73,15 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 30,
     gap: 8,
   },
   text: {
-    color: 'white',
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: typography.primary.bold,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
 });

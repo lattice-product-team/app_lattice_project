@@ -95,6 +95,8 @@ export default function MapIndexPage() {
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
   const cameraMode = useMapUIStore((state) => state.cameraMode);
+  const lastCameraPosition = useMapUIStore((state) => state.lastCameraPosition);
+  const setDiscoveryLocation = useMapUIStore((state) => state.setDiscoveryLocation);
   const isInitialLoadComplete = useMapUIStore((state) => state.isInitialLoadComplete);
   const { isConnected } = useSocket();
 
@@ -613,6 +615,13 @@ export default function MapIndexPage() {
       const velocity = e.velocityX / 96;
       const target = toggleDrag.value + velocity * 0.15 > 0.5 ? 1 : 0;
 
+      // Lock discovery location if entering Explore, clear if returning to Map
+      if (target === 0 && lastCameraPosition?.center) {
+        runOnJS(setDiscoveryLocation)(lastCameraPosition.center);
+      } else if (target === 1) {
+        runOnJS(setDiscoveryLocation)(null);
+      }
+
       // 1. Snap the toggle indicator
       toggleDrag.value = withSpring(target, theme.motion.physics.magnetic);
 
@@ -758,6 +767,13 @@ export default function MapIndexPage() {
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               const nextMode = toggleDrag.value > 0.5 ? 0 : 1;
+              
+              if (nextMode === 0 && lastCameraPosition?.center) {
+                setDiscoveryLocation(lastCameraPosition.center);
+              } else if (nextMode === 1) {
+                setDiscoveryLocation(null);
+              }
+
               toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
               screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
               setActiveMode(nextMode);

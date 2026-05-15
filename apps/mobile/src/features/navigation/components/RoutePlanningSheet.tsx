@@ -70,9 +70,10 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   });
 
   const formatEta = (seconds: number | null | undefined, mode?: string) => {
-    if (isFetching) return 'Calculating...';
-    if (mode && !metadata[mode]) return 'Not available';
-    if (seconds === null || seconds === undefined || seconds === 0) return 'Tap to refresh';
+    const hasValue = seconds !== null && seconds !== undefined && seconds !== 0;
+    if (isFetching && !hasValue) return 'Calculating...';
+    if (mode && !metadata[mode] && !isFetching) return 'Not available';
+    if (!hasValue) return isFetching ? 'Calculating...' : 'Tap to refresh';
     const mins = Math.round(seconds / 60);
     if (mins >= 60) {
       const h = Math.floor(mins / 60);
@@ -87,8 +88,8 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
     startNavigation();
   };
 
-  const activeDuration = isFetching ? null : (metadata[transportMode]?.duration || routeMetadata?.duration);
-  const activeDistance = isFetching ? null : (metadata[transportMode]?.distance || routeMetadata?.distance);
+  const activeDuration = metadata[transportMode]?.duration || routeMetadata?.duration;
+  const activeDistance = metadata[transportMode]?.distance || routeMetadata?.distance;
   const hasRoute = !!(metadata[transportMode] || routeMetadata);
 
   return (

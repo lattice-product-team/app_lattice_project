@@ -23,6 +23,7 @@ interface MapUIStore {
     zoom: number;
     pitch: number;
   } | null;
+  discoveryLocation: [number, number] | null;
 
   // Actions
   setUIState: (state: MapUIState) => void;
@@ -31,6 +32,7 @@ interface MapUIStore {
   triggerForceCenter: () => void;
   setInitialLoadComplete: (isComplete: boolean) => void;
   setLastCameraPosition: (pos: { center: [number, number]; zoom: number; pitch: number }) => void;
+  setDiscoveryLocation: (loc: [number, number] | null) => void;
 }
 
 /**
@@ -43,6 +45,7 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   forceCenterCount: 0,
   isInitialLoadComplete: false,
   lastCameraPosition: null,
+  discoveryLocation: null,
 
   setUIState: (uiState) => set({ uiState }),
 
@@ -62,4 +65,6 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   setInitialLoadComplete: (isInitialLoadComplete) => set({ isInitialLoadComplete }),
 
   setLastCameraPosition: (lastCameraPosition) => set({ lastCameraPosition }),
+
+  setDiscoveryLocation: (discoveryLocation) => set({ discoveryLocation }),
 }));

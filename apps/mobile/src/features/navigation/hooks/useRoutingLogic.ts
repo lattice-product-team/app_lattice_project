@@ -95,7 +95,10 @@ export const useRoutingLogic = () => {
       }
 
       console.log(`[Logic] 🛰 Fetching routes for: ${destinationName} (Remote: ${isRemote}, Mode: ${isPlanning ? 'Planning' : 'Navigating'})`);
-      if (isPlanning) setFetching(true);
+      const currentStore = useNavigationStore.getState();
+      const hasAnyRoute = !!(currentStore.metadata.driving || currentStore.metadata.walking || currentStore.metadata.bicycle);
+
+      if (isPlanning && !hasAnyRoute) setFetching(true);
       isFetchingRef.current = true;
       lastDestinationId.current = destId as string;
 
