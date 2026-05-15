@@ -61,15 +61,19 @@ export const useLocationService = (): LocationState => {
   }, [status, setStoreStatus, requestPermission]);
 
   useEffect(() => {
-    let subscription: Location.LocationSubscription | null = null;
+    let positionSubscription: Location.LocationSubscription | null = null;
+    let headingSubscription: Location.LocationSubscription | null = null;
 
     if (status === 'granted') {
       (async () => {
         try {
+          console.log('[LocationService] Starting tracking...');
+
           // 1. Try to get last known position first (fastest)
           try {
             const lastKnown = await Location.getLastKnownPositionAsync().catch(() => null);
             if (lastKnown) {
+              console.log('[LocationService] Last known position:', lastKnown.coords.longitude, lastKnown.coords.latitude);
               updateLocation(lastKnown.coords.longitude, lastKnown.coords.latitude);
             }
           } catch {
@@ -82,31 +86,41 @@ export const useLocationService = (): LocationState => {
           }).catch(() => null);
 
           if (initial) {
+            console.log('[LocationService] Initial position:', initial.coords.longitude, initial.coords.latitude);
             updateLocation(initial.coords.longitude, initial.coords.latitude);
           }
 
           // 3. Start watching for changes with dynamic accuracy
-          // If navigating/planning, use High accuracy. Otherwise, Balanced to save battery.
           const isActiveMode = isNavigating || isPlanning;
 
-          subscription = await Location.watchPositionAsync(
+          positionSubscription = await Location.watchPositionAsync(
             {
-              accuracy: isActiveMode ? Location.Accuracy.High : Location.Accuracy.Balanced,
-              timeInterval: isActiveMode ? 2000 : 5000,
-              distanceInterval: isActiveMode ? 5 : 20,
+              accuracy: isActiveMode ? Location.Accuracy.BestForNavigation : Location.Accuracy.High,
+              timeInterval: isActiveMode ? 1000 : 3000,
+              distanceInterval: isActiveMode ? 1 : 5,
             },
             (location) => {
+              // console.log('[LocationService] Update:', location.coords.longitude, location.coords.latitude);
               updateLocation(location.coords.longitude, location.coords.latitude);
             }
           );
+
+          // 4. Start watching for heading (compass)
+          headingSubscription = await Location.watchHeadingAsync((heading) => {
+            useLocationStore.getState().setHeading(heading.trueHeading);
+          });
+
+          console.log('[LocationService] Subscriptions active');
         } catch (err) {
-          console.warn('Location tracking failed to start:', err);
+          console.warn('[LocationService] Tracking failed to start:', err);
         }
       })();
     }
 
     return () => {
-      subscription?.remove();
+      console.log('[LocationService] Cleaning up subscriptions');
+      positionSubscription?.remove();
+      headingSubscription?.remove();
     };
   }, [status, isNavigating, isPlanning]); // Restart tracking when mode changes to apply new accuracy settings
 

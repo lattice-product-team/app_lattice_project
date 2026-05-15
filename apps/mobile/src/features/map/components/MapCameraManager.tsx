@@ -75,11 +75,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
   }, [userCoords, lastCameraPosition]);
 
+  const lastFocusedPoiRef = React.useRef<string | null>(null);
+  const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
+  const lastProcessedRecenterRef = React.useRef(recenterCount);
+
   // Recenter on user (manual trigger)
   useEffect(() => {
-    if (recenterCount > 0 && cameraRef.current && userCoords) {
-      // We DON'T set cameraMode to FOLLOW here anymore.
-      // It stays in FREE (set by triggerRecenter action)
+    if (recenterCount > lastProcessedRecenterRef.current && cameraRef.current && userCoords) {
+      lastProcessedRecenterRef.current = recenterCount;
+      
       cameraRef.current.setCamera({
         centerCoordinate: userCoords,
         zoomLevel: DEFAULT_ZOOM,
@@ -88,12 +92,20 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         pitch: is3DActive ? 60 : 0,
         padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
       });
-    }
-  }, [recenterCount, userCoords]); // Removed is3DActive to prevent re-centering when toggling 3D
 
-  // Focus on selected POI
-  const lastFocusedPoiRef = React.useRef<string | null>(null);
-  const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
+      // CRITICAL FIX: After the animation finishes, clear the padding/goal.
+      // This "unblocks" the Android camera engine so the user can zoom/pan freely.
+      const timer = setTimeout(() => {
+        if (cameraRef.current) {
+          cameraRef.current.setCamera({
+            padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+            animationDuration: 0,
+          });
+        }
+      }, 1100);
+      return () => clearTimeout(timer);
+    }
+  }, [recenterCount, userCoords, is3DActive]); // Added is3DActive to dependencies so it respects current 3D state when centering
 
   useEffect(() => {
     const now = Date.now();
@@ -132,6 +144,17 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           paddingRight: 20,
         },
       });
+
+      // Clear goal after animation to unblock manual interaction
+      const timer = setTimeout(() => {
+        if (cameraRef.current) {
+          cameraRef.current.setCamera({
+            padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+            animationDuration: 0,
+          });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
     } else if (!selectedCoords) {
       // CRITICAL FIX: When deselected, explicitly clear the goal by calling setCamera 
       // with no padding. This "unblocks" the Android camera engine for POIs too.
@@ -210,6 +233,17 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             paddingRight: 40,
           },
         });
+
+        // Clear goal after animation to unblock manual interaction
+        const timer = setTimeout(() => {
+          if (cameraRef.current) {
+            cameraRef.current.setCamera({
+              padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+              animationDuration: 0,
+            });
+          }
+        }, 1300);
+        return () => clearTimeout(timer);
       }
     } else if (!selectedEvent) {
       // CRITICAL FIX: When deselected, explicitly clear the goal by calling setCamera 

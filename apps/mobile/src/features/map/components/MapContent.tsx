@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import { StyleSheet, View, Dimensions, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -50,6 +50,7 @@ export const MapContent = function MapContent({
   const mapRef = useRef<any>(null);
   const theme = useLatticeTheme();
   const hasInitialRendered = React.useRef(false);
+  const [userHeading, setUserHeading] = React.useState(0);
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
@@ -66,7 +67,8 @@ export const MapContent = function MapContent({
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
 
-  const userCoords = useLocationStore((s) => s.logicalCoords);
+  const userCoords = useLocationStore((s) => s.coords);
+
   const initialZoom = 14;
   const [discreteZoom, setDiscreteZoom] = React.useState(Math.round(initialZoom));
   const { getFilteredPOIs } = usePOIStore();
@@ -460,7 +462,8 @@ export const MapContent = function MapContent({
           visible={true}
           animated={true}
           showsUserHeadingIndicator={true}
-          androidRenderMode="gps"
+          androidRenderMode="compass"
+          renderMode="native"
         />
 
         <MapImageManager events={events} />

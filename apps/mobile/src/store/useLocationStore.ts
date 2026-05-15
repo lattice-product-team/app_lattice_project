@@ -6,6 +6,7 @@ import { mmkvStorage, storage } from '../services/storage';
 interface LocationState {
   coords: number[] | null;
   logicalCoords: number[] | null;
+  heading: number | null;
   avoidStairs: boolean;
   wheelchairAccess: boolean;
   avoidGrandstands: boolean;
@@ -15,6 +16,7 @@ interface LocationState {
   // Actions
   setLocation: (coords: number[] | null) => void;
   setLogicalLocation: (coords: number[] | null) => void;
+  setHeading: (heading: number | null) => void;
   setStatus: (status: PermissionStatus) => void;
   updatePreferences: (
     prefs: Partial<{
@@ -35,12 +37,13 @@ const getPersistedLocation = () => {
       return {
         coords: parsed.state?.coords || null,
         logicalCoords: parsed.state?.logicalCoords || null,
+        heading: null, // Don't persist heading as it's transient
       };
     }
   } catch (e) {
     console.warn('Failed to pre-hydrate location store:', e);
   }
-  return { coords: null, logicalCoords: null };
+  return { coords: null, logicalCoords: null, heading: null };
 };
 
 const initialLocation = getPersistedLocation();
@@ -57,6 +60,7 @@ export const useLocationStore = create<LocationState>()(
 
       setLocation: (coords) => set({ coords }),
       setLogicalLocation: (logicalCoords) => set({ logicalCoords }),
+      setHeading: (heading) => set({ heading }),
       setStatus: (status) => set({ status }),
       updatePreferences: (prefs) => set((state) => ({ ...state, ...prefs })),
     }),

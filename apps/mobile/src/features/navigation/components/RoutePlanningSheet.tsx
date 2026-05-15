@@ -147,7 +147,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
                 <View style={styles.modeTextContainer}>
                   <Text style={[
                     styles.modeLabel, 
-                    { color: transportMode === mode ? '#000' : theme.colors.text.main }
+                    { color: transportMode === mode ? '#000' : theme.colors.text.primary }
                   ]}>
                     {mode === 'driving' ? 'Drive' : mode === 'walking' ? 'Walk' : 'Bike'}
                   </Text>

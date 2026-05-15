@@ -1,6 +1,6 @@
 import React from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { ScrollView as GHScrollView, GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { StyleSheet, Platform, ScrollView as NativeScrollView } from 'react-native';
 
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { DetailAction } from '../../../types/models/detail';
@@ -13,13 +13,16 @@ interface ActionPillBarProps {
 
 export const ActionPillBar = React.memo(({ actions }: ActionPillBarProps) => {
   const theme = useAppTheme();
+  const ScrollView = Platform.OS === 'android' ? NativeScrollView : GHScrollView;
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-    >
+    <GestureDetector gesture={Gesture.Native()}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+        disallowInterruption={true}
+      >
       {actions.map((action) => (
         <Button
           key={action.id}
@@ -38,7 +41,8 @@ export const ActionPillBar = React.memo(({ actions }: ActionPillBarProps) => {
           style={styles.pillOverride}
         />
       ))}
-    </ScrollView>
+      </ScrollView>
+    </GestureDetector>
   );
 });
 
