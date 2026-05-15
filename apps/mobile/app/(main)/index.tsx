@@ -55,7 +55,7 @@ import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useSocket } from '../../src/hooks/useSocket';
 import { useLocationStore } from '../../src/store/useLocationStore';
-import { useMapUIStore, MapCameraMode } from '../../src/features/map/store/useMapUIStore';
+import { useMapUIStore, MapCameraMode, MapUIState } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { useProfileStore } from '../../src/features/profile/store/useProfileStore';
@@ -205,20 +205,34 @@ export default function MapIndexPage() {
     islandState,
   ]);
 
-  // Sync React/Store state to UI Thread Layers
+  const uiState = useMapUIStore((state) => state.uiState);
+
+  // Sync React/Store state to UI Thread Layers (Master Mode Orchestrator)
   useEffect(() => {
-    if (isNavigating) {
-      uiLayer.value = UILayer.NAVIGATING;
-    } else if (isPlanning) {
-      uiLayer.value = UILayer.PLANNING;
-    } else if (selectedEvent) {
-      uiLayer.value = UILayer.EVENT;
-    } else if (isProfileOpen) {
-      uiLayer.value = UILayer.PROFILE;
-    } else {
-      uiLayer.value = UILayer.BASE;
+    switch (uiState) {
+      case MapUIState.NAVIGATING:
+        uiLayer.value = withTiming(UILayer.NAVIGATING, { duration: 250 });
+        break;
+      case MapUIState.PLANNING:
+        uiLayer.value = withTiming(UILayer.PLANNING, { duration: 250 });
+        break;
+      case MapUIState.POI_DETAIL:
+        uiLayer.value = withTiming(UILayer.EVENT, { duration: 250 });
+        break;
+      case MapUIState.SAVED_LIST:
+        uiLayer.value = withTiming(UILayer.PROFILE, { duration: 250 });
+        break;
+      case MapUIState.EXPLORING:
+      default:
+        // Local overrides for states that aren't yet full modes
+        if (isProfileOpen) {
+          uiLayer.value = withTiming(UILayer.PROFILE, { duration: 250 });
+        } else {
+          uiLayer.value = withTiming(UILayer.BASE, { duration: 250 });
+        }
+        break;
     }
-  }, [isNavigating, isPlanning, !!selectedEvent, isProfileOpen]);
+  }, [uiState, isProfileOpen]);
 
   const preSearchLevel = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
@@ -909,8 +923,8 @@ export default function MapIndexPage() {
         style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 3000 }]}
         pointerEvents="box-none"
       >
-        <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
-          <Animated.View pointerEvents="box-none" style={[styles.islandContainer, islandStyle]}>
+        <Animated.View pointerEvents="box-none" style={[styles.islandContainer, islandStyle]}>
+          <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
             <Animated.View
               pointerEvents="auto"
               style={[
@@ -971,8 +985,8 @@ export default function MapIndexPage() {
                 </Animated.View>
               </Animated.ScrollView>
             </Animated.View>
-          </Animated.View>
-        </GestureDetector>
+          </GestureDetector>
+        </Animated.View>
       </Animated.View>
 
       {/* 7. AR Overlay Layer (Z-Index: 3500) */}

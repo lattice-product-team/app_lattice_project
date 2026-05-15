@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
-import { MapCameraMode } from '../store/useMapUIStore';
+import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
 import Animated, {
   useAnimatedStyle,
   SharedValue,
@@ -37,10 +37,9 @@ export const AdaptiveControlOverlay = React.memo(({
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const iconColor = theme.colors.text.primary;
+  const { uiState } = useMapUIStore();
   const openAR = useARStore((s) => s.openAR);
-  const isARActive = useARStore((s) => s.isVisible);
-  const deselectPoi = usePOIStore((s) => s.deselect);
-  const clearEvent = useEventStore((s) => s.clearEvent);
+  const isARActive = useARStore((s) => s.isVisible) || uiState === MapUIState.AR_EXPLORE;
 
   const rOverlayStyle = useAnimatedStyle(() => {
     // Option B: Fade-out if any overlay layer is active, island is full-screen, or AR is active
@@ -118,8 +117,6 @@ export const AdaptiveControlOverlay = React.memo(({
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             openAR(ARFilterMode.CLOSEST_EVENT);
-            deselectPoi();
-            clearEvent();
           }}
           hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}

@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
-import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
+import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { normalizePOI, normalizeEventList, normalizePOIList } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
@@ -24,7 +24,7 @@ import { useLocationStore } from '../../../store/useLocationStore';
 import { useStartupStore } from '../../../store/useStartupStore';
 import styleLight from '../../../../assets/map/style-light.json';
 import styleDark from '../../../../assets/map/style-dark.json';
-import { MAPTILER_KEY } from '../../../constants/mapConstants';
+import { MAPTILER_KEY, EMPTY_GEOJSON, DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
 
 interface MapContentProps {
@@ -57,6 +57,7 @@ export const MapContent = function MapContent({
   const { currentRoute, isNavigating, isPlanning, transportMode, isFetching } =
     useNavigationStore();
   const {
+    uiState,
     recenterCount,
     forceCenterCount,
     cameraMode,
@@ -101,35 +102,26 @@ export const MapContent = function MapContent({
         if (panDebounceRef.current) clearTimeout(panDebounceRef.current);
         panDebounceRef.current = setTimeout(() => {
           isPanningRef.current = false;
-        }, 150); // Reduced debounce to 150ms
+        }, 150);
       }
 
+      // Discrete Zoom Management
       if (properties?.zoomLevel) {
-        // Shared value is cheap (running on UI thread via Reanimated), update it every frame
         zoomSharedValue.value = properties.zoomLevel;
 
         // CRITICAL FIX: Only update discrete zoom when the camera STOPS moving.
         // Changing it during an active gesture causes PointAnnotations to unmount
         // while MapLibre's C++ layout engine is busy, causing hard crashes.
         // On Android, we are even stricter to prevent re-renders during active tracking.
-        const canUpdateZoom =
-          Platform.OS === 'android'
-            ? !isChanging && cameraMode !== MapCameraMode.NAVIGATION
-            : !isChanging;
+        const isStationary = !isChanging;
+        const canUpdateZoom = Platform.OS === 'android'
+          ? !isChanging && cameraMode !== MapCameraMode.NAVIGATION
+          : isStationary || now - lastZoomUpdateRef.current > 250;
 
         if (canUpdateZoom) {
-          const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
-          if (newDiscreteZoom !== discreteZoom) {
-            setDiscreteZoom(newDiscreteZoom);
-          }
-        }
-
-        // Throttled updates for global state and discrete changes
-        if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
           lastZoomUpdateRef.current = now;
-
-          const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
-          if (newDiscreteZoom !== discreteZoom && !isChanging) {
+          const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2;
+          if (newDiscreteZoom !== discreteZoom) {
             setDiscreteZoom(newDiscreteZoom);
           }
         }
@@ -149,12 +141,12 @@ export const MapContent = function MapContent({
       // If camera is changing due to user interaction (drag, pinch, etc), stop following
       // On Android, isUserInteraction can be unreliable during fast gestures,
       // so we also check if region is actively changing and we're NOT in a programmatic state.
+      // If camera is changing due to user interaction (drag, pinch, etc), stop following.
+      // CRITICAL: isUserInteraction should ALWAYS break any lock to prevent "vibrations".
       const shouldSwitchToFree =
-        !isProgrammaticMove &&
-        (Platform.OS === 'android'
-          ? isUserInteraction && cameraMode !== MapCameraMode.FREE
-          : (isUserInteraction || isChanging) && cameraMode !== MapCameraMode.FREE);
-
+        (isUserInteraction || (!isProgrammaticMove && isChanging)) &&
+        cameraMode !== MapCameraMode.FREE;
+      
       if (shouldSwitchToFree) {
         setCameraMode(MapCameraMode.FREE);
       }
@@ -166,6 +158,7 @@ export const MapContent = function MapContent({
       setLastCameraPosition,
       cameraMode,
       setCameraMode,
+      isProgrammaticMove,
     ]
   );
 
@@ -449,14 +442,22 @@ export const MapContent = function MapContent({
     <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
         ref={mapRef}
-        style={[styles.map, { backgroundColor: theme.colors.bg.main }]}
+        style={[
+          styles.map,
+          uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }
+        ]}
         mapStyle={mapStyle as any}
         logoEnabled={false}
         attributionEnabled={false}
         compassEnabled={false}
         minZoomLevel={2}
         maxZoomLevel={22}
+        pitchEnabled={true}
+        rotateEnabled={true}
+        scrollEnabled={true}
+        zoomEnabled={true}
         onPress={handleMapPress}
+        pointerEvents={uiState === MapUIState.AR_EXPLORE ? 'none' : 'auto'}
         onRegionIsChanging={(e) => handleCameraChange(e, true)}
         onRegionDidChange={(e) => handleCameraChange(e, false)}
         onDidFinishLoadingStyle={() => {
@@ -488,6 +489,7 @@ export const MapContent = function MapContent({
           recenterCount={recenterCount}
           forceCenterCount={forceCenterCount}
           lastCameraPosition={lastCameraPosition}
+          uiState={uiState}
           isNavigating={isNavigating}
           isPlanning={isPlanning}
           cameraMode={cameraMode}
@@ -498,15 +500,13 @@ export const MapContent = function MapContent({
 
         <MapLayers
           theme={theme}
-          allPoisGeoJSON={poisGeoJSON}
           poisGeoJSON={filteredPoisGeoJSON}
           eventsGeoJSON={eventsGeoJSON}
           selectedEventId={selectedEventId}
           selectedPoiId={selectedPoiId}
-          pathNetwork={pathNetwork}
+          pathNetwork={EMPTY_GEOJSON}
           currentRoute={currentRoute}
-          isNavigating={isNavigating}
-          isPlanning={isPlanning}
+          uiState={uiState}
           onPoiPress={handlePoiPress}
           zoomLevel={discreteZoom}
           zoomSharedValue={zoomSharedValue}

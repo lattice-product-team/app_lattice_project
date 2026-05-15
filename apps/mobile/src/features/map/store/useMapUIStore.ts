@@ -5,8 +5,10 @@ import { mmkvStorage } from '../../../services/storage';
 export enum MapUIState {
   EXPLORING = 'EXPLORING',
   POI_DETAIL = 'POI_DETAIL',
+  PLANNING = 'PLANNING',
   NAVIGATING = 'NAVIGATING',
   SAVED_LIST = 'SAVED_LIST',
+  AR_EXPLORE = 'AR_EXPLORE',
 }
 
 export enum MapCameraMode {
@@ -57,7 +59,30 @@ export const useMapUIStore = create<MapUIStore>()(
       isProgrammaticMove: false,
       lastScreenMode: 0,
 
-      setUIState: (uiState) => set({ uiState }),
+      setUIState: (uiState) => {
+        const currentState = get().uiState;
+        if (currentState === uiState) return;
+
+        // Cross-store cleanup to ensure only one mode is "active" across the app
+        try {
+          const { usePOIStore } = require('../../poi/store/usePOIStore');
+          const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
+
+          if (uiState === MapUIState.EXPLORING) {
+            // Only deselect if we aren't already exploring to avoid recursion
+            usePOIStore.getState().deselect();
+            useNavigationStore.getState().clearNavigation();
+          } else if (uiState === MapUIState.NAVIGATING) {
+            usePOIStore.getState().deselect();
+          } else if (uiState === MapUIState.POI_DETAIL) {
+            useNavigationStore.getState().clearNavigation();
+          }
+        } catch (e) {
+          console.warn('[MapUIStore] Cross-store cleanup failed:', e);
+        }
+
+        set({ uiState });
+      },
 
       setCameraMode: (cameraMode) => set({ cameraMode }),
 

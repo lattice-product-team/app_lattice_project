@@ -6,6 +6,7 @@ import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { POIMarker } from './POIMarker';
+import { MapUIState } from '../store/useMapUIStore';
 
 interface MapLayersProps {
   theme: any;
@@ -15,8 +16,7 @@ interface MapLayersProps {
   selectedPoiId?: string | number | null;
   pathNetwork: any;
   currentRoute: any;
-  isNavigating: boolean;
-  isPlanning?: boolean;
+  uiState: MapUIState;
   onPoiPress: (data: any) => void;
   zoomLevel: number;
   zoomSharedValue: SharedValue<number>;
@@ -30,8 +30,7 @@ export const MapLayers = React.memo(({
   selectedPoiId,
   pathNetwork,
   currentRoute,
-  isNavigating,
-  isPlanning,
+  uiState,
   onPoiPress,
   zoomLevel,
   zoomSharedValue,
@@ -195,7 +194,7 @@ export const MapLayers = React.memo(({
 
 
       {/* 5. ROUTE VISUALS */}
-      {(isNavigating || isPlanning) && currentRoute && (
+      {(uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING) && currentRoute && (
         <MapLibreGL.ShapeSource id="routeSource" shape={routeGeoJSON} tolerance={0.1}>
           <MapLibreGL.LineLayer
             id="routeGlow"

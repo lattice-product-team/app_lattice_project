@@ -40,6 +40,15 @@ export const usePOIStore = create<POIState>((set) => ({
   activeCategoryFilters: [],
 
   selectPoi: (poi) => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      if (poi) {
+        useMapUIStore.getState().setUIState(MapUIState.POI_DETAIL);
+      } else if (useMapUIStore.getState().uiState === MapUIState.POI_DETAIL) {
+        useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
+      }
+    } catch (e) {}
+
     if (!poi) {
       set({ selectedPoiId: null, selectedPoi: null, selectedCoords: null });
       return;
@@ -52,21 +61,36 @@ export const usePOIStore = create<POIState>((set) => ({
     });
   },
 
-  deselect: () =>
+  deselect: () => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      const uiState = useMapUIStore.getState().uiState;
+      if (uiState === MapUIState.POI_DETAIL || uiState === MapUIState.PLANNING) {
+        useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
+      }
+    } catch (e) {}
     set({
       selectedPoiId: null,
       selectedPoi: null,
       selectedCoords: null,
       selectedEventId: null,
-    }),
+    });
+  },
 
   setRemote: (isRemote) => set({ isRemote }),
 
-  setSelectedEvent: (selectedEventId) =>
+  setSelectedEvent: (selectedEventId) => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      if (selectedEventId) {
+        useMapUIStore.getState().setUIState(MapUIState.POI_DETAIL);
+      }
+    } catch (e) {}
     set({
       selectedEventId,
       activeCategoryFilters: [], // Clear filters when switching events
-    }),
+    });
+  },
 
   setUserInsideEvent: (userInsideEventId) => set({ userInsideEventId }),
 
