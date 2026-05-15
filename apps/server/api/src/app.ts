@@ -8,6 +8,7 @@ import { logger, errorHandler, loadConfig } from '@app/core';
 import authRouter from './auth/routes/auth.routes.js';
 import geoRouter from './geo/routes/geo.routes.js';
 import socialRouter from './social/routes/social.routes.js';
+import telemetryRouter from './geo/routes/telemetry.routes.js';
 
 // Load validated config (SSOT)
 const env = loadConfig();
@@ -103,6 +104,7 @@ app.use(['/auth/login', '/auth/register', '/auth/google', '/auth/apple', '/auth/
 app.use('/auth', authRouter);
 app.use(geoRouter);
 app.use(socialRouter);
+app.use('/telemetry', telemetryRouter);
 
 // Fallback for unhandled API routes
 app.use('*', (req: Request, res: Response) => {

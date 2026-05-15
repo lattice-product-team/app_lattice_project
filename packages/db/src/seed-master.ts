@@ -8,6 +8,7 @@ import {
   pathSegments,
   tickets,
   savedLocations,
+  telemetryLogs,
 } from './schema.js';
 import { seedCommon } from './seed-common.js';
 
@@ -47,6 +48,7 @@ async function seed() {
   // Also clean tickets and saved locations to avoid duplicates
   await db.execute(sql`TRUNCATE TABLE ${tickets} RESTART IDENTITY CASCADE`);
   await db.execute(sql`TRUNCATE TABLE ${savedLocations} RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE ${telemetryLogs} RESTART IDENTITY CASCADE`);
 
   // 2. Seed Base Users & Profiles
   console.log('👤 Seeding base users...');
@@ -140,6 +142,19 @@ async function seed() {
           }),
         })
         .onConflictDoNothing();
+    }
+
+    // 3.4 Seed Mock Telemetry for Crowd Radar
+    console.log(`📡 Seeding mock telemetry for ${event.name}`);
+    for (let j = 0; j < 30; j++) {
+      const latOffset = (Math.random() - 0.5) * 0.015;
+      const lngOffset = (Math.random() - 0.5) * 0.015;
+      await db.insert(telemetryLogs).values({
+        userId: koreUser ? (j % 2 === 0 ? koreUser.id : 1) : 1,
+        eventId: event.id,
+        location: [eventData.location[0] + lngOffset, eventData.location[1] + latOffset],
+        timestamp: new Date(Date.now() - Math.random() * 600000), // Random within last 10 mins
+      });
     }
   }
 

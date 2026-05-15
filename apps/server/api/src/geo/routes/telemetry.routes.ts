@@ -17,9 +17,19 @@ router.post('/ping', async (req, res) => {
     }
 
     // Insert as PostGIS point
+    // We check if the user exists to avoid foreign key violations during testing
+    let validUserId = userId;
+    if (userId) {
+      const userExists = await db.execute(sql`SELECT id FROM users WHERE id = ${Number(userId)} LIMIT 1`);
+      if (userExists.rows.length === 0) {
+        console.warn(`[Telemetry] User ${userId} not found, saving ping without userId`);
+        validUserId = null;
+      }
+    }
+
     await db.insert(telemetryLogs).values({
-      userId,
-      eventId,
+      userId: validUserId ? Number(validUserId) : null,
+      eventId: Number(eventId),
       location: sql`ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)`,
     });
 
@@ -42,7 +52,7 @@ router.get('/heatmap/:eventId', async (req, res) => {
       SELECT ST_AsGeoJSON(location)::json as geometry, id
       FROM telemetry_logs
       WHERE event_id = ${Number(eventId)}
-      AND timestamp > NOW() - INTERVAL '15 minutes'
+      AND timestamp > NOW() - INTERVAL '2 minutes'
     `);
 
     const geojson = {

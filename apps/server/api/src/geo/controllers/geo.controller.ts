@@ -256,9 +256,12 @@ export const getEventStats = async (req: Request, res: Response) => {
       .where(eq(pointsOfInterest.eventId, eventId));
 
     const [entryCount] = await db
-      .select({ count: sql<number>`count(*)::int` })
-      .from(telemetryLogs)
-      .where(sql`event_id = ${eventId} AND timestamp > now() - interval '10 minutes'`);
+      .execute(sql`
+        SELECT count(*)::int as count
+        FROM telemetry_logs
+        WHERE event_id = ${Number(eventId)}
+        AND timestamp > NOW() - INTERVAL '2 minutes'
+      `);
 
     const [staffCount] = await db
       .select({ count: sql<number>`count(*)::int` })
@@ -391,8 +394,46 @@ export const getCategories = (req: Request, res: Response) => {
   res.json(categories);
 };
 
-export const getLocations = (req: Request, res: Response) => {
-  res.json({ message: 'Locations endpoint not implemented yet' });
+export const getLocations = async (req: Request, res: Response) => {
+  try {
+    const { eventId } = req.query;
+    
+    // We filter by last 15 minutes to keep it "live"
+    const query = db
+      .select({
+        id: telemetryLogs.id,
+        geometry: sql<string>`ST_AsGeoJSON(${telemetryLogs.location})`,
+      })
+      .from(telemetryLogs)
+      .where(sql`timestamp > now() - interval '2 minutes'`)
+      .$dynamic();
+
+    if (eventId) {
+      const eid = parseInt(eventId as string, 10);
+      if (!isNaN(eid)) {
+        query.where(eq(telemetryLogs.eventId, eid));
+      }
+    }
+
+    const results = await query;
+
+    const features = results.map((log: any) => ({
+      type: 'Feature',
+      geometry: JSON.parse(log.geometry),
+      properties: {
+        id: log.id,
+        mag: 1, // Constant magnitude for heatmap weight
+      },
+    }));
+
+    res.json({
+      type: 'FeatureCollection',
+      features,
+    });
+  } catch (error) {
+    console.error('Error fetching telemetry locations:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
 
 export const getRoute = async (req: Request, res: Response) => {

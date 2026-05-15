@@ -23,6 +23,7 @@ router.get('/pois/:id', geoController.getPoi);
 router.patch('/pois/:id', geoController.updatePoi);
 router.delete('/pois/:id', geoController.deletePoi);
 router.get('/locations', geoController.getLocations);
+router.get('/geo/locations', geoController.getLocations);
 router.get('/navigation/network', geoController.getPathNetwork);
 router.post('/navigation/route', geoController.getRoute);
 router.get('/resolve-address', geoController.resolveAddress);

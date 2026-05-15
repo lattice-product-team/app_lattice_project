@@ -5,6 +5,7 @@ import { PermissionStatus } from '../types';
 import { useLocationStore } from '../store/useLocationStore';
 import { calculateDistance } from '../utils/geoUtils';
 import { useNavigationStore } from '../features/navigation/store/useNavigationStore';
+import { telemetryService } from '../services/telemetryService';
 
 const SIGNIFICANT_MOVEMENT_THRESHOLD = 10; // meters
 
@@ -109,6 +110,19 @@ export const useLocationService = (): LocationState => {
       subscription?.remove();
     };
   }, [status, isNavigating, isPlanning]); // Restart tracking when mode changes to apply new accuracy settings
+
+  // 4. Background Telemetry (Crowd Radar)
+  useEffect(() => {
+    if (status !== 'granted') return;
+
+    // Send initial ping
+    telemetryService.ping();
+
+    // Start periodic pings (every 30 seconds)
+    const cleanup = telemetryService.startPinging(30000);
+    
+    return cleanup;
+  }, [status]);
 
   return {
     coords: userCoords,
