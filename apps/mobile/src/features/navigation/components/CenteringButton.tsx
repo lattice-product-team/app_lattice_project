@@ -26,11 +26,13 @@ interface CenteringButtonProps {
 export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { cameraMode, setCameraMode } = useMapUIStore();
+  const { cameraMode, setCameraMode, triggerRecenter } = useMapUIStore();
   const { isNavigating } = useNavigationStore();
 
   const handleCenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Use triggerRecenter to increment the count and force the effect in MapCameraManager to fire
+    triggerRecenter();
     setCameraMode(MapCameraMode.NAVIGATION);
   };
 

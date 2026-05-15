@@ -62,41 +62,55 @@ export const MapLayers = React.memo(({
     return null;
   }, [selectedPoiId, selectedEventId, poisGeoJSON, eventMarkers]);
 
-  // Background POIs (Excluding the selected one)
   const backgroundPois = useMemo(() => ({
     type: 'FeatureCollection',
     features: poisGeoJSON?.features?.filter((f: any) => String(f.properties?.id) !== String(selectedPoiId)) || []
   }), [poisGeoJSON, selectedPoiId]);
 
+  const labelGeoJSON = useMemo(() => ({
+    type: 'FeatureCollection',
+    features: [
+      ...(selectedFeature ? [selectedFeature] : []),
+      ...(zoomLevel >= 15 ? backgroundPois.features : [])
+    ]
+  }), [selectedFeature, backgroundPois, zoomLevel]);
+
   return (
     <>
 
-      {/* 1.5 HIGH-FIDELITY BACKGROUND POIS (Lucide Icons) */}
-      {/* We render these as React views for high quality, but keep a threshold for performance */}
-      {zoomLevel >= 13.5 && backgroundPois.features.map((f: any) => (
-        <MapLibreGL.PointAnnotation
-          key={`bg-pa-${f.properties.id}`}
-          id={`bg-ann-${f.properties.id}`}
-          coordinate={f.geometry.coordinates}
-          onSelected={() => onPoiPress(f)}
-        >
-          <View 
-            style={[
-              mapPinStyles.markerWrapper, 
-              { backgroundColor: 'transparent' }
-            ]}
-            collapsable={false}
-          >
-            <POIMarker
-              poi={f}
-              theme={theme}
-              isSelected={false}
-              onPress={onPoiPress}
-              zoomSharedValue={zoomSharedValue}
-            />
-          </View>
-        </MapLibreGL.PointAnnotation>
-      ))}
+      {/* 1.5 HIGH-FIDELITY BACKGROUND POIS - OPTIMIZED FOR ANDROID */}
+      {/* We use a CircleLayer for background POIs to keep the map fast, and only use 
+          PointAnnotation for the selected one. This is CRITICAL for Android performance. */}
+      <MapLibreGL.ShapeSource 
+        id="poiSource" 
+        shape={backgroundPois}
+        hitbox={{ width: 30, height: 30 }}
+      >
+        <MapLibreGL.CircleLayer
+          id="backgroundPoiDots"
+          minZoomLevel={13.5}
+          style={{
+            circleColor: ['get', 'color'],
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 3,
+              16, 6,
+              18, 8
+            ],
+            circleStrokeWidth: 2,
+            circleStrokeColor: '#FFFFFF',
+            circleOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 0,
+              14.5, 1
+            ]
+          }}
+        />
+      </MapLibreGL.ShapeSource>
 
       <MapLibreGL.ShapeSource 
         id="eventsSource" 
@@ -154,13 +168,7 @@ export const MapLayers = React.memo(({
       {/* 4. LABELS - Throttled rendering for better performance */}
       <MapLibreGL.ShapeSource 
         id="labelsSource" 
-        shape={{
-          type: 'FeatureCollection',
-          features: [
-            ...(selectedFeature ? [selectedFeature] : []),
-            ...(zoomLevel >= 15 ? backgroundPois.features : [])
-          ]
-        }}
+        shape={labelGeoJSON as any}
       >
         <MapLibreGL.SymbolLayer
           id="poiLabelLayer"

@@ -84,6 +84,13 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     if (recenterCount > lastProcessedRecenterRef.current && cameraRef.current && userCoords) {
       lastProcessedRecenterRef.current = recenterCount;
       
+      // If we are already in navigation mode, don't trigger a separate flyTo 
+      // as it will fight with the navigation effect. Instead, just let the navigation 
+      // effect handle the "re-snap".
+      if (cameraMode === MapCameraMode.NAVIGATION && isNavigating) {
+        return;
+      }
+
       cameraRef.current.setCamera({
         centerCoordinate: userCoords,
         zoomLevel: DEFAULT_ZOOM,
@@ -93,8 +100,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         padding: { paddingBottom: 150, paddingTop: 60, paddingLeft: 20, paddingRight: 20 },
       });
 
-      // CRITICAL FIX: After the animation finishes, clear the padding/goal.
-      // This "unblocks" the Android camera engine so the user can zoom/pan freely.
+      // Clear goal after animation to unblock manual interaction
       const timer = setTimeout(() => {
         if (cameraRef.current) {
           cameraRef.current.setCamera({
@@ -105,7 +111,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       }, 1100);
       return () => clearTimeout(timer);
     }
-  }, [recenterCount, userCoords, is3DActive]); // Added is3DActive to dependencies so it respects current 3D state when centering
+  }, [recenterCount, userCoords, is3DActive, cameraMode, isNavigating]);
 
   useEffect(() => {
     const now = Date.now();
@@ -286,7 +292,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       // Engage native follow mode only after the smooth transition completes
       timer = setTimeout(() => {
         setCameraMode(MapCameraMode.NAVIGATION);
-      }, 1500);
+      }, 1000);
       } else if (!isNavigating && prevIsNavigating.current && cameraMode === MapCameraMode.NAVIGATION) {
       // Exit navigation camera mode
       setCameraMode(MapCameraMode.FREE);
@@ -315,6 +321,31 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       if (timer) clearTimeout(timer);
     };
   }, [isNavigating, setCameraMode]); // Removed cameraMode from dependencies to prevent infinite loops/fighting user drag
+
+  // Robustly handle the transition to NAVIGATION mode (Centering button or re-engagement)
+  useEffect(() => {
+    if (cameraMode === MapCameraMode.NAVIGATION && isNavigating && cameraRef.current) {
+      // 1. CLEAR GOALS: Remove any pending padding/offsets that might lock the Android camera engine
+      cameraRef.current.setCamera({
+        padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+        animationDuration: 0,
+      });
+
+      // 2. RE-CENTER: Perform a smooth flyTo to the user's current location to bridge the gap
+      // before native tracking takes full control of the GL camera.
+      if (userCoordsRef.current) {
+        cameraRef.current.setCamera({
+          centerCoordinate: userCoordsRef.current,
+          zoomLevel: 18,
+          pitch: 45,
+          // Use a shorter animation for re-centering while already in navigation mode
+          // to avoid "locking" the interaction for too long on Android.
+          animationDuration: 800, 
+          animationMode: 'flyTo',
+        });
+      }
+    }
+  }, [cameraMode, isNavigating, recenterCount, forceCenterCount]);
 
   const lastPlanningRouteRef = React.useRef<string | null>(null);
 
@@ -401,7 +432,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       followUserLocation={cameraMode === MapCameraMode.NAVIGATION}
       followUserMode={(cameraMode === MapCameraMode.NAVIGATION ? 'compass' : 'normal') as any}
       followZoomLevel={cameraMode === MapCameraMode.NAVIGATION ? 18 : undefined}
-      followPitch={cameraMode === MapCameraMode.NAVIGATION ? 45 : undefined}
+      followPitch={45} 
       onUserTrackingModeChange={(e) => {
         // If the native map stops following (due to user drag), sync our state to FREE
         if (
@@ -411,6 +442,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           setCameraMode(MapCameraMode.FREE);
         }
       }}
+      // Android specific: Ensure the compass mode is re-applied correctly
+      // by using a key that changes when we want to force-reset tracking
+      key={`camera-${cameraMode === MapCameraMode.NAVIGATION ? 'nav' : 'free'}`}
     />
   );
 });

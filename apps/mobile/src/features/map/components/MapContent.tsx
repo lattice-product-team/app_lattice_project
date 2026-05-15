@@ -100,7 +100,7 @@ export const MapContent = function MapContent({
         if (panDebounceRef.current) clearTimeout(panDebounceRef.current);
         panDebounceRef.current = setTimeout(() => {
           isPanningRef.current = false;
-        }, 300); // Increased debounce to 300ms
+        }, 150); // Reduced debounce to 150ms
       }
 
       if (properties?.zoomLevel) {
@@ -128,19 +128,15 @@ export const MapContent = function MapContent({
         }
       }
 
-      // Update global store for other components (throttled)
+      // Update global store for other components ONLY when the camera STOPS moving.
+      // This prevents the huge index.tsx from re-rendering 10 times per second during a pan,
+      // which is the primary cause of "jerkiness" on Android.
       const center = geometry?.coordinates as [number, number];
       const zoom = properties?.zoomLevel;
       const pitch = properties?.pitch;
 
-      if (zoom !== undefined) {
-        zoomSharedValue.value = zoom;
-      }
-
-
-      if (center && zoom && now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
+      if (center && zoom && !isChanging) {
         setLastCameraPosition({ center, zoom, pitch });
-        lastZoomUpdateRef.current = now;
       }
 
       // If camera is changing due to user interaction (drag, pinch, etc), stop following
@@ -400,13 +396,8 @@ export const MapContent = function MapContent({
   }, [theme.dark]);
 
   const handleMapPress = useCallback(async (e: any) => {
-    // Phantom tap rejection: If the camera moved or zoomed in the last 600ms, ignore this tap.
-    // This is a robust workaround for MapLibre's pinch-to-zoom gesture misfiring onPress on Android.
     const now = Date.now();
-    if (isPanningRef.current || now - lastPanUpdateRef.current < 600) {
-      console.log('[MapContent] Ignored phantom map tap due to recent camera movement.');
-      return;
-    }
+    const isRecentlyMoved = isPanningRef.current || now - lastPanUpdateRef.current < 150;
 
     try {
       const { screenPointX, screenPointY } = e.properties;
@@ -419,7 +410,8 @@ export const MapContent = function MapContent({
         );
 
         if (features?.features && features.features.length > 0) {
-          // Tap on a feature!
+          // FEATURE TAP: We are more lenient here. 
+          // If we hit a specific label or pin, we assume it was an intentional click.
           const feature = features.features.find((f: any) => f?.properties?.id);
           if (feature) {
             handlePoiPress(feature);
@@ -431,7 +423,12 @@ export const MapContent = function MapContent({
       console.warn('[MapContent] Error querying map features:', err);
     }
 
-    // Tap on empty map
+    // EMPTY MAP TAP: Apply stricter lockout to avoid accidental deselection while panning.
+    if (isRecentlyMoved) {
+      console.log('[MapContent] Ignored background tap due to recent camera movement.');
+      return;
+    }
+
     if (onDeselect) onDeselect();
   }, [onDeselect, handlePoiPress]);
 

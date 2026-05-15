@@ -54,7 +54,7 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   triggerRecenter: () =>
     set((state) => ({
       recenterCount: state.recenterCount + 1,
-      cameraMode: MapCameraMode.FREE,
+      cameraMode: state.cameraMode === MapCameraMode.NAVIGATION ? MapCameraMode.NAVIGATION : MapCameraMode.FREE,
     })),
 
   triggerForceCenter: () =>
