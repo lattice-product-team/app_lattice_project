@@ -29,6 +29,12 @@ export const RealtimeSyncProvider: React.FC<{ children: React.ReactNode }> = ({ 
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['discovery-feed'] });
       queryClient.invalidateQueries({ queryKey: ['eventSpatial'] });
+      
+      if (data.action === 'created') {
+        import('expo-haptics').then(Haptics => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        });
+      }
     });
 
     // 3. Sync Spatial Data (Boundaries & Path Network)

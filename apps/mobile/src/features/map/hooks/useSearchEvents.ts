@@ -21,7 +21,7 @@ export const useSearchEvents = (query: string) => {
     isLoading: loading,
     error,
   } = useQuery({
-    queryKey: ['events-search', ''], // Static key for pre-fetching
+    queryKey: ['events', 'search'], // Use common prefix for invalidation
     queryFn: () => geoService.getEvents(),
     placeholderData: (previousData) => previousData,
   });

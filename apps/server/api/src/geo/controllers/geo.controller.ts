@@ -699,6 +699,9 @@ export const createPoi = async (req: Request, res: Response) => {
     console.log(`[Geo] Notifying sync for new POI: ${newPoi.id}`);
     notifyAdmin('admin:pois:updated', { type: 'POI_CREATED', id: newPoi.id.toString() });
     notifyAll('sync:pois', { action: 'created', id: newPoi.id, eventId: parsedEventId });
+    if (parsedEventId) {
+      notifyAll('sync:event:spatial', { id: parsedEventId.toString() });
+    }
   } catch (error) {
     console.error('Error creating POI:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -856,10 +859,19 @@ export const updatePoi = async (req: Request, res: Response) => {
     if (parsedEventId) {
       await deleteCache(`geo:event:${parsedEventId}:spatial`);
     }
+    if (existingPoi.eventId && existingPoi.eventId !== parsedEventId) {
+      await deleteCache(`geo:event:${existingPoi.eventId}:spatial`);
+    }
 
     // Notify Admins & Clients
     notifyAdmin('admin:pois:updated', { type: 'POI_UPDATED', id: poiId.toString() });
     notifyAll('sync:pois', { action: 'updated', id: poiId, eventId: parsedEventId });
+    if (parsedEventId) {
+      notifyAll('sync:event:spatial', { id: parsedEventId.toString() });
+    }
+    if (existingPoi.eventId && existingPoi.eventId !== parsedEventId) {
+      notifyAll('sync:event:spatial', { id: existingPoi.eventId.toString() });
+    }
 
     res.json(updatedPoi);
   } catch (error) {
@@ -934,6 +946,7 @@ export const updateEvent = async (req: Request, res: Response) => {
     // Notify Admins & Clients
     notifyAdmin('admin:events:updated', { type: 'EVENT_UPDATED', id: eventId.toString() });
     notifyAll('sync:events', { action: 'updated', id: eventId });
+    notifyAll('sync:event:spatial', { id: eventId.toString() });
 
     res.json(updatedEvent);
   } catch (error) {
@@ -965,6 +978,9 @@ export const deletePoi = async (req: Request, res: Response) => {
     // Notify Admins & Clients
     notifyAdmin('admin:pois:updated', { type: 'POI_DELETED', id: poiId.toString() });
     notifyAll('sync:pois', { action: 'deleted', id: poiId, eventId: poi.eventId });
+    if (poi.eventId) {
+      notifyAll('sync:event:spatial', { id: poi.eventId.toString() });
+    }
 
     res.json({ success: true, message: 'POI deleted successfully' });
   } catch (error) {
