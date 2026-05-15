@@ -269,12 +269,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           });
 
           transitionTimerRef.current = setTimeout(() => {
-            if (cameraRef.current) {
-              cameraRef.current.setCamera({
-                padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
-                animationDuration: 0,
-              });
-            }
+            console.log('[CameraManager] Transition Complete - Maintaining state');
             setIsProgrammaticMove(false);
           }, 1100);
           return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
