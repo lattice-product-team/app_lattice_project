@@ -8,7 +8,7 @@ export const mapPinStyles = StyleSheet.create({
   markerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 64,
+    width: 64, 
     height: 64,
   },
 
@@ -19,6 +19,7 @@ export const mapPinStyles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+    // Minimal flat shadow for depth without neon
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -26,12 +27,12 @@ export const mapPinStyles = StyleSheet.create({
     elevation: 2,
   },
   eventPinSize: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
   },
   poiPinSize: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
   },
   image: {
     width: '100%',
