@@ -255,13 +255,14 @@ export const getEventStats = async (req: Request, res: Response) => {
       .from(pointsOfInterest)
       .where(eq(pointsOfInterest.eventId, eventId));
 
-    const [entryCount] = await db
+    const { rows: entryRows } = await db
       .execute(sql`
         SELECT count(*)::int as count
         FROM telemetry_logs
         WHERE event_id = ${Number(eventId)}
         AND timestamp > NOW() - INTERVAL '2 minutes'
       `);
+    const entryCount = entryRows[0];
 
     const [staffCount] = await db
       .select({ count: sql<number>`count(*)::int` })
