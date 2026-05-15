@@ -92,18 +92,27 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   }, [recenterCount, userCoords]); // Removed is3DActive to prevent re-centering when toggling 3D
 
   // Focus on selected POI
+  const lastFocusedPoiRef = React.useRef<string | null>(null);
+  const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
+
   useEffect(() => {
     const now = Date.now();
     if (selectedCoords && cameraRef.current && !isNavigating) {
       const targetKey = `poi-${selectedCoords.join(',')}`;
-      if (
-        lastTargetRef.current === targetKey &&
-        now - lastActionTimestamp.current < CAMERA_ACTION_THROTTLE
-      )
-        return;
+      const isForced = forceCenterCount !== lastProcessedForceCenterRef.current;
 
-      lastTargetRef.current = targetKey;
+      // Skip if we are already focused on this POI and it's not a forced recenter
+      if (
+        !isForced &&
+        lastFocusedPoiRef.current === targetKey &&
+        now - lastActionTimestamp.current < CAMERA_ACTION_THROTTLE
+      ) {
+        return;
+      }
+
+      lastFocusedPoiRef.current = targetKey;
       lastActionTimestamp.current = now;
+      lastProcessedForceCenterRef.current = forceCenterCount;
 
       // Transition to FREE mode IMMEDIATELY to stop any user tracking
       if (cameraMode !== MapCameraMode.FREE) {
@@ -123,8 +132,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           paddingRight: 20,
         },
       });
+    } else if (!selectedCoords) {
+      lastFocusedPoiRef.current = null;
     }
-  }, [selectedCoords, isNavigating, insets.top, forceCenterCount]); // Removed is3DActive
+  }, [selectedCoords, isNavigating, insets.top, forceCenterCount, cameraMode, is3DActive]);
 
   // Toggle 3D Pitch
   useEffect(() => {
@@ -137,18 +148,26 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   }, [is3DActive]);
 
   // Focus on selected event or its children
+  const lastFocusedEventRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     const now = Date.now();
     if (selectedEvent && cameraRef.current && !isNavigating) {
       const eventId = selectedEvent.id || selectedEvent.properties?.id;
-      if (
-        lastTargetRef.current === `event-${eventId}` &&
-        now - lastActionTimestamp.current < CAMERA_ACTION_THROTTLE
-      )
-        return;
+      const targetKey = `event-${eventId}`;
+      const isForced = forceCenterCount !== lastProcessedForceCenterRef.current;
 
-      lastTargetRef.current = `event-${eventId}`;
+      if (
+        !isForced &&
+        lastFocusedEventRef.current === targetKey &&
+        now - lastActionTimestamp.current < CAMERA_ACTION_THROTTLE
+      ) {
+        return;
+      }
+
+      lastFocusedEventRef.current = targetKey;
       lastActionTimestamp.current = now;
+      lastProcessedForceCenterRef.current = forceCenterCount;
 
       let targetCenter: [number, number] | null = null;
 
@@ -169,7 +188,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           setCameraMode(MapCameraMode.FREE);
         }
 
-        // Use a slight timeout or ensure state has propagated before animating
         cameraRef.current.setCamera({
           centerCoordinate: targetCenter,
           zoomLevel: 13.0,
@@ -185,9 +203,18 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         });
       }
     } else if (!selectedEvent) {
-      lastTargetRef.current = null;
+      // CRITICAL FIX: When deselected, explicitly clear the goal by calling setCamera 
+      // with current pitch and no padding. This "unblocks" the Android camera engine.
+      if (lastFocusedEventRef.current && cameraRef.current) {
+        cameraRef.current.setCamera({
+          padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+          animationDuration: 0,
+        });
+      }
+      lastFocusedEventRef.current = null;
     }
-  }, [selectedEvent, isNavigating, insets.top, forceCenterCount]);
+  }, [selectedEvent, isNavigating, insets.top, forceCenterCount, cameraMode]);
+
 
   const userCoordsRef = React.useRef(userCoords);
   useEffect(() => {

@@ -67,7 +67,6 @@ export const MapContent = function MapContent({
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const initialZoom = 14;
-  const initialZoom = 14;
   const [discreteZoom, setDiscreteZoom] = React.useState(Math.round(initialZoom));
   const { getFilteredPOIs } = usePOIStore();
 
@@ -79,11 +78,27 @@ export const MapContent = function MapContent({
   useRoutingLogic();
   const { data: pathNetwork } = usePathNetwork(currentEventId);
 
+  const isPanningRef = useRef(false);
+  const panDebounceRef = useRef<NodeJS.Timeout>();
+  const lastPanUpdateRef = useRef(0);
+
   const handleCameraChange = useCallback(
     (e: any, isChanging: boolean = false) => {
       const { geometry, properties } = e;
       const now = Date.now();
       const isUserInteraction = e.properties?.isUserInteraction;
+
+      if (isChanging) {
+        isPanningRef.current = true;
+        lastPanUpdateRef.current = now;
+        if (panDebounceRef.current) clearTimeout(panDebounceRef.current);
+      } else {
+        lastPanUpdateRef.current = now;
+        if (panDebounceRef.current) clearTimeout(panDebounceRef.current);
+        panDebounceRef.current = setTimeout(() => {
+          isPanningRef.current = false;
+        }, 300); // Increased debounce to 300ms
+      }
 
       if (properties?.zoomLevel) {
         // Shared value is cheap (running on UI thread via Reanimated), update it every frame
@@ -120,13 +135,13 @@ export const MapContent = function MapContent({
         lastZoomUpdateRef.current = now;
       }
 
-      // If camera is changing due to user interaction, stop following/navigation automatic tracking
-      if (isUserInteraction && cameraMode !== MapCameraMode.FREE) {
+      // If camera is changing due to user interaction (drag, pinch, etc), stop following
+      // On Android, isUserInteraction can be unreliable during fast gestures, 
+      // so we also check if region is actively changing and we're NOT in a programmatic state.
+      if ((isUserInteraction || isChanging) && cameraMode !== MapCameraMode.FREE) {
         setCameraMode(MapCameraMode.FREE);
       }
     },
-    [
-    ],
     [
       discreteZoom,
       setDiscreteZoom,
@@ -176,6 +191,7 @@ export const MapContent = function MapContent({
           color: poi.mainColor,
           parentId: poi.parentId,
           rating: poi.rating,
+          raw: JSON.stringify(poi), // Store as string
         },
       })),
     };
@@ -215,7 +231,7 @@ export const MapContent = function MapContent({
             color: poi.mainColor,
             imageKey: poi.imageKey,
             imageUrl: poi.images?.[0],
-            raw: poi.raw,
+            raw: JSON.stringify(poi.raw), // Store as string so queryRenderedFeatures handles it safely
           },
         });
 
@@ -244,10 +260,20 @@ export const MapContent = function MapContent({
 
   const handlePoiPress = useCallback(
     (data: any) => {
+      if (isPanningRef.current) return;
       const feature = data.features ? data.features[0] : data;
       if (!feature?.properties) return;
 
       const { properties, geometry } = feature;
+      
+      // Parse raw string if it came from queryRenderedFeatures
+      let rawData = properties.raw;
+      if (typeof rawData === 'string') {
+        try {
+          rawData = JSON.parse(rawData);
+        } catch (e) {}
+      }
+
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCameraMode(MapCameraMode.FREE);
       triggerForceCenter();
@@ -257,7 +283,7 @@ export const MapContent = function MapContent({
 
       if (isEvent) {
         // Handle event selection
-        const eventData = properties.raw || feature;
+        const eventData = rawData || feature;
         if (onSelectEvent) {
           onSelectEvent(eventData);
         } else {
@@ -286,6 +312,7 @@ export const MapContent = function MapContent({
 
   const handleEventPress = useCallback(
     (poi: any) => {
+      if (isPanningRef.current) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setCameraMode(MapCameraMode.FREE);
       triggerForceCenter();
@@ -364,6 +391,42 @@ export const MapContent = function MapContent({
     };
   }, [theme.dark]);
 
+  const handleMapPress = useCallback(async (e: any) => {
+    // Phantom tap rejection: If the camera moved or zoomed in the last 600ms, ignore this tap.
+    // This is a robust workaround for MapLibre's pinch-to-zoom gesture misfiring onPress on Android.
+    const now = Date.now();
+    if (isPanningRef.current || now - lastPanUpdateRef.current < 600) {
+      console.log('[MapContent] Ignored phantom map tap due to recent camera movement.');
+      return;
+    }
+
+    try {
+      const { screenPointX, screenPointY } = e.properties;
+      
+      if (mapRef.current) {
+        const features = await mapRef.current.queryRenderedFeaturesAtPoint(
+          [screenPointX, screenPointY],
+          null, // filter
+          ['eventLabels', 'backgroundPoiDots', 'poiLabelLayer'] // Layer IDs to check
+        );
+
+        if (features?.features && features.features.length > 0) {
+          // Tap on a feature!
+          const feature = features.features.find((f: any) => f?.properties?.id);
+          if (feature) {
+            handlePoiPress(feature);
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[MapContent] Error querying map features:', err);
+    }
+
+    // Tap on empty map
+    if (onDeselect) onDeselect();
+  }, [onDeselect, handlePoiPress]);
+
   return (
     <View style={{ flex: 1 }}>
       <MapLibreGL.MapView
@@ -375,7 +438,7 @@ export const MapContent = function MapContent({
         compassEnabled={false}
         minZoomLevel={2}
         maxZoomLevel={22}
-        onPress={onDeselect}
+        onPress={handleMapPress}
         onRegionIsChanging={(e) => handleCameraChange(e, true)}
         onRegionDidChange={(e) => handleCameraChange(e, false)}
         onDidFinishLoadingStyle={() => {

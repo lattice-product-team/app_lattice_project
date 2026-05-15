@@ -5,7 +5,6 @@ import { SharedValue } from 'react-native-reanimated';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
-import { EventMarker } from './EventMarker';
 import { POIMarker } from './POIMarker';
 
 interface MapLayersProps {
@@ -37,19 +36,14 @@ export const MapLayers = React.memo(({
   zoomLevel,
   zoomSharedValue,
 }: MapLayersProps) => {
-  const { eventMarkers, eventBoundaries } = useMemo(() => {
+  const eventMarkers = useMemo(() => {
     const markers: any[] = [];
-    const boundaries: any[] = [];
     
     eventsGeoJSON?.features?.forEach((f: any) => {
       if (f.geometry.type === 'Point') markers.push(f);
-      else boundaries.push(f);
     });
     
-    return {
-      eventMarkers: { type: 'FeatureCollection', features: markers },
-      eventBoundaries: { type: 'FeatureCollection', features: boundaries },
-    };
+    return { type: 'FeatureCollection', features: markers };
   }, [eventsGeoJSON]);
 
   const routeGeoJSON = useMemo(() => {
@@ -74,40 +68,14 @@ export const MapLayers = React.memo(({
     features: poisGeoJSON?.features?.filter((f: any) => String(f.properties?.id) !== String(selectedPoiId)) || []
   }), [poisGeoJSON, selectedPoiId]);
 
-  // Background Events (Excluding the selected one)
-  const backgroundEvents = useMemo(() => ({
-    type: 'FeatureCollection',
-    features: eventMarkers.features.filter((f: any) => String(f.properties?.id) !== String(selectedEventId)) || []
-  }), [eventMarkers, selectedEventId]);
-
   return (
     <>
-      {/* 0. EVENT BOUNDARIES */}
-      <MapLibreGL.ShapeSource id="eventBoundariesSource" shape={eventBoundaries}>
-        <MapLibreGL.FillLayer
-          id="eventBoundaryFill"
-          style={{
-            fillColor: ['get', 'color'],
-            fillOpacity: 0.1,
-            fillAntialias: true,
-          }}
-        />
-        <MapLibreGL.LineLayer
-          id="eventBoundaryOutline"
-          style={{
-            lineColor: ['get', 'color'],
-            lineWidth: 2,
-            lineDasharray: [2, 2],
-            lineOpacity: 0.6,
-          }}
-        />
-      </MapLibreGL.ShapeSource>
 
       {/* 1. GPU-ACCELERATED BACKGROUND LAYERS */}
       <MapLibreGL.ShapeSource 
         id="backgroundPoisSource" 
         shape={backgroundPois}
-        onPress={(e) => onPoiPress(e.features[0])}
+        hitbox={{ width: 44, height: 44 }}
       >
         <MapLibreGL.CircleLayer
           id="backgroundPoiDots"
@@ -142,49 +110,26 @@ export const MapLayers = React.memo(({
       </MapLibreGL.ShapeSource>
 
       <MapLibreGL.ShapeSource 
-        id="backgroundEventsSource" 
-        shape={backgroundEvents}
-        onPress={(e) => onPoiPress(e.features[0])}
+        id="eventsSource" 
+        shape={eventMarkers}
+        hitbox={{ width: 44, height: 44 }}
       >
-        <MapLibreGL.CircleLayer
-          id="backgroundEventDots"
-          minZoomLevel={10}
-          maxZoomLevel={16}
+        <MapLibreGL.SymbolLayer
+          id="eventLabels"
           style={{
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 5,
-              14, 10
-            ],
-            circleColor: ['get', 'color'],
-            circleStrokeWidth: 3,
-            circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 0,
-              11, 1,
-              15.5, 1,
-              16, 0
-            ],
-            circleStrokeOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 0,
-              11, 1,
-              15.5, 1,
-              16, 0
-            ],
+            textField: ['get', 'name'],
+            textSize: 16,
+            textColor: ['get', 'color'],
+            textHaloColor: '#FFFFFF',
+            textHaloWidth: 3,
+            textAnchor: 'center',
+            textOpacity: 1,
           }}
         />
       </MapLibreGL.ShapeSource>
 
       {/* 2. SELECTED ITEM - Single native view for high-fidelity animations */}
-      {selectedFeature && (
+      {selectedFeature && !selectedEventId && (
         <MapLibreGL.PointAnnotation
           key={`selected-pa-${selectedFeature.properties?.id}`}
           id={`selected-ann-${selectedFeature.properties?.id}`}
@@ -202,23 +147,13 @@ export const MapLayers = React.memo(({
             ]}
             collapsable={false}
           >
-            {selectedEventId ? (
-              <EventMarker
-                event={selectedFeature}
-                theme={theme}
-                isSelected={true}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            ) : (
-              <POIMarker
-                poi={selectedFeature}
-                theme={theme}
-                isSelected={true}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            )}
+            <POIMarker
+              poi={selectedFeature}
+              theme={theme}
+              isSelected={true}
+              onPress={onPoiPress}
+              zoomSharedValue={zoomSharedValue}
+            />
           </View>
         </MapLibreGL.PointAnnotation>
       )}
@@ -257,13 +192,15 @@ export const MapLayers = React.memo(({
       </MapLibreGL.ShapeSource>
 
       {/* 5. ROUTE VISUALS */}
-      <MapLibreGL.ShapeSource id="routeSource" shape={routeGeoJSON} tolerance={0.1}>
-        <MapLibreGL.LineLayer
-          id="routeGlow"
-          style={{ ...mapLayerStyles.routeGlow, lineBlur: 6, lineOpacity: 0.3 }}
-        />
-        <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
-      </MapLibreGL.ShapeSource>
+      {(isNavigating || isPlanning) && currentRoute && (
+        <MapLibreGL.ShapeSource id="routeSource" shape={routeGeoJSON} tolerance={0.1}>
+          <MapLibreGL.LineLayer
+            id="routeGlow"
+            style={{ ...mapLayerStyles.routeGlow, lineBlur: 6, lineOpacity: 0.3 }}
+          />
+          <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
+        </MapLibreGL.ShapeSource>
+      )}
     </>
   );
 });
