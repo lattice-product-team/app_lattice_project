@@ -133,9 +133,18 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         },
       });
     } else if (!selectedCoords) {
+      // CRITICAL FIX: When deselected, explicitly clear the goal by calling setCamera 
+      // with no padding. This "unblocks" the Android camera engine for POIs too.
+      if (lastFocusedPoiRef.current && cameraRef.current) {
+        cameraRef.current.setCamera({
+          padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+          animationDuration: 0,
+        });
+      }
       lastFocusedPoiRef.current = null;
     }
   }, [selectedCoords, isNavigating, insets.top, forceCenterCount, cameraMode, is3DActive]);
+
 
   // Toggle 3D Pitch
   useEffect(() => {

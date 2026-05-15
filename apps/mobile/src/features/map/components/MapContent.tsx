@@ -17,6 +17,7 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 // Components
 import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
 import { MapLayers } from './MapLayers';
+import { MapImageManager } from './MapImageManager';
 
 // Constants & Utilities
 import { useLocationStore } from '../../../store/useLocationStore';
@@ -129,6 +130,11 @@ export const MapContent = function MapContent({
       const center = geometry?.coordinates as [number, number];
       const zoom = properties?.zoomLevel;
       const pitch = properties?.pitch;
+
+      if (zoom !== undefined) {
+        zoomSharedValue.value = zoom;
+      }
+
 
       if (center && zoom && now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
         setLastCameraPosition({ center, zoom, pitch });
@@ -457,7 +463,7 @@ export const MapContent = function MapContent({
           androidRenderMode="gps"
         />
 
-        {/* <MapImageManager events={events} /> */}
+        <MapImageManager events={events} />
 
         <MapCameraManager
           ref={cameraRef}

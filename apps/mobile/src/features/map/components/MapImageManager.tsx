@@ -11,6 +11,7 @@ interface MapImageManagerProps {
  */
 export const MapImageManager = ({ events }: MapImageManagerProps) => {
   const categoryIcons = {
+    /*
     coffee: require('../../../../assets/icons/coffee.png'),
     restaurant: require('../../../../assets/icons/restaurant.png'),
     parking: require('../../../../assets/icons/parking.png'),
@@ -26,7 +27,9 @@ export const MapImageManager = ({ events }: MapImageManagerProps) => {
     gym: require('../../../../assets/icons/gym.png'),
     bank: require('../../../../assets/icons/bank.png'),
     default: require('../../../../assets/icons/marker.png'),
+    */
   };
+
 
   const imageMap = useMemo(() => {
     const images: Record<string, any> = {};
@@ -38,13 +41,9 @@ export const MapImageManager = ({ events }: MapImageManagerProps) => {
       }
     });
 
-    // Register Category Icons
-    Object.entries(categoryIcons).forEach(([key, icon]) => {
-      images[`icon-${key}`] = icon;
-    });
-
     return images;
   }, [events]);
+
 
   return <MapLibreGL.Images images={imageMap} />;
 };

@@ -71,43 +71,32 @@ export const MapLayers = React.memo(({
   return (
     <>
 
-      {/* 1. GPU-ACCELERATED BACKGROUND LAYERS */}
-      <MapLibreGL.ShapeSource 
-        id="backgroundPoisSource" 
-        shape={backgroundPois}
-        hitbox={{ width: 44, height: 44 }}
-      >
-        <MapLibreGL.CircleLayer
-          id="backgroundPoiDots"
-          minZoomLevel={13}
-          style={{
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 3,
-              16, 7
-            ],
-            circleColor: ['get', 'color'],
-            circleStrokeWidth: 2,
-            circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 0,
-              13.5, 1
-            ],
-            circleStrokeOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 0,
-              13.5, 1
-            ],
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+      {/* 1.5 HIGH-FIDELITY BACKGROUND POIS (Lucide Icons) */}
+      {/* We render these as React views for high quality, but keep a threshold for performance */}
+      {zoomLevel >= 13.5 && backgroundPois.features.map((f: any) => (
+        <MapLibreGL.PointAnnotation
+          key={`bg-pa-${f.properties.id}`}
+          id={`bg-ann-${f.properties.id}`}
+          coordinate={f.geometry.coordinates}
+          onSelected={() => onPoiPress(f)}
+        >
+          <View 
+            style={[
+              mapPinStyles.markerWrapper, 
+              { backgroundColor: 'transparent' }
+            ]}
+            collapsable={false}
+          >
+            <POIMarker
+              poi={f}
+              theme={theme}
+              isSelected={false}
+              onPress={onPoiPress}
+              zoomSharedValue={zoomSharedValue}
+            />
+          </View>
+        </MapLibreGL.PointAnnotation>
+      ))}
 
       <MapLibreGL.ShapeSource 
         id="eventsSource" 
@@ -123,7 +112,14 @@ export const MapLayers = React.memo(({
             textHaloColor: '#FFFFFF',
             textHaloWidth: 3,
             textAnchor: 'center',
-            textOpacity: 1,
+            // Fade out as we zoom in, to reveal POIs
+            textOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 1,
+              14.5, 0
+            ],
           }}
         />
       </MapLibreGL.ShapeSource>
@@ -140,10 +136,7 @@ export const MapLayers = React.memo(({
           <View 
             style={[
               mapPinStyles.markerWrapper, 
-              { 
-                backgroundColor: 'transparent',
-                transform: [{ translateY: -40 }] 
-              }
+              { backgroundColor: 'transparent' }
             ]}
             collapsable={false}
           >
@@ -171,25 +164,27 @@ export const MapLayers = React.memo(({
       >
         <MapLibreGL.SymbolLayer
           id="poiLabelLayer"
-          minZoomLevel={14}
+          minZoomLevel={13.5}
           style={{
             textField: ['get', 'name'],
-            textSize: 11,
+            textSize: 12,
             textColor: ['get', 'color'],
             textHaloColor: '#FFFFFF',
             textHaloWidth: 2,
             textAnchor: 'top',
-            textOffset: [0, 1.8],
+            textOffset: [0, 2.2], // Increased offset to be BELOW the icon
             textOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              14, 0,
-              15, 1
+              13.5, 0,
+              14.5, 1
             ]
           }}
         />
       </MapLibreGL.ShapeSource>
+
+
 
       {/* 5. ROUTE VISUALS */}
       {(isNavigating || isPlanning) && currentRoute && (
