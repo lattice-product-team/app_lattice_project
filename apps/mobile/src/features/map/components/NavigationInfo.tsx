@@ -12,6 +12,8 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { Button } from '../../../components/ui/Button';
 
+import { formatDuration, formatDistance } from '../../../utils/geoUtils';
+
 /**
  * NavigationInfo: Bottom arrival summary sheet.
  * Aesthetic: Google Maps style (large duration, exit button) + Lattice Glassmorphism.
@@ -41,20 +43,6 @@ export const NavigationInfo = () => {
     setCameraMode(MapCameraMode.NAVIGATION);
   };
 
-  const formatDistance = (m: number) => {
-    if (m >= 1000) return `${(m / 1000).toFixed(1)} km`;
-    return `${Math.round(m)} m`;
-  };
-
-  const formatDurationLarge = (s: number) => {
-    const totalMins = Math.round(s / 60);
-    if (totalMins < 1) return '< 1 min';
-    if (totalMins < 60) return `${totalMins} min`;
-    const hours = Math.floor(totalMins / 60);
-    const mins = totalMins % 60;
-    return mins === 0 ? `${hours} hr` : `${hours} hr ${mins} min`;
-  };
-
   const getArrivalTime = (seconds: number) => {
     const arrivalDate = new Date();
     arrivalDate.setSeconds(arrivalDate.getSeconds() + seconds);
@@ -80,18 +68,17 @@ export const NavigationInfo = () => {
         style={[
           styles.card,
           {
-            backgroundColor: '#FFFFFF',
-            borderColor: 'rgba(0,0,0,0.05)',
+            backgroundColor: theme.colors.bg.surface,
+            borderColor: theme.colors.border.subtle,
           },
         ]}
       >
-        <View style={styles.handle} />
         <View style={styles.content}>
           <View style={styles.infoLeft}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
               {renderTransportIcon()}
               <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>
-                {formatDurationLarge(routeMetadata.duration)}
+                {formatDuration(routeMetadata.duration)}
               </Text>
             </View>
             <Text style={[styles.subText, { color: theme.colors.text.secondary }]}>
@@ -160,21 +147,13 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     borderWidth: 1,
     overflow: 'hidden',
-    paddingTop: 8,
+    paddingTop: 20,
     paddingBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 10,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 16,
   },
   content: {
     flexDirection: 'row',

@@ -13,27 +13,13 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { useMapUIStore } from '../store/useMapUIStore';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 
+import { calculateDistance, formatDistance } from '../../../utils/geoUtils';
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
 const CARD_HEIGHT = 180;
 
 const Pressable = Platform.OS === 'android' ? NativePressable : GHPressable;
-
-// Utility to calculate distance in meters (Haversine simple)
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371e3; // metres
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-};
 
 interface POICarouselCardProps {
   poi: UIPOI;
@@ -63,8 +49,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
       poi.coordinates[1],
       poi.coordinates[0]
     );
-    if (d >= 1000) return `${(d / 1000).toFixed(1)} km`;
-    return `${Math.round(d)} m`;
+    return formatDistance(d);
   }, [userCoords, poi.coordinates]);
 
   return (

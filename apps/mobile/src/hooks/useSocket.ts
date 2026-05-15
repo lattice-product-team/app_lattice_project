@@ -6,7 +6,6 @@ import { useAuthStore } from '../store/useAuthStore';
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl as string;
 const SOCKET_URL = (API_URL?.replace('/api/v1', '').replace('/v1', '') || '').replace(/\/$/, '');
-console.log('[Socket] Initializing with URL:', SOCKET_URL);
 
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
@@ -56,7 +55,6 @@ export const useSocket = () => {
 
     socketInstance.on('connect_error', (err) => {
       if (err.message.includes('Authentication error')) {
-        console.warn('[Socket] Auth error (token may be expired):', err.message);
         socketInstance.disconnect(); // Stop retrying
       } else {
         console.error('[Socket] Connection error:', err.message);

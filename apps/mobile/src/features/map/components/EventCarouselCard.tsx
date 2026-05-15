@@ -13,19 +13,7 @@ import { getEventMetadata } from '../../../utils/poiUtils';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore } from '../store/useMapUIStore';
 import { useMemo } from 'react';
-
-// Utility to calculate distance
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371e3; // metres
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
+import { calculateDistance, formatDistance, formatDuration } from '../../../utils/geoUtils';
 
 const Pressable = Platform.OS === 'android' ? NativePressable : GHPressable;
 
@@ -86,15 +74,13 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
       event.center.coordinates[0]
     );
 
-    let dText = '';
-    if (d >= 1000) dText = `${(d / 1000).toFixed(1)} km`;
-    else dText = `${Math.round(d)} m`;
-
     // Estimate walking time (5km/h = 1.38m/s)
-    const mins = Math.round(d / 1.38 / 60);
-    const durText = mins < 1 ? '< 1 min' : `${mins} min`;
+    const dur = d / 1.38;
 
-    return { distanceText: dText, durationText: durText };
+    return { 
+      distanceText: formatDistance(d), 
+      durationText: formatDuration(dur) 
+    };
   }, [userCoords, event.center?.coordinates]);
 
   return (
