@@ -27,6 +27,7 @@ interface MapUIStore {
   } | null;
   discoveryLocation: [number, number] | null;
   isProgrammaticMove: boolean;
+  lastScreenMode: number;
 
   // Actions
   setUIState: (state: MapUIState) => void;
@@ -43,34 +44,40 @@ interface MapUIStore {
 /**
  * Specialized store for managing the Map's HUD and sheet visibility states.
  */
-export const useMapUIStore = create<MapUIStore>((set) => ({
-  uiState: MapUIState.EXPLORING,
-  cameraMode: MapCameraMode.FREE,
-  recenterCount: 0,
-  forceCenterCount: 0,
-  isInitialLoadComplete: false,
-  lastCameraPosition: null,
-  discoveryLocation: null,
-  isProgrammaticMove: false,
+export const useMapUIStore = create<MapUIStore>()(
+  persist(
+    (set) => ({
+      uiState: MapUIState.EXPLORING,
+      cameraMode: MapCameraMode.FREE,
+      recenterCount: 0,
+      forceCenterCount: 0,
+      isInitialLoadComplete: false,
+      lastCameraPosition: null,
+      discoveryLocation: null,
+      isProgrammaticMove: false,
+      lastScreenMode: 0,
 
       setUIState: (uiState) => set({ uiState }),
 
-  setCameraMode: (cameraMode) => set({ cameraMode }),
+      setCameraMode: (cameraMode) => set({ cameraMode }),
 
-  setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
+      setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
 
-  triggerRecenter: () =>
-    set((state) => ({
-      recenterCount: state.recenterCount + 1,
-      cameraMode: state.cameraMode === MapCameraMode.NAVIGATION ? MapCameraMode.NAVIGATION : MapCameraMode.FREE,
-    })),
+      triggerRecenter: () =>
+        set((state) => ({
+          recenterCount: state.recenterCount + 1,
+          cameraMode:
+            state.cameraMode === MapCameraMode.NAVIGATION
+              ? MapCameraMode.NAVIGATION
+              : MapCameraMode.FREE,
+        })),
 
       triggerForceCenter: () =>
         set((state) => ({
           forceCenterCount: state.forceCenterCount + 1,
         })),
 
-      setInitialLoadComplete: (isInitialLoadComplete) => set({ isInitialLoadComplete }),
+      setInitialLoadComplete: (isComplete) => set({ isInitialLoadComplete: isComplete }),
 
       setLastCameraPosition: (lastCameraPosition) => set({ lastCameraPosition }),
 
@@ -90,4 +97,3 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
     }
   )
 );
-

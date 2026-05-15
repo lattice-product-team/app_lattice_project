@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { getCategoryLabel, getEventMetadata } from '../../../utils/poiUtils';
 
 interface Props {
   title: string;
@@ -69,7 +70,9 @@ export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
                   style={{ fontFamily: typography.primary.regular, fontSize: 13, color: theme.colors.text.muted }}
                   numberOfLines={1}
                 >
-                  {item.type || item.description || 'Location'}
+                  {item.capacity !== undefined || item.currentOccupancy !== undefined
+                    ? getCategoryLabel(item.type)
+                    : getEventMetadata(item.type).label}
                 </Text>
               </View>
               {distanceText ? (

@@ -379,14 +379,14 @@ export const getPois = async (req: Request, res: Response) => {
 
 export const getCategories = (req: Request, res: Response) => {
   const categories = [
-    { id: '1', label: 'Gates', icon: 'log-in', category: 'gate' },
+    { id: '1', label: 'Access Points', icon: 'log-in', category: 'gate' },
     { id: '2', label: 'Grandstands', icon: 'map', category: 'grandstand' },
-    { id: '3', label: 'Food', icon: 'coffee', category: 'restaurant' },
+    { id: '3', label: 'Gastronomy', icon: 'coffee', category: 'restaurant' },
     { id: '4', label: 'Parking', icon: 'map-pin', category: 'parking' },
-    { id: '5', label: 'Shopping', icon: 'shopping-bag', category: 'shop' },
-    { id: '6', label: 'Toilets', icon: 'user', category: 'wc' },
+    { id: '5', label: 'Official Store', icon: 'shopping-bag', category: 'shop' },
+    { id: '6', label: 'Restrooms', icon: 'user', category: 'wc' },
     { id: '7', label: 'Medical', icon: 'plus-square', category: 'medical' },
-    { id: '8', label: 'Meetups', icon: 'users', category: 'meetup_point' },
+    { id: '8', label: 'Meetup Points', icon: 'users', category: 'meetup_point' },
   ];
   res.json(categories);
 };
