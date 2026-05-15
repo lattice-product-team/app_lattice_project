@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="https://lattice-product-team.github.io/app_lattice_project/assets/lattice_banner_1778588749257.png" width="100%" alt="Lattice Banner" />
   
   # Lattice
   

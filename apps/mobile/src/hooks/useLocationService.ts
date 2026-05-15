@@ -4,6 +4,7 @@ import { useLocationPermission } from './useLocationPermission';
 import { PermissionStatus } from '../types';
 import { useLocationStore } from '../store/useLocationStore';
 import { calculateDistance } from '../utils/geoUtils';
+import { useNavigationStore } from '../features/navigation/store/useNavigationStore';
 
 const SIGNIFICANT_MOVEMENT_THRESHOLD = 10; // meters
 
@@ -24,6 +25,7 @@ export const useLocationService = (): LocationState => {
   const setLogicalLocation = useLocationStore((s) => s.setLogicalLocation);
   const setStoreStatus = useLocationStore((s) => s.setStatus);
   const userCoords = useLocationStore((s) => s.coords);
+  const { isNavigating, isPlanning } = useNavigationStore();
   const lastLogicalCoords = useRef<number[] | null>(null);
 
   const updateLocation = (lng: number, lat: number) => {
@@ -76,19 +78,22 @@ export const useLocationService = (): LocationState => {
 
           // 2. Try to get current position (forces a refresh)
           const initial = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.High,
+            accuracy: Location.Accuracy.Balanced,
           }).catch(() => null);
 
           if (initial) {
             updateLocation(initial.coords.longitude, initial.coords.latitude);
           }
 
-          // 3. Start watching for changes
+          // 3. Start watching for changes with dynamic accuracy
+          // If navigating/planning, use High accuracy. Otherwise, Balanced to save battery.
+          const isActiveMode = isNavigating || isPlanning;
+
           subscription = await Location.watchPositionAsync(
             {
-              accuracy: Location.Accuracy.High,
-              timeInterval: 2000,
-              distanceInterval: 5,
+              accuracy: isActiveMode ? Location.Accuracy.High : Location.Accuracy.Balanced,
+              timeInterval: isActiveMode ? 2000 : 5000,
+              distanceInterval: isActiveMode ? 5 : 20,
             },
             (location) => {
               updateLocation(location.coords.longitude, location.coords.latitude);
@@ -103,7 +108,7 @@ export const useLocationService = (): LocationState => {
     return () => {
       subscription?.remove();
     };
-  }, [status, setLocation]);
+  }, [status, isNavigating, isPlanning]); // Restart tracking when mode changes to apply new accuracy settings
 
   return {
     coords: userCoords,
