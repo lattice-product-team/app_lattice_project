@@ -147,27 +147,20 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const isNewTarget = targetKey !== lastTargetRef.current;
 
     if (isNewMode || isNewTarget || isForcedCenter || isForcedRecenter) {
-      console.log(`[CameraManager] Orchestrating: uiState=${uiState}, isNewMode=${isNewMode}, isNewTarget=${isNewTarget}, targetKey=${targetKey}`);
       if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
     }
 
     if (isNewMode) {
-      console.log(`[CameraManager] Mode Transition: ${prevUiState.current} -> ${uiState}`);
-      // Only reset padding if we aren't about to perform a major transition
       if (uiState === MapUIState.EXPLORING) {
         safetyReset();
       }
     }
 
-    if (!cameraRef.current) {
-      console.warn('[CameraManager] cameraRef.current is null, skipping orchestration');
-      return;
-    }
+    if (!cameraRef.current) return;
 
     // 1. NAVIGATION MODE
     if (uiState === MapUIState.NAVIGATING) {
       if (isNewMode || isForcedRecenter || isForcedCenter || isNewTarget) {
-        console.log('[CameraManager] Triggering NAVIGATING movement', { isNewTarget });
         lastProcessedRecenterRef.current = recenterCount;
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastTargetRef.current = targetKey;
@@ -194,7 +187,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     else if (uiState === MapUIState.PLANNING) {
       const isFinishFetching = !isFetching && prevIsFetching.current;
       if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching) {
-        console.log('[CameraManager] Triggering PLANNING movement', { isFinishFetching, isNewTarget });
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastTargetRef.current = targetKey;
         setCameraMode(MapCameraMode.FREE);
@@ -208,7 +200,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         if (!isFetching && validPoints.length >= 2) {
           const bbox = calculateBBox(validPoints);
           if (bbox) {
-            console.log('[CameraManager] Fitting Planning BBox');
             setIsProgrammaticMove(true);
             cameraRef.current.setCamera({
               bounds: {
@@ -228,7 +219,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
           }
         } else if (destinationCoords) {
-          console.log('[CameraManager] Flying to Planning Destination (Still Fetching or Single Point)');
           setIsProgrammaticMove(true);
           cameraRef.current.setCamera({
             centerCoordinate: destinationCoords,
@@ -246,7 +236,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // 3. POI / EVENT DETAIL MODE
     else if (uiState === MapUIState.POI_DETAIL || (isNewTarget && targetCoords)) {
       if (isNewMode || isForcedCenter || isForcedRecenter || isNewTarget) {
-        console.log('[CameraManager] Triggering DETAIL movement', { uiState, targetKey });
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastProcessedRecenterRef.current = recenterCount;
         lastTargetRef.current = targetKey;
@@ -269,12 +258,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           });
 
           transitionTimerRef.current = setTimeout(() => {
-            console.log('[CameraManager] Transition Complete - Maintaining state');
             setIsProgrammaticMove(false);
           }, 1100);
           return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
-        } else {
-          console.warn('[CameraManager] Target selected but no coordinates found');
         }
       }
     }
@@ -282,7 +268,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // 4. EXPLORING / BASE MODE
     else if (uiState === MapUIState.EXPLORING) {
       if (isNewMode || isForcedRecenter) {
-        console.log('[CameraManager] Triggering EXPLORING movement');
         lastProcessedRecenterRef.current = recenterCount;
         lastTargetRef.current = null;
         setCameraMode(MapCameraMode.FREE);

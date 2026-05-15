@@ -61,6 +61,14 @@ export const usePOIStore = create<POIState>((set) => ({
     });
   },
 
+  clearSelection: () => {
+    set({ 
+      selectedPoiId: null, 
+      selectedPoi: null, 
+      selectedCoords: null 
+    });
+  },
+
   deselect: () => {
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
@@ -91,6 +99,9 @@ export const usePOIStore = create<POIState>((set) => ({
     } catch (e) {}
     set({
       selectedEventId,
+      selectedPoiId: null,
+      selectedPoi: null,
+      selectedCoords: null,
       activeCategoryFilters: [], // Clear filters when switching events
     });
   },
@@ -124,7 +135,7 @@ export const usePOIStore = create<POIState>((set) => ({
     }
 
     // 1. Zoom-based visibility threshold
-    if (zoom < 14.0) return [];
+    if (zoom < 12.0) return [];
 
     // 2. Category Filtering Logic
     if (activeCategoryFilters.length > 0) {

@@ -63,16 +63,22 @@ export const MapLayers = React.memo(({
 
   const backgroundPois = useMemo(() => ({
     type: 'FeatureCollection',
-    features: poisGeoJSON?.features?.filter((f: any) => String(f.properties?.id) !== String(selectedPoiId)) || []
-  }), [poisGeoJSON, selectedPoiId]);
+    features: poisGeoJSON?.features || []
+  }), [poisGeoJSON]);
 
   const labelGeoJSON = useMemo(() => ({
     type: 'FeatureCollection',
     features: [
       ...(selectedFeature ? [selectedFeature] : []),
-      ...(zoomLevel >= 15 ? backgroundPois.features : [])
+      ...(zoomLevel >= 14 ? backgroundPois.features : [])
     ]
   }), [selectedFeature, backgroundPois, zoomLevel]);
+
+  const handleShapePress = (e: any) => {
+    if (e.features && e.features.length > 0) {
+      onPoiPress(e.features[0]);
+    }
+  };
 
   return (
     <>
@@ -84,37 +90,16 @@ export const MapLayers = React.memo(({
         id="poiSource" 
         shape={backgroundPois}
         hitbox={{ width: 30, height: 30 }}
+        onPress={handleShapePress}
       >
-        <MapLibreGL.CircleLayer
-          id="backgroundPoiDots"
-          minZoomLevel={13.5}
-          style={{
-            circleColor: ['get', 'color'],
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13.5, 3,
-              16, 6,
-              18, 8
-            ],
-            circleStrokeWidth: 2,
-            circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13.5, 0,
-              14.5, 1
-            ]
-          }}
-        />
+      {/* Background circles removed in favor of persistent icons */}
       </MapLibreGL.ShapeSource>
 
       <MapLibreGL.ShapeSource 
         id="eventsSource" 
         shape={eventMarkers}
         hitbox={{ width: 44, height: 44 }}
+        onPress={handleShapePress}
       >
         <MapLibreGL.SymbolLayer
           id="eventLabels"
@@ -137,32 +122,37 @@ export const MapLayers = React.memo(({
         />
       </MapLibreGL.ShapeSource>
 
-      {/* 2. SELECTED ITEM - Single native view for high-fidelity animations */}
-      {selectedFeature && !selectedEventId && (
-        <MapLibreGL.PointAnnotation
-          key={`selected-pa-${selectedFeature.properties?.id}`}
-          id={`selected-ann-${selectedFeature.properties?.id}`}
-          coordinate={selectedFeature.geometry.coordinates}
-          onSelected={() => onPoiPress(selectedFeature)}
-          style={{ zIndex: 100 }}
-        >
-          <View 
-            style={[
-              mapPinStyles.markerWrapper, 
-              { backgroundColor: 'transparent' }
-            ]}
-            collapsable={false}
+      {/* 2. POI MARKERS - Persistent icons for all visible POIs */}
+      {backgroundPois.features.map((feature: any) => {
+        const id = feature.properties?.id;
+        const isSelected = String(id) === String(selectedPoiId);
+        
+        return (
+          <MapLibreGL.PointAnnotation
+            key={`poi-${id}`}
+            id={`ann-${id}`}
+            coordinate={feature.geometry.coordinates}
+            onSelected={() => onPoiPress(feature)}
+            style={{ zIndex: isSelected ? 100 : 50 }}
           >
-            <POIMarker
-              poi={selectedFeature}
-              theme={theme}
-              isSelected={true}
-              onPress={onPoiPress}
-              zoomSharedValue={zoomSharedValue}
-            />
-          </View>
-        </MapLibreGL.PointAnnotation>
-      )}
+            <View 
+              style={[
+                mapPinStyles.markerWrapper, 
+                { backgroundColor: 'transparent' }
+              ]}
+              collapsable={false}
+            >
+              <POIMarker
+                poi={feature}
+                theme={theme}
+                isSelected={isSelected}
+                onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
 
       {/* 4. LABELS - Throttled rendering for better performance */}
       <MapLibreGL.ShapeSource 

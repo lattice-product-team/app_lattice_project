@@ -324,7 +324,6 @@ export default function MapIndexPage() {
 
       setSelectedEvent(event.id);
       setCurrentEvent(event);
-      selectPoi(null); // Clear any active POI selection
 
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
