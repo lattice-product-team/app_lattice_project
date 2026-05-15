@@ -279,10 +279,10 @@ export const getEventStats = async (req: Request, res: Response) => {
       );
 
     res.json({
-      estimatedCapacity: capacityResult.total || 0,
-      entryRate: Math.round((entryCount.count || 0) / 10),
-      staffOnline: staffCount.count || 0,
-      activeAlerts: alertsCount.count || 0,
+      estimatedCapacity: capacityResult?.total || 0,
+      entryRate: Math.round(((entryCount as any)?.count || 0) / 10),
+      staffOnline: staffCount?.count || 0,
+      activeAlerts: alertsCount?.count || 0,
     });
   } catch (error) {
     console.error('Error fetching event stats:', error);
