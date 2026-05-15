@@ -30,6 +30,7 @@ export const SheetHeader = ({
   title,
   subtitle,
   bannerUrl,
+  logoUrl,
   onClose,
   onShare,
   scrollY,
@@ -100,17 +101,35 @@ export const SheetHeader = ({
       Extrapolation.CLAMP
     );
 
+    // 1. Initial color based on banner presence
+    const baseColor = bannerUrl ? '#FFFFFF' : theme.colors.text.primary;
+    
+    // 2. Interpolate based on islandState (expansion)
+    const expansionColor = interpolateColor(
+      islandState.value,
+      [0.34, 0.6],
+      [baseColor, theme.colors.text.primary]
+    );
+
+    // 3. Interpolate based on scroll inside full view
     const textColor = interpolateColor(
       clampedScrollY.value,
       [0, 40],
-      [bannerUrl ? '#FFFFFF' : theme.colors.text.primary, theme.colors.text.primary]
+      [expansionColor, theme.colors.text.primary]
+    );
+
+    const textShadowOpacity = interpolate(
+      islandState.value,
+      [0.34, 0.6],
+      [bannerUrl ? 0.4 : 0, 0],
+      Extrapolation.CLAMP
     );
 
     return {
       fontSize,
       color: textColor,
       transform: [{ translateY }],
-      textShadowColor: bannerUrl ? 'rgba(0,0,0,0.4)' : 'transparent',
+      textShadowColor: `rgba(0,0,0,${textShadowOpacity})`,
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 4,
     };
@@ -122,10 +141,18 @@ export const SheetHeader = ({
     const height = interpolate(clampedScrollY.value, [0, 50], [18, 0], Extrapolation.CLAMP);
     const marginTop = interpolate(clampedScrollY.value, [0, 50], [2, 0], Extrapolation.CLAMP);
 
+    const baseColor = bannerUrl ? 'rgba(255,255,255,0.9)' : theme.colors.text.secondary;
+    
+    const expansionColor = interpolateColor(
+      islandState.value,
+      [0.34, 0.6],
+      [baseColor, theme.colors.text.secondary]
+    );
+
     const textColor = interpolateColor(
       clampedScrollY.value,
       [0, 40],
-      [bannerUrl ? 'rgba(255,255,255,0.9)' : theme.colors.text.secondary, theme.colors.text.secondary]
+      [expansionColor, theme.colors.text.secondary]
     );
 
     return {
@@ -137,13 +164,62 @@ export const SheetHeader = ({
   });
 
   const bannerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(clampedScrollY.value, [0, 100], [1, 0], Extrapolation.CLAMP);
+    // 1. Fade out as it expands from MID to FULL
+    const islandOpacity = interpolate(
+      islandState.value,
+      [0.34, 0.6], // Fade out early during expansion
+      [1, 0],
+      Extrapolation.CLAMP
+    );
+
+    // 2. Also keep the existing scroll-based fade out just in case
+    const scrollOpacity = interpolate(clampedScrollY.value, [0, 100], [1, 0], Extrapolation.CLAMP);
+    
     const scale = interpolate(clampedScrollY.value, [-50, 0], [1.1, 1], Extrapolation.CLAMP);
     const translateY = interpolate(clampedScrollY.value, [0, 100], [0, -20], Extrapolation.CLAMP);
 
     return {
-      opacity,
+      opacity: islandOpacity * scrollOpacity,
       transform: [{ scale }, { translateY }],
+    };
+  });
+
+  const thumbnailStyle = useAnimatedStyle(() => {
+    // Fades in as we reach Level 3
+    const opacity = interpolate(
+      islandState.value,
+      [0.8, 1.0],
+      [0, 1],
+      Extrapolation.CLAMP
+    );
+
+    // Also moves horizontally to make space for text
+    const translateX = interpolate(
+      islandState.value,
+      [0.8, 1.0],
+      [-20, 0],
+      Extrapolation.CLAMP
+    );
+
+    const width = interpolate(
+      islandState.value,
+      [0.8, 1.0],
+      [0, 40],
+      Extrapolation.CLAMP
+    );
+
+    const marginRight = interpolate(
+      islandState.value,
+      [0.8, 1.0],
+      [0, 12],
+      Extrapolation.CLAMP
+    );
+
+    return {
+      opacity,
+      width,
+      marginRight,
+      transform: [{ translateX }],
     };
   });
 
@@ -186,14 +262,25 @@ export const SheetHeader = ({
 
         {/* Main Branding Section */}
         <View style={styles.content}>
-          <View style={styles.textContainer}>
-            <Animated.Text style={[styles.title, titleStyle]} numberOfLines={1}>
-              {title}
-            </Animated.Text>
-            <Animated.Text style={[styles.subtitle, subtitleStyle]} numberOfLines={1}>
-              {subtitle}
-            </Animated.Text>
-          </View>
+          <Animated.View style={[styles.headerContentRow, { 
+            flexDirection: 'row', 
+            alignItems: 'center',
+          }]}>
+            {bannerUrl && (
+              <Animated.Image 
+                source={{ uri: bannerUrl }}
+                style={[styles.thumbnail, thumbnailStyle]}
+              />
+            )}
+            <View style={styles.textContainer}>
+              <Animated.Text style={[styles.title, titleStyle]} numberOfLines={1}>
+                {title}
+              </Animated.Text>
+              <Animated.Text style={[styles.subtitle, subtitleStyle]} numberOfLines={1}>
+                {subtitle}
+              </Animated.Text>
+            </View>
+          </Animated.View>
         </View>
       </Animated.View>
       
@@ -244,5 +331,15 @@ const styles = StyleSheet.create({
   },
   banner: {
     opacity: 0.6,
+  },
+  thumbnail: {
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  headerContentRow: {
+    width: '100%',
+    justifyContent: 'center',
   },
 });

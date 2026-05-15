@@ -43,7 +43,7 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
   intendedDestination: null,
   isAuthPromptOpen: false,
 
-  setAuth: (token, user, tickets, isGuest = false) =>
+  setAuth: (token, user, tickets, isGuest = false) => {
     set((state) => ({
       token,
       user,
@@ -51,9 +51,12 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
       isGuest,
       registrationRequired: false,
       prefilledEmail: null,
-    })),
+    }));
+  },
 
-  setGuestMode: (isGuest) => set({ isGuest }),
+  setGuestMode: (isGuest) => {
+    set({ isGuest });
+  },
 
   setTicket: (ticket) =>
     set((state) => ({
@@ -91,7 +94,7 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
       user: state.user ? { ...state.user, ...userUpdates } : null,
     })),
 
-  logout: () =>
+  logout: () => {
     set({
       token: null,
       user: null,
@@ -103,7 +106,8 @@ const createAuthStore: StateCreator<AuthState, [['zustand/persist', unknown]]> =
       prefilledEmail: null,
       intendedDestination: null,
       isAuthPromptOpen: false,
-    }),
+    });
+  },
 });
 
 export const useAuthStore = create<AuthState>()(
@@ -112,3 +116,7 @@ export const useAuthStore = create<AuthState>()(
     storage: createJSONStorage(() => mmkvStorage),
   })
 );
+
+
+
+

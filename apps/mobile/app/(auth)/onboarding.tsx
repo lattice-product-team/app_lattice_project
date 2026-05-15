@@ -74,6 +74,11 @@ export default function OnboardingScreen() {
 
   const handleGuestMode = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // Reset screen to Explore for the new guest session
+    const { useMapUIStore } = require('../../src/features/map/store/useMapUIStore');
+    useMapUIStore.getState().setLastScreenMode(0);
+
     setGuestMode(true);
     router.replace('/(main)');
   };

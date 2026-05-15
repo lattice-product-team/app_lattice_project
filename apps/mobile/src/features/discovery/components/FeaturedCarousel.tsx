@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Star } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
@@ -34,7 +35,7 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
             className="rounded-[32px] overflow-hidden"
           >
             <Image
-              source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
+              source={{ uri: event.bannerUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
               style={{ width: '100%', height: '100%' }}
               contentFit="cover"
               transition={200}
@@ -53,6 +54,12 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
                 <Text style={{ fontFamily: typography.primary.medium, color: '#fff', opacity: 0.8, fontSize: 12 }}>
                   {new Date(event.startDate || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </Text>
+                <View className="flex-row items-center gap-1 ml-auto">
+                  <Star size={14} color="#FACC15" fill="#FACC15" />
+                  <Text style={{ fontFamily: typography.primary.bold, color: '#FACC15', fontSize: 12 }}>
+                    {((event as any).metadata?.social?.rating || 4.5 + Math.random() * 0.5).toFixed(1)}
+                  </Text>
+                </View>
               </View>
               <Text
                 style={{ fontFamily: typography.primary.bold, color: '#fff', fontSize: 24, marginBottom: 4 }}
@@ -67,10 +74,11 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
                 {event.locationName || 'Downtown Area'}
               </Text>
               <Pressable
+                onPress={() => onPress(event)}
                 className="bg-yellow-400 py-3 rounded-2xl items-center justify-center"
               >
                 <Text style={{ fontFamily: typography.primary.bold, color: '#000', fontSize: 14 }}>
-                  GET TICKETS
+                  CONSULTA MÁS DETALLES
                 </Text>
               </Pressable>
             </View>

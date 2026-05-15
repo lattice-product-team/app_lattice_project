@@ -112,9 +112,10 @@ export const MapContent = function MapContent({
         // Changing it during an active gesture causes PointAnnotations to unmount
         // while MapLibre's C++ layout engine is busy, causing hard crashes.
         // On Android, we are even stricter to prevent re-renders during active tracking.
-        const canUpdateZoom = Platform.OS === 'android' 
-          ? !isChanging && cameraMode !== MapCameraMode.NAVIGATION
-          : !isChanging;
+        const canUpdateZoom =
+          Platform.OS === 'android'
+            ? !isChanging && cameraMode !== MapCameraMode.NAVIGATION
+            : !isChanging;
 
         if (canUpdateZoom) {
           const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
@@ -126,7 +127,7 @@ export const MapContent = function MapContent({
         // Throttled updates for global state and discrete changes
         if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
           lastZoomUpdateRef.current = now;
-          
+
           const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
           if (newDiscreteZoom !== discreteZoom && !isChanging) {
             setDiscreteZoom(newDiscreteZoom);
@@ -146,13 +147,13 @@ export const MapContent = function MapContent({
       }
 
       // If camera is changing due to user interaction (drag, pinch, etc), stop following
-      // On Android, isUserInteraction can be unreliable during fast gestures, 
+      // On Android, isUserInteraction can be unreliable during fast gestures,
       // so we also check if region is actively changing and we're NOT in a programmatic state.
-      const shouldSwitchToFree = !isProgrammaticMove && (
-        Platform.OS === 'android' 
+      const shouldSwitchToFree =
+        !isProgrammaticMove &&
+        (Platform.OS === 'android'
           ? isUserInteraction && cameraMode !== MapCameraMode.FREE
-          : (isUserInteraction || isChanging) && cameraMode !== MapCameraMode.FREE
-      );
+          : (isUserInteraction || isChanging) && cameraMode !== MapCameraMode.FREE);
 
       if (shouldSwitchToFree) {
         setCameraMode(MapCameraMode.FREE);
@@ -281,7 +282,7 @@ export const MapContent = function MapContent({
       if (!feature?.properties) return;
 
       const { properties, geometry } = feature;
-      
+
       // Parse raw string if it came from queryRenderedFeatures
       let rawData = properties.raw;
       if (typeof rawData === 'string') {
@@ -371,18 +372,15 @@ export const MapContent = function MapContent({
     // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
     // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
     const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
-      const isNativePOI =
-        layer.id.includes('poi') ||
-        layer.id.includes('place') ||
-        layer.id.includes('label') ||
-        layer.id.includes('transit') ||
-        layer.id.includes('transport') ||
-        layer.id.includes('station') ||
-        layer.id.includes('rail') ||
-        layer.id.includes('building-number') ||
-        layer.id.includes('infrastructure');
+      // Robust approach: Hide most symbol/label layers except essential geographical names
+      const isSymbolLayer = layer.type === 'symbol';
+      const isEssentialLabel =
+        layer.id.includes('place_label') ||
+        layer.id.includes('road_label') ||
+        layer.id.includes('water_label') ||
+        layer.id.includes('country_label');
 
-      if (isNativePOI) {
+      if (isSymbolLayer && !isEssentialLabel) {
         return {
           ...layer,
           layout: {
@@ -407,42 +405,45 @@ export const MapContent = function MapContent({
     };
   }, [theme.dark]);
 
-  const handleMapPress = useCallback(async (e: any) => {
-    const now = Date.now();
-    const isRecentlyMoved = isPanningRef.current || now - lastPanUpdateRef.current < 150;
+  const handleMapPress = useCallback(
+    async (e: any) => {
+      const now = Date.now();
+      const isRecentlyMoved = isPanningRef.current || now - lastPanUpdateRef.current < 150;
 
-    try {
-      const { screenPointX, screenPointY } = e.properties;
-      
-      if (mapRef.current) {
-        const features = await mapRef.current.queryRenderedFeaturesAtPoint(
-          [screenPointX, screenPointY],
-          null, // filter
-          ['eventLabels', 'backgroundPoiDots', 'poiLabelLayer'] // Layer IDs to check
-        );
+      try {
+        const { screenPointX, screenPointY } = e.properties;
 
-        if (features?.features && features.features.length > 0) {
-          // FEATURE TAP: We are more lenient here. 
-          // If we hit a specific label or pin, we assume it was an intentional click.
-          const feature = features.features.find((f: any) => f?.properties?.id);
-          if (feature) {
-            handlePoiPress(feature);
-            return;
+        if (mapRef.current) {
+          const features = await mapRef.current.queryRenderedFeaturesAtPoint(
+            [screenPointX, screenPointY],
+            null, // filter
+            ['eventLabels', 'backgroundPoiDots', 'poiLabelLayer'] // Layer IDs to check
+          );
+
+          if (features?.features && features.features.length > 0) {
+            // FEATURE TAP: We are more lenient here.
+            // If we hit a specific label or pin, we assume it was an intentional click.
+            const feature = features.features.find((f: any) => f?.properties?.id);
+            if (feature) {
+              handlePoiPress(feature);
+              return;
+            }
           }
         }
+      } catch (err) {
+        console.warn('[MapContent] Error querying map features:', err);
       }
-    } catch (err) {
-      console.warn('[MapContent] Error querying map features:', err);
-    }
 
-    // EMPTY MAP TAP: Apply stricter lockout to avoid accidental deselection while panning.
-    if (isRecentlyMoved) {
-      console.log('[MapContent] Ignored background tap due to recent camera movement.');
-      return;
-    }
+      // EMPTY MAP TAP: Apply stricter lockout to avoid accidental deselection while panning.
+      if (isRecentlyMoved) {
+        console.log('[MapContent] Ignored background tap due to recent camera movement.');
+        return;
+      }
 
-    if (onDeselect) onDeselect();
-  }, [onDeselect, handlePoiPress]);
+      if (onDeselect) onDeselect();
+    },
+    [onDeselect, handlePoiPress]
+  );
 
   return (
     <View style={{ flex: 1 }}>

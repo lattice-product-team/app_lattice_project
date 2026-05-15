@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { mmkvStorage } from '../../../services/storage';
 
 export enum MapUIState {
   EXPLORING = 'EXPLORING',
@@ -35,6 +37,7 @@ interface MapUIStore {
   setInitialLoadComplete: (isComplete: boolean) => void;
   setLastCameraPosition: (pos: { center: [number, number]; zoom: number; pitch: number }) => void;
   setDiscoveryLocation: (loc: [number, number] | null) => void;
+  setLastScreenMode: (mode: number) => void;
 }
 
 /**
@@ -50,7 +53,7 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   discoveryLocation: null,
   isProgrammaticMove: false,
 
-  setUIState: (uiState) => set({ uiState }),
+      setUIState: (uiState) => set({ uiState }),
 
   setCameraMode: (cameraMode) => set({ cameraMode }),
 
@@ -62,14 +65,29 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
       cameraMode: state.cameraMode === MapCameraMode.NAVIGATION ? MapCameraMode.NAVIGATION : MapCameraMode.FREE,
     })),
 
-  triggerForceCenter: () =>
-    set((state) => ({
-      forceCenterCount: state.forceCenterCount + 1,
-    })),
+      triggerForceCenter: () =>
+        set((state) => ({
+          forceCenterCount: state.forceCenterCount + 1,
+        })),
 
-  setInitialLoadComplete: (isInitialLoadComplete) => set({ isInitialLoadComplete }),
+      setInitialLoadComplete: (isInitialLoadComplete) => set({ isInitialLoadComplete }),
 
-  setLastCameraPosition: (lastCameraPosition) => set({ lastCameraPosition }),
+      setLastCameraPosition: (lastCameraPosition) => set({ lastCameraPosition }),
 
-  setDiscoveryLocation: (discoveryLocation) => set({ discoveryLocation }),
-}));
+      setDiscoveryLocation: (discoveryLocation) => set({ discoveryLocation }),
+
+      setLastScreenMode: (lastScreenMode) => set({ lastScreenMode }),
+    }),
+    {
+      name: 'map-ui-storage',
+      storage: createJSONStorage(() => mmkvStorage),
+      // Only persist relevant UI state, not volatile counts
+      partialize: (state) => ({
+        lastScreenMode: state.lastScreenMode,
+        lastCameraPosition: state.lastCameraPosition,
+        discoveryLocation: state.discoveryLocation,
+      }),
+    }
+  )
+);
+

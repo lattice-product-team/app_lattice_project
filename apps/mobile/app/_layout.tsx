@@ -33,7 +33,12 @@ export default function RootLayout() {
   const { loaded: fontsLoaded, error: fontsError } = useAppFonts();
   const isDataReady = useStartupStore((s) => s.isDataReady);
   const isMapReady = useStartupStore((s) => s.isMapReady);
-  const theme = useAppTheme();
+  let theme = useAppTheme();
+  if (!theme || !theme.colors) {
+    const { darkTheme } = require('../src/styles/theme');
+    theme = darkTheme;
+  }
+
 
   const [showSplashOverlay, setShowSplashOverlay] = useState(true);
   const splashOpacity = useSharedValue(1);

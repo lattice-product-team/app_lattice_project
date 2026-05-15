@@ -33,7 +33,7 @@ interface Event {
   id: string | number;
   name: string;
   image?: string;
-  imageUrl?: string;
+  bannerUrl?: string;
   date?: string;
   startDate?: string;
   location?: string;
@@ -109,7 +109,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
         <View style={styles.container}>
           {/* Background Image */}
           <Image
-            source={event.image || event.imageUrl}
+            source={event.image || event.bannerUrl}
             style={styles.image}
             contentFit="cover"
             transition={300}

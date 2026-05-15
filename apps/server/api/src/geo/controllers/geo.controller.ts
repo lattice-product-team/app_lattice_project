@@ -103,6 +103,8 @@ export const getEventSpatial = async (req: Request, res: Response) => {
         id: pointsOfInterest.id,
         name: pointsOfInterest.name,
         type: pointsOfInterest.type,
+        bannerUrl: pointsOfInterest.bannerUrl,
+        galleryUrls: pointsOfInterest.galleryUrls,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
       })
       .from(pointsOfInterest)
@@ -129,6 +131,8 @@ export const getEventSpatial = async (req: Request, res: Response) => {
           id: poi.id,
           type: poi.type,
           name: poi.name,
+          bannerUrl: poi.bannerUrl,
+          galleryUrls: poi.galleryUrls,
         },
       });
     });
@@ -311,7 +315,7 @@ export const getPois = async (req: Request, res: Response) => {
         capacity: pointsOfInterest.capacity,
         currentOccupancy: pointsOfInterest.currentOccupancy,
         status: pointsOfInterest.status,
-        metadata: pointsOfInterest.metadata,
+        bannerUrl: pointsOfInterest.bannerUrl, galleryUrls: pointsOfInterest.galleryUrls, metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
         eventId: pointsOfInterest.eventId,
         eventName: events.name,
@@ -351,6 +355,8 @@ export const getPois = async (req: Request, res: Response) => {
         currentOccupancy: poi.currentOccupancy,
         status: poi.status,
         metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
+        bannerUrl: poi.bannerUrl,
+        galleryUrls: poi.galleryUrls,
         eventId: poi.eventId,
         eventName: poi.eventName,
         eventColor: poi.eventPrimaryColor,
@@ -428,7 +434,7 @@ export const getPoi = async (req: Request, res: Response) => {
         capacity: pointsOfInterest.capacity,
         currentOccupancy: pointsOfInterest.currentOccupancy,
         status: pointsOfInterest.status,
-        metadata: pointsOfInterest.metadata,
+        bannerUrl: pointsOfInterest.bannerUrl, galleryUrls: pointsOfInterest.galleryUrls, metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
       })
       .from(pointsOfInterest)
@@ -465,6 +471,8 @@ export const getPoi = async (req: Request, res: Response) => {
         capacity: poi.capacity,
         currentOccupancy: poi.currentOccupancy,
         status: poi.status,
+        bannerUrl: poi.bannerUrl,
+        galleryUrls: poi.galleryUrls,
         metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
       },
     });
@@ -525,7 +533,7 @@ export const getEvents = async (req: Request, res: Response) => {
         type: events.type,
         locationName: events.locationName,
         address: events.address,
-        imageUrl: events.imageUrl,
+        bannerUrl: events.bannerUrl, galleryUrls: events.galleryUrls,
         startDate: events.startDate,
         endDate: events.endDate,
         isPermanent: events.isPermanent,
@@ -565,6 +573,8 @@ export const createEvent = async (req: Request, res: Response) => {
       primaryColor,
       isPermanent,
       center,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (!name || !startDate || !endDate) {
@@ -591,6 +601,8 @@ export const createEvent = async (req: Request, res: Response) => {
         boundary: boundary
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`
           : null,
+        bannerUrl,
+        galleryUrls,
       })
       .returning();
 
@@ -621,6 +633,8 @@ export const createPoi = async (req: Request, res: Response) => {
       capacity,
       isWheelchairAccessible,
       hasPriorityLane,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (!name || !type || !geometry) {
@@ -668,6 +682,8 @@ export const createPoi = async (req: Request, res: Response) => {
         isWheelchairAccessible: isWheelchairAccessible ?? true,
         hasPriorityLane: hasPriorityLane ?? false,
         location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`,
+        bannerUrl,
+        galleryUrls,
       })
       .returning();
 
@@ -706,7 +722,7 @@ export const getEvent = async (req: Request, res: Response) => {
         type: events.type,
         locationName: events.locationName,
         address: events.address,
-        imageUrl: events.imageUrl,
+        bannerUrl: events.bannerUrl, galleryUrls: events.galleryUrls,
         startDate: events.startDate,
         endDate: events.endDate,
         isPermanent: events.isPermanent,
@@ -774,6 +790,8 @@ export const updatePoi = async (req: Request, res: Response) => {
       isWheelchairAccessible,
       hasPriorityLane,
       status,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (isNaN(poiId)) {
@@ -827,6 +845,8 @@ export const updatePoi = async (req: Request, res: Response) => {
         location: geometry 
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`
           : undefined,
+        bannerUrl: bannerUrl ?? existingPoi.bannerUrl,
+        galleryUrls: galleryUrls ?? existingPoi.galleryUrls,
       })
       .where(eq(pointsOfInterest.id, poiId))
       .returning();
@@ -864,6 +884,8 @@ export const updateEvent = async (req: Request, res: Response) => {
       primaryColor,
       isPermanent,
       center,
+      bannerUrl,
+      galleryUrls,
     } = req.body;
 
     if (isNaN(eventId)) {
@@ -899,6 +921,8 @@ export const updateEvent = async (req: Request, res: Response) => {
         boundary: boundary
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`
           : undefined,
+        bannerUrl: bannerUrl ?? existingEvent.bannerUrl,
+        galleryUrls: galleryUrls ?? existingEvent.galleryUrls,
       })
       .where(eq(events.id, eventId))
       .returning();
