@@ -105,8 +105,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         'Allow Lattice to use your location to guide you through events.',
       NSLocationAlwaysAndWhenInUseUsageDescription:
         'Allow Lattice to use your location to guide you through events.',
-      NSMicrophoneUsageDescription:
-        'Lattice uses the microphone for voice search and commands.',
+      NSMicrophoneUsageDescription: 'Lattice uses the microphone for voice search and commands.',
       NSSpeechRecognitionUsageDescription:
         'Lattice uses speech recognition to help you search for places using your voice.',
     },

@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/useAuthStore';
 import { authService } from '../../services/authService';
+import { useMapUIStore } from '../../features/map/store/useMapUIStore';
 
 export const useLogin = () => {
   const pendingTicketCode = useAuthStore((state) => state.pendingTicketCode);
@@ -15,6 +16,10 @@ export const useLogin = () => {
     },
     onSuccess: (data) => {
       const { setAuth, setTicket } = useAuthStore.getState();
+      
+      // Reset screen to Explore for the new session
+      useMapUIStore.getState().setLastScreenMode(0);
+
       setAuth(data.token, data.user, data.tickets || [], false);
       if (data.ticket_info) {
         setTicket(data.ticket_info);
@@ -38,6 +43,10 @@ export const useRegister = () => {
     },
     onSuccess: (data) => {
       const { setAuth } = useAuthStore.getState();
+      
+      // Reset screen to Explore for the new session
+      useMapUIStore.getState().setLastScreenMode(0);
+
       setAuth(data.token, data.user, data.tickets || [], false);
       if (data.ticket_info) {
         useAuthStore.getState().setTicket(data.ticket_info);
@@ -46,3 +55,4 @@ export const useRegister = () => {
     },
   });
 };
+

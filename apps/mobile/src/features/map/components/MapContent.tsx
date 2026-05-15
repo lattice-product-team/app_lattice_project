@@ -67,7 +67,6 @@ export const MapContent = function MapContent({
 
   const userCoords = useLocationStore((s) => s.logicalCoords);
   const initialZoom = 14;
-  const initialZoom = 14;
   const [discreteZoom, setDiscreteZoom] = React.useState(Math.round(initialZoom));
   const { getFilteredPOIs } = usePOIStore();
 
@@ -102,7 +101,7 @@ export const MapContent = function MapContent({
         // Throttled updates for global state and discrete changes
         if (now - lastZoomUpdateRef.current > ZOOM_THROTTLE_MS) {
           lastZoomUpdateRef.current = now;
-          
+
           const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
           if (newDiscreteZoom !== discreteZoom && !isChanging) {
             setDiscreteZoom(newDiscreteZoom);
@@ -125,8 +124,7 @@ export const MapContent = function MapContent({
         setCameraMode(MapCameraMode.FREE);
       }
     },
-    [
-    ],
+    [],
     [
       discreteZoom,
       setDiscreteZoom,

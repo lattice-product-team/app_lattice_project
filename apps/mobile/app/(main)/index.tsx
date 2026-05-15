@@ -80,7 +80,12 @@ enum UILayer {
 }
 
 export default function MapIndexPage() {
-  const theme = useAppTheme();
+  let theme = useAppTheme();
+  if (!theme || !theme.colors) {
+    const { darkTheme } = require('../../src/styles/theme');
+    theme = darkTheme;
+  }
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -217,9 +222,12 @@ export default function MapIndexPage() {
   const isPanning = useSharedValue(false);
   const sheetPosition = useSharedValue(SCREEN_HEIGHT);
   const eventSheetState = useSharedValue(0);
-  const profileSheetState = useSharedValue(0);
-  const screenMode = useSharedValue(1); // 0: Explore, 1: Map
-  const [activeMode, setActiveMode] = useState(1);
+  const lastScreenMode = useMapUIStore((state) => state.lastScreenMode);
+  const setLastScreenMode = useMapUIStore((state) => state.setLastScreenMode);
+
+  const screenMode = useSharedValue(0); // Force Explore (0) on startup as requested
+  const [activeMode, setActiveMode] = useState(0);
+  const toggleDrag = useSharedValue(0); // Independent visual state for the toggle
 
   const [hasMapLoaded, setHasMapLoaded] = useState(false);
   const [isMapActive, setIsMapActive] = useState(false);
@@ -621,7 +629,6 @@ export default function MapIndexPage() {
   );
 
   // Mode Toggle Drag Logic
-  const toggleDrag = useSharedValue(activeMode); // Independent visual state for the toggle
   const startMode = useSharedValue(0);
 
   const toggleGesture = Gesture.Pan()
@@ -651,6 +658,7 @@ export default function MapIndexPage() {
       screenMode.value = withSpring(target, theme.motion.physics.magnetic, (finished) => {
         if (finished) {
           runOnJS(setActiveMode)(target);
+          runOnJS(setLastScreenMode)(target);
           if (target !== activeMode) {
             runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
           }
@@ -678,6 +686,7 @@ export default function MapIndexPage() {
       toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
       screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
       setActiveMode(nextMode);
+      setLastScreenMode(nextMode);
     },
     [handleEventSelect, selectPoi, setSelectedEvent, setCurrentEvent, toggleDrag, screenMode, theme.motion.physics.magnetic]
   );
@@ -725,11 +734,11 @@ export default function MapIndexPage() {
       {/* 1. Unified Sliding Canvas (Z-Index: 0) */}
       <Animated.View style={[styles.canvas, canvasStyle]}>
         <View style={[styles.screen, { backgroundColor: theme.colors.bg.surface }]}>
-          <DiscoveryFeed onItemPress={handleDiscoveryItemPress} />
+          <DiscoveryFeed onItemPress={handleDiscoveryItemPress} theme={theme} />
         </View>
 
         <View style={styles.screen}>
-          {(hasMapLoaded || isMapActive) ? (
+          {true ? (
             <MapContent
               poisGeoJSON={mergedPois}
               allEvents={events}
@@ -799,6 +808,7 @@ export default function MapIndexPage() {
               toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
               screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
               setActiveMode(nextMode);
+              setLastScreenMode(nextMode);
             }}
             style={[
               styles.modePill,

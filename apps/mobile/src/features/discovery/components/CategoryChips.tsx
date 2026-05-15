@@ -50,7 +50,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
                   width: 64,
                   height: 64,
                   borderRadius: 32,
-                  backgroundColor: isActive ? theme.colors.text.primary : theme.colors.glass.background,
+                  backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.glass.background,
                   borderColor: theme.colors.glass.border,
                   borderWidth: 1,
                   alignItems: 'center',
@@ -60,7 +60,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
               >
                 <Icon
                   size={24}
-                  color={isActive ? theme.colors.bg.surface : theme.colors.text.primary}
+                  color={isActive ? theme.colors.bg.main : theme.colors.text.primary}
                   strokeWidth={2}
                 />
               </View>
@@ -68,7 +68,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
                 style={{
                   fontFamily: typography.primary.medium,
                   fontSize: 12,
-                  color: isActive ? theme.colors.text.primary : theme.colors.text.muted,
+                  color: isActive ? theme.colors.brand.primary : theme.colors.text.muted,
                   textAlign: 'center',
                 }}
               >
