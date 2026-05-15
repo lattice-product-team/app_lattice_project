@@ -26,11 +26,13 @@ interface CenteringButtonProps {
 export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { cameraMode, setCameraMode } = useMapUIStore();
+  const { cameraMode, setCameraMode, triggerRecenter } = useMapUIStore();
   const { isNavigating } = useNavigationStore();
 
   const handleCenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Use triggerRecenter to increment the count and force the effect in MapCameraManager to fire
+    triggerRecenter();
     setCameraMode(MapCameraMode.NAVIGATION);
   };
 
@@ -48,11 +50,17 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
   });
 
   return (
-    <Animated.View style={[styles.container, { bottom: insets.bottom + 160 }, rStyle]}>
+    <Animated.View style={[styles.container, { bottom: insets.bottom + 180 }, rStyle]}>
       <TouchableOpacity onPress={handleCenter} activeOpacity={0.8}>
-        <View style={styles.button}>
-          <Navigation size={18} color="#222222" fill="#222222" />
-          <Text style={styles.text}>Centrar</Text>
+        <View style={[
+          styles.button, 
+          { 
+            backgroundColor: theme.colors.bg.surface,
+            borderColor: theme.colors.border.subtle,
+          }
+        ]}>
+          <Navigation size={18} color={theme.colors.text.primary} fill={theme.colors.text.primary} />
+          <Text style={[styles.text, { color: theme.colors.text.primary }]}>Recenter</Text>
         </View>
       </TouchableOpacity>
     </Animated.View>

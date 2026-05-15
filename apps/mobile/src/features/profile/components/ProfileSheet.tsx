@@ -225,13 +225,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
           >
             {profile ? (
               <>
-                <SheetHeader
-                  title={profile.name}
-                  subtitle="MI PERFIL"
-                  onClose={handleCloseInternal}
-                  scrollY={scrollY}
-                  islandState={islandState}
-                />
+                <SheetHeader onClose={handleCloseInternal} />
                 
                 <Animated.ScrollView 
                   showsVerticalScrollIndicator={false}
@@ -245,6 +239,10 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
                     <View style={styles.avatarContainer}>
                       <UserAvatar size={100} url={profile.avatarUrl} />
                     </View>
+                    
+                    <Text style={[styles.profileName, { color: theme.colors.text.primary }]}>
+                      {profile.name}
+                    </Text>
                     
                     {/* Level Progress Section - No background, aligned margins */}
                     <View style={styles.progressCard}>
@@ -359,6 +357,13 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 8,
+  },
+  profileName: {
+    fontSize: 24,
+    fontFamily: typography.primary.bold,
+    textAlign: 'center',
     marginBottom: 8,
   },
   progressCard: {

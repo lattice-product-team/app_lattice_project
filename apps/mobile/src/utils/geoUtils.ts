@@ -140,3 +140,27 @@ export const calculatePolygonArea = (polygon: [number, number][]): number => {
   }
   return Math.abs(area / 2);
 };
+
+/**
+ * Formats duration in seconds into a human-readable string.
+ * e.g., "5 min", "1h 20m", "< 1 min"
+ */
+export const formatDuration = (seconds: number | null | undefined): string => {
+  if (seconds === null || seconds === undefined || seconds === 0) return '--';
+  if (seconds < 60) return '< 1 min';
+  const totalMins = Math.round(seconds / 60);
+  if (totalMins < 60) return `${totalMins} min`;
+  const hours = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
+};
+
+/**
+ * Formats distance in meters into a human-readable string.
+ * e.g., "250 m", "1.2 km"
+ */
+export const formatDistance = (meters: number | null | undefined): string => {
+  if (meters === null || meters === undefined) return '--';
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
+};

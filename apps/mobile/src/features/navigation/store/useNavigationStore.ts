@@ -102,25 +102,49 @@ export const useNavigationStore = create<NavigationState>((set) => ({
       routeMetadata: state.metadata[transportMode],
     })),
 
-  setNavigating: (isNavigating) => set({ isNavigating }),
-  setPlanning: (isPlanning) => set({ isPlanning }),
+  setNavigating: (isNavigating) => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      if (isNavigating) useMapUIStore.getState().setUIState(MapUIState.NAVIGATING);
+    } catch (e) {}
+    set({ isNavigating });
+  },
+  setPlanning: (isPlanning) => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      if (isPlanning) useMapUIStore.getState().setUIState(MapUIState.PLANNING);
+    } catch (e) {}
+    set({ isPlanning });
+  },
   
-  startNavigation: () => set({ 
-    isPlanning: false, 
-    isNavigating: true 
-  }),
+  startNavigation: () => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      useMapUIStore.getState().setUIState(MapUIState.NAVIGATING);
+    } catch (e) {}
+    set({ 
+      isPlanning: false, 
+      isNavigating: true 
+    });
+  },
 
   setNextInstruction: (nextInstruction) => set({ nextInstruction }),
   setFetching: (isFetching) => set({ isFetching }),
 
-  clearNavigation: () =>
+  clearNavigation: () => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
+    } catch (e) {}
     set({
       currentRoute: null,
       routeMetadata: null,
       routes: { driving: null, walking: null, bicycle: null },
       metadata: { driving: null, walking: null, bicycle: null },
       isNavigating: false,
+      isPlanning: false,
       nextInstruction: null,
       isFetching: false,
-    }),
+    });
+  },
 }));

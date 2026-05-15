@@ -5,8 +5,10 @@ import { mmkvStorage } from '../../../services/storage';
 export enum MapUIState {
   EXPLORING = 'EXPLORING',
   POI_DETAIL = 'POI_DETAIL',
+  PLANNING = 'PLANNING',
   NAVIGATING = 'NAVIGATING',
   SAVED_LIST = 'SAVED_LIST',
+  AR_EXPLORE = 'AR_EXPLORE',
 }
 
 export enum MapCameraMode {
@@ -26,11 +28,13 @@ interface MapUIStore {
     pitch: number;
   } | null;
   discoveryLocation: [number, number] | null;
-  lastScreenMode: number; // 0: Explore, 1: Map
+  isProgrammaticMove: boolean;
+  lastScreenMode: number;
 
   // Actions
   setUIState: (state: MapUIState) => void;
   setCameraMode: (mode: MapCameraMode) => void;
+  setIsProgrammaticMove: (isMove: boolean) => void;
   triggerRecenter: () => void;
   triggerForceCenter: () => void;
   setInitialLoadComplete: (isComplete: boolean) => void;
@@ -39,12 +43,15 @@ interface MapUIStore {
   setLastScreenMode: (mode: number) => void;
 }
 
+// Recursion guard for cross-store synchronization
+let isProcessingSetUIState = false;
+
 /**
  * Specialized store for managing the Map's HUD and sheet visibility states.
  */
 export const useMapUIStore = create<MapUIStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       uiState: MapUIState.EXPLORING,
       cameraMode: MapCameraMode.FREE,
       recenterCount: 0,
@@ -52,16 +59,51 @@ export const useMapUIStore = create<MapUIStore>()(
       isInitialLoadComplete: false,
       lastCameraPosition: null,
       discoveryLocation: null,
-      lastScreenMode: 0, // Default to Explore as requested for new sessions if not set
+      isProgrammaticMove: false,
+      lastScreenMode: 0,
 
-      setUIState: (uiState) => set({ uiState }),
+      setUIState: (uiState) => {
+        if (isProcessingSetUIState) return;
+        
+        const currentState = get().uiState;
+        if (currentState === uiState) return;
+
+        isProcessingSetUIState = true;
+        try {
+          // Update state first. Force FREE camera when returning to exploration to stop any centering/locks.
+          const cameraMode = uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : get().cameraMode;
+          set({ uiState, cameraMode });
+
+          // Cross-store cleanup to ensure only one mode is "active" across the app
+          const { usePOIStore } = require('../../poi/store/usePOIStore');
+          const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
+
+          if (uiState === MapUIState.EXPLORING) {
+            usePOIStore.getState().deselect(false);
+            useNavigationStore.getState().clearNavigation();
+          } else if (uiState === MapUIState.NAVIGATING) {
+            usePOIStore.getState().deselect(false);
+          } else if (uiState === MapUIState.POI_DETAIL) {
+            useNavigationStore.getState().clearNavigation();
+          }
+        } catch (e) {
+          console.warn('[MapUIStore] Cross-store cleanup failed:', e);
+        } finally {
+          isProcessingSetUIState = false;
+        }
+      },
 
       setCameraMode: (cameraMode) => set({ cameraMode }),
+
+      setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
 
       triggerRecenter: () =>
         set((state) => ({
           recenterCount: state.recenterCount + 1,
-          cameraMode: MapCameraMode.FREE,
+          cameraMode:
+            state.cameraMode === MapCameraMode.NAVIGATION
+              ? MapCameraMode.NAVIGATION
+              : MapCameraMode.FREE,
         })),
 
       triggerForceCenter: () =>
@@ -69,7 +111,7 @@ export const useMapUIStore = create<MapUIStore>()(
           forceCenterCount: state.forceCenterCount + 1,
         })),
 
-      setInitialLoadComplete: (isInitialLoadComplete) => set({ isInitialLoadComplete }),
+      setInitialLoadComplete: (isComplete) => set({ isInitialLoadComplete: isComplete }),
 
       setLastCameraPosition: (lastCameraPosition) => set({ lastCameraPosition }),
 
@@ -89,4 +131,3 @@ export const useMapUIStore = create<MapUIStore>()(
     }
   )
 );
-

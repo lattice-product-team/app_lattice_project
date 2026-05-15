@@ -32,19 +32,19 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   restaurant: {
     icon: Utensils,
     color: colors.semantic.dark.warning,
-    label: 'Comida y Bebida',
+    label: 'Dining',
     strokeWidth: 2.5,
   },
   food: {
     icon: Utensils,
     color: colors.semantic.dark.warning,
-    label: 'Comida y Bebida',
+    label: 'Gastronomy',
     strokeWidth: 2.5,
   },
   coffee: {
     icon: Coffee,
     color: colors.semantic.dark.warning,
-    label: 'Cafetería',
+    label: 'Coffee & Snacks',
     strokeWidth: 2.5,
   },
 
@@ -58,19 +58,19 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   wc: { 
     icon: User, 
     color: colors.semantic.dark.info, 
-    label: 'Aseos',
+    label: 'Restrooms',
     strokeWidth: 2.5,
   },
   toilet: { 
     icon: User, 
     color: colors.semantic.dark.info, 
-    label: 'Aseos',
+    label: 'Restrooms',
     strokeWidth: 2.5,
   },
   restroom: {
     icon: User,
     color: colors.semantic.dark.info,
-    label: 'Aseos',
+    label: 'Restrooms',
     strokeWidth: 2.5,
   },
 
@@ -78,13 +78,13 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   grandstand: {
     icon: Map,
     color: colors.semantic.dark.success,
-    label: 'Tribuna',
+    label: 'Grandstand',
     strokeWidth: 2.5,
   },
   medical: {
     icon: SquarePlus,
     color: colors.semantic.dark.error,
-    label: 'Servicio Médico',
+    label: 'Medical Services',
     strokeWidth: 2.5,
   },
   hospital: {
@@ -96,13 +96,13 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   gate: { 
     icon: LogIn, 
     color: colors.brand.primary, 
-    label: 'Acceso',
+    label: 'Access Point',
     strokeWidth: 2.5,
   },
   entrance: { 
     icon: LogIn, 
     color: colors.brand.primary, 
-    label: 'Acceso',
+    label: 'Entrance',
     strokeWidth: 2.5,
   },
 
@@ -110,31 +110,31 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
   meetup_point: {
     icon: Users,
     color: colors.brand.accent,
-    label: 'Punto de Encuentro',
+    label: 'Meetup Point',
     strokeWidth: 2.5,
   },
   info: {
     icon: Info,
     color: colors.brand.secondary,
-    label: 'Información',
+    label: 'Information',
     strokeWidth: 2.5,
   },
   shop: {
     icon: ShoppingBag,
     color: colors.category.tech,
-    label: 'Tienda Oficial',
+    label: 'Official Shop',
     strokeWidth: 2.5,
   },
   shopping: {
     icon: ShoppingBag,
     color: colors.category.tech,
-    label: 'Tienda Oficial',
+    label: 'Shopping',
     strokeWidth: 2.5,
   },
   event_beacon: {
     icon: MapPin,
     color: colors.brand.primary,
-    label: 'Evento',
+    label: 'Event Hub',
     strokeWidth: 2.5,
   },
 };
@@ -143,31 +143,31 @@ const EVENT_CATEGORY_MAP: Record<string, CategoryMetadata> = {
   music: {
     icon: Music,
     color: colors.brand.primary,
-    label: 'Música',
+    label: 'Music',
     strokeWidth: 2.5,
   },
   food: {
     icon: Utensils,
     color: colors.brand.primary,
-    label: 'Comida',
+    label: 'Gastronomy',
     strokeWidth: 2.5,
   },
   tech: {
     icon: Laptop,
     color: colors.brand.primary,
-    label: 'Tecnología',
+    label: 'Technology',
     strokeWidth: 2.5,
   },
   sports: {
     icon: Trophy,
     color: colors.brand.primary,
-    label: 'Deportes',
+    label: 'Sports',
     strokeWidth: 2.5,
   },
   generic: {
     icon: Calendar,
     color: colors.brand.primary,
-    label: 'Evento',
+    label: 'Event',
     strokeWidth: 2.5,
   },
 };
@@ -177,7 +177,7 @@ export const DIRECT_ACCESS_CATEGORIES = ['gate', 'grandstand', 'parking'];
 const DEFAULT_METADATA: CategoryMetadata = {
   icon: MapPin,
   color: colors.brand.primary,
-  label: 'Punto de Interés',
+  label: 'Point of Interest',
   strokeWidth: 2.5,
 };
 

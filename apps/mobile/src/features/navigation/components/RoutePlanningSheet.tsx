@@ -20,6 +20,8 @@ import { useAppTheme } from '../../../hooks/useAppTheme';
 import { Button } from '../../../components/ui/Button';
 import { CircularActionButton } from '../../../components/ui/CircularActionButton';
 
+import { formatDuration, formatDistance } from '../../../utils/geoUtils';
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RoutePlanningSheetProps {
@@ -70,20 +72,6 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
     };
   });
 
-  const formatEta = (seconds: number | null | undefined, mode?: string) => {
-    const hasValue = seconds !== null && seconds !== undefined && seconds !== 0;
-    if (isFetching && !hasValue) return 'Calculating...';
-    if (mode && !metadata[mode] && !isFetching) return 'Not available';
-    if (!hasValue) return isFetching ? 'Calculating...' : 'Tap to refresh';
-    const mins = Math.round(seconds / 60);
-    if (mins >= 60) {
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return `${h}h ${m}m`;
-    }
-    return `${mins} min`;
-  };
-
   const handleStart = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     startNavigation();
@@ -97,20 +85,17 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
     <Animated.View style={[
       styles.container,
       { 
-        backgroundColor: '#FFFFFF',
-        borderColor: 'rgba(0,0,0,0.05)',
+        backgroundColor: theme.colors.bg.surface,
+        borderColor: theme.colors.border.subtle,
       },
       rContainerStyle
     ]}>
       <View style={styles.content}>
-        <CircularActionButton 
-          icon="X"
-          onPress={() => setPlanning(false)}
-          style={styles.closeButton}
-        />
-
-        <View style={styles.header}>
-          <View style={styles.dragHandle} />
+        <View style={styles.topActions}>
+          <CircularActionButton 
+            icon="X"
+            onPress={() => setPlanning(false)}
+          />
         </View>
 
         <View style={styles.modesContainer}>
@@ -121,6 +106,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
             else Icon = Bike;
 
             const isAvailable = !!metadata[mode];
+            const isActive = transportMode === mode;
 
             return (
               <Pressable
@@ -135,27 +121,27 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
                 }}
                 style={[
                   styles.modeButton,
-                  transportMode === mode && { backgroundColor: theme.colors.brand.primary },
+                  { backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.bg.elevation },
                   !isAvailable && { opacity: 0.4 }
                 ]}
               >
                 <Icon 
                   size={24} 
-                  color={transportMode === mode ? '#000' : theme.colors.text.muted} 
+                  color={isActive ? theme.colors.text.inverse : theme.colors.text.muted} 
                   strokeWidth={2.2}
                 />
                 <View style={styles.modeTextContainer}>
                   <Text style={[
                     styles.modeLabel, 
-                    { color: transportMode === mode ? '#000' : theme.colors.text.main }
+                    { color: isActive ? theme.colors.text.inverse : theme.colors.text.primary }
                   ]}>
                     {mode === 'driving' ? 'Drive' : mode === 'walking' ? 'Walk' : 'Bike'}
                   </Text>
                   <Text style={[
                     styles.modeEta, 
-                    { color: transportMode === mode ? '#000' : theme.colors.text.muted }
+                    { color: isActive ? theme.colors.text.inverse : theme.colors.text.muted }
                   ]}>
-                    {formatEta(metadata[mode]?.duration, mode)}
+                    {isFetching && !metadata[mode] ? '...' : formatDuration(metadata[mode]?.duration)}
                   </Text>
                 </View>
               </Pressable>
@@ -166,16 +152,16 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
         <View style={styles.metricsRow}>
           <View style={styles.metric}>
             <Text style={[styles.metricValue, { color: theme.colors.text.primary }]}>
-              {activeDuration ? formatEta(activeDuration) : '--'}
+              {activeDuration ? formatDuration(activeDuration) : '--'}
             </Text>
             <Text style={[styles.metricLabel, { color: theme.colors.text.muted }]}>
-              {activeDistance ? `${(activeDistance / 1000).toFixed(1)} km` : '--'}
+              {activeDistance ? formatDistance(activeDistance) : '--'}
             </Text>
           </View>
 
           {/* Elevation / Slope Info for Active Modes */}
           {(transportMode === 'walking' || transportMode === 'bicycle') && hasRoute && (
-            <View style={[styles.metric, styles.metricBorder]}>
+            <View style={[styles.metric, styles.metricBorder, { borderLeftColor: theme.colors.border.subtle }]}>
               <Text style={[styles.metricValue, { color: '#32D74B' }]}>
                 {transportMode === 'bicycle' ? '+14m' : '+8m'}
               </Text>
@@ -210,25 +196,12 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingTop: 54,
+    paddingTop: 16,
   },
-  header: {
+  topActions: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  dragHandle: {
-    width: 32,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 18,
-    top: 18,
-    zIndex: 10,
+    justifyContent: 'flex-end',
+    marginBottom: 20,
   },
   modesContainer: {
     flexDirection: 'row',
@@ -241,7 +214,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.05)',
     gap: 4,
   },
   modeTextContainer: {
@@ -265,7 +237,6 @@ const styles = StyleSheet.create({
   },
   metricBorder: {
     borderLeftWidth: 1,
-    borderLeftColor: 'rgba(255,255,255,0.1)',
     paddingLeft: 40,
   },
   metricValue: {

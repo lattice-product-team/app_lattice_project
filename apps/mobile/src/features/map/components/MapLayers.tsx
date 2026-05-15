@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { View } from 'react-native';
-import { SharedValue } from 'react-native-reanimated';
+import { SharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
-import { EventMarker } from './EventMarker';
 import { POIMarker } from './POIMarker';
+import { MapUIState } from '../store/useMapUIStore';
 
 interface MapLayersProps {
   theme: any;
@@ -16,12 +16,99 @@ interface MapLayersProps {
   selectedPoiId?: string | number | null;
   pathNetwork: any;
   currentRoute: any;
-  isNavigating: boolean;
-  isPlanning?: boolean;
+  uiState: MapUIState;
   onPoiPress: (data: any) => void;
   zoomLevel: number;
   zoomSharedValue: SharedValue<number>;
+  islandState: SharedValue<number>;
 }
+
+/**
+ * Sub-component for Route to isolate re-renders.
+ */
+const RouteLayer = React.memo(({ 
+  uiState, 
+  currentRoute, 
+  isDrawerOpen 
+}: { 
+  uiState: MapUIState, 
+  currentRoute: any, 
+  isDrawerOpen: boolean 
+}) => {
+  const routeGeoJSON = useMemo(() => {
+    if (!currentRoute) return EMPTY_GEOJSON;
+    if (currentRoute.type === 'FeatureCollection') return currentRoute;
+    return { type: 'FeatureCollection', features: [currentRoute] };
+  }, [currentRoute]);
+
+  const isVisible = (uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING) && 
+                    !!currentRoute && 
+                    !isDrawerOpen;
+
+  if (!isVisible) return null;
+
+  return (
+    <MapLibreGL.ShapeSource id="routeSource" shape={routeGeoJSON} tolerance={0.1}>
+      <MapLibreGL.LineLayer
+        id="routeGlow"
+        style={{ ...mapLayerStyles.routeGlow, lineBlur: 6, lineOpacity: 0.3 }}
+      />
+      <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
+    </MapLibreGL.ShapeSource>
+  );
+});
+
+/**
+ * Sub-component for POI Markers to isolate re-renders.
+ */
+const POIMarkers = React.memo(({ 
+  features, 
+  selectedPoiId, 
+  onPoiPress, 
+  theme, 
+  zoomSharedValue 
+}: { 
+  features: any[], 
+  selectedPoiId: any, 
+  onPoiPress: any, 
+  theme: any, 
+  zoomSharedValue: any 
+}) => {
+  return (
+    <>
+      {features.map((feature: any) => {
+        const id = feature.properties?.id;
+        const isSelected = String(id) === String(selectedPoiId);
+        
+        return (
+          <MapLibreGL.PointAnnotation
+            key={`poi-${id}`}
+            id={`ann-${id}`}
+            coordinate={feature.geometry.coordinates}
+            onSelected={() => onPoiPress(feature)}
+            style={{ zIndex: isSelected ? 100 : 50 }}
+          >
+            <View 
+              style={[
+                mapPinStyles.markerWrapper, 
+                { backgroundColor: 'transparent' }
+              ]}
+              collapsable={false}
+            >
+              <POIMarker
+                poi={feature}
+                theme={theme}
+                isSelected={isSelected}
+                onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
+    </>
+  );
+});
 
 export const MapLayers = React.memo(({
   theme,
@@ -29,34 +116,36 @@ export const MapLayers = React.memo(({
   eventsGeoJSON,
   selectedEventId,
   selectedPoiId,
-  pathNetwork,
   currentRoute,
-  isNavigating,
-  isPlanning,
+  uiState,
   onPoiPress,
   zoomLevel,
   zoomSharedValue,
+  islandState,
 }: MapLayersProps) => {
-  const { eventMarkers, eventBoundaries } = useMemo(() => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // High-performance drawer state sync
+  useAnimatedReaction(
+    () => {
+      'worklet';
+      return islandState ? islandState.value > 0.1 : false;
+    },
+    (isOpen: boolean) => {
+      if (isOpen !== isDrawerOpen) {
+        runOnJS(setIsDrawerOpen)(isOpen);
+      }
+    },
+    [isDrawerOpen, islandState]
+  );
+
+  const eventMarkers = useMemo(() => {
     const markers: any[] = [];
-    const boundaries: any[] = [];
-    
     eventsGeoJSON?.features?.forEach((f: any) => {
       if (f.geometry.type === 'Point') markers.push(f);
-      else boundaries.push(f);
     });
-    
-    return {
-      eventMarkers: { type: 'FeatureCollection', features: markers },
-      eventBoundaries: { type: 'FeatureCollection', features: boundaries },
-    };
+    return { type: 'FeatureCollection', features: markers };
   }, [eventsGeoJSON]);
-
-  const routeGeoJSON = useMemo(() => {
-    if (!currentRoute) return EMPTY_GEOJSON;
-    if (currentRoute.type === 'FeatureCollection') return currentRoute;
-    return { type: 'FeatureCollection', features: [currentRoute] };
-  }, [currentRoute]);
 
   const selectedFeature = useMemo(() => {
     if (selectedPoiId) {
@@ -68,202 +157,103 @@ export const MapLayers = React.memo(({
     return null;
   }, [selectedPoiId, selectedEventId, poisGeoJSON, eventMarkers]);
 
-  // Background POIs (Excluding the selected one)
   const backgroundPois = useMemo(() => ({
     type: 'FeatureCollection',
-    features: poisGeoJSON?.features?.filter((f: any) => String(f.properties?.id) !== String(selectedPoiId)) || []
-  }), [poisGeoJSON, selectedPoiId]);
+    features: poisGeoJSON?.features || []
+  }), [poisGeoJSON]);
 
-  // Background Events (Excluding the selected one)
-  const backgroundEvents = useMemo(() => ({
+  const labelGeoJSON = useMemo(() => ({
     type: 'FeatureCollection',
-    features: eventMarkers.features.filter((f: any) => String(f.properties?.id) !== String(selectedEventId)) || []
-  }), [eventMarkers, selectedEventId]);
+    features: [
+      ...(selectedFeature ? [selectedFeature] : []),
+      ...(zoomLevel >= 14 ? backgroundPois.features : [])
+    ]
+  }), [selectedFeature, backgroundPois, zoomLevel]);
+
+  const handleShapePress = (e: any) => {
+    if (e.features && e.features.length > 0) {
+      onPoiPress(e.features[0]);
+    }
+  };
 
   return (
     <>
-      {/* 0. EVENT BOUNDARIES */}
-      <MapLibreGL.ShapeSource id="eventBoundariesSource" shape={eventBoundaries}>
-        <MapLibreGL.FillLayer
-          id="eventBoundaryFill"
-          style={{
-            fillColor: ['get', 'color'],
-            fillOpacity: 0.1,
-            fillAntialias: true,
-          }}
-        />
-        <MapLibreGL.LineLayer
-          id="eventBoundaryOutline"
-          style={{
-            lineColor: ['get', 'color'],
-            lineWidth: 2,
-            lineDasharray: [2, 2],
-            lineOpacity: 0.6,
-          }}
-        />
-      </MapLibreGL.ShapeSource>
-
-      {/* 1. GPU-ACCELERATED BACKGROUND LAYERS */}
+      {/* 1. Background Sources */}
       <MapLibreGL.ShapeSource 
-        id="backgroundPoisSource" 
+        id="poiSource" 
         shape={backgroundPois}
-        onPress={(e) => onPoiPress(e.features[0])}
-      >
-        <MapLibreGL.CircleLayer
-          id="backgroundPoiDots"
-          minZoomLevel={13}
-          style={{
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 3,
-              16, 7
-            ],
-            circleColor: ['get', 'color'],
-            circleStrokeWidth: 2,
-            circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 0,
-              13.5, 1
-            ],
-            circleStrokeOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 0,
-              13.5, 1
-            ],
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+        hitbox={{ width: 30, height: 30 }}
+        onPress={handleShapePress}
+      />
 
       <MapLibreGL.ShapeSource 
-        id="backgroundEventsSource" 
-        shape={backgroundEvents}
-        onPress={(e) => onPoiPress(e.features[0])}
-      >
-        <MapLibreGL.CircleLayer
-          id="backgroundEventDots"
-          minZoomLevel={10}
-          maxZoomLevel={16}
-          style={{
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 5,
-              14, 10
-            ],
-            circleColor: ['get', 'color'],
-            circleStrokeWidth: 3,
-            circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 0,
-              11, 1,
-              15.5, 1,
-              16, 0
-            ],
-            circleStrokeOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 0,
-              11, 1,
-              15.5, 1,
-              16, 0
-            ],
-          }}
-        />
-      </MapLibreGL.ShapeSource>
-
-      {/* 2. SELECTED ITEM - Single native view for high-fidelity animations */}
-      {selectedFeature && (
-        <MapLibreGL.PointAnnotation
-          key={`selected-pa-${selectedFeature.properties?.id}`}
-          id={`selected-ann-${selectedFeature.properties?.id}`}
-          coordinate={selectedFeature.geometry.coordinates}
-          onSelected={() => onPoiPress(selectedFeature)}
-          style={{ zIndex: 100 }}
-        >
-          <View 
-            style={[
-              mapPinStyles.markerWrapper, 
-              { 
-                backgroundColor: 'transparent',
-                transform: [{ translateY: -40 }] 
-              }
-            ]}
-            collapsable={false}
-          >
-            {selectedEventId ? (
-              <EventMarker
-                event={selectedFeature}
-                theme={theme}
-                isSelected={true}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            ) : (
-              <POIMarker
-                poi={selectedFeature}
-                theme={theme}
-                isSelected={true}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            )}
-          </View>
-        </MapLibreGL.PointAnnotation>
-      )}
-
-      {/* 4. LABELS - Throttled rendering for better performance */}
-      <MapLibreGL.ShapeSource 
-        id="labelsSource" 
-        shape={{
-          type: 'FeatureCollection',
-          features: [
-            ...(selectedFeature ? [selectedFeature] : []),
-            ...(zoomLevel >= 15 ? backgroundPois.features : [])
-          ]
-        }}
+        id="eventsSource" 
+        shape={eventMarkers}
+        hitbox={{ width: 44, height: 44 }}
+        onPress={handleShapePress}
       >
         <MapLibreGL.SymbolLayer
-          id="poiLabelLayer"
-          minZoomLevel={14}
+          id="eventLabels"
           style={{
             textField: ['get', 'name'],
-            textSize: 11,
+            textSize: 16,
             textColor: ['get', 'color'],
             textHaloColor: '#FFFFFF',
-            textHaloWidth: 2,
-            textAnchor: 'top',
-            textOffset: [0, 1.8],
+            textHaloWidth: 3,
+            textAnchor: 'center',
             textOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              14, 0,
-              15, 1
+              13.5, 1,
+              14.5, 0
+            ],
+          }}
+        />
+      </MapLibreGL.ShapeSource>
+
+      {/* 2. POI MARKERS - Isolated from Route re-renders */}
+      <POIMarkers 
+        features={backgroundPois.features}
+        selectedPoiId={selectedPoiId}
+        onPoiPress={onPoiPress}
+        theme={theme}
+        zoomSharedValue={zoomSharedValue}
+      />
+
+      {/* 3. LABELS */}
+      <MapLibreGL.ShapeSource 
+        id="labelsSource" 
+        shape={labelGeoJSON as any}
+      >
+        <MapLibreGL.SymbolLayer
+          id="poiLabelLayer"
+          minZoomLevel={13.5}
+          style={{
+            textField: ['get', 'name'],
+            textSize: 12,
+            textColor: ['get', 'color'],
+            textHaloColor: '#FFFFFF',
+            textHaloWidth: 2,
+            textAnchor: 'top',
+            textOffset: [0, 2.2],
+            textOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 0,
+              14.5, 1
             ]
           }}
         />
       </MapLibreGL.ShapeSource>
 
-      {/* 5. ROUTE VISUALS */}
-      <MapLibreGL.ShapeSource id="routeSource" shape={routeGeoJSON} tolerance={0.1}>
-        <MapLibreGL.LineLayer
-          id="routeGlow"
-          style={{ ...mapLayerStyles.routeGlow, lineBlur: 6, lineOpacity: 0.3 }}
-        />
-        <MapLibreGL.LineLayer id="routeFill" style={mapLayerStyles.routeFill} />
-      </MapLibreGL.ShapeSource>
+      {/* 4. ROUTE - Isolated from POI re-renders */}
+      <RouteLayer 
+        uiState={uiState}
+        currentRoute={currentRoute}
+        isDrawerOpen={isDrawerOpen}
+      />
     </>
   );
 });

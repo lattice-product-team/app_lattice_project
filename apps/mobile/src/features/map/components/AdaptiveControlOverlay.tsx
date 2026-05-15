@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
-import { MapCameraMode } from '../store/useMapUIStore';
+import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
 import Animated, {
   useAnimatedStyle,
   SharedValue,
@@ -37,23 +37,25 @@ export const AdaptiveControlOverlay = React.memo(({
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const iconColor = theme.colors.text.primary;
+  const { uiState } = useMapUIStore();
   const openAR = useARStore((s) => s.openAR);
-  const isARActive = useARStore((s) => s.isVisible);
-  const deselectPoi = usePOIStore((s) => s.deselect);
-  const clearEvent = useEventStore((s) => s.clearEvent);
+  const isARActive = useARStore((s) => s.isVisible) || uiState === MapUIState.AR_EXPLORE;
 
   const rOverlayStyle = useAnimatedStyle(() => {
-    // Option B: Fade-out if any overlay layer is active, island is full-screen, or AR is active
-    const isLayerActive = uiLayer.value !== 0; // UILayer.BASE
-    const isIslandFull = islandState.value > 0.8;
-    const shouldHide = isLayerActive || isIslandFull || isARActive;
+    // Hide if:
+    // 1. Island is expanded (searching/dashboard)
+    // 2. AR is active
+    // 3. We are in NAV/PLANNING mode AND the camera is already following (auto-mode)
+    const isIslandExpanded = islandState.value > 0.1;
+    const isNavMode = uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING;
+    const shouldHide = isIslandExpanded || isARActive || isNavMode;
 
     return {
-      opacity: withTiming(shouldHide ? 0 : 1, { duration: 150 }),
+      opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
-  }, [isARActive, bottomOffset]);
+  }, [uiState, isARActive, bottomOffset]);
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
@@ -118,8 +120,6 @@ export const AdaptiveControlOverlay = React.memo(({
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             openAR(ARFilterMode.CLOSEST_EVENT);
-            deselectPoi();
-            clearEvent();
           }}
           hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}

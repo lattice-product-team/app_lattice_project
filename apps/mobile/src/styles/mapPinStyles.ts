@@ -7,11 +7,11 @@ export const mapPinStyles = StyleSheet.create({
   },
   markerWrapper: {
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: 120, // Enough space for pin + label
-    height: 80,  // Enough space for pin + label
-    paddingBottom: 2, // Tiny nudge for visual breathing room
+    justifyContent: 'center',
+    width: 64, 
+    height: 64,
   },
+
   pinFrame: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,

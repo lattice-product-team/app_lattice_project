@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, Pressable, Text, Dimensions } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { View, StyleSheet, Text, Dimensions, Platform, Pressable as NativePressable, ScrollView as NativeScrollView } from 'react-native';
+import { ScrollView as GHScrollView, Pressable as GHPressable, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
@@ -27,11 +27,14 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   { id: 'services', label: 'Info', icon: Info },
-  { id: 'gastro', label: 'Comida', icon: Utensils },
+  { id: 'gastro', label: 'Dining', icon: Utensils },
   { id: 'parking', label: 'Parking', icon: Car },
-  { id: 'transport', label: 'Bus', icon: Bus },
-  { id: 'emergency', label: 'Seguridad', icon: Shield },
+  { id: 'transport', label: 'Transit', icon: Bus },
+  { id: 'emergency', label: 'Security', icon: Shield },
 ];
+
+const Pressable = Platform.OS === 'android' ? NativePressable : GHPressable;
+const ScrollView = Platform.OS === 'android' ? NativeScrollView : GHScrollView;
 
 interface DiscoveryDashboardProps {
   islandState: SharedValue<number>;
@@ -88,77 +91,80 @@ export const DiscoveryDashboard = React.memo(
       <Animated.View style={[styles.container, rContainerStyle]}>
         {/* 1. Categories Row (Carousel) */}
         <View style={styles.categoriesContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScroll}
-          >
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon;
-              const isSelected = activeCategoryFilters.includes(cat.id);
-              const activeColor =
-                (semanticColors.categories as any)[cat.id === 'gastro' ? 'food' : cat.id] ||
-                theme.colors.brand.primary;
+          <GestureDetector gesture={Gesture.Native()}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryScroll}
+              disallowInterruption={true}
+            >
+              {CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                const isSelected = activeCategoryFilters.includes(cat.id);
+                const activeColor =
+                  (semanticColors.categories as any)[cat.id === 'gastro' ? 'food' : cat.id] ||
+                  theme.colors.brand.primary;
 
-              return (
-                <Pressable
-                  key={cat.id}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    if (onSelectCategory) {
-                      onSelectCategory(cat.id);
-                    } else {
-                      toggleCategoryFilter(cat.id);
-                    }
-                  }}
-                  style={({ pressed }) => [
-                    { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.categoryPill,
-                      {
-                        backgroundColor: isSelected
-                          ? activeColor
-                          : theme.colors.glass.tint === 'dark'
-                            ? 'rgba(120, 120, 128, 0.36)'
-                            : 'rgba(120, 120, 128, 0.12)',
-                        borderWidth: 1.5,
-                        borderColor: isSelected ? 'rgba(255,255,255,0.3)' : 'transparent',
-                      },
+                return (
+                  <Pressable
+                    key={cat.id}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      if (onSelectCategory) {
+                        onSelectCategory(cat.id);
+                      } else {
+                        toggleCategoryFilter(cat.id);
+                      }
+                    }}
+                    style={({ pressed }) => [
+                      { opacity: pressed ? 0.7 : 1, transform: [{ scale: pressed ? 0.96 : 1 }] },
                     ]}
                   >
-                    <Icon
-                      size={18}
-                      color={
-                        isSelected
-                          ? '#FFFFFF'
-                          : theme.dark
-                            ? 'rgba(255, 255, 255, 0.7)'
-                            : 'rgba(0, 0, 0, 0.6)'
-                      }
-                      strokeWidth={isSelected ? 3 : 2.5}
-                    />
-                    <Text
+                    <View
                       style={[
-                        styles.categoryLabel,
+                        styles.categoryPill,
                         {
-                          color: isSelected
-                            ? '#FFFFFF'
-                            : theme.dark
-                              ? 'rgba(255, 255, 255, 0.7)'
-                              : 'rgba(0, 0, 0, 0.6)',
+                          backgroundColor: isSelected
+                            ? activeColor
+                            : theme.colors.glass.tint === 'dark'
+                              ? 'rgba(120, 120, 128, 0.36)'
+                              : 'rgba(120, 120, 128, 0.12)',
+                          borderWidth: 1.5,
+                          borderColor: isSelected ? 'rgba(255,255,255,0.3)' : 'transparent',
                         },
                       ]}
                     >
-                      {cat.label}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+                      <Icon
+                        size={18}
+                        color={
+                          isSelected
+                            ? '#FFFFFF'
+                            : theme.dark
+                              ? 'rgba(255, 255, 255, 0.7)'
+                              : 'rgba(0, 0, 0, 0.6)'
+                        }
+                        strokeWidth={isSelected ? 3 : 2.5}
+                      />
+                      <Text
+                        style={[
+                          styles.categoryLabel,
+                          {
+                            color: isSelected
+                              ? '#FFFFFF'
+                              : theme.dark
+                                ? 'rgba(255, 255, 255, 0.7)'
+                                : 'rgba(0, 0, 0, 0.6)',
+                          },
+                        ]}
+                      >
+                        {cat.label}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </GestureDetector>
         </View>
 
         {/* 2. Events Carousel */}
@@ -170,42 +176,45 @@ export const DiscoveryDashboard = React.memo(
               </Text>
             </View>
           ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.carouselScrollContainer}
-              contentContainerStyle={styles.carouselScroll}
-              snapToInterval={276} // 260 width + 16 gap
-              decelerationRate="fast"
-            >
-              {filteredEvents.map((event) => (
-                <EventCarouselCard
-                  key={event.id}
-                  event={event as any}
-                  onPress={() => onSelectEvent?.(event as any)}
-                />
-              ))}
-              {filteredEvents.length === 0 && (
-                <View
-                  style={{
-                    width: SCREEN_WIDTH - 32,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text
+            <GestureDetector gesture={Gesture.Native()}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.carouselScrollContainer}
+                contentContainerStyle={styles.carouselScroll}
+                snapToInterval={276} // 260 width + 16 gap
+                decelerationRate="fast"
+                disallowInterruption={true}
+              >
+                {filteredEvents.map((event) => (
+                  <EventCarouselCard
+                    key={event.id}
+                    event={event as any}
+                    onPress={() => onSelectEvent?.(event as any)}
+                  />
+                ))}
+                {filteredEvents.length === 0 && (
+                  <View
                     style={{
-                      color: theme.colors.text.muted,
-                      padding: 20,
-                      textAlign: 'center',
-                      fontFamily: typography.primary.medium,
+                      width: SCREEN_WIDTH - 32,
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                   >
-                    No hay eventos de esta categoría hoy.
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
+                    <Text
+                      style={{
+                        color: theme.colors.text.muted,
+                        padding: 20,
+                        textAlign: 'center',
+                        fontFamily: typography.primary.medium,
+                      }}
+                    >
+                      No hay eventos de esta categoría hoy.
+                    </Text>
+                  </View>
+                )}
+              </ScrollView>
+            </GestureDetector>
           )}
         </View>
       </Animated.View>

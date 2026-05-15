@@ -11,7 +11,7 @@ import { useSearchEvents } from './useSearchEvents';
 import { useARStore, ARFilterMode } from '../store/useARStore';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
-import { calculateDistance, isPointInPolygon } from '../../../utils/geoUtils';
+import { calculateDistance, isPointInPolygon, formatDistance, formatDuration } from '../../../utils/geoUtils';
 
 
 /**
@@ -70,21 +70,6 @@ export const useDetailModel = (): DetailModel | null => {
 
     return { estimatedDistance: d, estimatedDuration: dur };
   }, [userCoords, destinationCoords]);
-
-  const formatDistance = (m: number | undefined) => {
-    const val = m || estimatedDistance;
-    if (!val) return '--';
-    if (val < 1000) return `${Math.round(val)}m`;
-    return `${(val / 1000).toFixed(1)} km`;
-  };
-
-  const formatDuration = (s: number | undefined) => {
-    if (isFetching) return '...';
-    const val = s || estimatedDuration;
-    if (!val) return '--';
-    const mins = Math.round(val / 60);
-    return `${mins} min`;
-  };
 
   return useMemo(() => {
     // 1. Handle Event Case
@@ -158,14 +143,14 @@ export const useDetailModel = (): DetailModel | null => {
           },
           {
             label: 'Distance',
-            value: formatDistance(currentDistance),
+            value: formatDistance(currentDistance || estimatedDistance),
             icon: 'MapPinIcon',
           },
         ],
         actions: [
           {
             id: 'directions',
-            label: formatDuration(currentDuration),
+            label: isFetching ? '...' : formatDuration(currentDuration || estimatedDuration),
             icon: transportMode === 'driving' ? 'CarIcon' : transportMode === 'walking' ? 'FootprintsIcon' : 'BikeIcon',
             variant: 'primary',
             onPress: () => {
@@ -291,14 +276,14 @@ export const useDetailModel = (): DetailModel | null => {
           },
           {
             label: 'Distance',
-            value: formatDistance(currentDistance),
+            value: formatDistance(currentDistance || estimatedDistance),
             icon: 'MapPinIcon',
           },
         ],
         actions: [
           {
             id: 'directions',
-            label: formatDuration(currentDuration),
+            label: isFetching ? '...' : formatDuration(currentDuration || estimatedDuration),
             icon: transportMode === 'driving' ? 'CarIcon' : transportMode === 'walking' ? 'FootprintsIcon' : 'BikeIcon',
             variant: 'primary',
             onPress: () => {
@@ -321,20 +306,13 @@ export const useDetailModel = (): DetailModel | null => {
             },
           },
           {
-            id: 'website',
-            label: 'Website',
-            icon: 'GlobeIcon',
-            variant: 'subdued',
+            id: 'share',
+            label: 'Share',
+            icon: 'ShareIcon',
+            variant: 'secondary',
             onPress: () => {},
           },
-          {
-            id: 'tickets',
-            label: 'TicketIcons',
-            icon: 'TicketIcon',
-            variant: 'subdued',
-            onPress: () => {},
-          },
-        ],
+          ],
       } as DetailModel;
     }
 

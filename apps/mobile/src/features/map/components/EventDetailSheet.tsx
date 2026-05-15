@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -96,6 +97,8 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
 
   const gesture = Gesture.Pan()
     .activeOffsetY([-10, 10]) 
+    .failOffsetX([-20, 20]) // Allow horizontal gestures to pass through to carousels
+    .activeOffsetX(Platform.OS === 'android' ? [-500, 500] : [-20, 20]) // Prevent horizontal takeover on Android
     .onStart(() => {
       startState.value = islandState.value;
     })
@@ -176,6 +179,28 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
     islandState.value = withSpring(SNAP_POINTS.HIDDEN, snappySpring);
   };
 
+  const bannerStyle = useAnimatedStyle(() => {
+    // Hidden at MID (0.34), visible at FULL (1.0)
+    const opacity = interpolate(
+      islandState.value,
+      [0.34, 0.6, 0.8],
+      [0, 0, 1],
+      Extrapolation.CLAMP
+    );
+
+    const height = interpolate(
+      islandState.value,
+      [0.34, 1.0],
+      [0, 140],
+      Extrapolation.CLAMP
+    );
+
+    return {
+      opacity,
+      height,
+    };
+  });
+
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
@@ -189,26 +214,43 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
           >
             {displayModel ? (
               <>
-                <SheetHeader
-                  title={displayModel.name}
-                  subtitle={displayModel.subtitle}
-                  bannerUrl={displayModel.bannerUrl}
-                  logoUrl={displayModel.logoUrl}
-                  categoryIcon={displayModel.categoryIcon}
-                  onClose={handleCloseInternal}
-                  onShare={() => {}}
-                  scrollY={scrollY}
-                  islandState={islandState}
-                />
+                <SheetHeader />
                 
                 <Animated.ScrollView 
                   showsVerticalScrollIndicator={false}
+                  decelerationRate="fast"
                   contentContainerStyle={styles.scrollContent}
                   bounces={true}
                   scrollEnabled={scrollEnabled}
                   onScroll={scrollHandler}
                   scrollEventThrottle={16}
+                  disallowInterruption={true}
                 >
+                  {/* Banner grows above the title */}
+                  {displayModel.bannerUrl && (
+                    <Animated.View style={[styles.bannerContainer, bannerStyle]}>
+                      <Animated.Image 
+                        source={{ uri: displayModel.bannerUrl }}
+                        style={StyleSheet.absoluteFill}
+                        resizeMode="cover"
+                      />
+                      <LinearGradient
+                        colors={['rgba(0,0,0,0.2)', 'transparent', theme.colors.bg.surface]}
+                        locations={[0, 0.5, 1]}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    </Animated.View>
+                  )}
+
+                  <View style={styles.titleSection}>
+                    <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+                      {displayModel.name}
+                    </Text>
+                    <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
+                      {displayModel.subtitle}
+                    </Text>
+                  </View>
+
                   <ActionPillBar actions={displayModel.actions} />
                   <MetricGrid metrics={displayModel.metrics} />
                   
@@ -297,6 +339,28 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 60,
+  },
+  bannerContainer: {
+    width: '100%',
+    overflow: 'hidden',
+  },
+  titleSection: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: typography.primary.bold,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    fontFamily: typography.primary.medium,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    marginTop: 4,
   },
   content: {
     padding: 24,

@@ -6,8 +6,8 @@ import {
   StyleProp,
   View,
   StyleSheet,
-  Pressable,
 } from 'react-native';
+import { Pressable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
@@ -35,6 +35,7 @@ interface ButtonProps {
 
 /**
  * Standardized Button component with 4 variants (8 states total with Light/Dark mode).
+ * Uses Pressable from react-native-gesture-handler for better Android support inside sheets.
  */
 export const Button = ({
   onPress,

@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import Animated, {
   SharedValue,
   useAnimatedStyle,

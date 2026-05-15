@@ -3,12 +3,11 @@ import {
   View,
   StyleSheet,
   Dimensions,
-  Pressable,
-  Text,
-  ScrollView,
   Keyboard,
   TextInput,
+  Platform,
 } from 'react-native';
+import { ScrollView, Pressable } from 'react-native-gesture-handler';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import * as Haptics from 'expo-haptics';
@@ -56,7 +55,7 @@ import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useSocket } from '../../src/hooks/useSocket';
 import { useLocationStore } from '../../src/store/useLocationStore';
-import { useMapUIStore, MapCameraMode } from '../../src/features/map/store/useMapUIStore';
+import { useMapUIStore, MapCameraMode, MapUIState } from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { useProfileStore } from '../../src/features/profile/store/useProfileStore';
@@ -78,6 +77,9 @@ enum UILayer {
   PLANNING = 3,
   NAVIGATING = 4,
 }
+
+const AnimatedCompass = Animated.createAnimatedComponent(Compass);
+const AnimatedMap = Animated.createAnimatedComponent(MapIcon);
 
 export default function MapIndexPage() {
   let theme = useAppTheme();
@@ -206,20 +208,34 @@ export default function MapIndexPage() {
     islandState,
   ]);
 
-  // Sync React/Store state to UI Thread Layers
+  const uiState = useMapUIStore((state) => state.uiState);
+
+  // Sync React/Store state to UI Thread Layers (Master Mode Orchestrator)
   useEffect(() => {
-    if (isNavigating) {
-      uiLayer.value = UILayer.NAVIGATING;
-    } else if (isPlanning) {
-      uiLayer.value = UILayer.PLANNING;
-    } else if (selectedEvent) {
-      uiLayer.value = UILayer.EVENT;
-    } else if (isProfileOpen) {
-      uiLayer.value = UILayer.PROFILE;
-    } else {
-      uiLayer.value = UILayer.BASE;
+    switch (uiState) {
+      case MapUIState.NAVIGATING:
+        uiLayer.value = withTiming(UILayer.NAVIGATING, { duration: 250 });
+        break;
+      case MapUIState.PLANNING:
+        uiLayer.value = withTiming(UILayer.PLANNING, { duration: 250 });
+        break;
+      case MapUIState.POI_DETAIL:
+        uiLayer.value = withTiming(UILayer.EVENT, { duration: 250 });
+        break;
+      case MapUIState.SAVED_LIST:
+        uiLayer.value = withTiming(UILayer.PROFILE, { duration: 250 });
+        break;
+      case MapUIState.EXPLORING:
+      default:
+        // Local overrides for states that aren't yet full modes
+        if (isProfileOpen) {
+          uiLayer.value = withTiming(UILayer.PROFILE, { duration: 250 });
+        } else {
+          uiLayer.value = withTiming(UILayer.BASE, { duration: 250 });
+        }
+        break;
     }
-  }, [isNavigating, isPlanning, !!selectedEvent, isProfileOpen]);
+  }, [uiState, isProfileOpen]);
 
   const preSearchLevel = useSharedValue(0);
   const isScrollAtTop = useSharedValue(true);
@@ -311,16 +327,9 @@ export default function MapIndexPage() {
 
       setSelectedEvent(event.id);
       setCurrentEvent(event);
-      selectPoi(null); // Clear any active POI selection
 
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-      // Force camera to center on the new selection with a small delay to ensure state propagation
-      setTimeout(() => {
-        useMapUIStore.getState().setCameraMode(MapCameraMode.FREE);
-        useMapUIStore.getState().triggerForceCenter();
-      }, 250);
     },
     [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
   );
@@ -386,7 +395,7 @@ export default function MapIndexPage() {
   const gesture = Gesture.Pan()
     .enabled(!selectedEvent && !selectedPoi) // DISABLE search gesture when details are open
     .activeOffsetY([-10, 10])
-    .failOffsetX([-20, 20])
+    .failOffsetX(Platform.OS === 'android' ? [-10, 10] : [-20, 20])
     .onStart(() => {
       isPanning.value = true;
       startState.value = islandState.value;
@@ -708,6 +717,28 @@ export default function MapIndexPage() {
     ]
   );
 
+  const [exploreColor, setExploreColor] = useState(theme.colors.text.primary);
+  const [mapColor, setMapColor] = useState(theme.colors.text.muted);
+
+  useAnimatedReaction(
+    () => toggleDrag.value,
+    (val) => {
+      const eColor = interpolateColor(
+        val,
+        [0.4, 0.6],
+        [theme.colors.text.primary, theme.colors.text.muted]
+      );
+      const mColor = interpolateColor(
+        val,
+        [0.4, 0.6],
+        [theme.colors.text.muted, theme.colors.text.primary]
+      );
+      runOnJS(setExploreColor)(eColor as string);
+      runOnJS(setMapColor)(mColor as string);
+    },
+    [theme]
+  );
+
   const exploreTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
       toggleDrag.value,
@@ -724,24 +755,6 @@ export default function MapIndexPage() {
     ),
   }));
 
-  const exploreIconStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      toggleDrag.value,
-      [0.4, 0.6],
-      [theme.colors.text.primary, theme.colors.text.muted]
-    ),
-  }));
-
-  const mapIconStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      toggleDrag.value,
-      [0.4, 0.6],
-      [theme.colors.text.muted, theme.colors.text.primary]
-    ),
-  }));
-
-  const AnimatedCompass = Animated.createAnimatedComponent(Compass);
-  const AnimatedMap = Animated.createAnimatedComponent(MapIcon);
   const searchInputRef = useRef<TextInput>(null);
 
   return (
@@ -780,21 +793,27 @@ export default function MapIndexPage() {
         <NavigationInfo />
       </Animated.View>
 
-      {/* 3. Global Dimmer (Z-Index: 900) */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={handleMapPress} pointerEvents="box-none">
+      {/* 3. Global Dimmer (Z-Index: 900) - Temporarily disabled for diagnostic */}
+      {/* 
+      <Animated.View
+        pointerEvents="box-none"
+        style={[StyleSheet.absoluteFill, { zIndex: 900 }]}
+      >
         <Animated.View
           animatedProps={dimmerProps}
           style={[
             StyleSheet.absoluteFill,
-            { backgroundColor: 'black', zIndex: 900 },
+            { backgroundColor: 'black' },
             mapOverlayStyle,
             dimmerStyle,
           ]}
+          pointerEvents="none"
         />
-      </Pressable>
+      </Animated.View>
+      */}
 
       {/* 4. HUD Buttons & Controls (Z-Index: 1000) */}
-      <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]}>
+      <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]} pointerEvents="box-none">
         <AdaptiveControlOverlay
           uiLayer={uiLayer}
           islandState={islandState}
@@ -802,6 +821,13 @@ export default function MapIndexPage() {
           cameraMode={cameraMode}
           onRecenter={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            // 1. Force 2D mode as requested
+            setManualAR(false);
+            // 2. Re-engage navigation mode if we were in a route
+            if (isNavigating) {
+              useMapUIStore.getState().setCameraMode(MapCameraMode.NAVIGATION);
+            }
+            // 3. Trigger the animation/re-centering
             triggerRecenter();
           }}
           onToggle3D={() => setManualAR(!manualAR)}
@@ -843,7 +869,7 @@ export default function MapIndexPage() {
               style={[
                 styles.modePillActive,
                 {
-                  backgroundColor: theme.dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)',
+                  backgroundColor: theme.dark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.06)',
                 },
                 modeIndicatorStyle,
               ]}
@@ -851,9 +877,9 @@ export default function MapIndexPage() {
             <View style={styles.modePillLabels}>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedCompass
+                  <Compass
                     size={20}
-                    animatedProps={exploreIconStyle as any}
+                    color={exploreColor}
                     strokeWidth={2.2}
                   />
                   <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
@@ -861,7 +887,7 @@ export default function MapIndexPage() {
               </View>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedMap size={20} animatedProps={mapIconStyle as any} strokeWidth={2.2} />
+                  <MapIcon size={20} color={mapColor} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, mapTextStyle]}>Map</Animated.Text>
                 </Animated.View>
               </View>
@@ -903,8 +929,8 @@ export default function MapIndexPage() {
         style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 3000 }]}
         pointerEvents="box-none"
       >
-        <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
-          <Animated.View pointerEvents="box-none" style={[styles.islandContainer, islandStyle]}>
+        <Animated.View pointerEvents="box-none" style={[styles.islandContainer, islandStyle]}>
+          <GestureDetector gesture={Gesture.Simultaneous(gesture, Gesture.Native())}>
             <Animated.View
               pointerEvents="auto"
               style={[
@@ -965,8 +991,8 @@ export default function MapIndexPage() {
                 </Animated.View>
               </Animated.ScrollView>
             </Animated.View>
-          </Animated.View>
-        </GestureDetector>
+          </GestureDetector>
+        </Animated.View>
       </Animated.View>
 
       {/* 7. AR Overlay Layer (Z-Index: 3500) */}

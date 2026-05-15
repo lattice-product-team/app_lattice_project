@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, Pressable as NativePressable, Dimensions } from 'react-native';
+import { Pressable as GHPressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { Navigation, ChevronRight } from 'lucide-react-native';
 import Animated, { FadeInRight } from 'react-native-reanimated';
@@ -10,26 +11,15 @@ import * as Haptics from 'expo-haptics';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { useMapUIStore } from '../store/useMapUIStore';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+
+import { calculateDistance, formatDistance } from '../../../utils/geoUtils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
 const CARD_HEIGHT = 180;
 
-// Utility to calculate distance in meters (Haversine simple)
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371e3; // metres
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-};
+const Pressable = Platform.OS === 'android' ? NativePressable : GHPressable;
 
 interface POICarouselCardProps {
   poi: UIPOI;
@@ -59,8 +49,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
       poi.coordinates[1],
       poi.coordinates[0]
     );
-    if (d >= 1000) return `${(d / 1000).toFixed(1)} km`;
-    return `${Math.round(d)} m`;
+    return formatDistance(d);
   }, [userCoords, poi.coordinates]);
 
   return (
@@ -176,18 +165,20 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
           <ChevronRight size={16} color={theme.colors.text.muted} strokeWidth={2.2} />
         </View>
       )}
-      <ScrollView
-        horizontal
-        style={{ height: 180 }}
-        showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH + 16}
-        decelerationRate="fast"
-        contentContainerStyle={styles.scrollContent}
-      >
-        {sortedPois.map((poi, index) => (
-          <POICarouselCard key={poi.id} poi={poi} index={index} onPress={() => onSelectPoi(poi)} />
-        ))}
-      </ScrollView>
+      <GestureDetector gesture={Gesture.Native()}>
+        <ScrollView
+          horizontal
+          style={{ height: 180 }}
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_WIDTH + 16}
+          decelerationRate="fast"
+          contentContainerStyle={styles.scrollContent}
+        >
+          {sortedPois.map((poi, index) => (
+            <POICarouselCard key={poi.id} poi={poi} index={index} onPress={() => onSelectPoi(poi)} />
+          ))}
+        </ScrollView>
+      </GestureDetector>
     </View>
   );
 };

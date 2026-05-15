@@ -33,20 +33,32 @@ export const useARStore = create<ARState>((set) => ({
   currentEventContext: null,
   isWithinBoundary: false,
 
-  openAR: (mode, id = null) => 
+  openAR: (mode, id = null) => {
+    try {
+      const { useMapUIStore, MapUIState } = require('./useMapUIStore');
+      useMapUIStore.getState().setUIState(MapUIState.AR_EXPLORE);
+    } catch (e) {}
     set({ 
       isVisible: true, 
       filterMode: mode, 
       targetId: id 
-    }),
+    });
+  },
 
-  closeAR: () => 
+  closeAR: () => {
+    try {
+      const { useMapUIStore, MapUIState } = require('./useMapUIStore');
+      if (useMapUIStore.getState().uiState === MapUIState.AR_EXPLORE) {
+        useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
+      }
+    } catch (e) {}
     set({ 
       isVisible: false, 
       targetId: null,
       currentEventContext: null,
       isWithinBoundary: false,
-    }),
+    });
+  },
 
   setContext: (event, withinBoundary) =>
     set({
