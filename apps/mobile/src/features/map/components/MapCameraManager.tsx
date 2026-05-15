@@ -113,14 +113,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
   }, [isProgrammaticMove, setIsProgrammaticMove]);
 
-  // Centralized "Safety Reset" protocol
+  // Centralized "Safety Reset" protocol - Increased duration for Android reliability
   const safetyReset = React.useCallback(() => {
     if (!cameraRef.current) return;
     cameraRef.current.setCamera({
-      animationDuration: 0,
+      animationDuration: 400, // Use a small duration to ensure Android processes the update
       padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+      pitch: is3DActive ? 60 : 0,
     });
-  }, []);
+  }, [is3DActive]);
 
   // Main Mode Transition Orchestrator
   useEffect(() => {
