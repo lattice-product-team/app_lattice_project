@@ -76,8 +76,8 @@ export const useRoutingLogic = () => {
 
       // Only calculate routes when the user explicitly requested it (planning) or is navigating.
       // Tapping a pin on the map should NOT trigger a route fetch.
+      // Fetch routes when a target is selected to provide accurate data to the detail sheet
       const { isNavigating } = useNavigationStore.getState();
-      if (!isPlanning && !isNavigating) return;
 
       if (!destinationCoords || !currentUserCoords || !destId || isFetchingRef.current) return;
 

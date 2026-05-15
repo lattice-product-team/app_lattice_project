@@ -11,20 +11,8 @@ import { useSearchEvents } from './useSearchEvents';
 import { useARStore, ARFilterMode } from '../store/useARStore';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
+import { calculateDistance, isPointInPolygon } from '../../../utils/geoUtils';
 
-// Utility to calculate distance
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371e3; // metres
-  const φ1 = (lat1 * Math.PI) / 180;
-  const φ2 = (lat2 * Math.PI) / 180;
-  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -34,7 +22,9 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 export const useDetailModel = (): DetailModel | null => {
   const theme = useAppTheme();
   const selectedPoi = usePOIStore((s) => s.selectedPoi);
+  const deselectPoi = usePOIStore((s) => s.deselect);
   const selectedEvent = useEventStore((s) => s.selectedEvent);
+  const clearEvent = useEventStore((s) => s.clearEvent);
 
   // Fetch supplemental details for events if selected
   const { details: eventDetails } = useEventDetails(
@@ -43,9 +33,12 @@ export const useDetailModel = (): DetailModel | null => {
 
   // Get navigation data
   const navMetadata = useNavigationStore((s) => s.metadata);
-  const { allEvents } = useSearchEvents('');
+  const transportMode = useNavigationStore((s) => s.transportMode);
+  const routeMetadata = useNavigationStore((s) => s.routeMetadata);
   const setPlanning = useNavigationStore((s) => s.setPlanning);
   const isFetching = useNavigationStore((s) => s.isFetching);
+
+  const { allEvents } = useSearchEvents('');
   const openAR = useARStore((s) => s.openAR);
 
   // Get user location for estimates
@@ -53,8 +46,8 @@ export const useDetailModel = (): DetailModel | null => {
   const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
   const userCoords = discoveryLocation || logicalCoords;
 
-  const drivingDuration = navMetadata.driving?.duration;
-  const drivingDistance = navMetadata.driving?.distance;
+  const currentDuration = routeMetadata?.duration;
+  const currentDistance = routeMetadata?.distance;
 
   const destinationCoords =
     selectedPoi?.coordinates ||
@@ -166,15 +159,15 @@ export const useDetailModel = (): DetailModel | null => {
           },
           {
             label: 'Distance',
-            value: formatDistance(drivingDistance),
+            value: formatDistance(currentDistance),
             icon: 'MapPinIcon',
           },
         ],
         actions: [
           {
             id: 'directions',
-            label: formatDuration(drivingDuration),
-            icon: 'CarIcon',
+            label: formatDuration(currentDuration),
+            icon: transportMode === 'driving' ? 'CarIcon' : transportMode === 'walking' ? 'FootprintsIcon' : 'BikeIcon',
             variant: 'primary',
             onPress: () => {
               setPlanning(true);
@@ -307,15 +300,15 @@ export const useDetailModel = (): DetailModel | null => {
           },
           {
             label: 'Distance',
-            value: formatDistance(drivingDistance),
+            value: formatDistance(currentDistance),
             icon: 'MapPinIcon',
           },
         ],
         actions: [
           {
             id: 'directions',
-            label: formatDuration(drivingDuration),
-            icon: 'CarIcon',
+            label: formatDuration(currentDuration),
+            icon: transportMode === 'driving' ? 'CarIcon' : transportMode === 'walking' ? 'FootprintsIcon' : 'BikeIcon',
             variant: 'primary',
             onPress: () => {
               setPlanning(true);
