@@ -92,13 +92,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     isProgrammaticMoveRef.current = isProgrammaticMove;
   }, [isProgrammaticMove]);
 
-  useEffect(() => {
-    prevIsFetching.current = isFetching;
-  }, [isFetching]);
-
   const prevUiState = React.useRef<MapUIState>(uiState);
   const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
   const lastProcessedRecenterRef = React.useRef(recenterCount);
+  const prevRouteRef = React.useRef(currentRoute);
 
   // 1. WATCHDOG: Ensure isProgrammaticMove is always cleared eventually
   useEffect(() => {
@@ -128,6 +125,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const isNewMode = uiState !== prevUiState.current;
     const isForcedRecenter = recenterCount > lastProcessedRecenterRef.current;
     const isForcedCenter = forceCenterCount > lastProcessedForceCenterRef.current;
+    const isNewRoute = currentRoute !== prevRouteRef.current;
     
     // Robust Target Resolution
     let targetCoords = selectedCoords || 
@@ -147,7 +145,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const targetKey = targetCoords ? `${targetCoords[0]},${targetCoords[1]}` : null;
     const isNewTarget = targetKey !== lastTargetRef.current;
 
-    if (isNewMode || isNewTarget || isForcedCenter || isForcedRecenter) {
+    if (isNewMode || isNewTarget || isForcedCenter || isForcedRecenter || isNewRoute) {
       if (transitionTimerRef.current) {
         clearTimeout(transitionTimerRef.current);
         setIsProgrammaticMove(false);
@@ -190,7 +188,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // 2. PLANNING MODE
     else if (uiState === MapUIState.PLANNING) {
       const isFinishFetching = !isFetching && prevIsFetching.current;
-      if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching) {
+      if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching || isNewRoute) {
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastTargetRef.current = targetKey;
         setCameraMode(MapCameraMode.FREE);
@@ -293,6 +291,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
 
     prevUiState.current = uiState;
+    prevIsFetching.current = isFetching;
+    prevRouteRef.current = currentRoute;
   }, [
     uiState, 
     recenterCount, 
@@ -327,9 +327,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       defaultSettings={defaultSettings}
       followUserLocation={cameraMode === MapCameraMode.NAVIGATION}
       followUserMode={
-        (cameraMode === MapCameraMode.NAVIGATION 
-          ? (Platform.OS === 'android' ? 'compass' : 'course') 
-          : 'normal') as any
+        (cameraMode === MapCameraMode.NAVIGATION ? 'compass' : 'normal') as any
       }
       followZoomLevel={cameraMode === MapCameraMode.NAVIGATION ? 18 : undefined}
       followPitch={cameraMode === MapCameraMode.NAVIGATION ? 45 : undefined}

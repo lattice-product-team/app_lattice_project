@@ -514,6 +514,7 @@ export const MapContent = function MapContent({
           onPoiPress={handlePoiPress}
           zoomLevel={discreteZoom}
           zoomSharedValue={zoomSharedValue}
+          islandState={islandState}
         />
       </MapLibreGL.MapView>
     </View>

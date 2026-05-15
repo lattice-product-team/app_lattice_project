@@ -77,6 +77,9 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
     // Estimate driving time (approx 30km/h = 8.33m/s)
     const dur = d / 8.33;
 
+    // Safety check for invalid numbers
+    if (!isFinite(d) || !isFinite(dur)) return { distanceText: null, durationText: null };
+
     return { 
       distanceText: formatDistance(d), 
       durationText: formatDuration(dur) 
