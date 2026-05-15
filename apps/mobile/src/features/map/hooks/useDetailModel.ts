@@ -306,20 +306,13 @@ export const useDetailModel = (): DetailModel | null => {
             },
           },
           {
-            id: 'website',
-            label: 'Website',
-            icon: 'GlobeIcon',
-            variant: 'subdued',
+            id: 'share',
+            label: 'Share',
+            icon: 'ShareIcon',
+            variant: 'secondary',
             onPress: () => {},
           },
-          {
-            id: 'tickets',
-            label: 'TicketIcons',
-            icon: 'TicketIcon',
-            variant: 'subdued',
-            onPress: () => {},
-          },
-        ],
+          ],
       } as DetailModel;
     }
 

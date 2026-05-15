@@ -132,6 +132,10 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   setFetching: (isFetching) => set({ isFetching }),
 
   clearNavigation: () => {
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
+    } catch (e) {}
     set({
       currentRoute: null,
       routeMetadata: null,

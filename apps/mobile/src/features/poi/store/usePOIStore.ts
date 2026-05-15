@@ -100,12 +100,8 @@ export const usePOIStore = create<POIState>((set) => ({
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       const currentState = useMapUIStore.getState().uiState;
       
-      // ONLY trigger state change if we are coming from a detail, planning or navigation mode
-      if (
-        currentState === MapUIState.POI_DETAIL || 
-        currentState === MapUIState.PLANNING || 
-        currentState === MapUIState.NAVIGATING
-      ) {
+      // Force return to EXPLORING if we are deselecting
+      if (currentState !== MapUIState.EXPLORING) {
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
       }
     } catch (e) {

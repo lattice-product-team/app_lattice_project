@@ -42,17 +42,20 @@ export const AdaptiveControlOverlay = React.memo(({
   const isARActive = useARStore((s) => s.isVisible) || uiState === MapUIState.AR_EXPLORE;
 
   const rOverlayStyle = useAnimatedStyle(() => {
-    // Option B: Fade-out if any overlay layer is active, island is full-screen, or AR is active
-    const isLayerActive = uiLayer.value !== 0; // UILayer.BASE
-    const isIslandFull = islandState.value > 0.8;
-    const shouldHide = isLayerActive || isIslandFull || isARActive;
+    // Hide if:
+    // 1. Island is expanded (searching/dashboard)
+    // 2. AR is active
+    // 3. We are in NAV/PLANNING mode AND the camera is already following (auto-mode)
+    const isIslandExpanded = islandState.value > 0.1;
+    const isNavMode = uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING;
+    const shouldHide = isIslandExpanded || isARActive || isNavMode;
 
     return {
-      opacity: withTiming(shouldHide ? 0 : 1, { duration: 150 }),
+      opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
       transform: [{ translateY: -bottomOffset - 12 }],
     };
-  }, [isARActive, bottomOffset]);
+  }, [uiState, isARActive, bottomOffset]);
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
