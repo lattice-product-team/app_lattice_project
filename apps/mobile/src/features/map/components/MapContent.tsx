@@ -119,7 +119,7 @@ export const MapContent = function MapContent({
         // On Android, we are even stricter to prevent re-renders during active tracking.
         const isStationary = !isChanging;
         const canUpdateZoom = Platform.OS === 'android'
-          ? !isChanging && cameraMode !== MapCameraMode.NAVIGATION
+          ? !isChanging && cameraMode === MapCameraMode.FREE
           : isStationary || now - lastZoomUpdateRef.current > 250;
 
         if (canUpdateZoom) {
@@ -147,11 +147,14 @@ export const MapContent = function MapContent({
       // so we also check if region is actively changing and we're NOT in a programmatic state.
       // If camera is changing due to user interaction (drag, pinch, etc), stop following.
       // CRITICAL: isUserInteraction should ALWAYS break any lock to prevent "vibrations".
+      // On Android, we are even more aggressive: if the region is changing and we're NOT
+      // in a programmatic move, we FORCE free mode immediately.
       const shouldSwitchToFree =
-        (isUserInteraction || (!isProgrammaticMoveRef.current && isChanging)) &&
+        (isUserInteraction || (isChanging && !isProgrammaticMoveRef.current)) &&
         cameraMode !== MapCameraMode.FREE;
       
       if (shouldSwitchToFree) {
+        // console.log('[MapContent] Breaking lock -> FREE');
         setCameraMode(MapCameraMode.FREE);
       }
     },

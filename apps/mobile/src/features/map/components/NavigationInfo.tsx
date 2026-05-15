@@ -40,7 +40,8 @@ export const NavigationInfo = () => {
 
   const handleRecenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setCameraMode(MapCameraMode.NAVIGATION);
+    triggerRecenter();
+    setCameraMode(MapCameraMode.FOLLOW_WITH_COURSE);
   };
 
   const getArrivalTime = (seconds: number) => {

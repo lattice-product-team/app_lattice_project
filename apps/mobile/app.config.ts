@@ -11,8 +11,11 @@ const rootDir = path.resolve(projectRoot, '../../');
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
 const rootEnvPath = path.join(rootDir, envFile);
 
+// Prevents redundant logging during Expo's multiple config evaluations
+const shouldLog = !process.env.APP_CONFIG_LOADED;
+
 if (fs.existsSync(rootEnvPath)) {
-  console.log(`ℹ️ [Config] Loading environment from ${envFile}`);
+  if (shouldLog) console.log(`ℹ️ [Config] Loading environment from ${envFile}`);
   const envOutput = dotenv.config({ path: rootEnvPath });
   expand(envOutput);
 
@@ -24,13 +27,14 @@ if (fs.existsSync(rootEnvPath)) {
   // Fallback to .env if .env.production doesn't exist
   const fallbackPath = path.join(rootDir, '.env');
   if (fs.existsSync(fallbackPath)) {
-    console.log('ℹ️ [Config] Falling back to .env');
+    if (shouldLog) console.log('ℹ️ [Config] Falling back to .env');
     const envOutput = dotenv.config({ path: fallbackPath });
     expand(envOutput);
   } else {
-    console.log('ℹ️ [Config] No .env files found, relying on environment variables.');
+    if (shouldLog) console.log('ℹ️ [Config] No .env files found, relying on environment variables.');
   }
 }
+process.env.APP_CONFIG_LOADED = 'true';
 
 /**
  * Environment Variables Schema
@@ -79,10 +83,12 @@ const resolveValhallaUrl = () => {
 const API_URL = resolveApiUrl();
 const VALHALLA_URL = resolveValhallaUrl();
 
-console.log('------------------------------------');
-console.log(`🚀 [Config] Mode: ${process.env.NODE_ENV || 'development'}`);
-console.log(`🔗 [Config] API_URL: ${API_URL}`);
-console.log('------------------------------------');
+if (shouldLog) {
+  console.log('------------------------------------');
+  console.log(`🚀 [Config] Mode: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 [Config] API_URL: ${API_URL}`);
+  console.log('------------------------------------');
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

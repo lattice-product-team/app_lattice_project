@@ -74,39 +74,39 @@ const POIMarkers = React.memo(({
   theme: any, 
   zoomSharedValue: any 
 }) => {
+  // Only render the SELECTED poi as a PointAnnotation for high-fidelity interaction.
+  // The rest are handled by the ShapeSource/SymbolLayer for performance.
+  const selectedFeature = useMemo(() => 
+    features.find(f => String(f.properties?.id) === String(selectedPoiId)),
+    [features, selectedPoiId]
+  );
+
+  if (!selectedFeature) return null;
+
   return (
-    <>
-      {features.map((feature: any) => {
-        const id = feature.properties?.id;
-        const isSelected = String(id) === String(selectedPoiId);
-        
-        return (
-          <MapLibreGL.PointAnnotation
-            key={`poi-${id}`}
-            id={`ann-${id}`}
-            coordinate={feature.geometry.coordinates}
-            onSelected={() => onPoiPress(feature)}
-            style={{ zIndex: isSelected ? 100 : 50 }}
-          >
-            <View 
-              style={[
-                mapPinStyles.markerWrapper, 
-                { backgroundColor: 'transparent' }
-              ]}
-              collapsable={false}
-            >
-              <POIMarker
-                poi={feature}
-                theme={theme}
-                isSelected={isSelected}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            </View>
-          </MapLibreGL.PointAnnotation>
-        );
-      })}
-    </>
+    <MapLibreGL.PointAnnotation
+      key={`poi-selected-${selectedPoiId}`}
+      id={`ann-selected-${selectedPoiId}`}
+      coordinate={selectedFeature.geometry.coordinates}
+      onSelected={() => onPoiPress(selectedFeature)}
+      style={{ zIndex: 100 }}
+    >
+      <View 
+        style={[
+          mapPinStyles.markerWrapper, 
+          { backgroundColor: 'transparent' }
+        ]}
+        collapsable={false}
+      >
+        <POIMarker
+          poi={selectedFeature}
+          theme={theme}
+          isSelected={true}
+          onPress={onPoiPress}
+          zoomSharedValue={zoomSharedValue}
+        />
+      </View>
+    </MapLibreGL.PointAnnotation>
   );
 });
 
@@ -184,7 +184,37 @@ export const MapLayers = React.memo(({
         shape={backgroundPois}
         hitbox={{ width: 30, height: 30 }}
         onPress={handleShapePress}
-      />
+      >
+        <MapLibreGL.CircleLayer
+          id="backgroundPoiDots"
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              14, 4,
+              18, 8
+            ],
+            circleColor: ['get', 'color'],
+            circleStrokeWidth: 2,
+            circleStrokeColor: '#FFFFFF',
+            circleOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 0,
+              14.5, 1
+            ],
+            circleStrokeOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 0,
+              14.5, 1
+            ],
+          }}
+        />
+      </MapLibreGL.ShapeSource>
 
       <MapLibreGL.ShapeSource 
         id="eventsSource" 

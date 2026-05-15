@@ -126,24 +126,47 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const isForcedRecenter = recenterCount > lastProcessedRecenterRef.current;
     const isForcedCenter = forceCenterCount > lastProcessedForceCenterRef.current;
     const isNewRoute = currentRoute !== prevRouteRef.current;
-    
+
     // Robust Target Resolution
-    let targetCoords = selectedCoords || 
-      selectedEvent?.coordinates || 
-      selectedEvent?.center?.coordinates || 
+    let targetCoords =
+      selectedCoords ||
+      selectedEvent?.coordinates ||
+      selectedEvent?.center?.coordinates ||
       selectedEvent?.geometry?.coordinates;
 
     // Fallback: If we have an ID but no coords, try to find it in the geojson
     if (!targetCoords && (selectedPoiId || selectedEventId)) {
       const id = selectedPoiId || selectedEventId;
-      const feature = poisGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(id));
+      const feature = poisGeoJSON?.features?.find(
+        (f: any) => String(f.properties?.id) === String(id)
+      );
       if (feature?.geometry?.type === 'Point') {
         targetCoords = feature.geometry.coordinates;
       }
     }
-    
+
     const targetKey = targetCoords ? `${targetCoords[0]},${targetCoords[1]}` : null;
     const isNewTarget = targetKey !== lastTargetRef.current;
+
+    const canStealCamera =
+      cameraMode !== MapCameraMode.FREE ||
+      isNewMode ||
+      isForcedCenter ||
+      isForcedRecenter ||
+      (isNewTarget && targetKey !== null);
+
+    if (!canStealCamera) {
+      // CRITICAL: We must update these refs even if we don't move the camera.
+      // Otherwise, isNewTarget/isNewMode will remain 'true' and trigger 
+      // the centering again as soon as any other prop changes.
+      prevUiState.current = uiState;
+      prevIsFetching.current = isFetching;
+      prevRouteRef.current = currentRoute;
+      lastTargetRef.current = targetKey;
+      lastProcessedRecenterRef.current = recenterCount;
+      lastProcessedForceCenterRef.current = forceCenterCount;
+      return;
+    }
 
     if (isNewMode || isNewTarget || isForcedCenter || isForcedRecenter || isNewRoute) {
       if (transitionTimerRef.current) {
@@ -167,7 +190,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastTargetRef.current = targetKey;
         setIsProgrammaticMove(true);
-        
+
         cameraRef.current.setCamera({
           centerCoordinate: userCoords || MAP_CENTER,
           zoomLevel: 18,
@@ -177,11 +200,16 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           animationMode: 'flyTo',
         });
 
-        transitionTimerRef.current = setTimeout(() => {
-          setCameraMode(MapCameraMode.NAVIGATION);
-          setTimeout(() => setIsProgrammaticMove(false), 500);
-        }, isNewMode ? 1300 : 900);
-        return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
+        transitionTimerRef.current = setTimeout(
+          () => {
+            setCameraMode(MapCameraMode.FOLLOW_WITH_COURSE);
+            setTimeout(() => setIsProgrammaticMove(false), 500);
+          },
+          isNewMode ? 1300 : 900
+        );
+        return () => {
+          if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+        };
       }
     }
 
@@ -192,12 +220,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastTargetRef.current = targetKey;
         setCameraMode(MapCameraMode.FREE);
-        
+
         const destinationCoords = targetCoords;
-        const pointsToFit = currentRoute?.geometry?.coordinates || 
+        const pointsToFit =
+          currentRoute?.geometry?.coordinates ||
           (userCoords && destinationCoords ? [userCoords, destinationCoords] : []);
 
-        const validPoints = pointsToFit.filter((c: any) => c && c.length === 2 && (Math.abs(c[0]) > 0.001));
+        const validPoints = pointsToFit.filter(
+          (c: any) => c && c.length === 2 && Math.abs(c[0]) > 0.001
+        );
 
         if (!isFetching && validPoints.length >= 2) {
           const bbox = calculateBBox(validPoints);
@@ -218,7 +249,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
               animationMode: 'flyTo',
             });
             transitionTimerRef.current = setTimeout(() => setIsProgrammaticMove(false), 1300);
-            return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
+            return () => {
+              if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+            };
           }
         } else if (destinationCoords) {
           setIsProgrammaticMove(true);
@@ -230,7 +263,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             pitch: is3DActive ? 45 : 0,
           });
           transitionTimerRef.current = setTimeout(() => setIsProgrammaticMove(false), 1100);
-          return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
+          return () => {
+            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+          };
         }
       }
     }
@@ -262,7 +297,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           transitionTimerRef.current = setTimeout(() => {
             setIsProgrammaticMove(false);
           }, 1100);
-          return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
+          return () => {
+            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+          };
         }
       }
     }
@@ -270,11 +307,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // 4. EXPLORING / BASE MODE
     else if (uiState === MapUIState.EXPLORING) {
       lastTargetRef.current = null; // Always clear target in exploring
-      
+
       if (isForcedRecenter) {
         lastProcessedRecenterRef.current = recenterCount;
         setCameraMode(MapCameraMode.FREE);
-        
+
         if (userCoords) {
           setIsProgrammaticMove(true);
           cameraRef.current.setCamera({
@@ -285,7 +322,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             pitch: is3DActive ? 60 : 0,
           });
           transitionTimerRef.current = setTimeout(() => setIsProgrammaticMove(false), 1100);
-          return () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); };
+          return () => {
+            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+          };
         }
       }
     }
@@ -294,14 +333,14 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     prevIsFetching.current = isFetching;
     prevRouteRef.current = currentRoute;
   }, [
-    uiState, 
-    recenterCount, 
-    forceCenterCount, 
-    selectedCoords, 
-    selectedEvent, 
-    currentRoute, 
-    isFetching, 
-    is3DActive
+    uiState,
+    recenterCount,
+    forceCenterCount,
+    selectedCoords,
+    selectedEvent,
+    currentRoute,
+    isFetching,
+    is3DActive,
   ]);
 
   // Handle 3D Pitch toggle independently for better responsiveness
@@ -314,32 +353,37 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
   }, [is3DActive]);
 
-  const defaultSettings = React.useMemo(() => ({
-    centerCoordinate: userCoords || lastCameraPosition?.center || MAP_CENTER,
-    zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM,
-    pitch: lastCameraPosition?.pitch || 0,
-  }), [userCoords, lastCameraPosition]);
+  const defaultSettings = React.useMemo(
+    () => ({
+      centerCoordinate: userCoords || lastCameraPosition?.center || MAP_CENTER,
+      zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM,
+      pitch: lastCameraPosition?.pitch || 0,
+    }),
+    [userCoords, lastCameraPosition]
+  );
 
   return (
     <MapLibreGL.Camera
       ref={cameraRef}
       minZoomLevel={2}
       defaultSettings={defaultSettings}
-      followUserLocation={cameraMode === MapCameraMode.NAVIGATION}
+      followUserLocation={cameraMode !== MapCameraMode.FREE}
       followUserMode={
-        (cameraMode === MapCameraMode.NAVIGATION ? 'compass' : 'normal') as any
+        cameraMode === MapCameraMode.FOLLOW_WITH_HEADING
+          ? 'compass'
+          : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE
+            ? 'course'
+            : 'normal'
       }
-      followZoomLevel={cameraMode === MapCameraMode.NAVIGATION ? 18 : undefined}
-      followPitch={cameraMode === MapCameraMode.NAVIGATION ? 45 : undefined}
+      followZoomLevel={uiState === MapUIState.NAVIGATING ? 18 : undefined}
+      followPitch={uiState === MapUIState.NAVIGATING ? 45 : undefined}
       onUserTrackingModeChange={(e) => {
         // If the native map stops following (due to user drag), sync our state to FREE
         // BUT ONLY if this wasn't triggered by our own programmatic flyTo
-        if (
-          !isProgrammaticMove &&
-          e.nativeEvent.payload.followUserLocation === false &&
-          cameraMode !== MapCameraMode.FREE
-        ) {
-          console.log('[Camera] Native follow disabled by user interaction');
+        const isTrackingDisabled = e.nativeEvent.payload.followUserLocation === false;
+        
+        if (!isProgrammaticMove && isTrackingDisabled && cameraMode !== MapCameraMode.FREE) {
+          // console.log('[Camera] User interaction broke native tracking');
           setCameraMode(MapCameraMode.FREE);
         }
       }}

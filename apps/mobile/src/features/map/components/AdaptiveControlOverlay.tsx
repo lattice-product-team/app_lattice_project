@@ -98,11 +98,35 @@ export const AdaptiveControlOverlay = React.memo(({
             }
           ]}
         >
-          <Navigation 
-            size={20} 
-            color={cameraMode !== MapCameraMode.FREE ? 'white' : iconColor} 
-            strokeWidth={2.2}
-          />
+          {cameraMode === MapCameraMode.FOLLOW_WITH_HEADING ? (
+            <Navigation 
+              size={20} 
+              color="white" 
+              fill="white"
+              strokeWidth={2.2}
+              style={{ transform: [{ rotate: '45deg' }] }} // Subtle tilt for heading
+            />
+          ) : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE ? (
+            <Navigation 
+              size={20} 
+              color="white" 
+              fill="white"
+              strokeWidth={2.5}
+            />
+          ) : cameraMode === MapCameraMode.FOLLOW ? (
+            <Navigation 
+              size={20} 
+              color="white" 
+              fill="white"
+              strokeWidth={2.2}
+            />
+          ) : (
+            <Navigation 
+              size={20} 
+              color={iconColor} 
+              strokeWidth={2.2}
+            />
+          )}
         </Pressable>
       </View>
 

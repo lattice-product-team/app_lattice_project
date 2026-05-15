@@ -13,7 +13,9 @@ export enum MapUIState {
 
 export enum MapCameraMode {
   FREE = 'FREE',
-  NAVIGATION = 'NAVIGATION',
+  FOLLOW = 'FOLLOW',
+  FOLLOW_WITH_HEADING = 'FOLLOW_WITH_HEADING',
+  FOLLOW_WITH_COURSE = 'FOLLOW_WITH_COURSE',
 }
 
 interface MapUIStore {
@@ -98,13 +100,24 @@ export const useMapUIStore = create<MapUIStore>()(
       setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
 
       triggerRecenter: () =>
-        set((state) => ({
-          recenterCount: state.recenterCount + 1,
-          cameraMode:
-            state.cameraMode === MapCameraMode.NAVIGATION
-              ? MapCameraMode.NAVIGATION
-              : MapCameraMode.FREE,
-        })),
+        set((state) => {
+          let nextMode = MapCameraMode.FOLLOW;
+          
+          if (state.cameraMode === MapCameraMode.FREE) {
+            nextMode = MapCameraMode.FOLLOW;
+          } else if (state.cameraMode === MapCameraMode.FOLLOW) {
+            nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
+          } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
+            nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
+          } else {
+            nextMode = MapCameraMode.FREE;
+          }
+
+          return {
+            recenterCount: state.recenterCount + 1,
+            cameraMode: nextMode,
+          };
+        }),
 
       triggerForceCenter: () =>
         set((state) => ({

@@ -825,7 +825,7 @@ export default function MapIndexPage() {
             setManualAR(false);
             // 2. Re-engage navigation mode if we were in a route
             if (isNavigating) {
-              useMapUIStore.getState().setCameraMode(MapCameraMode.NAVIGATION);
+              useMapUIStore.getState().setCameraMode(MapCameraMode.FOLLOW_WITH_COURSE);
             }
             // 3. Trigger the animation/re-centering
             triggerRecenter();

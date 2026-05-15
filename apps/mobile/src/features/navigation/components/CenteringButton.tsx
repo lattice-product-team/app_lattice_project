@@ -33,7 +33,7 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // Use triggerRecenter to increment the count and force the effect in MapCameraManager to fire
     triggerRecenter();
-    setCameraMode(MapCameraMode.NAVIGATION);
+    setCameraMode(MapCameraMode.FOLLOW_WITH_COURSE);
   };
 
   const rStyle = useAnimatedStyle(() => {
