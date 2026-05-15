@@ -121,16 +121,17 @@ export const NavigationInfo = () => {
           <Button
             onPress={handleCancel}
             label="SALIR"
+            variant="tertiary"
             style={{ 
-              backgroundColor: '#FF3B30',
-              height: 48,
-              borderRadius: 24,
-              minWidth: 100,
+              height: 44,
+              borderRadius: 22,
+              minWidth: 90,
               marginLeft: 16
             }}
             labelStyle={{ 
-              fontSize: 14,
+              fontSize: 13,
               letterSpacing: 1,
+              color: theme.colors.status.error, // Keep the text red but the button subtle
             }}
           />
         </View>

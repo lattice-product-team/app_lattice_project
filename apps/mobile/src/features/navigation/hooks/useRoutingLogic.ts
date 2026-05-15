@@ -4,6 +4,7 @@ import { useNavigationStore } from '../store/useNavigationStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { navigationService } from '../services/navigationService';
 import { useLocationStore } from '../../../store/useLocationStore';
+import { useMapUIStore } from '../../map/store/useMapUIStore';
 
 const calculateDistance = (c1: [number, number], c2: [number, number]) => {
   const R = 6371e3;
@@ -39,8 +40,9 @@ export const useRoutingLogic = () => {
   }, [isRemote, setRemote]);
 
   const lastFetchCoords = useRef<[number, number] | null>(null);
-  const lastDestinationId = useRef<string | null>(null);
   const isFetchingRef = useRef(false);
+  const lockedOrigin = useRef<[number, number] | null>(null);
+  const lastDestinationId = useRef<string | null>(null);
   const REFETCH_THRESHOLD_METERS = 30; // Only re-route if moved significantly
 
   const lastIsPlanning = useRef(isPlanning);
@@ -69,6 +71,7 @@ export const useRoutingLogic = () => {
       const destId = selectedPoiId || selectedEvent?.id;
       const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
       const destinationName = selectedPoi?.displayName || selectedEvent?.name || '';
+      const discoveryLocation = useMapUIStore.getState().discoveryLocation;
       const currentUserCoords = userCoordsRef.current;
 
       // Only calculate routes when the user explicitly requested it (planning) or is navigating.
@@ -85,10 +88,23 @@ export const useRoutingLogic = () => {
       // 4. We JUST transitioned from planning to navigating (force fresh route for start)
       
       const isInitialFetch = !lastFetchCoords.current || lastDestinationId.current !== destId;
-      const distanceMoved = lastFetchCoords.current ? calculateDistance(currentUserCoords as [number, number], lastFetchCoords.current) : 0;
       const justStartedNavigating = lastIsPlanning.current && !isPlanning;
       
+      // Lock the origin if this is the first fetch for this destination
+      // We prioritize discoveryLocation if available (locked map center)
+      if (isInitialFetch || !lockedOrigin.current) {
+        lockedOrigin.current = discoveryLocation || currentUserCoords as [number, number];
+      }
+
+      const distanceMoved = lastFetchCoords.current ? calculateDistance(currentUserCoords as [number, number], lastFetchCoords.current) : 0;
+      
       lastIsPlanning.current = isPlanning;
+
+      // If we're planning, we ONLY fetch if it's the initial fetch for this destination.
+      // We don't want to keep refetching just because the user is moving while looking at the sheet.
+      if (isPlanning && !isInitialFetch) {
+        return;
+      }
 
       if (!isInitialFetch && distanceMoved < REFETCH_THRESHOLD_METERS && !isPlanning && !justStartedNavigating) {
         return;
@@ -103,7 +119,11 @@ export const useRoutingLogic = () => {
       lastDestinationId.current = destId as string;
 
       try {
-        const origin = { lat: currentUserCoords[1], lng: currentUserCoords[0] };
+        // Use lockedOrigin for Planning, or live currentUserCoords for active Navigation
+        const effectiveOrigin = (isPlanning && lockedOrigin.current) ? lockedOrigin.current : currentUserCoords;
+        if (!effectiveOrigin) return;
+
+        const origin = { lat: effectiveOrigin[1], lng: effectiveOrigin[0] };
         const destination = { lat: destinationCoords[1], lng: destinationCoords[0] };
 
         // 1. Driving is always attempted

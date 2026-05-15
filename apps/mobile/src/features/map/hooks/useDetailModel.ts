@@ -8,6 +8,21 @@ import { getCategoryMetadata } from '../../../utils/poiUtils';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useSearchEvents } from './useSearchEvents';
 import { useARStore, ARFilterMode } from '../store/useARStore';
+import { useLocationStore } from '../../../store/useLocationStore';
+import { useMapUIStore } from '../../map/store/useMapUIStore';
+
+// Utility to calculate distance
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371e3; // metres
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -31,19 +46,44 @@ export const useDetailModel = (): DetailModel | null => {
   const isFetching = useNavigationStore((s) => s.isFetching);
   const openAR = useARStore((s) => s.openAR);
 
+  // Get user location for estimates
+  const logicalCoords = useLocationStore((s) => s.logicalCoords);
+  const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
+  const userCoords = discoveryLocation || logicalCoords;
+
   const drivingDuration = navMetadata.driving?.duration;
   const drivingDistance = navMetadata.driving?.distance;
 
+  const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
+
+  const { estimatedDistance, estimatedDuration } = useMemo(() => {
+    if (!userCoords || !destinationCoords) return { estimatedDistance: undefined, estimatedDuration: undefined };
+    
+    const d = calculateDistance(
+      userCoords[1],
+      userCoords[0],
+      destinationCoords[1],
+      destinationCoords[0]
+    );
+
+    // Walking estimate (5km/h = 1.38m/s)
+    const dur = d / 1.38;
+
+    return { estimatedDistance: d, estimatedDuration: dur };
+  }, [userCoords, destinationCoords]);
+
   const formatDistance = (m: number | undefined) => {
-    if (!m) return '--';
-    if (m < 1000) return `${Math.round(m)}m`;
-    return `${(m / 1000).toFixed(1)} km`;
+    const val = m || estimatedDistance;
+    if (!val) return '--';
+    if (val < 1000) return `${Math.round(val)}m`;
+    return `${(val / 1000).toFixed(1)} km`;
   };
 
   const formatDuration = (s: number | undefined) => {
     if (isFetching) return '...';
-    if (!s) return '--';
-    const mins = Math.round(s / 60);
+    const val = s || estimatedDuration;
+    if (!val) return '--';
+    const mins = Math.round(val / 60);
     return `${mins} min`;
   };
 

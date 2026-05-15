@@ -9,6 +9,22 @@ import {
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { getEventMetadata } from '../../../utils/poiUtils';
+import { useLocationStore } from '../../../store/useLocationStore';
+import { useMapUIStore } from '../store/useMapUIStore';
+import { useMemo } from 'react';
+
+// Utility to calculate distance
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371e3; // metres
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 interface Event {
   id: string | number;
@@ -30,10 +46,15 @@ interface EventCarouselCardProps {
 
 export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCardProps) => {
   const theme = useAppTheme();
+  const logicalCoords = useLocationStore((s) => s.logicalCoords);
+  const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
+  
+  const userCoords = discoveryLocation || logicalCoords;
+
   const metadata = getEventMetadata(event.type);
   const CategoryIcon = metadata.icon;
 
-  const formattedDate = React.useMemo(() => {
+  const formattedDate = useMemo(() => {
     if (event.date) return event.date;
     if (!event.startDate) return 'Hoy';
 
@@ -51,6 +72,27 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
 
     return date.toLocaleDateString([], { day: '2-digit', month: 'short' }) + `, ${timeStr}`;
   }, [event.date, event.startDate]);
+
+  const { distanceText, durationText } = useMemo(() => {
+    if (!userCoords || !event.center?.coordinates) return { distanceText: null, durationText: null };
+    
+    const d = calculateDistance(
+      userCoords[1],
+      userCoords[0],
+      event.center.coordinates[1],
+      event.center.coordinates[0]
+    );
+
+    let dText = '';
+    if (d >= 1000) dText = `${(d / 1000).toFixed(1)} km`;
+    else dText = `${Math.round(d)} m`;
+
+    // Estimate walking time (5km/h = 1.38m/s)
+    const mins = Math.round(d / 1.38 / 60);
+    const durText = mins < 1 ? '< 1 min' : `${mins} min`;
+
+    return { distanceText: dText, durationText: durText };
+  }, [userCoords, event.center?.coordinates]);
 
   return (
     <View style={styles.shadowWrapper}>
@@ -116,13 +158,18 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
                     {formattedDate}
                   </Text>
                 </View>
-                <View style={styles.detailSeparator} />
-                <View style={styles.detailItem}>
-                  <MapPin size={11} color={theme.colors.text.muted} strokeWidth={2.2} />
-                  <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>
-                    {event.location || 'Barcelona'}
-                  </Text>
-                </View>
+                
+                {distanceText && (
+                  <>
+                    <View style={styles.detailSeparator} />
+                    <View style={styles.detailItem}>
+                      <MapPin size={11} color={theme.colors.text.muted} strokeWidth={2.2} />
+                      <Text style={[styles.detailText, { color: theme.colors.text.muted }]}>
+                        {distanceText} • {durationText}
+                      </Text>
+                    </View>
+                  </>
+                )}
               </View>
             </View>
           </View>
