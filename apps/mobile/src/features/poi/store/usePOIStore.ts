@@ -64,16 +64,19 @@ export const usePOIStore = create<POIState>((set) => ({
   deselect: () => {
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
-      const uiState = useMapUIStore.getState().uiState;
-      if (uiState === MapUIState.POI_DETAIL || uiState === MapUIState.PLANNING) {
+      const currentState = useMapUIStore.getState().uiState;
+      
+      // ONLY trigger state change if we are coming from a detail mode
+      if (currentState === MapUIState.POI_DETAIL || currentState === MapUIState.PLANNING) {
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
       }
     } catch (e) {}
-    set({
-      selectedPoiId: null,
-      selectedPoi: null,
+    
+    set({ 
+      selectedPoi: null, 
+      selectedPoiId: null, 
       selectedCoords: null,
-      selectedEventId: null,
+      activeCategoryFilters: [] 
     });
   },
 

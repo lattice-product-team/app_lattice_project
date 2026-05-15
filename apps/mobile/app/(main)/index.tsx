@@ -328,12 +328,6 @@ export default function MapIndexPage() {
 
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-      // Force camera to center on the new selection with a small delay to ensure state propagation
-      setTimeout(() => {
-        useMapUIStore.getState().setCameraMode(MapCameraMode.FREE);
-        useMapUIStore.getState().triggerForceCenter();
-      }, 250);
     },
     [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
   );
@@ -793,21 +787,27 @@ export default function MapIndexPage() {
         <NavigationInfo />
       </Animated.View>
 
-      {/* 3. Global Dimmer (Z-Index: 900) */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={handleMapPress} pointerEvents="box-none">
+      {/* 3. Global Dimmer (Z-Index: 900) - Temporarily disabled for diagnostic */}
+      {/* 
+      <Animated.View
+        pointerEvents="box-none"
+        style={[StyleSheet.absoluteFill, { zIndex: 900 }]}
+      >
         <Animated.View
           animatedProps={dimmerProps}
           style={[
             StyleSheet.absoluteFill,
-            { backgroundColor: 'black', zIndex: 900 },
+            { backgroundColor: 'black' },
             mapOverlayStyle,
             dimmerStyle,
           ]}
+          pointerEvents="none"
         />
-      </Pressable>
+      </Animated.View>
+      */}
 
       {/* 4. HUD Buttons & Controls (Z-Index: 1000) */}
-      <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]}>
+      <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]} pointerEvents="box-none">
         <AdaptiveControlOverlay
           uiLayer={uiLayer}
           islandState={islandState}

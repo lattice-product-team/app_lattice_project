@@ -68,6 +68,10 @@ export const MapContent = function MapContent({
     isProgrammaticMove,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
+  const isProgrammaticMoveRef = React.useRef(isProgrammaticMove);
+  useEffect(() => {
+    isProgrammaticMoveRef.current = isProgrammaticMove;
+  }, [isProgrammaticMove]);
 
   const userCoords = useLocationStore((s) => s.coords);
 
@@ -144,7 +148,7 @@ export const MapContent = function MapContent({
       // If camera is changing due to user interaction (drag, pinch, etc), stop following.
       // CRITICAL: isUserInteraction should ALWAYS break any lock to prevent "vibrations".
       const shouldSwitchToFree =
-        (isUserInteraction || (!isProgrammaticMove && isChanging)) &&
+        (isUserInteraction || (!isProgrammaticMoveRef.current && isChanging)) &&
         cameraMode !== MapCameraMode.FREE;
       
       if (shouldSwitchToFree) {
@@ -158,7 +162,6 @@ export const MapContent = function MapContent({
       setLastCameraPosition,
       cameraMode,
       setCameraMode,
-      isProgrammaticMove,
     ]
   );
 
@@ -457,7 +460,6 @@ export const MapContent = function MapContent({
         scrollEnabled={true}
         zoomEnabled={true}
         onPress={handleMapPress}
-        pointerEvents={uiState === MapUIState.AR_EXPLORE ? 'none' : 'auto'}
         onRegionIsChanging={(e) => handleCameraChange(e, true)}
         onRegionDidChange={(e) => handleCameraChange(e, false)}
         onDidFinishLoadingStyle={() => {
@@ -496,6 +498,8 @@ export const MapContent = function MapContent({
           currentRoute={currentRoute}
           transportMode={transportMode}
           isFetching={isFetching}
+          selectedPoiId={selectedPoiId}
+          selectedEventId={selectedEventId}
         />
 
         <MapLayers
