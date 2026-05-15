@@ -8,8 +8,12 @@
       "address": "Platja del Fòrum, 08930 Sant Adrià de Besòs, Barcelona",
       "location": [2.2315, 41.4125],
       "primaryColor": "#FFD700",
-      "bannerUrl": "PLACEHOLDER_BBF_BANNER",
-      "galleryUrls": ["PLACEHOLDER_BBF_G1", "PLACEHOLDER_BBF_G2", "PLACEHOLDER_BBF_G3"],
+      "bannerUrl": "https://s1.abcstatics.com/abc/www/multimedia/espana/2022/07/30/solmarket-puig-R5B1JWeUGvxm4tYQv0kRryL-1240x768@abc.jpg",
+      "galleryUrls": [
+        "https://www.dodmagazine.es/wp-content/uploads/2025/03/festivales-playa.jpg",
+        "https://images.ecestaticos.com/0NNZYchZlylAPveK3rhS0M5P4BU=/1x158:2268x1348/600x315/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F9dc%2F5e8%2F744%2F9dc5e8744fe39aefd361c03966afc044.jpg",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1quulAuCmKxONWvzV434-3wBtZaiwN5Wkig&s"
+      ],
       "category": "Music",
       "pois": [
         {
