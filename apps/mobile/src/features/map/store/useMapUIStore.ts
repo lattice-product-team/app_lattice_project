@@ -24,10 +24,12 @@ interface MapUIStore {
     pitch: number;
   } | null;
   discoveryLocation: [number, number] | null;
+  isProgrammaticMove: boolean;
 
   // Actions
   setUIState: (state: MapUIState) => void;
   setCameraMode: (mode: MapCameraMode) => void;
+  setIsProgrammaticMove: (isMove: boolean) => void;
   triggerRecenter: () => void;
   triggerForceCenter: () => void;
   setInitialLoadComplete: (isComplete: boolean) => void;
@@ -46,10 +48,13 @@ export const useMapUIStore = create<MapUIStore>((set) => ({
   isInitialLoadComplete: false,
   lastCameraPosition: null,
   discoveryLocation: null,
+  isProgrammaticMove: false,
 
   setUIState: (uiState) => set({ uiState }),
 
   setCameraMode: (cameraMode) => set({ cameraMode }),
+
+  setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
 
   triggerRecenter: () =>
     set((state) => ({

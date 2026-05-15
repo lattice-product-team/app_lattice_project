@@ -64,6 +64,7 @@ export const MapContent = function MapContent({
     lastCameraPosition,
     setLastCameraPosition,
     setInitialLoadComplete,
+    isProgrammaticMove,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
 
@@ -110,7 +111,12 @@ export const MapContent = function MapContent({
         // CRITICAL FIX: Only update discrete zoom when the camera STOPS moving.
         // Changing it during an active gesture causes PointAnnotations to unmount
         // while MapLibre's C++ layout engine is busy, causing hard crashes.
-        if (!isChanging) {
+        // On Android, we are even stricter to prevent re-renders during active tracking.
+        const canUpdateZoom = Platform.OS === 'android' 
+          ? !isChanging && cameraMode !== MapCameraMode.NAVIGATION
+          : !isChanging;
+
+        if (canUpdateZoom) {
           const newDiscreteZoom = Math.floor(properties.zoomLevel * 2) / 2; // 0.5 increments
           if (newDiscreteZoom !== discreteZoom) {
             setDiscreteZoom(newDiscreteZoom);
@@ -142,7 +148,13 @@ export const MapContent = function MapContent({
       // If camera is changing due to user interaction (drag, pinch, etc), stop following
       // On Android, isUserInteraction can be unreliable during fast gestures, 
       // so we also check if region is actively changing and we're NOT in a programmatic state.
-      if ((isUserInteraction || isChanging) && cameraMode !== MapCameraMode.FREE) {
+      const shouldSwitchToFree = !isProgrammaticMove && (
+        Platform.OS === 'android' 
+          ? isUserInteraction && cameraMode !== MapCameraMode.FREE
+          : (isUserInteraction || isChanging) && cameraMode !== MapCameraMode.FREE
+      );
+
+      if (shouldSwitchToFree) {
         setCameraMode(MapCameraMode.FREE);
       }
     },

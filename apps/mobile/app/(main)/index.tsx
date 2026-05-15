@@ -772,6 +772,13 @@ export default function MapIndexPage() {
           cameraMode={cameraMode}
           onRecenter={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            // 1. Force 2D mode as requested
+            setManualAR(false);
+            // 2. Re-engage navigation mode if we were in a route
+            if (isNavigating) {
+              useMapUIStore.getState().setCameraMode(MapCameraMode.NAVIGATION);
+            }
+            // 3. Trigger the animation/re-centering
             triggerRecenter();
           }}
           onToggle3D={() => setManualAR(!manualAR)}

@@ -1,9 +1,10 @@
 import React, { useEffect, useImperativeHandle, forwardRef } from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { Dimensions } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
 import { calculateBBox, calculateCentroid } from '../../../utils/geoUtils';
+import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -53,7 +54,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   const lastTargetRef = React.useRef<string | null>(null);
   const lastActionTimestamp = React.useRef<number>(0);
   const CAMERA_ACTION_THROTTLE = 500; // ms
-  const { setCameraMode } = useMapUIStore();
+  const { setCameraMode, isProgrammaticMove, setIsProgrammaticMove } = useMapUIStore();
 
   useImperativeHandle(ref, () => ({
     setCamera: (config: any) => cameraRef.current?.setCamera(config),
@@ -63,6 +64,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   // Initial fix on user location
   const hasFixedOnUser = React.useRef(false);
+  const userHeading = useLocationStore((s) => s.heading);
+
   useEffect(() => {
     if (userCoords && !hasFixedOnUser.current && cameraRef.current && !lastCameraPosition) {
       hasFixedOnUser.current = true;
@@ -277,42 +280,72 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     let timer: NodeJS.Timeout;
     
     // Only trigger the "jump to navigation" transition when navigation is FIRST enabled
-    // or if we were explicitly told to re-engage from a different state.
     if (isNavigating && !prevIsNavigating.current && cameraRef.current) {
-      // Transition gracefully to the user's location first
+      setIsProgrammaticMove(true);
+
+      // Transition gracefully to the user's location with 3D pitch and initial alignment
       if (userCoordsRef.current) {
         cameraRef.current.setCamera({
           centerCoordinate: userCoordsRef.current,
           zoomLevel: 18,
           pitch: 45,
-          animationDuration: 1500,
+          heading: userHeading || 0, // Align once at the very start
+          animationDuration: 1200,
           animationMode: 'flyTo',
         });
       }
-      // Engage native follow mode only after the smooth transition completes
+
+      // Engage native follow mode only after the smooth transition settles
       timer = setTimeout(() => {
         setCameraMode(MapCameraMode.NAVIGATION);
-      }, 1000);
-      } else if (!isNavigating && prevIsNavigating.current && cameraMode === MapCameraMode.NAVIGATION) {
-      // Exit navigation camera mode
+        
+        // Keep the lock slightly longer than the mode switch to catch trailing events
+        setTimeout(() => {
+          setIsProgrammaticMove(false);
+        }, 800);
+      }, 1300); // Slightly longer than 1200ms animation
+    } else if (!isNavigating && prevIsNavigating.current) {
+      // EXIT NAVIGATION SEQUENCE - CRITICAL FIX FOR ANDROID LOCKUPS
+      // 1. Update state FIRST to stop native tracking via followProps
       setCameraMode(MapCameraMode.FREE);
+      setIsProgrammaticMove(false);
       
-      // ONLY perform a default camera reset if we are NOT entering planning mode
-      // If isPlanning is true, the planning effect will handle the camera (fitBounds)
-      if (cameraRef.current && !isPlanning) {
-        const targetCoords = selectedCoords || 
-          selectedEvent?.coordinates || 
-          selectedEvent?.center?.coordinates ||
-          selectedEvent?.geometry?.coordinates;
-
-        cameraRef.current.setCamera({
-          centerCoordinate: targetCoords || userCoordsRef.current || MAP_CENTER,
-          zoomLevel: targetCoords ? 18 : 17,
-          pitch: is3DActive ? 60 : 0,
-          animationDuration: 1000,
-          animationMode: 'flyTo',
-        });
+      // 2. Clear planning ref to allow the planning effect to trigger
+      if (isPlanning) {
+        lastPlanningRouteRef.current = null;
       }
+
+      // 3. Perform imperative cleanup AFTER a short delay to allow props to propagate
+      const timer = setTimeout(() => {
+        if (!cameraRef.current || isNavigating) return;
+
+        // Force-reset camera goals IMMEDIATELY with no animation
+        cameraRef.current.setCamera({
+          animationDuration: 0,
+          pitch: 0,
+          heading: 0,
+          padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+        });
+
+        if (!isPlanning) {
+          // Reset to normal exploration view
+          const targetCoords = selectedCoords || 
+            selectedEvent?.coordinates || 
+            selectedEvent?.center?.coordinates ||
+            selectedEvent?.geometry?.coordinates;
+
+          cameraRef.current.setCamera({
+            centerCoordinate: targetCoords || userCoordsRef.current || MAP_CENTER,
+            zoomLevel: targetCoords ? 18 : 17,
+            pitch: is3DActive ? 60 : 0,
+            heading: 0,
+            animationDuration: 1000,
+            animationMode: 'flyTo',
+          });
+        }
+      }, 100); // 100ms is enough for several frames/renders
+      
+      return () => clearTimeout(timer);
     }
     
     prevIsNavigating.current = isNavigating;
@@ -320,40 +353,53 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isNavigating, setCameraMode]); // Removed cameraMode from dependencies to prevent infinite loops/fighting user drag
+  }, [isNavigating, isPlanning, is3DActive]); // REMOVED userHeading to stop jitter loop
 
   // Robustly handle the transition to NAVIGATION mode (Centering button or re-engagement)
   useEffect(() => {
-    if (cameraMode === MapCameraMode.NAVIGATION && isNavigating && cameraRef.current) {
-      // 1. CLEAR GOALS: Remove any pending padding/offsets that might lock the Android camera engine
+    // Only handle MANUAL re-centering here (when recenterCount or forceCenterCount changes)
+    const isManualTrigger = recenterCount > lastProcessedRecenterRef.current || 
+                           forceCenterCount > lastProcessedForceCenterRef.current;
+
+    if (cameraMode === MapCameraMode.NAVIGATION && isNavigating && cameraRef.current && isManualTrigger) {
+      lastProcessedRecenterRef.current = recenterCount;
+      lastProcessedForceCenterRef.current = forceCenterCount;
+      
+      setIsProgrammaticMove(true);
+
+      // Reset camera goals
       cameraRef.current.setCamera({
         padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
         animationDuration: 0,
       });
 
-      // 2. RE-CENTER: Perform a smooth flyTo to the user's current location to bridge the gap
-      // before native tracking takes full control of the GL camera.
-      if (userCoordsRef.current) {
+      if (userCoordsRef.current && (Math.abs(userCoordsRef.current[0]) > 0.1)) {
         cameraRef.current.setCamera({
           centerCoordinate: userCoordsRef.current,
           zoomLevel: 18,
           pitch: 45,
-          // Use a shorter animation for re-centering while already in navigation mode
-          // to avoid "locking" the interaction for too long on Android.
+          heading: userHeading || 0, // Align once on manual trigger
           animationDuration: 800, 
           animationMode: 'flyTo',
         });
       }
+
+      const timer = setTimeout(() => {
+        setIsProgrammaticMove(false);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [cameraMode, isNavigating, recenterCount, forceCenterCount]);
+  }, [cameraMode, isNavigating, recenterCount, forceCenterCount]); // REMOVED userHeading to stop jitter loop
 
   const lastPlanningRouteRef = React.useRef<string | null>(null);
 
   // Planning fitBounds
   useEffect(() => {
+    // Safety check: don't trigger planning fitBounds if we are currently in navigation
+    // or if the engine is likely busy with the transition.
+    if (isNavigating) return;
+
     // Only trigger camera transition if we are planning and NOT currently fetching a new route.
-    // This prevents the "brutal cut" animation that happens when a pre-fetched route 
-    // starts animating and is immediately interrupted by a freshly fetched one.
     if (isPlanning && cameraRef.current && !isNavigating && !isFetching) {
       const destinationCoords = selectedCoords || 
         selectedEvent?.coordinates || 
@@ -407,10 +453,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             paddingLeft: 50,
           },
           pitch: is3DActive ? 45 : 0,
+          heading: 0, // Reset heading in planning view
           animationDuration: 1200,
           animationMode: 'flyTo',
         });
-      }, 300); // Increased delay to allow UI (sheets) to stabilize
+      }, 1000); // Increased delay to 1s to ensure engine is idle after navigation exit
       
       return () => clearTimeout(timer);
     } else if (!isPlanning || isNavigating) {
@@ -430,21 +477,26 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         pitch: lastCameraPosition?.pitch || 0,
       }}
       followUserLocation={cameraMode === MapCameraMode.NAVIGATION}
-      followUserMode={(cameraMode === MapCameraMode.NAVIGATION ? 'compass' : 'normal') as any}
+      followUserMode={
+        (cameraMode === MapCameraMode.NAVIGATION 
+          ? (Platform.OS === 'android' ? 'compass' : 'course') 
+          : 'normal') as any
+      }
       followZoomLevel={cameraMode === MapCameraMode.NAVIGATION ? 18 : undefined}
-      followPitch={45} 
+      followPitch={cameraMode === MapCameraMode.NAVIGATION ? 45 : undefined} // ONLY set followPitch in navigation
+      followHeading={cameraMode === MapCameraMode.NAVIGATION ? undefined : 0} // Force North when FREE
       onUserTrackingModeChange={(e) => {
         // If the native map stops following (due to user drag), sync our state to FREE
+        // BUT ONLY if this wasn't triggered by our own programmatic flyTo
         if (
+          !isProgrammaticMove &&
           e.nativeEvent.payload.followUserLocation === false &&
           cameraMode !== MapCameraMode.FREE
         ) {
+          console.log('[Camera] Native follow disabled by user interaction');
           setCameraMode(MapCameraMode.FREE);
         }
       }}
-      // Android specific: Ensure the compass mode is re-applied correctly
-      // by using a key that changes when we want to force-reset tracking
-      key={`camera-${cameraMode === MapCameraMode.NAVIGATION ? 'nav' : 'free'}`}
     />
   );
 });
