@@ -13,12 +13,12 @@ interface POIState {
   activeCategoryFilters: string[];
 
   // Actions
-  selectPoi: (poi: StandardUIPOI | null) => void;
-  deselect: () => void;
+  selectPoi: (poi: StandardUIPOI | null, shouldSyncUI?: boolean) => void;
+  deselect: (shouldSyncUI?: boolean) => void;
   setRemote: (isRemote: boolean) => void;
 
   // Hierarchy Actions
-  setSelectedEvent: (eventId: string | number | null) => void;
+  setSelectedEvent: (eventId: string | number | null, shouldSyncUI?: boolean) => void;
   setUserInsideEvent: (eventId: string | number | null) => void;
   toggleCategoryFilter: (category: string) => void;
   clearFilters: () => void;
@@ -26,6 +26,9 @@ interface POIState {
   // Helpers
   getFilteredPOIs: (allPOIs: StandardUIPOI[], zoom?: number) => StandardUIPOI[];
 }
+
+// Recursion guard for cross-store synchronization
+let isProcessingPOIAction = false;
 
 /**
  * Specialized store for managing POI selection and interaction states.
@@ -39,7 +42,24 @@ export const usePOIStore = create<POIState>((set) => ({
   userInsideEventId: null,
   activeCategoryFilters: [],
 
-  selectPoi: (poi) => {
+  selectPoi: (poi, shouldSyncUI = true) => {
+    if (isProcessingPOIAction) return;
+
+    // Update local state first
+    if (!poi) {
+      set({ selectedPoiId: null, selectedPoi: null, selectedCoords: null });
+    } else {
+      set({
+        selectedPoiId: poi.id,
+        selectedPoi: poi,
+        selectedCoords: poi.coordinates,
+      });
+    }
+
+    if (!shouldSyncUI) return;
+
+    isProcessingPOIAction = true;
+    // Then trigger cross-store effects
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       if (poi) {
@@ -47,18 +67,10 @@ export const usePOIStore = create<POIState>((set) => ({
       } else if (useMapUIStore.getState().uiState === MapUIState.POI_DETAIL) {
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
       }
-    } catch (e) {}
-
-    if (!poi) {
-      set({ selectedPoiId: null, selectedPoi: null, selectedCoords: null });
-      return;
+    } catch (e) {
+    } finally {
+      isProcessingPOIAction = false;
     }
-
-    set({
-      selectedPoiId: poi.id,
-      selectedPoi: poi,
-      selectedCoords: poi.coordinates,
-    });
   },
 
   clearSelection: () => {
@@ -69,7 +81,21 @@ export const usePOIStore = create<POIState>((set) => ({
     });
   },
 
-  deselect: () => {
+  deselect: (shouldSyncUI = true) => {
+    if (isProcessingPOIAction) return;
+
+    // Update local state first
+    set({ 
+      selectedPoi: null, 
+      selectedPoiId: null, 
+      selectedCoords: null,
+      activeCategoryFilters: [] 
+    });
+
+    if (!shouldSyncUI) return;
+
+    isProcessingPOIAction = true;
+    // Then trigger cross-store effects
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       const currentState = useMapUIStore.getState().uiState;
@@ -78,25 +104,18 @@ export const usePOIStore = create<POIState>((set) => ({
       if (currentState === MapUIState.POI_DETAIL || currentState === MapUIState.PLANNING) {
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
       }
-    } catch (e) {}
-    
-    set({ 
-      selectedPoi: null, 
-      selectedPoiId: null, 
-      selectedCoords: null,
-      activeCategoryFilters: [] 
-    });
+    } catch (e) {
+    } finally {
+      isProcessingPOIAction = false;
+    }
   },
 
   setRemote: (isRemote) => set({ isRemote }),
 
-  setSelectedEvent: (selectedEventId) => {
-    try {
-      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
-      if (selectedEventId) {
-        useMapUIStore.getState().setUIState(MapUIState.POI_DETAIL);
-      }
-    } catch (e) {}
+  setSelectedEvent: (selectedEventId, shouldSyncUI = true) => {
+    if (isProcessingPOIAction) return;
+
+    // Update local state first
     set({
       selectedEventId,
       selectedPoiId: null,
@@ -104,6 +123,20 @@ export const usePOIStore = create<POIState>((set) => ({
       selectedCoords: null,
       activeCategoryFilters: [], // Clear filters when switching events
     });
+
+    if (!shouldSyncUI) return;
+
+    isProcessingPOIAction = true;
+    // Then trigger cross-store effects
+    try {
+      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
+      if (selectedEventId) {
+        useMapUIStore.getState().setUIState(MapUIState.POI_DETAIL);
+      }
+    } catch (e) {
+    } finally {
+      isProcessingPOIAction = false;
+    }
   },
 
   setUserInsideEvent: (userInsideEventId) => set({ userInsideEventId }),

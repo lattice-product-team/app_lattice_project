@@ -147,7 +147,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const isNewTarget = targetKey !== lastTargetRef.current;
 
     if (isNewMode || isNewTarget || isForcedCenter || isForcedRecenter) {
-      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+        setIsProgrammaticMove(false);
+      }
     }
 
     if (isNewMode) {
@@ -267,9 +270,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
     // 4. EXPLORING / BASE MODE
     else if (uiState === MapUIState.EXPLORING) {
-      if (isNewMode || isForcedRecenter) {
+      lastTargetRef.current = null; // Always clear target in exploring
+      
+      if (isForcedRecenter) {
         lastProcessedRecenterRef.current = recenterCount;
-        lastTargetRef.current = null;
         setCameraMode(MapCameraMode.FREE);
         
         if (userCoords) {

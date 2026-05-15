@@ -717,23 +717,27 @@ export default function MapIndexPage() {
     ]
   );
 
-  const exploreIconStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      toggleDrag.value,
-      [0.4, 0.6],
-      [theme.colors.text.primary, theme.colors.text.muted]
-    ) as any,
-  }));
+  const [exploreColor, setExploreColor] = useState(theme.colors.text.primary);
+  const [mapColor, setMapColor] = useState(theme.colors.text.muted);
 
-  const mapIconStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      toggleDrag.value,
-      [0.4, 0.6],
-      [theme.colors.text.muted, theme.colors.text.primary]
-    ) as any,
-  }));
-
-
+  useAnimatedReaction(
+    () => toggleDrag.value,
+    (val) => {
+      const eColor = interpolateColor(
+        val,
+        [0.4, 0.6],
+        [theme.colors.text.primary, theme.colors.text.muted]
+      );
+      const mColor = interpolateColor(
+        val,
+        [0.4, 0.6],
+        [theme.colors.text.muted, theme.colors.text.primary]
+      );
+      runOnJS(setExploreColor)(eColor as string);
+      runOnJS(setMapColor)(mColor as string);
+    },
+    [theme]
+  );
 
   const exploreTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
@@ -873,9 +877,9 @@ export default function MapIndexPage() {
             <View style={styles.modePillLabels}>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedCompass
+                  <Compass
                     size={20}
-                    style={exploreIconStyle}
+                    color={exploreColor}
                     strokeWidth={2.2}
                   />
                   <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
@@ -883,7 +887,7 @@ export default function MapIndexPage() {
               </View>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedMap size={20} style={mapIconStyle} strokeWidth={2.2} />
+                  <MapIcon size={20} color={mapColor} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, mapTextStyle]}>Map</Animated.Text>
                 </Animated.View>
               </View>

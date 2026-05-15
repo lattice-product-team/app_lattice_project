@@ -43,12 +43,15 @@ interface MapUIStore {
   setLastScreenMode: (mode: number) => void;
 }
 
+// Recursion guard for cross-store synchronization
+let isProcessingSetUIState = false;
+
 /**
  * Specialized store for managing the Map's HUD and sheet visibility states.
  */
 export const useMapUIStore = create<MapUIStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       uiState: MapUIState.EXPLORING,
       cameraMode: MapCameraMode.FREE,
       recenterCount: 0,
@@ -60,28 +63,34 @@ export const useMapUIStore = create<MapUIStore>()(
       lastScreenMode: 0,
 
       setUIState: (uiState) => {
+        if (isProcessingSetUIState) return;
+        
         const currentState = get().uiState;
         if (currentState === uiState) return;
 
-        // Cross-store cleanup to ensure only one mode is "active" across the app
+        isProcessingSetUIState = true;
         try {
+          // Update state first. Force FREE camera when returning to exploration to stop any centering/locks.
+          const cameraMode = uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : get().cameraMode;
+          set({ uiState, cameraMode });
+
+          // Cross-store cleanup to ensure only one mode is "active" across the app
           const { usePOIStore } = require('../../poi/store/usePOIStore');
           const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
 
           if (uiState === MapUIState.EXPLORING) {
-            // Only deselect if we aren't already exploring to avoid recursion
-            usePOIStore.getState().deselect();
+            usePOIStore.getState().deselect(false);
             useNavigationStore.getState().clearNavigation();
           } else if (uiState === MapUIState.NAVIGATING) {
-            usePOIStore.getState().deselect();
+            usePOIStore.getState().deselect(false);
           } else if (uiState === MapUIState.POI_DETAIL) {
             useNavigationStore.getState().clearNavigation();
           }
         } catch (e) {
           console.warn('[MapUIStore] Cross-store cleanup failed:', e);
+        } finally {
+          isProcessingSetUIState = false;
         }
-
-        set({ uiState });
       },
 
       setCameraMode: (cameraMode) => set({ cameraMode }),
