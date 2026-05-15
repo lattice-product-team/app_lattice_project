@@ -27,10 +27,10 @@ interface Category {
 
 const CATEGORIES: Category[] = [
   { id: 'services', label: 'Info', icon: Info },
-  { id: 'gastro', label: 'Comida', icon: Utensils },
+  { id: 'gastro', label: 'Dining', icon: Utensils },
   { id: 'parking', label: 'Parking', icon: Car },
-  { id: 'transport', label: 'Bus', icon: Bus },
-  { id: 'emergency', label: 'Seguridad', icon: Shield },
+  { id: 'transport', label: 'Transit', icon: Bus },
+  { id: 'emergency', label: 'Security', icon: Shield },
 ];
 
 const Pressable = Platform.OS === 'android' ? NativePressable : GHPressable;
