@@ -93,69 +93,30 @@ export const MapLayers = React.memo(
 
     return (
       <>
-        {/* 1.5 HIGH-FIDELITY BACKGROUND POIS - OPTIMIZED FOR ANDROID */}
-        {/* We use a CircleLayer for background POIs to keep the map fast, and only use 
-          PointAnnotation for the selected one. This is CRITICAL for Android performance. */}
-        <MapLibreGL.ShapeSource
-          id="poiSource"
-          shape={backgroundPois}
-          hitbox={{ width: 30, height: 30 }}
-          onPress={handleShapePress}
-        >
-          {/* HIGH-PERFORMANCE BACKGROUND DOTS (Fast on Android) */}
-          <MapLibreGL.CircleLayer
-            id="backgroundPoiDots"
-            minZoomLevel={10}
-            style={{
-              circleRadius: ['interpolate', ['linear'], ['zoom'], 10, 2, 14, 4, 16, 5],
-              circleColor: ['get', 'color'],
-              circleStrokeWidth: 1.5,
-              circleStrokeColor: '#FFFFFF',
-              circleOpacity: ['interpolate', ['linear'], ['zoom'], 14.5, 0.8, 15.5, 0],
-              circleStrokeOpacity: ['interpolate', ['linear'], ['zoom'], 14.5, 0.8, 15.5, 0],
-            }}
-          />
-        </MapLibreGL.ShapeSource>
-
+        {/* 1.5 EVENTS - Show large labels that fade out as we zoom in */}
         <MapLibreGL.ShapeSource
           id="eventsSource"
           shape={eventMarkers}
-          hitbox={{ width: 44, height: 44 }}
+          hitbox={{ width: 50, height: 50 }}
           onPress={handleShapePress}
         >
           <MapLibreGL.SymbolLayer
             id="eventLabels"
             style={{
               textField: ['get', 'name'],
-              textSize: 16,
+              textSize: 18, // Larger event labels
               textColor: ['get', 'color'],
               textHaloColor: '#FFFFFF',
               textHaloWidth: 3,
               textAnchor: 'center',
-              // Fade out as we zoom in, to reveal POIs
+              // Fade out to make room for POIs
               textOpacity: ['interpolate', ['linear'], ['zoom'], 13.5, 1, 14.5, 0],
             }}
           />
         </MapLibreGL.ShapeSource>
 
-      {/* 2. POI MARKERS - Hybrid approach: High-fidelity for nearby/selected, fast dots for the rest */}
-      {(() => {
-        // Optimization: On Android, rendering dozens of native PointAnnotations is slow.
-        // We only render full POIMarkers for the selected one, and a limited set of nearest ones.
-        const markersToRender = backgroundPois.features.filter((f: any) => {
-          const id = f.properties?.id;
-          const isSelected = String(id) === String(selectedPoiId);
-          
-          // On iOS, we can be more liberal. On Android, we limit to avoid "petado".
-          if (Platform.OS === 'ios') return true;
-          
-          // Android: Show selected, OR if zoom is high enough.
-          // To further optimize, we could sort by distance to camera, but for now
-          // we'll use a zoom-based culling to keep the map fluid.
-          return isSelected || zoomLevel >= 14.5;
-        });
-
-        return markersToRender.map((feature: any) => {
+        {/* 2. POI MARKERS - Always show icons, no more circles */}
+        {backgroundPois.features.map((feature: any) => {
           const id = feature.properties?.id;
           const isSelected = String(id) === String(selectedPoiId);
           
@@ -184,22 +145,22 @@ export const MapLayers = React.memo(
               </View>
             </MapLibreGL.PointAnnotation>
           );
-        });
-      })()}
+        })}
 
-        {/* 4. LABELS - Throttled rendering for better performance */}
+        {/* 4. LABELS - Larger text, synchronized with event labels disappearing */}
         <MapLibreGL.ShapeSource id="labelsSource" shape={labelGeoJSON as any}>
           <MapLibreGL.SymbolLayer
             id="poiLabelLayer"
             minZoomLevel={13.5}
             style={{
               textField: ['get', 'name'],
-              textSize: 12,
+              textSize: 14, // Larger POI labels
               textColor: ['get', 'color'],
               textHaloColor: '#FFFFFF',
               textHaloWidth: 2,
               textAnchor: 'top',
-              textOffset: [0, 2.2], // Increased offset to be BELOW the icon
+              textOffset: [0, 2.5], // Offset to be BELOW the larger icon
+              // Appear exactly as events disappear
               textOpacity: ['interpolate', ['linear'], ['zoom'], 13.5, 0, 14.5, 1],
             }}
           />

@@ -74,8 +74,8 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
       event.center.coordinates[0]
     );
 
-    // Estimate walking time (5km/h = 1.38m/s)
-    const dur = d / 1.38;
+    // Estimate driving time (approx 30km/h = 8.33m/s)
+    const dur = d / 8.33;
 
     return { 
       distanceText: formatDistance(d), 

@@ -78,6 +78,9 @@ enum UILayer {
   NAVIGATING = 4,
 }
 
+const AnimatedCompass = Animated.createAnimatedComponent(Compass);
+const AnimatedMap = Animated.createAnimatedComponent(MapIcon);
+
 export default function MapIndexPage() {
   let theme = useAppTheme();
   if (!theme || !theme.colors) {
@@ -714,6 +717,28 @@ export default function MapIndexPage() {
     ]
   );
 
+  const [exploreColor, setExploreColor] = useState(theme.colors.text.primary);
+  const [mapColor, setMapColor] = useState(theme.colors.text.muted);
+
+  useAnimatedReaction(
+    () => toggleDrag.value,
+    (val) => {
+      const eColor = interpolateColor(
+        val,
+        [0.4, 0.6],
+        [theme.colors.text.primary, theme.colors.text.muted]
+      );
+      const mColor = interpolateColor(
+        val,
+        [0.4, 0.6],
+        [theme.colors.text.muted, theme.colors.text.primary]
+      );
+      runOnJS(setExploreColor)(eColor as string);
+      runOnJS(setMapColor)(mColor as string);
+    },
+    [theme]
+  );
+
   const exploreTextStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
       toggleDrag.value,
@@ -730,24 +755,6 @@ export default function MapIndexPage() {
     ),
   }));
 
-  const exploreIconStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      toggleDrag.value,
-      [0.4, 0.6],
-      [theme.colors.text.primary, theme.colors.text.muted]
-    ),
-  }));
-
-  const mapIconStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      toggleDrag.value,
-      [0.4, 0.6],
-      [theme.colors.text.muted, theme.colors.text.primary]
-    ),
-  }));
-
-  const AnimatedCompass = Animated.createAnimatedComponent(Compass);
-  const AnimatedMap = Animated.createAnimatedComponent(MapIcon);
   const searchInputRef = useRef<TextInput>(null);
 
   return (
@@ -862,7 +869,7 @@ export default function MapIndexPage() {
               style={[
                 styles.modePillActive,
                 {
-                  backgroundColor: theme.dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.9)',
+                  backgroundColor: theme.dark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.06)',
                 },
                 modeIndicatorStyle,
               ]}
@@ -870,9 +877,9 @@ export default function MapIndexPage() {
             <View style={styles.modePillLabels}>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedCompass
+                  <Compass
                     size={20}
-                    animatedProps={exploreIconStyle as any}
+                    color={exploreColor}
                     strokeWidth={2.2}
                   />
                   <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
@@ -880,7 +887,7 @@ export default function MapIndexPage() {
               </View>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <AnimatedMap size={20} animatedProps={mapIconStyle as any} strokeWidth={2.2} />
+                  <MapIcon size={20} color={mapColor} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, mapTextStyle]}>Map</Animated.Text>
                 </Animated.View>
               </View>
