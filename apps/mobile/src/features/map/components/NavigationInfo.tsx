@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Navigation } from 'lucide-react-native';
+import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { Navigation, X, Car, Footprints, Bike } from 'lucide-react-native';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
@@ -27,12 +27,10 @@ export const NavigationInfo = () => {
   if (!isNavigating || !routeMetadata) return null;
 
   const handleCancel = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    
-    // Clear event details so they don't pop back up when exiting planning
-    setSelectedEvent(null);
-    setCurrentEvent(null);
-    
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Instead of exiting completely, return to the route planning overview
+    // This allows the user to see the whole route again
     setNavigating(false);
     setPlanning(true);
     setCameraMode(MapCameraMode.FREE);
@@ -63,77 +61,65 @@ export const NavigationInfo = () => {
     return arrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const renderTransportIcon = () => {
+    const { transportMode } = useNavigationStore.getState();
+    const iconProps = { size: 24, color: theme.colors.brand.primary, style: { marginRight: 12 } };
+
+    if (transportMode === 'driving') return <Car {...iconProps} />;
+    if (transportMode === 'bicycle') return <Bike {...iconProps} />;
+    return <Footprints {...iconProps} />;
+  };
+
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
       exiting={FadeOutDown.duration(300)}
       style={[styles.container, { bottom: insets.bottom + 20 }]}
     >
-      {cameraMode === MapCameraMode.FREE && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.recenterContainer}>
-          <Button
-            onPress={handleRecenter}
-            label="VOLVER"
-            leftIcon={
-              <Navigation
-                size={16}
-                color={theme.colors.brand.primary}
-                strokeWidth={3}
-              />
-            }
-            style={{
-              backgroundColor: theme.colors.glass.background,
-              borderColor: theme.colors.glass.border,
-              borderWidth: 1.5,
-              height: 40,
-              borderRadius: 20,
-              paddingHorizontal: 16,
-            }}
-            labelStyle={{
-              color: theme.colors.brand.primary,
-              fontSize: 12,
-              letterSpacing: 1,
-            }}
-          />
-        </Animated.View>
-      )}
-
       <View
         style={[
           styles.card,
           {
-            backgroundColor: theme.colors.glass.background,
-            borderColor: theme.colors.glass.border,
+            backgroundColor: '#FFFFFF',
+            borderColor: 'rgba(0,0,0,0.05)',
           },
         ]}
       >
         <View style={styles.handle} />
         <View style={styles.content}>
           <View style={styles.infoLeft}>
-            <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>
-              {formatDurationLarge(routeMetadata.duration)}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+              {renderTransportIcon()}
+              <Text style={[styles.durationText, { color: theme.colors.brand.primary }]}>
+                {formatDurationLarge(routeMetadata.duration)}
+              </Text>
+            </View>
             <Text style={[styles.subText, { color: theme.colors.text.secondary }]}>
               {formatDistance(routeMetadata.distance)} · {getArrivalTime(routeMetadata.duration)}
             </Text>
+            {routeMetadata.destinationName && (
+              <Text
+                style={[styles.destinationText, { color: theme.colors.text.muted }]}
+                numberOfLines={1}
+              >
+                to {routeMetadata.destinationName}
+              </Text>
+            )}
           </View>
 
-          <Button
-            onPress={handleCancel}
-            label="SALIR"
-            variant="tertiary"
-            style={{ 
-              height: 44,
-              borderRadius: 22,
-              minWidth: 90,
-              marginLeft: 16
-            }}
-            labelStyle={{ 
-              fontSize: 13,
-              letterSpacing: 1,
-              color: theme.colors.status.error, // Keep the text red but the button subtle
-            }}
-          />
+          <TouchableOpacity onPress={handleCancel} activeOpacity={0.8}>
+            <View
+              style={[
+                styles.exitButton,
+                {
+                  backgroundColor: 'rgba(255, 59, 48, 0.8)', // Translucent red for blur effect
+                  borderWidth: 0,
+                },
+              ]}
+            >
+              <X size={24} color="#FFFFFF" strokeWidth={3} />
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
     </Animated.View>
@@ -199,6 +185,7 @@ const styles = StyleSheet.create({
   infoLeft: {
     flex: 1,
     justifyContent: 'center',
+    marginRight: 12,
   },
   durationText: {
     fontSize: 34,
@@ -210,23 +197,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: -0.2,
+    marginBottom: 2,
+  },
+  destinationText: {
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: -0.1,
   },
   exitButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    marginLeft: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    flexShrink: 0,
   },
   exitText: {
     color: '#FFFFFF',
-    fontSize: 13,
-    fontFamily: typography.primary.bold,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
 });

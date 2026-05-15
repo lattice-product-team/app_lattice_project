@@ -11,6 +11,8 @@ import * as Haptics from 'expo-haptics';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { useARStore, ARFilterMode } from '../store/useARStore';
+import { usePOIStore } from '../../poi/store/usePOIStore';
+import { useEventStore } from '../../event/store/useEventStore';
 
 interface AdaptiveControlOverlayProps {
   onToggle3D: () => void;
@@ -37,6 +39,8 @@ export const AdaptiveControlOverlay = React.memo(({
   const iconColor = theme.colors.text.primary;
   const openAR = useARStore((s) => s.openAR);
   const isARActive = useARStore((s) => s.isVisible);
+  const deselectPoi = usePOIStore((s) => s.deselect);
+  const clearEvent = useEventStore((s) => s.clearEvent);
 
   const rOverlayStyle = useAnimatedStyle(() => {
     // Option B: Fade-out if any overlay layer is active, island is full-screen, or AR is active
@@ -114,6 +118,8 @@ export const AdaptiveControlOverlay = React.memo(({
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             openAR(ARFilterMode.CLOSEST_EVENT);
+            deselectPoi();
+            clearEvent();
           }}
           hitSlop={12}
           style={({ pressed }) => [styles.circleAction, pressed && { opacity: 0.7 }]}

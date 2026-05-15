@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Alert } from 'react-native';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { useEventDetails } from './useEventDetails';
@@ -18,8 +19,9 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const φ2 = (lat2 * Math.PI) / 180;
   const Δφ = ((lat2 - lat1) * Math.PI) / 180;
   const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -33,7 +35,7 @@ export const useDetailModel = (): DetailModel | null => {
   const theme = useAppTheme();
   const selectedPoi = usePOIStore((s) => s.selectedPoi);
   const selectedEvent = useEventStore((s) => s.selectedEvent);
-  
+
   // Fetch supplemental details for events if selected
   const { details: eventDetails } = useEventDetails(
     selectedEvent?.id ? String(selectedEvent.id) : null
@@ -54,11 +56,15 @@ export const useDetailModel = (): DetailModel | null => {
   const drivingDuration = navMetadata.driving?.duration;
   const drivingDistance = navMetadata.driving?.distance;
 
-  const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
+  const destinationCoords =
+    selectedPoi?.coordinates ||
+    selectedEvent?.center?.coordinates ||
+    (selectedEvent as any)?.coordinates;
 
   const { estimatedDistance, estimatedDuration } = useMemo(() => {
-    if (!userCoords || !destinationCoords) return { estimatedDistance: undefined, estimatedDuration: undefined };
-    
+    if (!userCoords || !destinationCoords)
+      return { estimatedDistance: undefined, estimatedDuration: undefined };
+
     const d = calculateDistance(
       userCoords[1],
       userCoords[0],
@@ -91,95 +97,124 @@ export const useDetailModel = (): DetailModel | null => {
     // 1. Handle Event Case
     if (selectedEvent) {
       const data = eventDetails || selectedEvent;
-      const metadata = typeof data.metadata === 'string' ? JSON.parse(data.metadata) : data.metadata || {};
+      const metadata =
+        typeof data.metadata === 'string' ? JSON.parse(data.metadata) : data.metadata || {};
       const social = metadata.social;
+
+      let isInside = false;
+      if (userCoords && data.boundary?.coordinates) {
+        const pt: [number, number] = [userCoords[0], userCoords[1]];
+        if (data.boundary.type === 'Polygon') {
+          isInside = isPointInPolygon(pt, data.boundary.coordinates[0]);
+        } else if (data.boundary.type === 'MultiPolygon') {
+          isInside = data.boundary.coordinates.some((poly: any) => isPointInPolygon(pt, poly[0]));
+        }
+      }
 
       return {
         id: String(data.id),
         type: 'event',
         name: data.name,
         subtitle: (data as any).type || 'Activity',
-        description: (data as any).description || 'Explore this event and discover unique experiences in the city.',
+        description:
+          (data as any).description ||
+          'Explore this event and discover unique experiences in the city.',
         imageUrl: data.imageUrl || (data as any).images?.[0],
         bannerUrl: (data as any).bannerUrl,
         galleryUrls: (data as any).galleryUrls || [],
         logoUrl: (data as any).logoUrl,
-        social: social ? {
-          rating: social.rating,
-          reviewsCount: social.reviews_count,
-          snippets: social.snippets || [],
-          sourceUrl: social.source_url,
-        } : undefined,
+        social: social
+          ? {
+              rating: social.rating,
+              reviewsCount: social.reviews_count,
+              snippets: social.snippets || [],
+              sourceUrl: social.source_url,
+            }
+          : undefined,
         info: [
-          ...(metadata.is_wheelchair_accessible ? [{
-            label: 'AccessibilityIcon',
-            value: 'Wheelchair Accessible',
-            icon: 'AccessibilityIcon',
-          }] : []),
-          ...(metadata.accepts_apple_pay ? [{
-            label: 'Payment',
-            value: 'Accepts Apple Pay',
-            icon: 'SmartphoneIcon',
-          }] : []),
+          ...(metadata.is_wheelchair_accessible
+            ? [
+                {
+                  label: 'AccessibilityIcon',
+                  value: 'Wheelchair Accessible',
+                  icon: 'AccessibilityIcon',
+                },
+              ]
+            : []),
+          ...(metadata.accepts_apple_pay
+            ? [
+                {
+                  label: 'Payment',
+                  value: 'Accepts Apple Pay',
+                  icon: 'SmartphoneIcon',
+                },
+              ]
+            : []),
         ],
         metrics: [
-          { 
-            label: 'Hours', 
-            value: (data as any).openingHours || 'Open', 
-            icon: 'ClockIcon', 
-            color: '#32D74B' 
+          {
+            label: 'Hours',
+            value: (data as any).openingHours || 'Open',
+            icon: 'ClockIcon',
+            color: '#32D74B',
           },
-          { 
-            label: 'Popular', 
-            value: 'Trending', 
+          {
+            label: 'Popular',
+            value: 'Trending',
             icon: 'FlameIcon',
-            color: '#FF9F0A'
+            color: '#FF9F0A',
           },
-          { 
-            label: 'Distance', 
-            value: formatDistance(drivingDistance), 
-            icon: 'MapPinIcon' 
+          {
+            label: 'Distance',
+            value: formatDistance(drivingDistance),
+            icon: 'MapPinIcon',
           },
         ],
         actions: [
-          { 
-            id: 'directions', 
-            label: formatDuration(drivingDuration), 
-            icon: 'CarIcon', 
-            variant: 'primary', 
+          {
+            id: 'directions',
+            label: formatDuration(drivingDuration),
+            icon: 'CarIcon',
+            variant: 'primary',
             onPress: () => {
               setPlanning(true);
-            } 
+            },
           },
-          { 
-            id: 'ar', 
-            label: 'Use AR', 
-            icon: 'BinocularsIcon', 
-            variant: 'subdued', 
+          {
+            id: 'ar',
+            label: 'Use AR',
+            icon: 'BinocularsIcon',
+            variant: isInside ? 'subdued' : 'tertiary',
             onPress: () => {
-              openAR(ARFilterMode.SELECTED_EVENT, data.id);
-            } 
+              if (isInside) {
+                openAR(ARFilterMode.SELECTED_EVENT, data.id);
+                clearEvent();
+                deselectPoi();
+              } else {
+                Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
+              }
+            },
           },
-          { 
-            id: 'offline', 
-            label: 'Offline', 
-            icon: 'DownloadIcon', 
-            variant: 'subdued', 
-            onPress: () => console.log('DownloadIcon offline') 
+          {
+            id: 'offline',
+            label: 'Offline',
+            icon: 'DownloadIcon',
+            variant: 'subdued',
+            onPress: () => console.log('DownloadIcon offline'),
           },
-          { 
-            id: 'website', 
-            label: 'Website', 
-            icon: 'GlobeIcon', 
-            variant: 'subdued', 
-            onPress: () => console.log('Open website') 
+          {
+            id: 'website',
+            label: 'Website',
+            icon: 'GlobeIcon',
+            variant: 'subdued',
+            onPress: () => console.log('Open website'),
           },
-          { 
-            id: 'tickets', 
-            label: 'TicketIcons', 
-            icon: 'TicketIcon', 
-            variant: 'subdued', 
-            onPress: () => console.log('Buy tickets') 
+          {
+            id: 'tickets',
+            label: 'TicketIcons',
+            icon: 'TicketIcon',
+            variant: 'subdued',
+            onPress: () => console.log('Buy tickets'),
           },
         ],
       } as DetailModel;
@@ -188,11 +223,26 @@ export const useDetailModel = (): DetailModel | null => {
     // 2. Handle POI Case
     if (selectedPoi) {
       const catMetadata = getCategoryMetadata(selectedPoi.category);
-      const metadata = typeof selectedPoi.metadata === 'string' ? JSON.parse(selectedPoi.metadata) : selectedPoi.metadata || {};
+      const metadata =
+        typeof selectedPoi.metadata === 'string'
+          ? JSON.parse(selectedPoi.metadata)
+          : selectedPoi.metadata || {};
       const social = metadata.social;
-      
-      const parentEvent = allEvents?.find(e => String(e.id) === String(selectedPoi.parentId));
-      const parentName = parentEvent?.name;
+
+      const parentEvent = allEvents?.find((e) => String(e.id) === String(selectedPoi.parentId));
+      const parentName = parentEvent?.name || selectedPoi.raw?.eventName;
+
+      let isInside = false;
+      if (userCoords && parentEvent?.boundary?.coordinates) {
+        const pt: [number, number] = [userCoords[0], userCoords[1]];
+        if (parentEvent.boundary.type === 'Polygon') {
+          isInside = isPointInPolygon(pt, parentEvent.boundary.coordinates[0]);
+        } else if (parentEvent.boundary.type === 'MultiPolygon') {
+          isInside = parentEvent.boundary.coordinates.some((poly: any) =>
+            isPointInPolygon(pt, poly[0])
+          );
+        }
+      }
 
       return {
         id: selectedPoi.id,
@@ -205,92 +255,121 @@ export const useDetailModel = (): DetailModel | null => {
         galleryUrls: (selectedPoi as any).galleryUrls || [],
         categoryIcon: catMetadata.icon,
         parentName,
-        social: social ? {
-          rating: social.rating,
-          reviewsCount: social.reviews_count,
-          snippets: social.snippets || [],
-          sourceUrl: social.source_url,
-        } : undefined,
+        social: social
+          ? {
+              rating: social.rating,
+              reviewsCount: social.reviews_count,
+              snippets: social.snippets || [],
+              sourceUrl: social.source_url,
+            }
+          : undefined,
         info: [
-          ...(selectedPoi.isWheelchairAccessible ? [{
-            label: 'AccessibilityIcon',
-            value: 'Wheelchair Accessible',
-            icon: 'AccessibilityIcon',
-          }] : []),
-          ...(selectedPoi.hasPriorityLane ? [{
-            label: 'Priority',
-            value: 'Fast Track Available',
-            icon: 'ZapIcon',
-          }] : []),
-          ...(metadata.accepts_apple_pay ? [{
-            label: 'Payment',
-            value: 'Accepts Apple Pay',
-            icon: 'SmartphoneIcon',
-          }] : []),
+          ...(selectedPoi.isWheelchairAccessible
+            ? [
+                {
+                  label: 'AccessibilityIcon',
+                  value: 'Wheelchair Accessible',
+                  icon: 'AccessibilityIcon',
+                },
+              ]
+            : []),
+          ...(selectedPoi.hasPriorityLane
+            ? [
+                {
+                  label: 'Priority',
+                  value: 'Fast Track Available',
+                  icon: 'ZapIcon',
+                },
+              ]
+            : []),
+          ...(metadata.accepts_apple_pay
+            ? [
+                {
+                  label: 'Payment',
+                  value: 'Accepts Apple Pay',
+                  icon: 'SmartphoneIcon',
+                },
+              ]
+            : []),
         ],
         metrics: [
-          { 
-            label: 'Hours', 
-            value: 'Open', 
-            icon: 'ClockIcon', 
-            color: '#32D74B' 
+          {
+            label: 'Hours',
+            value: 'Open',
+            icon: 'ClockIcon',
+            color: '#32D74B',
           },
-          { 
-            label: 'Popular', 
-            value: 'Top Choice', 
+          {
+            label: 'Popular',
+            value: 'Top Choice',
             icon: 'FlameIcon',
-            color: '#FF9F0A'
+            color: '#FF9F0A',
           },
-          { 
-            label: 'Distance', 
-            value: formatDistance(drivingDistance), 
-            icon: 'MapPinIcon' 
+          {
+            label: 'Distance',
+            value: formatDistance(drivingDistance),
+            icon: 'MapPinIcon',
           },
         ],
         actions: [
-          { 
-            id: 'directions', 
-            label: formatDuration(drivingDuration), 
-            icon: 'CarIcon', 
-            variant: 'primary', 
+          {
+            id: 'directions',
+            label: formatDuration(drivingDuration),
+            icon: 'CarIcon',
+            variant: 'primary',
             onPress: () => {
               setPlanning(true);
-            } 
+            },
           },
-          { 
-            id: 'ar', 
-            label: 'Use AR', 
-            icon: 'BinocularsIcon', 
-            variant: 'subdued', 
+          {
+            id: 'ar',
+            label: 'Use AR',
+            icon: 'BinocularsIcon',
+            variant: isInside ? 'subdued' : 'tertiary',
             onPress: () => {
-              openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
-            } 
+              if (isInside) {
+                openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);
+                deselectPoi();
+                clearEvent();
+              } else {
+                Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
+              }
+            },
           },
-          { 
-            id: 'offline', 
-            label: 'Offline', 
-            icon: 'DownloadIcon', 
-            variant: 'subdued', 
-            onPress: () => {} 
+          {
+            id: 'offline',
+            label: 'Offline',
+            icon: 'DownloadIcon',
+            variant: 'subdued',
+            onPress: () => {},
           },
-          { 
-            id: 'website', 
-            label: 'Website', 
-            icon: 'GlobeIcon', 
-            variant: 'subdued', 
-            onPress: () => {} 
+          {
+            id: 'website',
+            label: 'Website',
+            icon: 'GlobeIcon',
+            variant: 'subdued',
+            onPress: () => {},
           },
-          { 
-            id: 'tickets', 
-            label: 'TicketIcons', 
-            icon: 'TicketIcon', 
-            variant: 'subdued', 
-            onPress: () => {} 
+          {
+            id: 'tickets',
+            label: 'TicketIcons',
+            icon: 'TicketIcon',
+            variant: 'subdued',
+            onPress: () => {},
           },
         ],
       } as DetailModel;
     }
 
     return null;
-  }, [selectedEvent, eventDetails, selectedPoi, theme, navMetadata, isFetching, allEvents]);
+  }, [
+    selectedEvent,
+    eventDetails,
+    selectedPoi,
+    theme,
+    navMetadata,
+    isFetching,
+    allEvents,
+    userCoords,
+  ]);
 };

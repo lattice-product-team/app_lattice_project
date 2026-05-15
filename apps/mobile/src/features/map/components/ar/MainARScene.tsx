@@ -50,6 +50,34 @@ const ARPin: React.FC<ARPinProps> = ({ color }) => {
   );
 };
 
+const ARBeacon: React.FC<ARPinProps> = ({ color }) => {
+  return (
+    <group>
+      {/* Vertical Pillar / Beacon of light */}
+      <mesh position={[0, 2, 0]}>
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <cylinderGeometry args={[0.05, 0.2, 4, 32]} />
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <meshBasicMaterial color={color} transparent opacity={0.4} />
+      </mesh>
+      
+      {/* Top Floating Orb */}
+      <mesh position={[0, 4.2, 0]}>
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <sphereGeometry args={[0.4, 32, 32]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+
+      {/* Ground Anchor Glow */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <circleGeometry args={[0.8, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.3} />
+      </mesh>
+    </group>
+  );
+};
+
 interface MainARSceneProps {
   pois?: any[];
 }
@@ -57,12 +85,13 @@ interface MainARSceneProps {
 export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
   const userCoords = useLocationStore((s) => s.coords);
   const heading = useOrientationStore((s) => s.heading);
+  const pitch = useOrientationStore((s) => s.pitch);
 
   const poiNodes = useMemo(() => {
     if (!userCoords || pois.length === 0) return [];
 
     const [userLon, userLat] = userCoords;
-    const MAX_DISTANCE = 1000; // 1km limit for 3D visibility
+    const MAX_DISTANCE = 5000; // Increased to 5km for event beacons
 
     return pois
       .map((poi, idx) => {
@@ -71,19 +100,24 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
 
         const [poiLon, poiLat] = coords;
         const distance = calculateDistance(userLat, userLon, poiLat, poiLon);
+        const isBeacon = poi.properties?.isBeacon;
 
-        if (distance > MAX_DISTANCE) return null;
+        // Beacons are visible from further away than pins
+        if (!isBeacon && distance > 1000) return null;
+        if (isBeacon && distance > MAX_DISTANCE) return null;
 
         const bearing = getBearing(userLat, userLon, poiLat, poiLon);
         const angleDiff = bearing - heading;
         const rad = angleDiff * (Math.PI / 180);
 
-        // Perspective scaling: closer objects look slightly larger and lower
-        const scaledDistance = Math.min(Math.max(distance / 5, 3), 25);
+        // Beacons are rendered further away visually to feel "monumental"
+        const scaledDistance = isBeacon 
+          ? Math.min(Math.max(distance / 20, 15), 50)
+          : Math.min(Math.max(distance / 5, 3), 25);
 
         const x = Math.sin(rad) * scaledDistance;
-        // Staggered height to avoid direct vertical overlap
-        const y = (idx % 3) * 0.4 - 0.4;
+        // Beacons start at ground level, Pins are slightly elevated
+        const y = isBeacon ? -1.5 : (idx % 3) * 0.4 - 0.4;
         const z = -Math.cos(rad) * scaledDistance;
 
         const metadata = getCategoryMetadata(poi.properties?.category);
@@ -91,12 +125,21 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
         return (
           /* eslint-disable-next-line react/no-unknown-property */
           <group key={poi.properties?.id || idx} position={[x, y, z]}>
-            <ARPin color={metadata.color} />
+            {isBeacon ? (
+              <ARBeacon color={metadata.color} />
+            ) : (
+              <ARPin color={metadata.color} />
+            )}
           </group>
         );
       })
       .filter(Boolean);
   }, [userCoords, heading, pois]);
 
-  return <group>{poiNodes}</group>;
+  return (
+    /* eslint-disable-next-line react/no-unknown-property */
+    <group rotation={[-pitch * (Math.PI / 180), 0, 0]}>
+      {poiNodes}
+    </group>
+  );
 };

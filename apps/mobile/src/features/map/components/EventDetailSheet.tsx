@@ -151,11 +151,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
 
   const islandBackgroundStyle = useAnimatedStyle(() => {
     const radius = interpolate(islandState.value, [0.8, 1], [32, 0], Extrapolation.CLAMP);
-    const backgroundColor = interpolateColor(
-      islandState.value,
-      [0.7, 1],
-      [theme.colors.glass.background, theme.colors.bg.surface]
-    );
+    const backgroundColor = theme.colors.bg.surface;
 
     return {
       borderTopLeftRadius: 32,

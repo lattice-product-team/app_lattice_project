@@ -18,6 +18,7 @@ import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { Button } from '../../../components/ui/Button';
+import { CircularActionButton } from '../../../components/ui/CircularActionButton';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -96,20 +97,20 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
     <Animated.View style={[
       styles.container,
       { 
-        backgroundColor: theme.colors.glass.background,
-        borderColor: theme.colors.glass.border,
+        backgroundColor: '#FFFFFF',
+        borderColor: 'rgba(0,0,0,0.05)',
       },
       rContainerStyle
     ]}>
       <View style={styles.content}>
+        <CircularActionButton 
+          icon="X"
+          onPress={() => setPlanning(false)}
+          style={styles.closeButton}
+        />
+
         <View style={styles.header}>
           <View style={styles.dragHandle} />
-          <Pressable 
-            onPress={() => setPlanning(false)}
-            style={styles.closeButton}
-          >
-            <X size={20} color={theme.colors.text.muted} strokeWidth={2.2} />
-          </Pressable>
         </View>
 
         <View style={styles.modesContainer}>
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingTop: 12,
+    paddingTop: 54,
   },
   header: {
     flexDirection: 'row',
@@ -225,8 +226,9 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    right: 0,
-    padding: 4,
+    right: 18,
+    top: 18,
+    zIndex: 10,
   },
   modesContainer: {
     flexDirection: 'row',

@@ -45,7 +45,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
         Extrapolation.CLAMP
       );
 
-      const opacity = interpolate(zoomSharedValue.value, [13, 14], [0, 1], Extrapolation.CLAMP);
+      const opacity = interpolate(zoomSharedValue.value, [13.5, 14.0], [0, 1], Extrapolation.CLAMP);
 
       return {
         transform: [{ scale: isSelected ? 1.4 : scale }],
@@ -53,8 +53,10 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
       };
     });
 
+    const pointerEvents = (isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0) ? 'auto' : 'none';
+
     return (
-      <Animated.View style={[mapPinStyles.markerWrapper, animatedStyle]}>
+      <Animated.View style={[mapPinStyles.markerWrapper, animatedStyle]} pointerEvents={pointerEvents}>
         <TouchableOpacity onPress={() => onPress(poi)} activeOpacity={0.9}>
           <View
             style={[
@@ -79,21 +81,6 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               </View>
             </MapPinFrame>
 
-            {isSelected && (
-              <View style={mapPinStyles.labelBadge}>
-                <Text
-                  style={[
-                    mapPinStyles.labelText,
-                    {
-                      color: color,
-                    },
-                  ]}
-                  numberOfLines={2}
-                >
-                  {properties.name}
-                </Text>
-              </View>
-            )}
           </View>
         </TouchableOpacity>
       </Animated.View>

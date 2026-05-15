@@ -52,7 +52,8 @@ export const MapContent = function MapContent({
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
-  const { currentRoute, isNavigating, isPlanning, transportMode } = useNavigationStore();
+  const { currentRoute, isNavigating, isPlanning, transportMode, isFetching } =
+    useNavigationStore();
   const {
     recenterCount,
     forceCenterCount,
@@ -226,6 +227,7 @@ export const MapContent = function MapContent({
               id: poi.id,
               type: 'boundary',
               color: poi.mainColor,
+              name: poi.displayName,
             },
           });
         }
@@ -327,10 +329,12 @@ export const MapContent = function MapContent({
       const isNativePOI =
         layer.id.includes('poi') ||
         layer.id.includes('place') ||
+        layer.id.includes('label') ||
         layer.id.includes('transit') ||
         layer.id.includes('transport') ||
         layer.id.includes('station') ||
         layer.id.includes('rail') ||
+        layer.id.includes('building-number') ||
         layer.id.includes('infrastructure');
 
       if (isNativePOI) {
@@ -404,6 +408,8 @@ export const MapContent = function MapContent({
           isPlanning={isPlanning}
           cameraMode={cameraMode}
           currentRoute={currentRoute}
+          transportMode={transportMode}
+          isFetching={isFetching}
         />
 
         <MapLayers

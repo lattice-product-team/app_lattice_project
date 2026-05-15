@@ -1,6 +1,6 @@
 import { POIGeoJSON } from '../../../types';
 import { StandardUIPOI } from '../../../types/models/poi';
-import { getCategoryMetadata } from '../../../utils/poiUtils';
+import { getCategoryMetadata, getStableColor } from '../../../utils/poiUtils';
 
 /**
  * Validates that coordinates are present and not [0,0].
@@ -32,7 +32,7 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
     iconFamily: metadata.iconFamily,
     mainColor: metadata.color,
     coordinates: [geometry.coordinates?.[0] || 0, geometry.coordinates?.[1] || 0],
-    parentId: properties.parentId || properties.event_id,
+    parentId: properties.parentId || properties.event_id || properties.eventId,
     description: properties.description,
     images: properties.images,
     rating: properties.metadata?.social?.rating,
@@ -46,6 +46,8 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
  */
 export const normalizeEvent = (event: any): StandardUIPOI => {
   const id = String(event.id);
+  const color = event.color || getStableColor(id);
+  
   return {
     id,
     displayName: event.name,
@@ -53,7 +55,7 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     categoryLabel: 'Evento',
     categoryIcon: 'calendar-star',
     iconFamily: 'material' as const,
-    mainColor: '#FF3B30',
+    mainColor: color,
     coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
     images: event.imageUrl ? [event.imageUrl] : [],
     imageKey: event.imageUrl ? `event-img-${id}` : 'placeholder-event',
