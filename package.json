@@ -18,6 +18,7 @@
     "dev:docs": "pnpm --filter docs dev",
     "dev:mobile": "pnpm --filter @app/mobile dev",
     "dev:mobile:lan": "pnpm --filter @app/mobile dev:lan",
+    "dev:mobile:tunnel": "pnpm --filter @app/mobile dev:tunnel",
     "dev:android": "pnpm --filter @app/mobile android:device",
     "dev:android:prod": "NODE_ENV=production pnpm dev:android",
     "dev:ios": "pnpm --filter @app/mobile ios:device",
