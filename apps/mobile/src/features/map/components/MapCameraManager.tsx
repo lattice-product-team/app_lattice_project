@@ -265,24 +265,27 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     // 1. NAVIGATION MODE (Highest Priority Centering)
     if (uiState === MapUIState.NAVIGATING) {
       if (isNewMode || isForcedRecenter || isForcedCenter) {
-        console.log(`[Camera] Navigation: Centering on user (Mode: ${cameraMode})`);
+        console.log(`[Camera] Navigation Centering: Mode=${cameraMode}, Reason=${isNewMode ? 'NewMode' : 'Forced'}`);
         if (userCoordsRef.current) {
           setIsProgrammaticMove(true);
+          
+          // Force a small delay to ensure the MapLibre component has updated its internal state
+          // before we issue the setCamera command.
           cameraRef.current.setCamera({
             centerCoordinate: userCoordsRef.current,
             zoomLevel: 18,
             animationDuration: 1000,
             animationMode: 'flyTo',
-            heading: (cameraMode === MapCameraMode.FOLLOW_WITH_HEADING || cameraMode === MapCameraMode.FOLLOW_WITH_COURSE) 
-              ? (userHeadingRef.current || 0) 
-              : 0,
             pitch: 45,
+            // Include heading if we have it to make the transition smoother
+            heading: userHeadingRef.current || 0,
           });
-          // Clear lock after animation
-          setTimeout(() => setIsProgrammaticMove(false), 1100);
+          
+          setTimeout(() => {
+            setIsProgrammaticMove(false);
+          }, 1200);
         }
       }
-      // No need to fall through in navigation mode
       syncState();
       return;
     }
@@ -422,11 +425,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   const defaultSettings = React.useMemo(
     () => ({
-      centerCoordinate: userCoords || lastCameraPosition?.center || MAP_CENTER,
+      centerCoordinate: lastCameraPosition?.center || userCoords || MAP_CENTER,
       zoomLevel: lastCameraPosition?.zoom || DEFAULT_ZOOM,
       pitch: lastCameraPosition?.pitch || 0,
     }),
-    [userCoords, lastCameraPosition]
+    [/* Only depend on lastCameraPosition for persistence, not live userCoords */ lastCameraPosition]
   );
 
   // Compute reactive padding based on UI state

@@ -110,16 +110,15 @@ export const useMapUIStore = create<MapUIStore>()(
           let nextMode: MapCameraMode;
 
           if (isNavigating) {
-            // Navigation context: cycle between centered tracking modes
-            if (state.cameraMode === MapCameraMode.FREE) {
-              // First tap from free: Go to the most appropriate tracking mode
-              nextMode = transportMode === 'driving' ? MapCameraMode.FOLLOW_WITH_COURSE : MapCameraMode.FOLLOW_WITH_HEADING;
-            } else if (state.cameraMode === MapCameraMode.FOLLOW) {
-              nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
+            // Navigation context: Default to COURSE (Where I go) for driving, HEADING (Where I look) for walking
+            // If already in one of those, toggle to the other.
+            if (state.cameraMode === MapCameraMode.FOLLOW_WITH_COURSE) {
+              nextMode = MapCameraMode.FOLLOW_WITH_HEADING; // Donde apunto
             } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
-              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
+              nextMode = MapCameraMode.FOLLOW_WITH_COURSE; // Donde voy
             } else {
-              nextMode = MapCameraMode.FOLLOW;
+              // Not following yet: Pick the best default for the transport mode
+              nextMode = transportMode === 'driving' ? MapCameraMode.FOLLOW_WITH_COURSE : MapCameraMode.FOLLOW_WITH_HEADING;
             }
           } else {
             // Exploring context: simple follow vs free cycle
@@ -127,6 +126,8 @@ export const useMapUIStore = create<MapUIStore>()(
               nextMode = MapCameraMode.FOLLOW;
             } else if (state.cameraMode === MapCameraMode.FOLLOW) {
               nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
+            } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
+              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
             } else {
               nextMode = MapCameraMode.FREE;
             }

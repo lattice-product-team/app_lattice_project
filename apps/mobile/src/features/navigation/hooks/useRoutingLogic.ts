@@ -25,16 +25,17 @@ export const useRoutingLogic = () => {
   const { setRoutes, setNextInstruction, transportMode, setFetching, isPlanning } = useNavigationStore();
 
   // Use stable selectors for location to avoid unnecessary re-renders
-  const userCoords = useLocationStore(s => s.logicalCoords);
+  const userCoords = useLocationStore(s => s.coords);
+  const logicalCoords = useLocationStore(s => s.logicalCoords);
 
   const isRemote = useMemo(() => {
-    if (!userCoords || (!selectedEvent?.center && !selectedPoi?.coordinates)) return false;
+    if (!logicalCoords || (!selectedEvent?.center && !selectedPoi?.coordinates)) return false;
     const dest = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
     if (!dest) return false;
     
-    const dist = calculateDistance(userCoords as [number, number], dest as [number, number]);
+    const dist = calculateDistance(logicalCoords as [number, number], dest as [number, number]);
     return dist > 50000; // More than 50km is considered remote
-  }, [userCoords?.[0], userCoords?.[1], selectedEvent, selectedPoi]);
+  }, [logicalCoords?.[0], logicalCoords?.[1], selectedEvent, selectedPoi]);
 
   useEffect(() => {
     setRemote(isRemote);
@@ -117,11 +118,13 @@ export const useRoutingLogic = () => {
         const origin = { lat: effectiveOrigin[1], lng: effectiveOrigin[0] };
         const destination = { lat: destinationCoords[1], lng: destinationCoords[0] };
 
+        // Driving is always attempted
         const driving = await navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() }).catch(e => {
           console.warn('[Logic] Driving route failed:', e);
           return null;
         });
 
+        // Walking/Bicycle only if NOT remote
         let walking = null;
         let bicycle = null;
 

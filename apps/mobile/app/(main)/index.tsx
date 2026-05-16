@@ -269,8 +269,12 @@ export default function MapIndexPage() {
   const SNAP_POINTS = [0, 0.5, 1];
 
   const islandOpacity = useDerivedValue(() => {
-    if (uiLayer.value === UILayer.NAVIGATING || isARActive) return withTiming(0);
-    return withTiming(1);
+    // If we are navigating or planning, the island should be gone
+    const isNavigatingLayer = uiLayer.value >= UILayer.NAVIGATING - 0.5;
+    if (isNavigatingLayer || isARActive) {
+      return withTiming(0, { duration: 250 });
+    }
+    return withTiming(1, { duration: 250 });
   }, [isARActive]);
 
   // Derived Visibility for Overlays
@@ -385,6 +389,8 @@ export default function MapIndexPage() {
   );
 
   const islandHeight = useDerivedValue(() => {
+    if (uiLayer.value >= UILayer.NAVIGATING - 0.5) return 0;
+    
     const fullHeight = SCREEN_HEIGHT;
     if (islandState.value <= 0.5) {
       return interpolate(islandState.value, [0, 0.5], [55, 380], Extrapolation.CLAMP);
@@ -823,18 +829,7 @@ export default function MapIndexPage() {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             setManualAR(false);
             
-            // Expanded Cycle: FREE -> FOLLOW -> HEADING -> COURSE -> FREE
-            let nextMode = MapCameraMode.FOLLOW;
-            
-            if (cameraMode === MapCameraMode.FOLLOW) {
-              nextMode = MapCameraMode.FOLLOW_WITH_HEADING; // "Donde miras"
-            } else if (cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
-              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;  // "Donde vas"
-            } else if (cameraMode === MapCameraMode.FOLLOW_WITH_COURSE) {
-              nextMode = MapCameraMode.FREE;
-            }
-            
-            useMapUIStore.getState().setCameraMode(nextMode);
+            // The store now handles the expanded cycle and navigation context
             triggerRecenter();
           }}
           onToggle3D={() => setManualAR(!manualAR)}
@@ -917,7 +912,7 @@ export default function MapIndexPage() {
         style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 2001 }]}
         pointerEvents="box-none"
       >
-        <RoutePlanningSheet visibility={planningVisibility} />
+        <RoutePlanningSheet visibility={planningVisibility} islandState={islandState} />
 
         <ProfileSheet
           isOpen={isProfileOpen}

@@ -13,6 +13,8 @@ interface Instruction {
   text: string;
   distance: number;
   maneuverType: string;
+  index?: number;
+  coordinate?: [number, number];
 }
 
 interface NavigationState {
@@ -43,7 +45,7 @@ interface NavigationState {
   ) => void;
   setNavigating: (navigating: boolean) => void;
   setPlanning: (isPlanning: boolean) => void;
-  startNavigation: () => void;
+  startNavigation: (islandState: any) => void;
   setTransportMode: (mode: TransportMode) => void;
   setNextInstruction: (instruction: Instruction | null) => void;
   setFetching: (isFetching: boolean) => void;
@@ -53,7 +55,7 @@ interface NavigationState {
 /**
  * Specialized store for handling active navigation and route calculation states.
  */
-export const useNavigationStore = create<NavigationState>((set) => ({
+export const useNavigationStore = create<NavigationState>((set, get) => ({
   currentRoute: null,
   routeMetadata: null,
   isNavigating: false,
@@ -76,8 +78,6 @@ export const useNavigationStore = create<NavigationState>((set) => ({
 
   setRoutes: (routes, metadata) =>
     set((state) => {
-      // If current transport mode is not available in the new routes, 
-      // try to find a fallback (driving is usually the most reliable)
       let newMode = state.transportMode;
       if (!routes[newMode]) {
         if (routes.driving) newMode = 'driving';
@@ -117,26 +117,33 @@ export const useNavigationStore = create<NavigationState>((set) => ({
     set({ isPlanning });
   },
   
-  startNavigation: () => {
-    try {
-      const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
-      const uiStore = useMapUIStore.getState();
-      const { transportMode } = get();
-      
-      uiStore.setUIState(MapUIState.NAVIGATING);
-      
-      // Select best initial mode based on transport
-      const initialMode = transportMode === 'driving' 
-        ? MapCameraMode.FOLLOW_WITH_COURSE 
-        : MapCameraMode.FOLLOW_WITH_HEADING;
-        
-      uiStore.setCameraMode(initialMode);
-      uiStore.triggerRecenter();
-    } catch (e) {}
+  startNavigation: (islandState) => {
+    // 1. UPDATE INTERNAL STATE FIRST to avoid race conditions with camera centering
     set({ 
       isPlanning: false, 
       isNavigating: true 
     });
+
+    try {
+      const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
+      const { withSpring } = require('react-native-reanimated');
+      const { theme } = require('../../../styles/theme');
+      const uiStore = useMapUIStore.getState();
+      
+      // 2. Transition UI state
+      uiStore.setUIState(MapUIState.NAVIGATING);
+      
+      // 3. Force camera to follow with heading (compass) immediately
+      uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
+      uiStore.triggerRecenter();
+
+      // 4. Collapse the island drawer
+      if (islandState) {
+        islandState.value = withSpring(0, theme.motion.physics.magnetic);
+      }
+    } catch (e) {
+      console.warn('[NavigationStore] startNavigation failed:', e);
+    }
   },
 
   setNextInstruction: (nextInstruction) => set({ nextInstruction }),

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X, Car, Footprints, Bike } from 'lucide-react-native';
+import { Footprints, Bike, Car } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, { 
   useSharedValue, 
@@ -11,6 +11,7 @@ import Animated, {
   Extrapolation,
   SharedValue
 } from 'react-native-reanimated';
+
 
 // Hooks & State
 import { useNavigationStore } from '../store/useNavigationStore';
@@ -26,9 +27,10 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface RoutePlanningSheetProps {
   visibility: any;
+  islandState: SharedValue<number>;
 }
 
-export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
+export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   
@@ -53,10 +55,10 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
     // Hide if not planning OR if navigating
     const shouldShow = isPlanning && !isNavigating;
     internalState.value = withSpring(shouldShow ? 1 : 0, theme.motion.physics.magnetic);
-  }, [isPlanning, isNavigating]);
+  }, [isPlanning, isNavigating, theme.motion.physics.magnetic]);
 
   const rContainerStyle = useAnimatedStyle(() => {
-    const height = 280 + insets.bottom; // Even more compact without title
+    const height = 280 + insets.bottom;
     const margin = 16;
     return {
       transform: [
@@ -77,7 +79,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
 
   const handleStart = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    startNavigation();
+    startNavigation(islandState);
   };
 
   const activeDuration = metadata[transportMode]?.duration || routeMetadata?.duration;
