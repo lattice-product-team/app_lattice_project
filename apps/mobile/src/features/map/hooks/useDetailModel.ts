@@ -176,7 +176,7 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'ar',
             label: 'Use AR',
             icon: 'BinocularsIcon',
-            variant: isInside ? 'subdued' : 'tertiary',
+            variant: 'subdued',
             onPress: () => {
               if (isInside) {
                 openAR(ARFilterMode.SELECTED_EVENT, data.id);
@@ -309,7 +309,7 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'ar',
             label: 'Use AR',
             icon: 'BinocularsIcon',
-            variant: isInside ? 'subdued' : 'tertiary',
+            variant: 'subdued',
             onPress: () => {
               if (isInside) {
                 openAR(ARFilterMode.SPECIFIC_PIN, selectedPoi.id);

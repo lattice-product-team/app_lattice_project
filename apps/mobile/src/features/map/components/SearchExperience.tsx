@@ -1,20 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, FlatList, Image } from 'react-native';
-import { History, X, Calendar, ChevronRight } from 'lucide-react-native';
+import { MapPin, Calendar, History, X, ChevronRight } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { useSearchHistory } from '../hooks/useSearchHistory';
-import { useSearchEvents, SearchEvent } from '../hooks/useSearchEvents';
+import { useUnifiedSearch, SearchResult } from '../hooks/useUnifiedSearch';
 
 interface SearchExperienceProps {
   query: string;
-  onSelectResult: (query: string, coordinates?: [number, number]) => void;
+  onSelectResult: (query: string, coordinates?: [number, number], result?: SearchResult) => void;
 }
 
 export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProps) => {
   const theme = useAppTheme();
   const { history, removeSearch, clearHistory } = useSearchHistory();
-  const { events, loading } = useSearchEvents(query);
+  const { results, loading } = useUnifiedSearch(query);
 
   const isQueryEmpty = !query || query.trim() === '';
 
@@ -30,27 +30,31 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
     </Pressable>
   );
 
-  const renderEventItem = ({ item }: { item: SearchEvent }) => (
+  const renderResultItem = ({ item }: { item: SearchResult }) => (
     <Pressable
       style={styles.itemRow}
-      onPress={() => onSelectResult(item.name, item.center?.coordinates)}
+      onPress={() => onSelectResult(item.name, item.coordinates, item)}
     >
       <View style={styles.eventImageContainer}>
         {item.imageUrl ? (
           <Image source={{ uri: item.imageUrl }} style={styles.eventImage} />
         ) : (
           <View style={[styles.eventPlaceholder, { backgroundColor: theme.colors.glass.subtle }]}>
-            <Calendar
-              size={20}
-              color={theme.colors.brand.primary}
-              strokeWidth={2.2}
-            />
+            {item.type === 'event' ? (
+              <Calendar size={20} color={theme.colors.brand.primary} strokeWidth={2.2} />
+            ) : (
+              <MapPin size={20} color={theme.colors.brand.secondary || '#32D74B'} strokeWidth={2.2} />
+            )}
           </View>
         )}
       </View>
       <View style={styles.eventInfo}>
-        <Text style={[styles.itemText, { color: theme.colors.text.primary }]}>{item.name}</Text>
-        <Text style={[styles.subText, { color: theme.colors.text.muted }]}>{item.type}</Text>
+        <Text style={[styles.itemText, { color: theme.colors.text.primary }]} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={[styles.subText, { color: theme.colors.text.muted }]} numberOfLines={1}>
+          {item.categoryLabel || item.type.toUpperCase()}
+        </Text>
       </View>
       <ChevronRight size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
     </Pressable>
@@ -84,17 +88,17 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
-            {isQueryEmpty ? 'AVAILABLE EVENTS' : 'SEARCH RESULTS'}
+            {isQueryEmpty ? 'TRENDING & NEARBY' : 'SEARCH RESULTS'}
           </Text>
         </View>
 
         {loading ? (
-          <Text style={[styles.statusText, { color: theme.colors.text.muted }]}>Loading...</Text>
-        ) : events.length > 0 ? (
-          events.map((item, index) => (
-            <View key={`event-${item.id}`}>
-              {renderEventItem({ item })}
-              {index < events.length - 1 && (
+          <Text style={[styles.statusText, { color: theme.colors.text.muted }]}>Searching...</Text>
+        ) : results.length > 0 ? (
+          results.map((item, index) => (
+            <View key={`result-${item.id}`}>
+              {renderResultItem({ item })}
+              {index < results.length - 1 && (
                 <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />
               )}
             </View>

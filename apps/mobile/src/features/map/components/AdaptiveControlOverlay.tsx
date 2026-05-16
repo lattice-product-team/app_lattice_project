@@ -6,8 +6,9 @@ import Animated, {
   SharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { Navigation, Binoculars } from 'lucide-react-native';
+import { Navigation, Binoculars, Ticket as TicketIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { useARStore, ARFilterMode } from '../store/useARStore';
@@ -36,6 +37,7 @@ export const AdaptiveControlOverlay = React.memo(({
   bottomOffset = 0,
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
+  const router = useRouter();
   const iconColor = theme.colors.text.primary;
   const { uiState } = useMapUIStore();
   const openAR = useARStore((s) => s.openAR);
@@ -59,7 +61,7 @@ export const AdaptiveControlOverlay = React.memo(({
 
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
-      {/* 1. Top Vertical Pill (3D & Recenter) */}
+      {/* 1. Top Vertical Pill (Wallet & Recenter) */}
       <View
         style={[
           styles.verticalPill,
@@ -72,13 +74,13 @@ export const AdaptiveControlOverlay = React.memo(({
       >
         <Pressable
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            onToggle3D();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push('/(main)/tickets');
           }}
           hitSlop={12}
           style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >
-          <Text style={[styles.text3D, { color: iconColor }]}>{is3DActive ? '2D' : '3D'}</Text>
+          <TicketIcon size={22} color={iconColor} strokeWidth={2.2} />
         </Pressable>
 
         <View style={[styles.horizontalDivider, { backgroundColor: theme.colors.glass.border }]} />

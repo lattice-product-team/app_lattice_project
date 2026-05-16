@@ -38,7 +38,7 @@ import { NavigationInfo } from '../../src/features/map/components/NavigationInfo
 import { RoutePlanningSheet } from '../../src/features/navigation/components/RoutePlanningSheet';
 import { CenteringButton } from '../../src/features/navigation/components/CenteringButton';
 import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory';
-import { useSearchEvents } from '../../src/features/map/hooks/useSearchEvents';
+import { useUnifiedSearch } from '../../src/features/map/hooks/useUnifiedSearch';
 import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
 import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 
@@ -142,7 +142,7 @@ export default function MapIndexPage() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { saveSearch } = useSearchHistory();
 
-  const { events } = useSearchEvents(searchQuery);
+  const { allEvents } = useUnifiedSearch(searchQuery);
   const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
   const { data: globalPois } = usePOIs(); // Load global POIs
 
@@ -244,12 +244,12 @@ export default function MapIndexPage() {
   const lastScreenMode = useMapUIStore((state) => state.lastScreenMode);
   const setLastScreenMode = useMapUIStore((state) => state.setLastScreenMode);
 
-  const screenMode = useSharedValue(0); // Force Explore (0) on startup as requested
-  const [activeMode, setActiveMode] = useState(0);
-  const toggleDrag = useSharedValue(0); // Independent visual state for the toggle
+  const screenMode = useSharedValue(lastScreenMode);
+  const [activeMode, setActiveMode] = useState(lastScreenMode);
+  const toggleDrag = useSharedValue(lastScreenMode); // Independent visual state for the toggle
 
-  const [hasMapLoaded, setHasMapLoaded] = useState(false);
-  const [isMapActive, setIsMapActive] = useState(false);
+  const [hasMapLoaded, setHasMapLoaded] = useState(lastScreenMode === 1);
+  const [isMapActive, setIsMapActive] = useState(lastScreenMode === 1);
 
   useAnimatedReaction(
     () => screenMode.value > 0.1,
@@ -787,7 +787,7 @@ export default function MapIndexPage() {
           {true ? (
             <MapContent
               poisGeoJSON={mergedPois}
-              allEvents={events}
+              allEvents={allEvents}
               sheetPosition={sheetPosition}
               islandState={islandState}
               onDeselect={handleMapPress}
@@ -989,14 +989,21 @@ export default function MapIndexPage() {
                 <Animated.View style={[StyleSheet.absoluteFill, level3ContentStyle, { top: 0 }]}>
                   <SearchExperience
                     query={searchQuery}
-                    onSelectResult={(q, coords) => {
+                    onSelectResult={(q, coords, result) => {
                       setSearchQuery('');
                       saveSearch(q);
                       setIsSearching(false);
                       Keyboard.dismiss();
                       islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-                      const match = events.find((e) => e.name.toLowerCase() === q.toLowerCase());
-                      if (match) handleEventSelect(match);
+
+                      if (result?.type === 'poi') {
+                        setSelectedEvent(null);
+                        setCurrentEvent(null);
+                        selectPoi(result.raw);
+                      } else {
+                        const match = result?.raw || allEvents.find((e) => e.name.toLowerCase() === q.toLowerCase());
+                        if (match) handleEventSelect(match);
+                      }
                     }}
                   />
                 </Animated.View>
