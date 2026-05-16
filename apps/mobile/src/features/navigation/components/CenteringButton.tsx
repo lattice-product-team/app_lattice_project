@@ -31,9 +31,8 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
 
   const handleCenter = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Use triggerRecenter to increment the count and force the effect in MapCameraManager to fire
+    // triggerRecenter now handles mode cycling and intelligent defaults
     triggerRecenter();
-    setCameraMode(MapCameraMode.FOLLOW);
   };
 
   const rStyle = useAnimatedStyle(() => {

@@ -119,8 +119,19 @@ export const useNavigationStore = create<NavigationState>((set) => ({
   
   startNavigation: () => {
     try {
-      const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
-      useMapUIStore.getState().setUIState(MapUIState.NAVIGATING);
+      const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
+      const uiStore = useMapUIStore.getState();
+      const { transportMode } = get();
+      
+      uiStore.setUIState(MapUIState.NAVIGATING);
+      
+      // Select best initial mode based on transport
+      const initialMode = transportMode === 'driving' 
+        ? MapCameraMode.FOLLOW_WITH_COURSE 
+        : MapCameraMode.FOLLOW_WITH_HEADING;
+        
+      uiStore.setCameraMode(initialMode);
+      uiStore.triggerRecenter();
     } catch (e) {}
     set({ 
       isPlanning: false, 

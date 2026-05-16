@@ -29,16 +29,19 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const queryClient = new QueryClient();
 
+/**
+ * A small helper to ensure the StatusBar correctly picks up
+ * the current theme from ThemeProvider.
+ */
+function AppStatusBar() {
+  const theme = useAppTheme();
+  return <StatusBar style={theme.dark ? 'light' : 'dark'} />;
+}
+
 export default function RootLayout() {
   const { loaded: fontsLoaded, error: fontsError } = useAppFonts();
   const isDataReady = useStartupStore((s) => s.isDataReady);
   const isMapReady = useStartupStore((s) => s.isMapReady);
-  let theme = useAppTheme();
-  if (!theme || !theme.colors) {
-    const { darkTheme } = require('../src/styles/theme');
-    theme = darkTheme;
-  }
-
 
   const [showSplashOverlay, setShowSplashOverlay] = useState(true);
   const splashOpacity = useSharedValue(1);
@@ -105,7 +108,7 @@ export default function RootLayout() {
                 </Stack>
 
                 <AuthPromptOverlay />
-                <StatusBar style={theme.dark ? 'light' : 'dark'} />
+                <AppStatusBar />
 
                 {showSplashOverlay && (
                   <Animated.View

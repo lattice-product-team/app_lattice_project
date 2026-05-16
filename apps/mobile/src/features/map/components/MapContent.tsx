@@ -67,6 +67,8 @@ export const MapContent = function MapContent({
     setInitialLoadComplete,
     isProgrammaticMove,
     setIsProgrammaticMove,
+    lastProcessedTarget,
+    setLastProcessedTarget,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
   const isProgrammaticMoveRef = React.useRef(isProgrammaticMove);
@@ -157,12 +159,11 @@ export const MapContent = function MapContent({
       }
 
       // IF USER TOUCHES THE MAP:
-      // We must immediately break ANY tracking or programmatic lock.
-      if (isUserInteraction && (cameraMode !== MapCameraMode.FREE || isProgrammaticMoveRef.current)) {
-        console.log('[MapContent] Interaction detected: Breaking camera locks');
+      // We break tracking ONLY if the user is actually interacting with the map surface.
+      // We add a small guard: if we are in a programmatic move, we give it a bit of room.
+      if (isUserInteraction && cameraMode !== MapCameraMode.FREE && !isProgrammaticMoveRef.current) {
+        // console.log('[MapContent] User interaction detected: Breaking camera locks');
         setCameraMode(MapCameraMode.FREE);
-        // Direct call to store to avoid any closure/reference issues
-        useMapUIStore.getState().setIsProgrammaticMove(false);
       }
     },
     [
@@ -520,6 +521,8 @@ export const MapContent = function MapContent({
           selectedPoiId={selectedPoiId}
           selectedEventId={selectedEventId}
           realtimeCameraRef={realtimeCameraRef}
+          lastProcessedTarget={lastProcessedTarget}
+          setLastProcessedTarget={setLastProcessedTarget}
         />
 
         <MapLayers

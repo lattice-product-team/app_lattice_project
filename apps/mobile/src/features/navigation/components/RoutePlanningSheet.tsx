@@ -34,6 +34,7 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   
   const { 
     isPlanning, 
+    isNavigating,
     setPlanning, 
     startNavigation,
     transportMode, 
@@ -49,8 +50,10 @@ export const RoutePlanningSheet = ({ visibility }: RoutePlanningSheetProps) => {
   const internalState = useSharedValue(0);
 
   useEffect(() => {
-    internalState.value = withSpring(isPlanning ? 1 : 0, theme.motion.physics.magnetic);
-  }, [isPlanning]);
+    // Hide if not planning OR if navigating
+    const shouldShow = isPlanning && !isNavigating;
+    internalState.value = withSpring(shouldShow ? 1 : 0, theme.motion.physics.magnetic);
+  }, [isPlanning, isNavigating]);
 
   const rContainerStyle = useAnimatedStyle(() => {
     const height = 280 + insets.bottom; // Even more compact without title

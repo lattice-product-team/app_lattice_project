@@ -44,6 +44,7 @@ interface MapUIStore {
   setLastCameraPosition: (pos: { center: [number, number]; zoom: number; pitch: number }) => void;
   setDiscoveryLocation: (loc: [number, number] | null) => void;
   setLastScreenMode: (mode: number) => void;
+  setLastProcessedTarget: (target: string | null) => void;
 }
 
 // Recursion guard for cross-store synchronization
@@ -64,6 +65,7 @@ export const useMapUIStore = create<MapUIStore>()(
       discoveryLocation: null,
       isProgrammaticMove: false,
       lastScreenMode: 0,
+      lastProcessedTarget: null,
 
       setUIState: (uiState) => {
         if (isProcessingSetUIState) return;
@@ -103,16 +105,31 @@ export const useMapUIStore = create<MapUIStore>()(
 
       triggerRecenter: () =>
         set((state) => {
+          const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
+          const { isNavigating, transportMode } = useNavigationStore.getState();
           let nextMode: MapCameraMode;
 
-          if (state.cameraMode === MapCameraMode.FREE) {
-            nextMode = MapCameraMode.FOLLOW;
-          } else if (state.cameraMode === MapCameraMode.FOLLOW) {
-            nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
-          } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
-            nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
+          if (isNavigating) {
+            // Navigation context: cycle between centered tracking modes
+            if (state.cameraMode === MapCameraMode.FREE) {
+              // First tap from free: Go to the most appropriate tracking mode
+              nextMode = transportMode === 'driving' ? MapCameraMode.FOLLOW_WITH_COURSE : MapCameraMode.FOLLOW_WITH_HEADING;
+            } else if (state.cameraMode === MapCameraMode.FOLLOW) {
+              nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
+            } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
+              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
+            } else {
+              nextMode = MapCameraMode.FOLLOW;
+            }
           } else {
-            nextMode = MapCameraMode.FREE;
+            // Exploring context: simple follow vs free cycle
+            if (state.cameraMode === MapCameraMode.FREE) {
+              nextMode = MapCameraMode.FOLLOW;
+            } else if (state.cameraMode === MapCameraMode.FOLLOW) {
+              nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
+            } else {
+              nextMode = MapCameraMode.FREE;
+            }
           }
 
           return {
@@ -133,6 +150,8 @@ export const useMapUIStore = create<MapUIStore>()(
       setDiscoveryLocation: (discoveryLocation) => set({ discoveryLocation }),
 
       setLastScreenMode: (lastScreenMode) => set({ lastScreenMode }),
+
+      setLastProcessedTarget: (lastProcessedTarget) => set({ lastProcessedTarget }),
     }),
     {
       name: 'map-ui-storage',
@@ -142,6 +161,7 @@ export const useMapUIStore = create<MapUIStore>()(
         lastScreenMode: state.lastScreenMode,
         lastCameraPosition: state.lastCameraPosition,
         discoveryLocation: state.discoveryLocation,
+        lastProcessedTarget: state.lastProcessedTarget,
       }),
     }
   )

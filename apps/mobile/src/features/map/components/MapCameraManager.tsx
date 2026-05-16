@@ -56,6 +56,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     selectedPoiId,
     selectedEventId,
     realtimeCameraRef,
+    lastProcessedTarget,
+    setLastProcessedTarget,
   } = props;
 
   const cameraRef = React.useRef<any>(null);
@@ -139,18 +141,25 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     isProgrammaticMoveRef.current = isProgrammaticMove;
   }, [isProgrammaticMove]);
 
-  const prevUiState = React.useRef<MapUIState | null>(null);
+  const prevUiState = React.useRef<MapUIState | null>(uiState);
   const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
   const lastProcessedRecenterRef = React.useRef(recenterCount);
   const prevRouteRef = React.useRef(currentRoute);
-
   const userCoordsRef = React.useRef(userCoords);
   const userHeadingRef = React.useRef(userHeading);
+  const localLastTargetRef = React.useRef<string | null>(lastProcessedTarget);
 
   useEffect(() => {
     userCoordsRef.current = userCoords;
     userHeadingRef.current = userHeading;
   }, [userCoords, userHeading]);
+
+  // Sync local memory with persistent store on mount/change
+  useEffect(() => {
+    if (lastProcessedTarget !== localLastTargetRef.current) {
+      localLastTargetRef.current = lastProcessedTarget;
+    }
+  }, [lastProcessedTarget]);
 
   // 1. WATCHDOG: Ensure isProgrammaticMove is always cleared eventually
   // Now deprecated as we move away from aggressive locking, but kept for safety.
@@ -211,24 +220,31 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
 
     const targetKey = targetCoords ? `${targetCoords[0]},${targetCoords[1]}` : null;
-    const isNewTarget = targetKey !== lastTargetRef.current;
+    const isNewTarget = targetKey !== localLastTargetRef.current;
 
-    const isEnteringDetail = (uiState === MapUIState.POI_DETAIL || uiState === MapUIState.PLANNING) && isNewMode;
+    const isEnteringDetail = (uiState === MapUIState.POI_DETAIL || uiState === MapUIState.PLANNING || uiState === MapUIState.NAVIGATING) && isNewMode;
 
     const canStealCamera =
       cameraMode !== MapCameraMode.FREE ||
       isForcedCenter ||
       isForcedRecenter ||
-      isEnteringDetail || // Always allow steal when explicitly opening a NEW detail/route
+      (isEnteringDetail && isNewTarget) ||
       (isNewTarget && targetKey !== null);
 
-    if (!canStealCamera) {
-      // Sync refs and return. No need for safetyReset here anymore
-      // as padding is handled reactively via props.
+    // CRITICAL: Always sync the "seen" state to prevent late-stealing
+    const syncState = () => {
       prevUiState.current = uiState;
       lastProcessedRecenterRef.current = recenterCount;
       lastProcessedForceCenterRef.current = forceCenterCount;
       prevRouteRef.current = currentRoute;
+      if (isNewTarget) {
+        localLastTargetRef.current = targetKey;
+        setLastProcessedTarget(targetKey);
+      }
+    };
+
+    if (!canStealCamera) {
+      syncState();
       return;
     }
 
@@ -246,12 +262,35 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
     if (!cameraRef.current) return;
 
-    // 1. PLANNING MODE
-    if (uiState === MapUIState.PLANNING) {
+    // 1. NAVIGATION MODE (Highest Priority Centering)
+    if (uiState === MapUIState.NAVIGATING) {
+      if (isNewMode || isForcedRecenter || isForcedCenter) {
+        console.log(`[Camera] Navigation: Centering on user (Mode: ${cameraMode})`);
+        if (userCoordsRef.current) {
+          setIsProgrammaticMove(true);
+          cameraRef.current.setCamera({
+            centerCoordinate: userCoordsRef.current,
+            zoomLevel: 18,
+            animationDuration: 1000,
+            animationMode: 'flyTo',
+            heading: (cameraMode === MapCameraMode.FOLLOW_WITH_HEADING || cameraMode === MapCameraMode.FOLLOW_WITH_COURSE) 
+              ? (userHeadingRef.current || 0) 
+              : 0,
+            pitch: 45,
+          });
+          // Clear lock after animation
+          setTimeout(() => setIsProgrammaticMove(false), 1100);
+        }
+      }
+      // No need to fall through in navigation mode
+      syncState();
+      return;
+    }
+
+    // 2. PLANNING MODE
+    else if (uiState === MapUIState.PLANNING) {
       const isFinishFetching = !isFetching && prevIsFetching.current;
       if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching || isNewRoute) {
-        lastProcessedForceCenterRef.current = forceCenterCount;
-        lastTargetRef.current = targetKey;
         setCameraMode(MapCameraMode.FREE);
 
         const destinationCoords = targetCoords;
@@ -271,7 +310,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             const shouldMove = cameraMode !== MapCameraMode.FREE || isForcedCenter || isNewMode;
             if (shouldMove) {
               console.log('[Camera] Planning: Fitting route bounds');
-              // REMOVED PROGRAMMATIC LOCK AND PADDING
+              setIsProgrammaticMove(true);
               cameraRef.current.setCamera({
                 bounds: {
                   ne: [bbox[2], bbox[3]],
@@ -282,13 +321,14 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
                 animationDuration: 1200,
                 animationMode: 'flyTo',
               });
+              setTimeout(() => setIsProgrammaticMove(false), 1300);
             }
             return () => {
               clearTransitionTimer();
             };
           }
         } else if (destinationCoords) {
-          setIsProgrammaticMove(true);
+          console.log('[Camera] Planning: Flying to destination fallback');
           cameraRef.current.setCamera({
             centerCoordinate: destinationCoords,
             zoomLevel: 14,
@@ -296,23 +336,17 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             animationMode: 'flyTo',
             pitch: is3DActive ? 45 : 0,
           });
-          transitionTimerRef.current = setTimeout(() => {
-            setIsProgrammaticMove(false);
-            transitionTimerRef.current = null;
-          }, 1100);
-          return () => {
-            clearTransitionTimer();
-          };
+          return () => clearTransitionTimer();
         }
       }
+      syncState();
+      return;
     }
 
-    // 3. POI / EVENT DETAIL MODE
-    else if (uiState === MapUIState.POI_DETAIL || (isNewTarget && targetCoords)) {
+    // 3. POI / EVENT SELECTION (Target focus)
+    // This handles both explicit POI_DETAIL mode and selections made while EXPLORING
+    else if (uiState === MapUIState.POI_DETAIL || (uiState === MapUIState.EXPLORING && isNewTarget && targetCoords)) {
       if (isNewMode || isForcedCenter || isForcedRecenter || isNewTarget) {
-        lastProcessedForceCenterRef.current = forceCenterCount;
-        lastProcessedRecenterRef.current = recenterCount;
-        lastTargetRef.current = targetKey;
         setCameraMode(MapCameraMode.FREE);
 
         if (targetCoords) {
@@ -321,7 +355,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           
           if (shouldMove) {
             console.log('[Camera] POI/Event: Flying to target');
-            // REMOVED PADDING FROM HERE - It's now handled via Props
+            setIsProgrammaticMove(true);
             cameraRef.current.setCamera({
               centerCoordinate: targetCoords,
               zoomLevel: selectedEvent ? 13.0 : 18.0,
@@ -329,6 +363,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
               animationMode: 'flyTo',
               pitch: is3DActive ? 60 : 0,
             });
+            setTimeout(() => setIsProgrammaticMove(false), 1100);
           }
           
           return () => {
@@ -336,6 +371,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           };
         }
       }
+      syncState();
+      return;
     }
 
     // 4. EXPLORING / BASE MODE
@@ -347,7 +384,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         setCameraMode(MapCameraMode.FREE);
 
         if (userCoordsRef.current) {
-          setIsProgrammaticMove(true);
+          console.log('[Camera] Exploring: flying to user');
           cameraRef.current.setCamera({
             centerCoordinate: userCoordsRef.current,
             zoomLevel: DEFAULT_ZOOM,
@@ -355,18 +392,12 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             animationMode: 'flyTo',
             pitch: is3DActive ? 60 : 0,
           });
-          transitionTimerRef.current = setTimeout(() => {
-            setIsProgrammaticMove(false);
-            transitionTimerRef.current = null;
-          }, 1100);
-          return () => {
-            clearTransitionTimer();
-          };
+          return () => clearTransitionTimer();
         }
       }
     }
 
-    lastTargetRef.current = targetKey;
+    syncState();
   }, [
     uiState,
     recenterCount,
