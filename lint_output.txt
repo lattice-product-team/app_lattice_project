@@ -1,0 +1,629 @@
+
+> @app/monorepo@1.0.0 lint /Users/kore/Documents/Code/Projects/app_lattice_project
+> turbo lint
+
+• turbo 2.9.6
+
+   • Packages in scope: @app/api, @app/core, @app/db, @app/mobile, @app/theme, @app/types-schema, admin-web, docs
+   • Running lint in 8 packages
+   • Remote caching disabled
+
+@app/mobile:lint: cache miss, executing 3643a175ee7c7188
+admin-web:lint: cache miss, executing bd90274307c96644
+@app/api:lint: cache miss, executing 5c09f46e9a268e75
+docs:lint: cache hit, replaying logs 2cefb46f210a0fed
+docs:lint: 
+docs:lint: 
+docs:lint: > docs@0.1.0 lint /Users/kore/Documents/Code/Projects/app_lattice_project/apps/docs
+docs:lint: > next lint
+docs:lint: 
+docs:lint: 
+docs:lint:  [33m[1m⚠[22m[39m The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+docs:lint: [32m✔ No ESLint warnings or errors[39m
+@app/types-schema:lint: cache hit, replaying logs 9b4fd37c65619ef9
+@app/types-schema:lint: 
+@app/types-schema:lint: 
+@app/types-schema:lint: > @app/types-schema@1.0.0 lint /Users/kore/Documents/Code/Projects/app_lattice_project/packages/types-schema
+@app/types-schema:lint: > eslint "**/*.ts"
+@app/types-schema:lint: 
+@app/mobile:lint: 
+@app/mobile:lint: > @app/mobile@1.0.0 lint /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile
+@app/mobile:lint: > expo lint
+@app/mobile:lint: 
+admin-web:lint: 
+admin-web:lint: > admin-web@0.1.0 lint /Users/kore/Documents/Code/Projects/app_lattice_project/apps/admin-web
+admin-web:lint: > eslint
+admin-web:lint: 
+@app/api:lint: 
+@app/api:lint: > @app/api@1.0.0 lint /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api
+@app/api:lint: > eslint "**/*.ts"
+@app/api:lint: 
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/__tests__/gateway.test.ts
+@app/api:lint:   1:32  warning  'beforeEach' is defined but never used  @typescript-eslint/no-unused-vars
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/auth/__tests__/auth.integration.test.ts
+@app/api:lint:    14:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    48:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    82:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    85:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   113:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   127:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   147:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/auth/controllers/auth.controller.d.ts
+@app/api:lint:    8:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    8:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   13:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   13:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   17:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   17:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   21:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   21:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   25:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   25:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   32:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   32:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   39:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   39:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   46:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   46:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   65:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   65:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/auth/controllers/auth.controller.ts
+@app/api:lint:     2:62  warning  'and' is defined but never used                     @typescript-eslint/no-unused-vars
+@app/api:lint:     2:67  warning  'sql' is defined but never used                     @typescript-eslint/no-unused-vars
+@app/api:lint:   355:14  warning  'e' is defined but never used                       @typescript-eslint/no-unused-vars
+@app/api:lint:   466:27  warning  '_passwordHash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/api:lint:   481:29  warning  '_passwordHash' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/api:lint:   732:15  warning  'response' is assigned a value but never used       @typescript-eslint/no-unused-vars
+@app/api:lint:   768:15  warning  'response' is assigned a value but never used       @typescript-eslint/no-unused-vars
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/auth/controllers/auth.utils.d.ts
+@app/api:lint:    5:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   21:53  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/auth/controllers/auth.utils.ts
+@app/api:lint:   11:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   54:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/__tests__/geo.integration.test.ts
+@app/api:lint:   13:56  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+@app/api:lint:   73:13  warning  'mockFrom' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/api:lint:   84:27  warning  Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/__tests__/spatial.integration.test.ts
+@app/api:lint:    13:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    58:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    64:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    79:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    92:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    98:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   102:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/controllers/geo.controller.d.ts
+@app/api:lint:    5:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    5:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    9:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    9:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   14:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   14:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   18:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   18:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   23:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   23:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   30:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   30:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   34:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   34:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   40:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   40:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   44:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   44:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   48:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   48:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/controllers/geo.controller.ts
+@app/api:lint:    23:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   113:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   126:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   278:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   342:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   418:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   546:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   590:49  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   700:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   718:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   869:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   886:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/controllers/saved.controller.d.ts
+@app/api:lint:    6:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    6:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   10:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   10:43  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/controllers/saved.controller.ts
+@app/api:lint:   26:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/routes/telemetry.routes.ts
+@app/api:lint:   62:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/dataforseo.client.d.ts
+@app/api:lint:   19:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   23:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/dataforseo.client.ts
+@app/api:lint:   27:41  warning  'location' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+@app/api:lint:   49:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+@app/api:lint:   95:47  warning  Unexpected any. Specify a different type                                    @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/discovery.service.ts
+@app/api:lint:    1:44  warning  'and' is defined but never used           @typescript-eslint/no-unused-vars
+@app/api:lint:    1:71  warning  'desc' is defined but never used          @typescript-eslint/no-unused-vars
+@app/api:lint:    6:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   92:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/navigation.service.d.ts
+@app/api:lint:   21:18  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/navigation.service.ts
+@app/api:lint:     5:11  warning  'Node' is defined but never used          @typescript-eslint/no-unused-vars
+@app/api:lint:    10:11  warning  'Edge' is defined but never used          @typescript-eslint/no-unused-vars
+@app/api:lint:    57:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    58:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:    95:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   103:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   156:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/social.service.d.ts
+@app/api:lint:   8:84  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/server/api/src/geo/services/social.service.ts
+@app/api:lint:    1:44  warning  'sql' is defined but never used           @typescript-eslint/no-unused-vars
+@app/api:lint:   18:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint:   93:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+@app/api:lint: 
+@app/api:lint: ✖ 106 problems (0 errors, 106 warnings)
+@app/api:lint: 
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/(auth)/email-auth.tsx
+@app/mobile:lint:   155:18  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/(auth)/login.tsx
+@app/mobile:lint:    2:22  warning  'Pressable' is defined but never used                                                                                 @typescript-eslint/no-unused-vars
+@app/mobile:lint:    3:21  warning  'Link' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+@app/mobile:lint:    7:10  warning  'Feather' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:   25:9   warning  'user' is assigned a value but never used                                                                             @typescript-eslint/no-unused-vars
+@app/mobile:lint:   42:6   warning  React Hook useEffect has a missing dependency: 'handleGoogleLogin'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/(auth)/onboarding.tsx
+@app/mobile:lint:   79:31  warning  A `require()` style import is forbidden                                                                                                                                                                                                                         @typescript-eslint/no-require-imports
+@app/mobile:lint:   87:24  error    React Hook "useAnimatedStyle" is called in function "renderBackground" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use"  react-hooks/rules-of-hooks
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/(auth)/register.tsx
+@app/mobile:lint:    4:10  warning  'LinearGradient' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint:    8:10  warning  'Feather' is defined but never used         @typescript-eslint/no-unused-vars
+@app/mobile:lint:   12:10  warning  'AuthDivider' is defined but never used     @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/(main)/index.tsx
+@app/mobile:lint:    10:10  warning  'ScrollView' is defined but never used                                                                                                                     @typescript-eslint/no-unused-vars
+@app/mobile:lint:    10:39  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react-native-gesture-handler/lib/module/index.js' imported multiple times            import/no-duplicates
+@app/mobile:lint:    12:8   warning  'MapLibreGL' is defined but never used                                                                                                                     @typescript-eslint/no-unused-vars
+@app/mobile:lint:    14:42  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react-native-gesture-handler/lib/module/index.js' imported multiple times            import/no-duplicates
+@app/mobile:lint:    28:3   warning  'withDelay' is defined but never used                                                                                                                      @typescript-eslint/no-unused-vars
+@app/mobile:lint:    57:10  warning  'useLocationStore' is defined but never used                                                                                                               @typescript-eslint/no-unused-vars
+@app/mobile:lint:    58:25  warning  'MapCameraMode' is defined but never used                                                                                                                  @typescript-eslint/no-unused-vars
+@app/mobile:lint:    63:10  warning  'normalizePOI' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    64:10  warning  'MAPTILER_KEY' is defined but never used                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    81:7   warning  'AnimatedCompass' is assigned a value but never used                                                                                                       @typescript-eslint/no-unused-vars
+@app/mobile:lint:    82:7   warning  'AnimatedMap' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:    87:27  warning  A `require()` style import is forbidden                                                                                                                    @typescript-eslint/no-require-imports
+@app/mobile:lint:    92:9   warning  'router' is assigned a value but never used                                                                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint:   133:11  warning  'selectedPoiId' is assigned a value but never used                                                                                                         @typescript-eslint/no-unused-vars
+@app/mobile:lint:   133:50  warning  'deselect' is assigned a value but never used                                                                                                              @typescript-eslint/no-unused-vars
+@app/mobile:lint:   133:60  warning  'selectedEventId' is assigned a value but never used                                                                                                       @typescript-eslint/no-unused-vars
+@app/mobile:lint:   238:6   warning  React Hook useEffect has a missing dependency: 'uiLayer'. Either include it or remove the dependency array                                                 react-hooks/exhaustive-deps
+@app/mobile:lint:   246:9   warning  'lastScreenMode' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+@app/mobile:lint:   285:9   warning  'eventVisibility' is assigned a value but never used                                                                                                       @typescript-eslint/no-unused-vars
+@app/mobile:lint:   338:5   warning  React Hook useCallback has missing dependencies: 'preSearchLevel' and 'theme.motion.physics.magnetic'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   594:9   warning  'dimmerStyle' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   601:9   warning  'dimmerProps' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   715:5   warning  React Hook useCallback has a missing dependency: 'setLastScreenMode'. Either include it or remove the dependency array                                     react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/_layout.tsx
+@app/mobile:lint:    72:6  warning  React Hook useEffect has missing dependencies: 'fontsLoaded', 'isDataReady', 'isMapReady', and 'splashOpacity'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:    89:6  warning  React Hook useEffect has missing dependencies: 'showSplashOverlay' and 'splashOpacity'. Either include them or remove the dependency array                          react-hooks/exhaustive-deps
+@app/mobile:lint:   129:7  warning  'styles' is assigned a value but never used                                                                                                                         @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/app/index.tsx
+@app/mobile:lint:   15:11  warning  'isDataReady' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+@app/mobile:lint:   44:18  warning  'e' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+@app/mobile:lint:   63:6   warning  React Hook useEffect has a missing dependency: 'setDataReady'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/navigation/InstructionBanner.tsx
+@app/mobile:lint:    5:3   warning  'ArrowUpLeft' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint:    6:3   warning  'ArrowUpRight' is defined but never used           @typescript-eslint/no-unused-vars
+@app/mobile:lint:    7:3   warning  'ArrowLeft' is defined but never used              @typescript-eslint/no-unused-vars
+@app/mobile:lint:    8:3   warning  'ArrowRight' is defined but never used             @typescript-eslint/no-unused-vars
+@app/mobile:lint:   31:36  warning  'maneuverType' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/ui/AuthPromptSheet.tsx
+@app/mobile:lint:   48:6  warning  React Hook useEffect has missing dependencies: 'animState' and 'springConfig'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/ui/CategoryChip.tsx
+@app/mobile:lint:   2:28  warning  'Platform' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/ui/CircularActionButton.tsx
+@app/mobile:lint:   28:28  error  Unable to validate computed reference to imported namespace 'LucideIcons'  import/namespace
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/ui/FloatingSearchBar.tsx
+@app/mobile:lint:     2:50  warning  'Platform' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+@app/mobile:lint:     2:66  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react-native/index.js' imported multiple times  import/no-duplicates
+@app/mobile:lint:     6:3   warning  'withRepeat' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint:     8:3   warning  'withSequence' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+@app/mobile:lint:     9:3   warning  'withTiming' is defined but never used                                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint:    16:10  warning  'NativeModules' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+@app/mobile:lint:    16:31  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react-native/index.js' imported multiple times  import/no-duplicates
+@app/mobile:lint:    55:14  warning  'permission' is assigned a value but never used                                                                       @typescript-eslint/no-unused-vars
+@app/mobile:lint:   113:10  warning  React Hook React.useEffect has a missing dependency: 'pulseValue'. Either include it or remove the dependency array   react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/ui/SplashScreen.tsx
+@app/mobile:lint:   31:6  warning  React Hook useEffect has a missing dependency: 'gradientPos'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/components/ui/ThemeGradient.tsx
+@app/mobile:lint:   4:10  warning  'useAuthStore' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/discovery/components/BentoGrid.tsx
+@app/mobile:lint:   21:26  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/discovery/components/CategoryChips.tsx
+@app/mobile:lint:   27:30  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/discovery/components/DiscoveryFeed.tsx
+@app/mobile:lint:    2:50  warning  'InteractionManager' is defined but never used                                                                                        @typescript-eslint/no-unused-vars
+@app/mobile:lint:   30:29  warning  A `require()` style import is forbidden                                                                                               @typescript-eslint/no-require-imports
+@app/mobile:lint:   32:14  warning  'e' is defined but never used                                                                                                         @typescript-eslint/no-unused-vars
+@app/mobile:lint:   38:18  error    React Hook "useSafeAreaInsets" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+@app/mobile:lint:   45:28  error    React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render      react-hooks/rules-of-hooks
+@app/mobile:lint:   62:16  error    React Hook "useAuthStore" is called conditionally. React Hooks must be called in the exact same order in every component render       react-hooks/rules-of-hooks
+@app/mobile:lint:   63:19  error    React Hook "useAuthStore" is called conditionally. React Hooks must be called in the exact same order in every component render       react-hooks/rules-of-hooks
+@app/mobile:lint:   65:20  error    React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render      react-hooks/rules-of-hooks
+@app/mobile:lint:   77:29  error    React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render      react-hooks/rules-of-hooks
+@app/mobile:lint:   82:24  error    React Hook "React.useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render      react-hooks/rules-of-hooks
+@app/mobile:lint:   87:3   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render          react-hooks/rules-of-hooks
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/discovery/components/FeaturedCarousel.tsx
+@app/mobile:lint:   18:33  error    Component definition is missing display name  react/display-name
+@app/mobile:lint:   19:9   warning  'theme' is assigned a value but never used    @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/discovery/components/NearbyList.tsx
+@app/mobile:lint:   14:27  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/ActionPillBar.tsx
+@app/mobile:lint:   14:30  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/AdaptiveControlOverlay.tsx
+@app/mobile:lint:   14:10  warning  'usePOIStore' is defined but never used       @typescript-eslint/no-unused-vars
+@app/mobile:lint:   15:10  warning  'useEventStore' is defined but never used     @typescript-eslint/no-unused-vars
+@app/mobile:lint:   28:39  error    Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/DiscoveryDashboard.tsx
+@app/mobile:lint:   45:35  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/EventCarouselCard.tsx
+@app/mobile:lint:    1:19  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react/index.js' imported multiple times  import/no-duplicates
+@app/mobile:lint:   15:25  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react/index.js' imported multiple times  import/no-duplicates
+@app/mobile:lint:   38:34  error    Component definition is missing display name                                                                   react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/EventDetailSheet.tsx
+@app/mobile:lint:     6:3  warning  'Pressable' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    18:3  warning  'interpolateColor' is defined but never used                                                                                                                                            @typescript-eslint/no-unused-vars
+@app/mobile:lint:    84:6  warning  React Hook useEffect has missing dependencies: 'SNAP_POINTS.HIDDEN', 'SNAP_POINTS.MID', 'islandState', 'model', and 'snappySpring'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:    84:7  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                react-hooks/exhaustive-deps
+@app/mobile:lint:   177:9  warning  'handleCloseInternal' is assigned a value but never used                                                                                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/EventMarker.tsx
+@app/mobile:lint:    2:16  warning  'Text' is defined but never used                      @typescript-eslint/no-unused-vars
+@app/mobile:lint:    7:3   warning  'withSpring' is defined but never used                @typescript-eslint/no-unused-vars
+@app/mobile:lint:   51:11  warning  'labelStyle' is assigned a value but never used       @typescript-eslint/no-unused-vars
+@app/mobile:lint:   64:11  warning  'largeLabelStyle' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/EventPin.tsx
+@app/mobile:lint:   23:9  warning  'style' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/GalleryCarousel.tsx
+@app/mobile:lint:    2:40  warning  'Text' is defined but never used              @typescript-eslint/no-unused-vars
+@app/mobile:lint:    5:10  warning  'typography' is defined but never used        @typescript-eslint/no-unused-vars
+@app/mobile:lint:   18:32  error    Component definition is missing display name  react/display-name
+@app/mobile:lint:   19:9   warning  'theme' is assigned a value but never used    @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/MapCameraManager.tsx
+@app/mobile:lint:     6:25  warning  'calculateCentroid' is defined but never used                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+@app/mobile:lint:    51:5   warning  'isPlanning' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+@app/mobile:lint:    54:5   warning  'transportMode' is assigned a value but never used                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    66:9   warning  'lastActionTimestamp' is assigned a value but never used                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+@app/mobile:lint:    68:9   warning  'CAMERA_ACTION_THROTTLE' is assigned a value but never used                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+@app/mobile:lint:   406:6   warning  React Hook useEffect has missing dependencies: 'cameraMode', 'isNavigating', 'poisGeoJSON?.features', 'safetyReset', 'selectedEventId', 'selectedPoiId', 'setCameraMode', 'setIsProgrammaticMove', and 'setLastProcessedTarget'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   426:6   warning  React Hook useEffect has a missing dependency: 'uiState'. Either include it or remove the dependency array                                                                                                                                                                           react-hooks/exhaustive-deps
+@app/mobile:lint:   434:5   warning  React Hook React.useMemo has a missing dependency: 'userCoords'. Either include it or remove the dependency array                                                                                                                                                                    react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/MapContent.tsx
+@app/mobile:lint:     2:28  warning  'Dimensions' is defined but never used                                                                                                                  @typescript-eslint/no-unused-vars
+@app/mobile:lint:    12:44  warning  'normalizePOIList' is defined but never used                                                                                                            @typescript-eslint/no-unused-vars
+@app/mobile:lint:    27:39  warning  'DEFAULT_ZOOM' is defined but never used                                                                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint:    53:10  warning  'userHeading' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+@app/mobile:lint:    53:23  warning  'setUserHeading' is assigned a value but never used                                                                                                     @typescript-eslint/no-unused-vars
+@app/mobile:lint:    69:5   warning  'setIsProgrammaticMove' is assigned a value but never used                                                                                              @typescript-eslint/no-unused-vars
+@app/mobile:lint:    92:9   warning  'ZOOM_THROTTLE_MS' is assigned a value but never used                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    96:17  warning  'pathNetwork' is assigned a value but never used                                                                                                        @typescript-eslint/no-unused-vars
+@app/mobile:lint:   291:27  warning  'geometry' is assigned a value but never used                                                                                                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   298:18  warning  'e' is defined but never used                                                                                                                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   326:5   warning  React Hook useCallback has a missing dependency: 'setCameraMode'. Either include it or remove the dependency array                                      react-hooks/exhaustive-deps
+@app/mobile:lint:   337:9   warning  'handleEventPress' is assigned a value but never used                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:   348:5   warning  React Hook useCallback has missing dependencies: 'setCameraMode' and 'theme.motion.physics.snappy'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   351:9   warning  'glPoisGeoJSON' is assigned a value but never used                                                                                                      @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/MapImageManager.tsx
+@app/mobile:lint:   13:9  warning  'categoryIcons' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/MapLayers.tsx
+@app/mobile:lint:   29:20  error  Component definition is missing display name  react/display-name
+@app/mobile:lint:   64:20  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/MapLoadingOverlay.tsx
+@app/mobile:lint:   45:6  warning  React Hook useEffect has missing dependencies: 'containerOpacity' and 'containerScale'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/MetricGrid.tsx
+@app/mobile:lint:   12:27  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/NavigationInfo.tsx
+@app/mobile:lint:    2:34  warning  'Pressable' is defined but never used                  @typescript-eslint/no-unused-vars
+@app/mobile:lint:    3:10  warning  'Navigation' is defined but never used                 @typescript-eslint/no-unused-vars
+@app/mobile:lint:    8:45  warning  'FadeIn' is defined but never used                     @typescript-eslint/no-unused-vars
+@app/mobile:lint:    8:53  warning  'FadeOut' is defined but never used                    @typescript-eslint/no-unused-vars
+@app/mobile:lint:   13:10  warning  'Button' is defined but never used                     @typescript-eslint/no-unused-vars
+@app/mobile:lint:   23:11  warning  'setSelectedEvent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint:   24:11  warning  'setCurrentEvent' is assigned a value but never used   @typescript-eslint/no-unused-vars
+@app/mobile:lint:   25:11  warning  'cameraMode' is assigned a value but never used        @typescript-eslint/no-unused-vars
+@app/mobile:lint:   41:9   warning  'handleRecenter' is assigned a value but never used    @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/POICarousel.tsx
+@app/mobile:lint:    3:42  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react-native-gesture-handler/lib/module/index.js' imported multiple times  import/no-duplicates
+@app/mobile:lint:    6:8   warning  'Animated' is defined but never used                                                                                                             @typescript-eslint/no-unused-vars
+@app/mobile:lint:    6:20  warning  'FadeInRight' is defined but never used                                                                                                          @typescript-eslint/no-unused-vars
+@app/mobile:lint:   14:42  warning  '/Users/kore/Documents/Code/Projects/app_lattice_project/node_modules/react-native-gesture-handler/lib/module/index.js' imported multiple times  import/no-duplicates
+@app/mobile:lint:   20:7   warning  'CARD_HEIGHT' is assigned a value but never used                                                                                                 @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/POIMarker.tsx
+@app/mobile:lint:   2:16  warning  'Text' is defined but never used        @typescript-eslint/no-unused-vars
+@app/mobile:lint:   8:3   warning  'withSpring' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/ReviewSection.tsx
+@app/mobile:lint:   14:30  error  Component definition is missing display name  react/display-name
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/SavedListContent.tsx
+@app/mobile:lint:   2:45  warning  'ScrollView' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/SearchExperience.tsx
+@app/mobile:lint:   2:45  warning  'FlatList' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/SheetHeader.tsx
+@app/mobile:lint:    2:28  warning  'Pressable' is defined but never used             @typescript-eslint/no-unused-vars
+@app/mobile:lint:    3:10  warning  'LinearGradient' is defined but never used        @typescript-eslint/no-unused-vars
+@app/mobile:lint:    4:8   warning  'Animated' is defined but never used              @typescript-eslint/no-unused-vars
+@app/mobile:lint:    5:3   warning  'useAnimatedStyle' is defined but never used      @typescript-eslint/no-unused-vars
+@app/mobile:lint:    6:3   warning  'interpolate' is defined but never used           @typescript-eslint/no-unused-vars
+@app/mobile:lint:    7:3   warning  'Extrapolation' is defined but never used         @typescript-eslint/no-unused-vars
+@app/mobile:lint:    8:3   warning  'useDerivedValue' is defined but never used       @typescript-eslint/no-unused-vars
+@app/mobile:lint:    9:3   warning  'interpolateColor' is defined but never used      @typescript-eslint/no-unused-vars
+@app/mobile:lint:   12:10  warning  'typography' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint:   13:10  warning  'CircularActionButton' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint:   15:11  warning  'SheetHeaderProps' is defined but never used      @typescript-eslint/no-unused-vars
+@app/mobile:lint:   21:9   warning  'theme' is assigned a value but never used        @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/ar/AROverlay.tsx
+@app/mobile:lint:   107:6   warning  React Hook useEffect has a missing dependency: 'sharedHeading'. Either include it or remove the dependency array                                                                                    react-hooks/exhaustive-deps
+@app/mobile:lint:   139:6   warning  React Hook useEffect has missing dependencies: 'isHoldingVertical' and 'sharedPitch'. Either include them or remove the dependency array                                                            react-hooks/exhaustive-deps
+@app/mobile:lint:   186:27  error    React Hook "useAnimatedStyle" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+@app/mobile:lint:   252:28  error    React Hook "useAnimatedStyle" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+@app/mobile:lint:   259:29  error    React Hook "useAnimatedStyle" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+@app/mobile:lint:   266:32  error    React Hook "useAnimatedStyle" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+@app/mobile:lint:   326:16  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unknown-property')
+@app/mobile:lint:   328:17  warning  Unknown property 'position' found                                                                                                                                                                   react/no-unknown-property
+@app/mobile:lint:   329:17  warning  Unknown property 'angle' found                                                                                                                                                                      react/no-unknown-property
+@app/mobile:lint:   330:17  warning  Unknown property 'penumbra' found                                                                                                                                                                   react/no-unknown-property
+@app/mobile:lint:   331:17  warning  Unknown property 'decay' found                                                                                                                                                                      react/no-unknown-property
+@app/mobile:lint:   332:17  warning  Unknown property 'intensity' found                                                                                                                                                                  react/no-unknown-property
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/ar/MainARScene.tsx
+@app/mobile:lint:   46:10  warning  Unused eslint-disable directive (no problems were reported from 'react/no-unknown-property')
+@app/mobile:lint:   57:13  warning  Unknown property 'position' found                                                             react/no-unknown-property
+@app/mobile:lint:   65:13  warning  Unknown property 'position' found                                                             react/no-unknown-property
+@app/mobile:lint:   72:13  warning  Unknown property 'rotation' found                                                             react/no-unknown-property
+@app/mobile:lint:   75:42  warning  Unknown property 'transparent' found                                                          react/no-unknown-property
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/legacy/MapBottomSheet.tsx
+@app/mobile:lint:    2:40  warning  'Platform' is defined but never used                                    @typescript-eslint/no-unused-vars
+@app/mobile:lint:    8:30  error    Unable to resolve path to module '../../../components/ui/SafeBlurView'  import/no-unresolved
+@app/mobile:lint:   11:10  warning  'SearchFilters' is defined but never used                               @typescript-eslint/no-unused-vars
+@app/mobile:lint:   11:31  error    Unable to resolve path to module './SearchFilters'                      import/no-unresolved
+@app/mobile:lint:   12:35  error    Unable to resolve path to module './RemoteModeWarning'                  import/no-unresolved
+@app/mobile:lint:   13:29  error    Unable to resolve path to module '../../poi/store/usePOIStore'          import/no-unresolved
+@app/mobile:lint:   14:29  error    Unable to resolve path to module '../../../hooks/useAppTheme'           import/no-unresolved
+@app/mobile:lint:   15:28  error    Unable to resolve path to module '../store/useMapUIStore'               import/no-unresolved
+@app/mobile:lint:   16:28  error    Unable to resolve path to module '../../../styles/typography'           import/no-unresolved
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/legacy/MapHUD.tsx
+@app/mobile:lint:    3:35  error    Unable to resolve path to module '../../../components/ui/FloatingSearchBar'  import/no-unresolved
+@app/mobile:lint:    4:33  error    Unable to resolve path to module './MapSheetManager'                         import/no-unresolved
+@app/mobile:lint:    5:29  error    Unable to resolve path to module './POICarousel'                             import/no-unresolved
+@app/mobile:lint:    6:31  error    Unable to resolve path to module './GuidesSection'                           import/no-unresolved
+@app/mobile:lint:    7:31  error    Unable to resolve path to module './EventCarousel'                           import/no-unresolved
+@app/mobile:lint:    8:34  error    Unable to resolve path to module './EventSummaryCard'                        import/no-unresolved
+@app/mobile:lint:    9:48  error    Unable to resolve path to module '../../../hooks/useAppTheme'                import/no-unresolved
+@app/mobile:lint:   10:30  error    Unable to resolve path to module '../../../types'                            import/no-unresolved
+@app/mobile:lint:   11:31  error    Unable to resolve path to module '../../../types/models/poi'                 import/no-unresolved
+@app/mobile:lint:   12:30  error    Unable to resolve path to module '../../poi/adapters/poiAdapter'             import/no-unresolved
+@app/mobile:lint:   13:34  error    Unable to resolve path to module './SavedListContent'                        import/no-unresolved
+@app/mobile:lint:   14:35  error    Unable to resolve path to module '../hooks/useSavedLocations'                import/no-unresolved
+@app/mobile:lint:   15:43  error    Unable to resolve path to module '../store/useMapUIStore'                    import/no-unresolved
+@app/mobile:lint:   70:9   warning  'handleCloseSearch' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/components/legacy/PoiDetailSheet.tsx
+@app/mobile:lint:    2:69  warning  'Platform' is defined but never used                                          @typescript-eslint/no-unused-vars
+@app/mobile:lint:    7:30  error    Unable to resolve path to module '../../../components/ui/SafeBlurView'        import/no-unresolved
+@app/mobile:lint:   12:31  error    Unable to resolve path to module '../../../types/models/poi'                  import/no-unresolved
+@app/mobile:lint:   13:30  error    Unable to resolve path to module '../../../types'                             import/no-unresolved
+@app/mobile:lint:   14:36  error    Unable to resolve path to module '../../navigation/store/useNavigationStore'  import/no-unresolved
+@app/mobile:lint:   16:37  error    Unable to resolve path to module '../../../utils/poiUtils'                    import/no-unresolved
+@app/mobile:lint:   17:28  error    Unable to resolve path to module '../../../styles/typography'                 import/no-unresolved
+@app/mobile:lint:   18:48  error    Unable to resolve path to module '../../../hooks/useAppTheme'                 import/no-unresolved
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/hooks/check_style.js
+@app/mobile:lint:   14:13  warning  'id' is assigned a value but never used  no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/hooks/useARData.ts
+@app/mobile:lint:   117:6   warning  React Hook useEffect has missing dependencies: 'activePois.length', 'allEvents', 'setContext', and 'userCoords'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   117:40  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                             react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/hooks/useDetailModel.ts
+@app/mobile:lint:   320:6  warning  React Hook useMemo has missing dependencies: 'clearEvent', 'currentDistance', 'currentDuration', 'deselectPoi', 'estimatedDistance', 'estimatedDuration', 'openAR', 'setPlanning', and 'transportMode'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/hooks/useSavedLocations.ts
+@app/mobile:lint:   16:11  warning  'token' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint:   29:11  warning  'token' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/store/useARStore.ts
+@app/mobile:lint:   38:45  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   40:14  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint:   50:45  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   54:14  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/map/store/useMapUIStore.ts
+@app/mobile:lint:     3:8   warning  'MapLibreGL' is defined but never used   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    84:35  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:    85:42  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   108:42  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/navigation/components/CenteringButton.tsx
+@app/mobile:lint:    5:3   warning  'FadeInRight' is defined but never used             @typescript-eslint/no-unused-vars
+@app/mobile:lint:    6:3   warning  'FadeOutRight' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint:   15:10  warning  'typography' is defined but never used              @typescript-eslint/no-unused-vars
+@app/mobile:lint:   16:10  warning  'Button' is defined but never used                  @typescript-eslint/no-unused-vars
+@app/mobile:lint:   29:23  warning  'setCameraMode' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/navigation/components/RoutePlanningSheet.tsx
+@app/mobile:lint:   26:17  warning  'SCREEN_HEIGHT' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint:   49:11  warning  'selectedPoi' is assigned a value but never used                                                                  @typescript-eslint/no-unused-vars
+@app/mobile:lint:   50:11  warning  'selectedEvent' is assigned a value but never used                                                                @typescript-eslint/no-unused-vars
+@app/mobile:lint:   58:6   warning  React Hook useEffect has a missing dependency: 'internalState'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/navigation/hooks/useRoutingLogic.ts
+@app/mobile:lint:    38:6   warning  React Hook useMemo has a missing dependency: 'logicalCoords'. Either include it or remove the dependency array                                                                                                                    react-hooks/exhaustive-deps
+@app/mobile:lint:    38:7   warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                            react-hooks/exhaustive-deps
+@app/mobile:lint:    38:27  warning  React Hook useMemo has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                            react-hooks/exhaustive-deps
+@app/mobile:lint:    69:6   warning  React Hook useEffect has a missing dependency: 'setRoutes'. Either include it or remove the dependency array                                                                                                                      react-hooks/exhaustive-deps
+@app/mobile:lint:   165:6   warning  React Hook useEffect has missing dependencies: 'selectedEvent', 'selectedPoi?.coordinates', 'selectedPoi?.displayName', 'setFetching', 'setNextInstruction', and 'setRoutes'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   165:78  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                          react-hooks/exhaustive-deps
+@app/mobile:lint:   165:95  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                          react-hooks/exhaustive-deps
+@app/mobile:lint:   206:6   warning  React Hook useEffect has a missing dependency: 'userCoords'. Either include it or remove the dependency array                                                                                                                     react-hooks/exhaustive-deps
+@app/mobile:lint:   206:7   warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                          react-hooks/exhaustive-deps
+@app/mobile:lint:   206:24  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked                                                                                          react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/navigation/services/navigationService.ts
+@app/mobile:lint:   2:8  warning  Using exported name 'Env' as identifier for default import  import/no-named-as-default
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/navigation/store/useNavigationStore.ts
+@app/mobile:lint:   107:45  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   109:14  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint:   114:45  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   116:14  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint:   128:60  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   129:31  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   130:33  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   131:30  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   132:25  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   161:45  warning  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+@app/mobile:lint:   163:14  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/poi/store/usePOIStore.ts
+@app/mobile:lint:    64:45  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+@app/mobile:lint:    70:14  warning  'e' is defined but never used                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   100:45  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+@app/mobile:lint:   107:14  warning  'e' is defined but never used                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   132:45  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+@app/mobile:lint:   136:14  warning  'e' is defined but never used                           @typescript-eslint/no-unused-vars
+@app/mobile:lint:   156:13  warning  'selectedEventId' is assigned a value but never used    @typescript-eslint/no-unused-vars
+@app/mobile:lint:   156:30  warning  'userInsideEventId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint:   161:28  warning  A `require()` style import is forbidden                 @typescript-eslint/no-require-imports
+@app/mobile:lint:   166:14  warning  'e' is defined but never used                           @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/profile/components/ProfileSheet.tsx
+@app/mobile:lint:     1:27  warning  'useRef' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    16:3   warning  'interpolateColor' is defined but never used                                                                                                                                         @typescript-eslint/no-unused-vars
+@app/mobile:lint:    23:3   warning  'Settings' is defined but never used                                                                                                                                                 @typescript-eslint/no-unused-vars
+@app/mobile:lint:    24:3   warning  'LogOut' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    26:3   warning  'Flame' is defined but never used                                                                                                                                                    @typescript-eslint/no-unused-vars
+@app/mobile:lint:    27:3   warning  'Calendar' is defined but never used                                                                                                                                                 @typescript-eslint/no-unused-vars
+@app/mobile:lint:    28:3   warning  'Trophy' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    29:3   warning  'Share2' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+@app/mobile:lint:    79:6   warning  React Hook React.useEffect has missing dependencies: 'SNAP_POINTS.HIDDEN', 'SNAP_POINTS.MID', 'islandState', and 'snappySpring'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   213:9   warning  'profileMetrics' is assigned a value but never used                                                                                                                                  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/profile/components/SettingsGroup.tsx
+@app/mobile:lint:   91:9  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/profile/store/useProfileStore.ts
+@app/mobile:lint:   2:24  warning  'UserProfile' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/tickets/components/WalletStack.tsx
+@app/mobile:lint:   24:10  warning  'useAuthStore' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/features/tickets/hooks/useTicketScanner.ts
+@app/mobile:lint:   28:16  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/hooks/useLocationService.ts
+@app/mobile:lint:   126:6   warning  React Hook useEffect has missing dependencies: 'isNavigating', 'isPlanning', and 'updateLocation'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint:   126:15  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked               react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/hooks/useSocket.ts
+@app/mobile:lint:   1:44  warning  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/providers/ThemeProvider.tsx
+@app/mobile:lint:    5:20  warning  'primitiveColors' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+@app/mobile:lint:   36:6   warning  React Hook useMemo has an unnecessary dependency: 'selectedEvent'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/services/__tests__/apiClient.test.ts
+@app/mobile:lint:   1:32  warning  'vi' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/services/authService.ts
+@app/mobile:lint:   1:13  warning  'Google' is defined but never used    @typescript-eslint/no-unused-vars
+@app/mobile:lint:   4:10  warning  'Platform' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/services/storage.ts
+@app/mobile:lint:   17:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/services/telemetryService.ts
+@app/mobile:lint:   2:10  warning  'API_ENDPOINTS' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/types/models/detail.ts
+@app/mobile:lint:   1:31  error  Unable to resolve path to module '../components/ui/Button'  import/no-unresolved
+@app/mobile:lint: 
+@app/mobile:lint: /Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile/src/types/models/poi.ts
+@app/mobile:lint:   1:10  warning  'POIGeoJSON' is defined but never used  @typescript-eslint/no-unused-vars
+@app/mobile:lint: 
+@app/mobile:lint: ✖ 284 problems (56 errors, 228 warnings)
+@app/mobile:lint:   0 errors and 6 warnings potentially fixable with the `--fix` option.
+@app/mobile:lint: 
+@app/mobile:lint:  ELIFECYCLE  Command failed with exit code 1.
+ ERROR  @app/mobile#lint: command (/Users/kore/Documents/Code/Projects/app_lattice_project/apps/mobile) /Users/kore/.local/share/nvm/v22.22.2/bin/pnpm run lint exited (1)
+
+ Tasks:    3 successful, 5 total
+Cached:    2 cached, 5 total
+  Time:    1.978s 
+Failed:    @app/mobile#lint
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

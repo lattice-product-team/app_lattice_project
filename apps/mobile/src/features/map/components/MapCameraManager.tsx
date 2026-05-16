@@ -263,7 +263,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     if (!cameraRef.current) return;
 
     // 1. NAVIGATION MODE (Highest Priority Centering)
-    if (uiState === MapUIState.NAVIGATING) {
+    if (isNavigating) {
       if (isNewMode || isForcedRecenter || isForcedCenter) {
         console.log(`[Camera] Navigation Centering: Mode=${cameraMode}, Reason=${isNewMode ? 'NewMode' : 'Forced'}`);
         if (userCoordsRef.current) {
@@ -274,10 +274,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           cameraRef.current.setCamera({
             centerCoordinate: userCoordsRef.current,
             zoomLevel: 18,
-            animationDuration: 1000,
+            animationDuration: 1200,
             animationMode: 'flyTo',
-            pitch: 45,
-            // Include heading if we have it to make the transition smoother
+            pitch: 60, 
             heading: userHeadingRef.current || 0,
           });
           
@@ -291,7 +290,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     }
 
     // 2. PLANNING MODE
-    else if (uiState === MapUIState.PLANNING) {
+    else if (uiState === MapUIState.PLANNING && !isNavigating) {
       const isFinishFetching = !isFetching && prevIsFetching.current;
       if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching || isNewRoute) {
         setCameraMode(MapCameraMode.FREE);
@@ -308,11 +307,13 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         if (!isFetching && validPoints.length >= 2) {
           const bbox = calculateBBox(validPoints);
           if (bbox) {
-            // ONLY perform the flyTo if we are not already in FREE mode
-            // or if it's a forced centering action.
-            const shouldMove = cameraMode !== MapCameraMode.FREE || isForcedCenter || isNewMode;
+            // Move camera if mode changed, route changed, or explicitly requested.
+            // We ignore cameraMode === FREE here because if the route is NEW, 
+            // the user almost certainly wants to see it.
+            const shouldMove = isNewMode || isForcedCenter || isNewRoute || isFinishFetching || isForcedRecenter;
+            
             if (shouldMove) {
-              console.log('[Camera] Planning: Fitting route bounds');
+              console.log(`[Camera] Planning: Fitting route bounds. Reason: ${isNewMode ? 'NewMode' : isNewRoute ? 'NewRoute' : isFinishFetching ? 'FetchComplete' : 'Forced'}`);
               setIsProgrammaticMove(true);
               cameraRef.current.setCamera({
                 bounds: {
@@ -348,13 +349,13 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
     // 3. POI / EVENT SELECTION (Target focus)
     // This handles both explicit POI_DETAIL mode and selections made while EXPLORING
-    else if (uiState === MapUIState.POI_DETAIL || (uiState === MapUIState.EXPLORING && isNewTarget && targetCoords)) {
+    else if (!isNavigating && (uiState === MapUIState.POI_DETAIL || (uiState === MapUIState.EXPLORING && isNewTarget && targetCoords))) {
       if (isNewMode || isForcedCenter || isForcedRecenter || isNewTarget) {
         setCameraMode(MapCameraMode.FREE);
 
         if (targetCoords) {
-          // ONLY move camera if not already in FREE mode or if explicitly requested
-          const shouldMove = cameraMode !== MapCameraMode.FREE || isForcedCenter || isNewMode || isForcedRecenter;
+          // Fly to target if mode changed, target changed, or explicitly requested.
+          const shouldMove = isNewMode || isNewTarget || isForcedCenter || isForcedRecenter;
           
           if (shouldMove) {
             console.log('[Camera] POI/Event: Flying to target');
@@ -464,8 +465,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       followUserMode={
         cameraMode === MapCameraMode.FOLLOW_WITH_HEADING ? 'compass' : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE ? 'course' : 'normal'
       }
-      followZoomLevel={uiState === MapUIState.NAVIGATING ? 18 : undefined}
-      followPitch={uiState === MapUIState.NAVIGATING ? 45 : undefined}
+      followZoomLevel={isNavigating ? 18 : undefined}
+      followPitch={isNavigating ? 45 : undefined}
+      maxZoomLevel={20}
       onUserTrackingModeChange={(e) => {
         // If the native map stops following (due to user drag), sync our state to FREE
         // BUT ONLY if this wasn't triggered by our own programmatic flyTo

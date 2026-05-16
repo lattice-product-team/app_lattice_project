@@ -14,10 +14,7 @@ export declare function comparePassword(password: string, hash: string): Promise
 /**
  * Generates a signed JWT token for a user.
  */
-export declare function generateToken(payload: {
-    userId: number;
-    email: string;
-}): string;
+export declare function generateToken(payload: { userId: number; email: string }): string;
 /**
  * Verifies and decodes a JWT token.
  */

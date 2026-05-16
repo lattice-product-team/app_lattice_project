@@ -58,9 +58,10 @@ export class SocialService {
 
       if (!targetId) {
         // Use manual override if available, otherwise search by name
-        const searchKeyword = existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
+        const searchKeyword =
+          existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
         business = await dataForSEO.searchBusiness(searchKeyword, { lat, lng });
-        
+
         if (!business) {
           console.log(`[SocialService] No match found for ${asset.name}`);
           return null;
@@ -70,9 +71,15 @@ export class SocialService {
 
       // 3. Prepare social metadata
       const socialData = {
-        rating: business ? (business.rating?.value || business.rating || 0) : (existingMetadata.social?.rating || 0),
-        reviews_count: business ? (business.rating?.votes_count || business.reviews_count || 0) : (existingMetadata.social?.reviews_count || 0),
-        source_url: business ? (business.url || business.website) : existingMetadata.social?.source_url,
+        rating: business
+          ? business.rating?.value || business.rating || 0
+          : existingMetadata.social?.rating || 0,
+        reviews_count: business
+          ? business.rating?.votes_count || business.reviews_count || 0
+          : existingMetadata.social?.reviews_count || 0,
+        source_url: business
+          ? business.url || business.website
+          : existingMetadata.social?.source_url,
         place_id: targetId,
         last_sync: new Date().toISOString(),
         snippets: [] as string[],

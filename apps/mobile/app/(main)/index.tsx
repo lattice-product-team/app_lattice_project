@@ -567,13 +567,14 @@ export default function MapIndexPage() {
     const isLevel3 = islandState.value > 0.8;
     const isLayerActive = uiLayer.value !== UILayer.BASE;
 
-    const shouldHide = isLevel3 || isLayerActive || isARActive;
+    // Hide if searching, if any layer is active, if AR is active, OR if NAVIGATING
+    const shouldHide = isLevel3 || isLayerActive || isARActive || isNavigating;
 
     return {
       opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
       pointerEvents: shouldHide ? 'none' : 'auto',
     };
-  }, [isARActive]);
+  }, [isARActive, isNavigating]);
 
   const level2ContentStyle = useAnimatedStyle(() => {
     const opacity = interpolate(islandState.value, [0.7, 0.85], [1, 0], Extrapolation.CLAMP);

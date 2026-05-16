@@ -255,8 +255,7 @@ export const getEventStats = async (req: Request, res: Response) => {
       .from(pointsOfInterest)
       .where(eq(pointsOfInterest.eventId, eventId));
 
-    const { rows: entryRows } = await db
-      .execute(sql`
+    const { rows: entryRows } = await db.execute(sql`
         SELECT count(*)::int as count
         FROM telemetry_logs
         WHERE event_id = ${Number(eventId)}
@@ -267,16 +266,12 @@ export const getEventStats = async (req: Request, res: Response) => {
     const [staffCount] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(pointsOfInterest)
-      .where(
-        sql`event_id = ${eventId} AND type IN ('security', 'medical') AND status = 'open'`
-      );
+      .where(sql`event_id = ${eventId} AND type IN ('security', 'medical') AND status = 'open'`);
 
     const [alertsCount] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(pointsOfInterest)
-      .where(
-        sql`event_id = ${eventId} AND (status = 'closed' OR crowd_level = 'blocked')`
-      );
+      .where(sql`event_id = ${eventId} AND (status = 'closed' OR crowd_level = 'blocked')`);
 
     res.json({
       estimatedCapacity: capacityResult?.total || 0,
@@ -319,7 +314,9 @@ export const getPois = async (req: Request, res: Response) => {
         capacity: pointsOfInterest.capacity,
         currentOccupancy: pointsOfInterest.currentOccupancy,
         status: pointsOfInterest.status,
-        bannerUrl: pointsOfInterest.bannerUrl, galleryUrls: pointsOfInterest.galleryUrls, metadata: pointsOfInterest.metadata,
+        bannerUrl: pointsOfInterest.bannerUrl,
+        galleryUrls: pointsOfInterest.galleryUrls,
+        metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
         eventId: pointsOfInterest.eventId,
         eventName: events.name,
@@ -398,7 +395,7 @@ export const getCategories = (req: Request, res: Response) => {
 export const getLocations = async (req: Request, res: Response) => {
   try {
     const { eventId } = req.query;
-    
+
     // We filter by last 15 minutes to keep it "live"
     const query = db
       .select({
@@ -476,7 +473,9 @@ export const getPoi = async (req: Request, res: Response) => {
         capacity: pointsOfInterest.capacity,
         currentOccupancy: pointsOfInterest.currentOccupancy,
         status: pointsOfInterest.status,
-        bannerUrl: pointsOfInterest.bannerUrl, galleryUrls: pointsOfInterest.galleryUrls, metadata: pointsOfInterest.metadata,
+        bannerUrl: pointsOfInterest.bannerUrl,
+        galleryUrls: pointsOfInterest.galleryUrls,
+        metadata: pointsOfInterest.metadata,
         geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
       })
       .from(pointsOfInterest)
@@ -575,7 +574,8 @@ export const getEvents = async (req: Request, res: Response) => {
         type: events.type,
         locationName: events.locationName,
         address: events.address,
-        bannerUrl: events.bannerUrl, galleryUrls: events.galleryUrls,
+        bannerUrl: events.bannerUrl,
+        galleryUrls: events.galleryUrls,
         startDate: events.startDate,
         endDate: events.endDate,
         isPermanent: events.isPermanent,
@@ -767,7 +767,8 @@ export const getEvent = async (req: Request, res: Response) => {
         type: events.type,
         locationName: events.locationName,
         address: events.address,
-        bannerUrl: events.bannerUrl, galleryUrls: events.galleryUrls,
+        bannerUrl: events.bannerUrl,
+        galleryUrls: events.galleryUrls,
         startDate: events.startDate,
         endDate: events.endDate,
         isPermanent: events.isPermanent,
@@ -867,7 +868,9 @@ export const updatePoi = async (req: Request, res: Response) => {
         `);
         const rows = (result as any).rows || result;
         if (rows && rows.length > 0 && !rows[0].is_valid) {
-          console.warn(`[Geo] Updated POI "${name || existingPoi.name}" is outside the boundary of event ${parsedEventId}`);
+          console.warn(
+            `[Geo] Updated POI "${name || existingPoi.name}" is outside the boundary of event ${parsedEventId}`
+          );
         }
       } catch (err) {
         console.warn(`[Geo] Spatial validation query failed during update:`, err);
@@ -887,7 +890,7 @@ export const updatePoi = async (req: Request, res: Response) => {
         status: status ?? existingPoi.status,
         isWheelchairAccessible: isWheelchairAccessible ?? existingPoi.isWheelchairAccessible,
         hasPriorityLane: hasPriorityLane ?? existingPoi.hasPriorityLane,
-        location: geometry 
+        location: geometry
           ? sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(geometry)}), 4326)`
           : undefined,
         bannerUrl: bannerUrl ?? existingPoi.bannerUrl,
@@ -946,10 +949,7 @@ export const updateEvent = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
-    const [existingEvent] = await db
-      .select()
-      .from(events)
-      .where(eq(events.id, eventId));
+    const [existingEvent] = await db.select().from(events).where(eq(events.id, eventId));
 
     if (!existingEvent) {
       return res.status(404).json({ error: 'Event not found' });

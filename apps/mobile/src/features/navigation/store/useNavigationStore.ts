@@ -126,18 +126,25 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
 
     try {
       const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
+      const { usePOIStore } = require('../../poi/store/usePOIStore');
+      const { useEventStore } = require('../../event/store/useEventStore');
       const { withSpring } = require('react-native-reanimated');
-      const { theme } = require('../../../styles/theme');
+      const { theme } = require('../../../../styles/theme');
+      
       const uiStore = useMapUIStore.getState();
       
-      // 2. Transition UI state
+      // 2. Clear selections to prevent camera "theft"
+      usePOIStore.getState().setSelectedPoi(null);
+      useEventStore.getState().setSelectedEvent(null);
+      
+      // 3. Transition UI state
       uiStore.setUIState(MapUIState.NAVIGATING);
       
-      // 3. Force camera to follow with heading (compass) immediately
+      // 4. Force camera tracking mode
       uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
       uiStore.triggerRecenter();
 
-      // 4. Collapse the island drawer
+      // 5. Collapse the island drawer
       if (islandState) {
         islandState.value = withSpring(0, theme.motion.physics.magnetic);
       }

@@ -31,7 +31,10 @@ const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
 
 app.use(
   cors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) => {
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === 'development') {
@@ -78,7 +81,7 @@ const healthHandler = (req: Request, res: Response) => {
     timestamp: new Date(),
     env: env.NODE_ENV,
     service: 'lattice_api',
-    path: req.originalUrl
+    path: req.originalUrl,
   });
 };
 
@@ -93,12 +96,15 @@ app.get('/', (req: Request, res: Response) => {
     documentation: 'See README for endpoint details',
     health: '/health',
     status: 'running',
-    timestamp: new Date()
+    timestamp: new Date(),
   });
 });
 
 // Apply rate limiter to auth routes
-app.use(['/auth/login', '/auth/register', '/auth/google', '/auth/apple', '/auth/passkey*'], authRateLimiter);
+app.use(
+  ['/auth/login', '/auth/register', '/auth/google', '/auth/apple', '/auth/passkey*'],
+  authRateLimiter
+);
 
 // Mount Service Routers
 app.use('/auth', authRouter);
@@ -114,13 +120,13 @@ app.use('*', (req: Request, res: Response) => {
     method: req.method,
     path: req.path,
     protocol: req.protocol,
-    headers: req.headers
+    headers: req.headers,
   };
-  
+
   if (env.NODE_ENV !== 'test') {
     console.log(`[API Monolith] 404 Fallback reached for: ${req.method} ${req.originalUrl}`);
   }
-  
+
   res.status(404).json(diagnostic);
 });
 
