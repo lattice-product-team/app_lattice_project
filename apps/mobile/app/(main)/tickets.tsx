@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
-import { ChevronDown, ScanLine, Ticket as TicketIcon } from 'lucide-react-native';
+import { ChevronDown, ScanLine, Ticket as TicketIcon, X } from 'lucide-react-native';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { typography } from '../../src/styles/typography';
 import { WalletStack } from '../../src/features/tickets/components/WalletStack';
@@ -15,15 +15,24 @@ export default function TicketsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
-      {/* Header with Dropdown-style Menu */}
-      <View style={styles.header}>
-        <Pressable 
-          onPress={() => setShowMenu(!showMenu)}
-          style={[styles.menuTrigger, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
-        >
-          <Text style={[styles.menuTitle, { color: theme.colors.text.primary }]}>Mis Entradas</Text>
-          <ChevronDown size={20} color={theme.colors.text.primary} style={{ transform: [{ rotate: showMenu ? '180deg' : '0deg' }] }} />
-        </Pressable>
+      {/* Header with Dropdown-style Menu and Close Button */}
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
+          <Pressable 
+            onPress={() => setShowMenu(!showMenu)}
+            style={[styles.menuTrigger, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
+          >
+            <Text style={[styles.menuTitle, { color: theme.colors.text.primary }]}>Mis Entradas</Text>
+            <ChevronDown size={20} color={theme.colors.text.primary} style={{ transform: [{ rotate: showMenu ? '180deg' : '0deg' }] }} />
+          </Pressable>
+
+          <Pressable 
+            onPress={() => router.back()}
+            style={[styles.closeButton, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
+          >
+            <X size={20} color={theme.colors.text.primary} />
+          </Pressable>
+        </View>
 
         {showMenu && (
           <View style={[styles.dropdown, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}>
@@ -80,12 +89,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+  headerContainer: {
     paddingHorizontal: 20,
     paddingTop: 12,
     zIndex: 100,
   },
+  header: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   menuTrigger: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -94,6 +108,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
+  closeButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   menuTitle: {
     fontSize: 18,
     fontFamily: typography.primary.bold,
@@ -101,8 +123,8 @@ const styles = StyleSheet.create({
   dropdown: {
     position: 'absolute',
     top: 64,
-    left: 20,
-    right: 20,
+    left: 0,
+    right: 60,
     borderRadius: 16,
     borderWidth: 1,
     padding: 8,

@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Cpu } from 'lucide-react-native';
+import { Cpu, MapPin } from 'lucide-react-native';
 import { Ticket } from '../../../types/models/auth';
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
+import { useMapUIStore } from '../../map/store/useMapUIStore';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 48;
@@ -15,11 +17,31 @@ interface TicketCardProps {
   ticket: Ticket;
   index?: number;
   onCardPress?: () => void;
+  isSelected?: boolean;
 }
 
-export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCardPress }) => {
+export const TicketCard: React.FC<TicketCardProps> = ({ 
+  ticket, 
+  index = 0, 
+  onCardPress,
+  isSelected = false 
+}) => {
   const theme = useLatticeTheme();
+  const router = useRouter();
+  const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
+  
   const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna');
+
+  const handleGoToSeat = () => {
+    if (ticket.seatLocation?.coordinates) {
+      triggerForceCenter('list_click');
+      // We use a timeout to let the UI close before flying
+      router.push('/(main)');
+      // The MapCameraManager will pick up the new coordinates via store or props
+      // In this case, we need to ensure the store knows where to go.
+      useMapUIStore.getState().setDiscoveryLocation(ticket.seatLocation.coordinates);
+    }
+  };
 
   // Brand gradient combinations
   const gradientColors = isTribuna
@@ -99,6 +121,16 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, index = 0, onCar
                 </Text>
               </View>
             </View>
+
+            {isSelected && ticket.seatLocation && (
+              <Pressable 
+                onPress={handleGoToSeat}
+                style={[styles.seatButton, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
+              >
+                <MapPin size={18} color="#fff" />
+                <Text style={styles.seatButtonText}>Ir a mi asiento</Text>
+              </Pressable>
+            )}
           </View>
 
           {/* Bottom QR Section (Clean) */}
@@ -175,11 +207,12 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   mainField: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   grid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 24,
   },
   field: {
     flex: 1,
@@ -198,6 +231,20 @@ const styles = StyleSheet.create({
   subValue: {
     fontSize: 20,
     fontFamily: 'Outfit-Medium',
+  },
+  seatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  seatButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: 'PlusJakartaSans-Bold',
   },
   footer: {
     borderRadius: 28,

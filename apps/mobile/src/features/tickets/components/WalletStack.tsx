@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from 'react-native';
-import { Shield, Trash2 } from 'lucide-react-native';
+import { View, StyleSheet, Dimensions, Pressable, Text, Alert } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withSpring,
-  withTiming,
-  useSharedValue,
   interpolate,
-  Extrapolate,
+  Extrapolation,
   FadeIn,
   SharedValue,
 } from 'react-native-reanimated';
@@ -24,6 +13,7 @@ import { TicketCard } from './TicketCard';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useUnclaimTicket } from '../../auth/hooks/useAuthActions';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
+import { Trash2 } from 'lucide-react-native';
 
 const { height } = Dimensions.get('window');
 const STACK_OFFSET = 60;
@@ -54,31 +44,44 @@ const WalletItem: React.FC<WalletItemProps> = ({
   handleSelectTicket,
   toggleExpand,
 }) => {
-  const isSelected = selectedTicketId === (ticket.id || ticket.code);
+  const isSelected = selectedTicketId === ticket.id;
   const isAnySelected = selectedTicketId !== null;
 
   const animatedStyle = useAnimatedStyle(() => {
+    if (isSelected) {
+      return {
+        transform: [
+          { translateY: withSpring(0) },
+          { scale: withSpring(1) }
+        ],
+        opacity: withTiming(1),
+      };
+    }
+
+    if (isAnySelected) {
+      return {
+        transform: [{ translateY: withSpring(height) }],
+        opacity: withTiming(0),
+      };
+    }
+
     const translateY = interpolate(
       expandProgress.value,
       [0, 1],
       [index * STACK_OFFSET, index * EXPANDED_OFFSET],
-      Extrapolate.CLAMP
+      Extrapolation.CLAMP
     );
 
     const scale = interpolate(
       expandProgress.value,
       [0, 1],
       [1 - (totalTickets - 1 - index) * 0.05, 1],
-      Extrapolate.CLAMP
+      Extrapolation.CLAMP
     );
 
-    const opacity = isAnySelected ? (isSelected ? 1 : withTiming(0)) : 1;
-    const finalTranslateY = isSelected ? withSpring(0) : translateY;
-
     return {
-      transform: [{ translateY: finalTranslateY }, { scale }, { perspective: 1000 }],
-      zIndex: isSelected ? 100 : index,
-      opacity,
+      transform: [{ translateY }, { scale }],
+      zIndex: index,
     };
   });
 
@@ -88,6 +91,7 @@ const WalletItem: React.FC<WalletItemProps> = ({
         <TicketCard
           ticket={ticket}
           index={index}
+          isSelected={isSelected}
           onCardPress={() => (isExpanded ? handleSelectTicket(ticket) : toggleExpand())}
         />
       </Animated.View>
@@ -104,67 +108,48 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
   const isAnySelected = selectedTicketId !== null;
 
   const toggleExpand = () => {
-    if (selectedTicketId) return; // Don't toggle stack if a ticket is selected
+    if (selectedTicketId) return; 
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
     expandProgress.value = withSpring(newExpanded ? 1 : 0, theme.motion.physics.snappy);
   };
 
   const handleSelectTicket = (ticket: Ticket) => {
-    if (selectedTicketId === (ticket.id || ticket.code)) {
+    if (selectedTicketId === ticket.id) {
       setSelectedTicketId(null);
     } else {
-      setSelectedTicketId(ticket.id || ticket.code);
-      if (!isExpanded) toggleExpand();
+      setSelectedTicketId(ticket.id);
     }
   };
 
-  const selectedTicket = tickets.find((t) => (t.id || t.code) === selectedTicketId);
-
-  const handleDelete = (ticket: Ticket) => {
+  const handleUnclaim = (ticketId: number) => {
     Alert.alert(
-      'Eliminar Entrada',
-      'Estàs segur que vols eliminar aquesta entrada de la teva wallet?',
+      'Eliminar Ticket',
+      '¿Estás seguro de que quieres eliminar esta entrada de tu Wallet?',
       [
-        { text: 'Cancel·lar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive', 
           onPress: async () => {
             try {
-              const success = await unclaimTicket(ticket.code!);
-              if (success) {
-                setSelectedTicketId(null);
-              } else {
-                Alert.alert('Error', "No s'ha pogut eliminar l'entrada.");
-              }
-            } catch {
-              Alert.alert('Error', 'Hi ha hagut un problema al connectar amb el servidor.');
+              await unclaimTicket(String(ticketId));
+              setSelectedTicketId(null);
+            } catch (e) {
+              Alert.alert('Error', 'No se ha podido eliminar la entrada.');
             }
-          },
-        },
+          } 
+        }
       ]
     );
   };
 
   return (
-    <View style={styles.outerContainer}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.container,
-          {
-            minHeight: isAnySelected
-              ? height + 200
-              : isExpanded
-                ? Math.max(800, tickets.length * (EXPANDED_OFFSET + 50))
-                : 500,
-          },
-        ]}
-        scrollEnabled={isExpanded || isAnySelected}
-      >
+    <View style={styles.container}>
+      <View style={styles.stackContainer}>
         {tickets.map((ticket, index) => (
           <WalletItem
-            key={ticket.id || ticket.code}
+            key={ticket.id}
             ticket={ticket}
             index={index}
             totalTickets={tickets.length}
@@ -175,178 +160,75 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
             toggleExpand={toggleExpand}
           />
         ))}
+      </View>
 
-        {selectedTicket && (
-          <Animated.View entering={FadeIn.delay(300)} style={styles.detailsContainer}>
-            <Text style={styles.detailsTitle}>Informació Tècnica</Text>
+      {isAnySelected && (
+        <Animated.View entering={FadeIn} style={styles.actionsContainer}>
+          <Pressable 
+            onPress={() => setSelectedTicketId(null)}
+            style={[styles.backButton, { backgroundColor: theme.colors.glass.background }]}
+          >
+            <Text style={[styles.backText, { color: theme.colors.text.primary }]}>Volver al Wallet</Text>
+          </Pressable>
 
-            <View style={styles.detailRow}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>ID BD</Text>
-                <Text style={styles.detailValue}>#{selectedTicket.id}</Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Text style={[styles.detailLabel, { color: theme.colors.text.muted }]}>ESTAT</Text>
-                <View style={styles.statusBadge}>
-                  <View
-                    style={[
-                      styles.statusDot,
-                      {
-                        backgroundColor: selectedTicket.isActive
-                          ? theme.colors.status.success
-                          : theme.colors.status.error,
-                      },
-                    ]}
-                  />
-                  <Text style={[styles.statusText, { color: theme.colors.text.primary }]}>
-                    {selectedTicket.isActive ? 'ACTIVA' : 'INACTIVA'}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={[styles.separator, { backgroundColor: theme.colors.border.subtle }]} />
-
-            <View style={styles.detailRow}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>DATA REGISTRE</Text>
-                <Text style={styles.detailValue}>
-                  {selectedTicket.createdAt
-                    ? new Date(selectedTicket.createdAt).toLocaleDateString()
-                    : 'N/A'}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.separator} />
-
-            <View style={[styles.infoBox, { backgroundColor: theme.colors.status.successSurface }]}>
-              <Shield size={16} color={theme.colors.status.success} strokeWidth={2} />
-              <Text style={[styles.infoBoxText, { color: theme.colors.text.secondary }]}>
-                Entrada vinculada correctament al teu compte. Només tu pots utilitzar aquest QR per
-                a l&apos;accés.
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={[
-                styles.deleteOptionButton,
-                { backgroundColor: theme.colors.status.errorSurface },
-              ]}
-              onPress={() => handleDelete(selectedTicket)}
-            >
-              <Trash2 size={18} color={theme.colors.status.error} strokeWidth={2} />
-              <Text style={[styles.deleteOptionText, { color: theme.colors.status.error }]}>
-                Eliminar Entrada
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
-      </ScrollView>
+          <Pressable 
+            onPress={() => handleUnclaim(Number(selectedTicketId))}
+            style={styles.unclaimButton}
+          >
+            <Trash2 size={20} color={theme.colors.status.error} />
+          </Pressable>
+        </Animated.View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    width: '100%',
-  },
   container: {
-    width: '100%',
+    flex: 1,
+  },
+  stackContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 40,
   },
   pressable: {
-    position: 'absolute',
     width: '100%',
-    alignItems: 'center',
+    position: 'absolute',
   },
   cardWrapper: {
     width: '100%',
     alignItems: 'center',
   },
-  detailsContainer: {
-    width: '100%',
-    paddingHorizontal: 24,
-    marginTop: 20, // Sit just below the selected ticket
-    paddingBottom: 100,
-  },
-  detailsTitle: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    marginBottom: 20,
-    textTransform: 'uppercase',
-  },
-  detailRow: {
+  actionsContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 24,
+    right: 24,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    gap: 12,
   },
-  detailItem: {
+  backButton: {
     flex: 1,
-  },
-  detailLabel: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 10,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  statusText: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  separator: {
-    height: 1,
-    width: '100%',
-    marginVertical: 16,
-  },
-  infoBox: {
-    backgroundColor: 'rgba(76, 217, 100, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  infoBoxText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 13,
-    lineHeight: 18,
-    marginLeft: 12,
-    flex: 1,
-  },
-  deleteOptionButton: {
-    flexDirection: 'row',
+    height: 56,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 59, 48, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 32,
-    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  deleteOptionText: {
+  backText: {
     fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontFamily: 'PlusJakartaSans-Bold',
+  },
+  unclaimButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,59,48,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,59,48,0.2)',
   },
 });

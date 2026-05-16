@@ -1,114 +1,76 @@
 import 'dotenv/config';
-import { db, pool } from './index.js';
-import { tickets } from './schema.js';
-import { sql } from 'drizzle-orm';
-import * as QRCode from 'qrcode';
+import { db, pool, eq, sql } from './index.js';
+import {
+  users,
+  events,
+  tickets,
+} from './schema.js';
+import QRCode from 'qrcode';
+import fs from 'fs';
+import path from 'path';
 
-async function generateTestTickets() {
-  console.log('Generating test tickets for QR scanning...');
+async function generateQRs() {
+  console.log('🎟️  Generating Sample Tickets & QRs...');
 
-  const testTickets = [
-    {
-      code: 'CIRCUIT-VIP-2026',
-      ownerEmail: 'kore@example.com',
-      gate: 'Gate 1 (VIP)',
-      zoneName: 'Paddock Club',
-      seatRow: 'A',
-      seatNumber: '12',
-      isActive: true,
-      createdAt: new Date(),
-    },
-    {
-      code: 'CIRCUIT-G-2026',
-      ownerEmail: 'tester_circuitg2026@example.com',
-      gate: 'Gate 3',
-      zoneName: 'Grandstand G',
-      seatRow: '15',
-      seatNumber: '42',
-      isActive: true,
-      createdAt: new Date(),
-    },
-    {
-      code: 'CIRCUIT-PLATINUM-2026',
-      ownerEmail: 'tester_circuitplatinum2026@example.com',
-      gate: 'Gate 0',
-      zoneName: 'Platinum Lounge',
-      seatRow: '1',
-      seatNumber: '1',
-      isActive: true,
-      createdAt: new Date(),
-    },
-    {
-      code: 'CIRCUIT-EXTRA-VIP',
-      ownerEmail: 'tester_circuitvip2026@example.com',
-      gate: 'Gate 1 (VIP)',
-      zoneName: 'Paddock Club (Extra)',
-      seatRow: 'B',
-      seatNumber: '24',
-      isActive: true,
-      createdAt: new Date(),
-    },
-    {
-      code: 'CIRCUIT-G-2026-EXTRA',
-      ownerEmail: 'tester_circuitg2026@example.com',
-      gate: 'Gate 3',
-      zoneName: 'Grandstand G (Extra)',
-      seatRow: '15',
-      seatNumber: '43',
-      isActive: true,
-      createdAt: new Date(),
-    },
-  ];
-
-  for (const ticket of testTickets as any[]) {
-    // Create JSON Payload
-    const payload = JSON.stringify({
-      code: ticket.code,
-      email:
-        ticket.ownerEmail ||
-        ticket.email ||
-        `tester_${ticket.code.toLowerCase().replace(/[^a-z0-9]/g, '')}@example.com`,
-    });
-
-    // Insert ticket into DB if it doesn't exist
-    await db
-      .insert(tickets)
-      .values({
-        userId: null,
-        code: ticket.code,
-        ownerEmail: ticket.ownerEmail,
-        gate: ticket.gate,
-        zoneName: ticket.zoneName,
-        seatRow: ticket.seatRow,
-        seatNumber: ticket.seatNumber,
-        isActive: ticket.isActive,
-        createdAt: ticket.createdAt,
-      })
-      .onConflictDoUpdate({
-        target: tickets.code,
-        set: {
-          userId: null,
-          ownerEmail: ticket.ownerEmail,
-          gate: ticket.gate,
-        },
-      });
-
-    console.log(`\n================================`);
-    console.log(`🎟️  ${ticket.zoneName} - ${ticket.code}`);
-    console.log(`Payload: ${payload}`);
-    console.log(`================================`);
-
-    // Generate QR in terminal
-    QRCode.toString(payload, { type: 'terminal', small: true }, function (err, url) {
-      console.log(url);
-    });
+  const outputDir = './sample_tickets';
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir);
   }
 
-  console.log(`\n✅ Test tickets generated successfully! Scan these with your Expo app.`);
+  // 1. Get a sample event (e.g., Barcelona Beach Festival)
+  const [sampleEvent] = await db.select().from(events).where(eq(events.name, 'Barcelona Beach Festival 2026')).limit(1);
+
+  if (!sampleEvent) {
+    console.error('❌ Sample event not found. Run db:seed first.');
+    process.exit(1);
+  }
+
+  const zones = [
+    { name: 'VIP Lounge', gate: 'Porta 1', row: 'A', startSeat: 10, count: 2, location: [2.2315, 41.4125] },
+    { name: 'Tribuna G', gate: 'Porta 3', row: '12', startSeat: 4, count: 2, location: [2.2335, 41.4145] },
+    { name: 'General', gate: 'Main Entrance', row: null, startSeat: null, count: 2, location: [2.2300, 41.4110] },
+  ];
+
+  for (const zone of zones) {
+    for (let i = 0; i < zone.count; i++) {
+      const seatNum = zone.startSeat ? zone.startSeat + i : null;
+      const code = `LAT-${zone.name.toUpperCase().substring(0,3)}-${Math.random().toString(36).substring(2,8).toUpperCase()}`;
+
+      // Insert into DB as UNCLAIMED (userId = null)
+      await db.insert(tickets).values({
+        eventId: sampleEvent.id,
+        userId: null, 
+        code: code,
+        zoneName: zone.name,
+        gate: zone.gate,
+        seatRow: zone.row,
+        seatNumber: seatNum ? String(seatNum) : null,
+        seatLocation: sql`ST_SetSRID(ST_MakePoint(${zone.location[0]}, ${zone.location[1]}), 4326)`,
+        isActive: true,
+      });
+
+      // Generate QR Image
+      const fileName = `${zone.name.replace(/\s+/g, '_')}_Seat_${seatNum || 'GEN'}.png`;
+      const filePath = path.join(outputDir, fileName);
+      
+      await QRCode.toFile(filePath, code, {
+        color: {
+          dark: '#1D1C1D',
+          light: '#FFFFFF'
+        },
+        width: 400
+      });
+
+      console.log(`✅ Generated: ${fileName} (Code: ${code})`);
+    }
+  }
+
+  console.log(`\n🎉 Success! All QR codes are in: ${path.resolve(outputDir)}`);
+  console.log(`Scan these from the app to claim your ticket!`);
   await pool.end();
 }
 
-generateTestTickets().catch((err) => {
-  console.error('Failed to generate test tickets:', err);
+generateQRs().catch((err) => {
+  console.error('❌ QR Generation failed:', err);
   process.exit(1);
 });

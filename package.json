@@ -32,6 +32,7 @@
     "db:migrate": "turbo run db:migrate",
     "db:generate": "turbo run db:generate",
     "db:seed": "turbo run db:seed",
+    "db:qrs": "turbo run db:qrs",
     "db:studio": "turbo run db:studio",
     "db:check": "npx tsx scripts/check-db.ts",
     "lint": "turbo lint",

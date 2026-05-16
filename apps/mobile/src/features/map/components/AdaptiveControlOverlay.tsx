@@ -14,6 +14,7 @@ import { typography } from '../../../styles/typography';
 import { useARStore, ARFilterMode } from '../store/useARStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 interface AdaptiveControlOverlayProps {
   onToggle3D: () => void;
@@ -38,6 +39,7 @@ export const AdaptiveControlOverlay = React.memo(({
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const router = useRouter();
+  const { isGuest, openAuthPrompt } = useAuthStore();
   const iconColor = theme.colors.text.primary;
   const { uiState } = useMapUIStore();
   const openAR = useARStore((s) => s.openAR);
@@ -75,7 +77,11 @@ export const AdaptiveControlOverlay = React.memo(({
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push('/(main)/tickets');
+            if (isGuest) {
+              openAuthPrompt('/(main)/tickets');
+            } else {
+              router.push('/(main)/tickets');
+            }
           }}
           hitSlop={12}
           style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}

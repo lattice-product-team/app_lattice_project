@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as authController from '../controllers/auth.controller.js';
+import * as ticketController from '../controllers/ticket.controller.js';
 import { authenticate } from '@app/core';
 
 const router = Router();
@@ -19,9 +20,11 @@ router.post('/passkey/register-verify', authenticate, authController.registerPas
 router.get('/passkey/login-challenge', authController.loginPasskeyChallenge);
 router.post('/passkey/login-verify', authController.loginPasskeyVerify);
 
-router.post('/ticket/claim', authenticate, authController.claimTicket);
+// Ticket Management (Moved to specialized controller)
+router.post('/ticket/claim', authenticate, ticketController.claimTicket);
+router.get('/tickets', authenticate, ticketController.getTickets);
 router.post('/ticket/unclaim', authenticate, authController.unclaimTicket);
-router.get('/tickets', authenticate, authController.getTickets);
+
 router.get('/me', authenticate, authController.getMe);
 router.patch('/me', authenticate, authController.updateMe);
 

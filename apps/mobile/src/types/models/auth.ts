@@ -24,6 +24,10 @@ export interface Ticket {
   gate: string;
   seatRow?: string;
   seatNumber?: string;
+  seatLocation?: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
   isActive?: boolean;
   createdAt?: string;
 }
