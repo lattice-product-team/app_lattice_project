@@ -27,11 +27,13 @@ interface MapCameraManagerProps {
   isFetching: boolean;
   selectedPoiId: string | number | null;
   selectedEventId: string | number | null;
+  realtimeCameraRef?: React.MutableRefObject<{ center: number[]; zoom: number }>;
 }
 
 export interface MapCameraHandle {
   setCamera: (config: any) => void;
   fitBounds: (ne: number[], sw: number[], padding?: number[], duration?: number) => void;
+  handleRegionChangeComplete: (center?: number[], zoom?: number) => void;
 }
 
 export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProps>((props, ref) => {
@@ -53,6 +55,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     isFetching,
     selectedPoiId,
     selectedEventId,
+    realtimeCameraRef,
   } = props;
 
   const cameraRef = React.useRef<any>(null);
@@ -63,10 +66,54 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   const CAMERA_ACTION_THROTTLE = 500; // ms
   const { setCameraMode, isProgrammaticMove, setIsProgrammaticMove } = useMapUIStore();
 
+  const clearTransitionTimer = React.useCallback(() => {
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    // Always sync store state when clearing timer manually
+    if (useMapUIStore.getState().isProgrammaticMove) {
+      setIsProgrammaticMove(false);
+    }
+  }, [setIsProgrammaticMove]);
+
+  // Centralized "Safety Reset" protocol - Improved to prevent rebound on Android
+  const safetyReset = React.useCallback((overrideCenter?: number[], overrideZoom?: number) => {
+    if (!cameraRef.current) return;
+    
+    // If the user is already manually controlling the map, we do a SILENT reset.
+    // We clear padding with 0 duration and WITHOUT forcing a center coordinate.
+    // UPDATE: On Android, we MUST always provide a center to avoid native snap-back.
+    const isUserControlled = cameraMode === MapCameraMode.FREE;
+    const shouldForceCenter = Platform.OS === 'android';
+
+    // Prioritize: 1. Explicit override, 2. Real-time ref (most accurate), 3. Last stopped pos
+    const center = overrideCenter || realtimeCameraRef?.current?.center || lastCameraPosition?.center;
+    const zoom = overrideZoom || realtimeCameraRef?.current?.zoom || lastCameraPosition?.zoom;
+
+    const config: any = {
+      animationDuration: isUserControlled ? 0 : 300,
+      pitch: is3DActive ? 60 : 0,
+    };
+
+    if (shouldForceCenter && center) {
+      console.log(`[Camera] safetyReset: Forcing center on Android to avoid native snap (duration: ${config.animationDuration})`);
+      config.centerCoordinate = center;
+      if (zoom) config.zoomLevel = zoom;
+    } else {
+      console.log(`[Camera] safetyReset: Silent reset (isUserControlled: ${isUserControlled})`);
+    }
+
+    cameraRef.current.setCamera(config);
+  }, [is3DActive, lastCameraPosition, cameraMode, realtimeCameraRef]);
+
   useImperativeHandle(ref, () => ({
     setCamera: (config: any) => cameraRef.current?.setCamera(config),
     fitBounds: (ne: number[], sw: number[], padding?: number[], duration?: number) =>
       cameraRef.current?.fitBounds(ne, sw, padding, duration),
+    handleRegionChangeComplete: (center?: number[], zoom?: number) => {
+      // Deferred reset no longer needed thanks to reactive padding props
+    }
   }));
 
   // Initial fix on user location
@@ -92,45 +139,43 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     isProgrammaticMoveRef.current = isProgrammaticMove;
   }, [isProgrammaticMove]);
 
-  const prevUiState = React.useRef<MapUIState>(uiState);
+  const prevUiState = React.useRef<MapUIState | null>(null);
   const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
   const lastProcessedRecenterRef = React.useRef(recenterCount);
   const prevRouteRef = React.useRef(currentRoute);
 
+  const userCoordsRef = React.useRef(userCoords);
+  const userHeadingRef = React.useRef(userHeading);
+
+  useEffect(() => {
+    userCoordsRef.current = userCoords;
+    userHeadingRef.current = userHeading;
+  }, [userCoords, userHeading]);
+
   // 1. WATCHDOG: Ensure isProgrammaticMove is always cleared eventually
+  // Now deprecated as we move away from aggressive locking, but kept for safety.
   useEffect(() => {
     if (isProgrammaticMove) {
       const timeout = setTimeout(() => {
-        if (isProgrammaticMove) {
-          console.log('[CameraWatchdog] Force-clearing isProgrammaticMove lock');
+        if (useMapUIStore.getState().isProgrammaticMove) {
           setIsProgrammaticMove(false);
         }
-      }, 3000); // 3s safety margin
-      return () => clearTimeout(timeout);
+      }, 1000); 
+      return () => {
+        clearTimeout(timeout);
+      };
     }
   }, [isProgrammaticMove, setIsProgrammaticMove]);
 
-  // Centralized "Safety Reset" protocol - Improved to prevent rebound on Android
-  const safetyReset = React.useCallback(() => {
-    if (!cameraRef.current) return;
-    
-    // If the user is already manually controlling the map, we do a SILENT reset.
-    // We clear padding with 0 duration and WITHOUT forcing a center coordinate.
-    const isUserControlled = cameraMode === MapCameraMode.FREE;
-    const shouldForceCenter = Platform.OS === 'android' && !isUserControlled;
-
-    const config: any = {
-      animationDuration: isUserControlled ? 0 : 300,
-      padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
-      pitch: is3DActive ? 60 : 0,
+  // 2. UNMOUNT CLEANUP: Ensure we never leave the camera locked
+  useEffect(() => {
+    return () => {
+      clearTransitionTimer();
+      if (useMapUIStore.getState().isProgrammaticMove) {
+        useMapUIStore.getState().setIsProgrammaticMove(false);
+      }
     };
-
-    if (shouldForceCenter && lastCameraPosition?.center) {
-      config.centerCoordinate = lastCameraPosition.center;
-    }
-
-    cameraRef.current.setCamera(config);
-  }, [is3DActive, lastCameraPosition, cameraMode]);
+  }, [clearTransitionTimer]);
 
   // Main Mode Transition Orchestrator
   useEffect(() => {
@@ -138,6 +183,14 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const isForcedRecenter = recenterCount > lastProcessedRecenterRef.current;
     const isForcedCenter = forceCenterCount > lastProcessedForceCenterRef.current;
     const isNewRoute = currentRoute !== prevRouteRef.current;
+
+    // IMMEDIATE REF SYNC: Update these NOW to prevent race conditions during re-renders.
+    // If we don't do this, a rapid re-render (e.g. from GPS restart) will see the old
+    // values and trigger a 'NewMode' steal again.
+    prevUiState.current = uiState;
+    lastProcessedRecenterRef.current = recenterCount;
+    lastProcessedForceCenterRef.current = forceCenterCount;
+    prevRouteRef.current = currentRoute;
 
     // Robust Target Resolution
     let targetCoords =
@@ -170,27 +223,19 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       (isNewTarget && targetKey !== null);
 
     if (!canStealCamera) {
-      // CRITICAL: Even if we don't move the camera, we MUST call safetyReset
-      // if it's a new mode transitioning to EXPLORING to clear the UI padding.
-      if (isNewMode && uiState === MapUIState.EXPLORING) {
-        safetyReset();
-      }
-
-      // Sync refs
+      // Sync refs and return. No need for safetyReset here anymore
+      // as padding is handled reactively via props.
       prevUiState.current = uiState;
-      prevIsFetching.current = isFetching;
-      prevRouteRef.current = currentRoute;
-      lastTargetRef.current = targetKey;
       lastProcessedRecenterRef.current = recenterCount;
       lastProcessedForceCenterRef.current = forceCenterCount;
+      prevRouteRef.current = currentRoute;
       return;
     }
 
+    console.log(`[Camera] Orchestrator: Stealing camera. Reason: ${isNewMode ? 'NewMode' : isForcedCenter ? 'ForcedCenter' : isForcedRecenter ? 'ForcedRecenter' : isEnteringDetail ? 'EnteringDetail' : 'NewTarget'}`);
+
     if (isNewMode || isNewTarget || isForcedCenter || isForcedRecenter || isNewRoute) {
-      if (transitionTimerRef.current) {
-        clearTimeout(transitionTimerRef.current);
-        setIsProgrammaticMove(false);
-      }
+      clearTransitionTimer();
     }
 
     if (isNewMode) {
@@ -202,7 +247,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     if (!cameraRef.current) return;
 
     // 1. PLANNING MODE
-    else if (uiState === MapUIState.PLANNING) {
+    if (uiState === MapUIState.PLANNING) {
       const isFinishFetching = !isFetching && prevIsFetching.current;
       if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching || isNewRoute) {
         lastProcessedForceCenterRef.current = forceCenterCount;
@@ -212,7 +257,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         const destinationCoords = targetCoords;
         const pointsToFit =
           currentRoute?.geometry?.coordinates ||
-          (userCoords && destinationCoords ? [userCoords, destinationCoords] : []);
+          (userCoordsRef.current && destinationCoords ? [userCoordsRef.current, destinationCoords] : []);
 
         const validPoints = pointsToFit.filter(
           (c: any) => c && c.length === 2 && Math.abs(c[0]) > 0.001
@@ -225,25 +270,21 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             // or if it's a forced centering action.
             const shouldMove = cameraMode !== MapCameraMode.FREE || isForcedCenter || isNewMode;
             if (shouldMove) {
-              setIsProgrammaticMove(true);
+              console.log('[Camera] Planning: Fitting route bounds');
+              // REMOVED PROGRAMMATIC LOCK AND PADDING
               cameraRef.current.setCamera({
                 bounds: {
                   ne: [bbox[2], bbox[3]],
                   sw: [bbox[0], bbox[1]],
-                  paddingTop: insets.top + 100,
-                  paddingRight: 50,
-                  paddingBottom: insets.bottom + 340,
-                  paddingLeft: 50,
                 },
                 pitch: is3DActive ? 45 : 0,
                 heading: 0,
                 animationDuration: 1200,
                 animationMode: 'flyTo',
               });
-              transitionTimerRef.current = setTimeout(() => setIsProgrammaticMove(false), 1300);
             }
             return () => {
-              if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+              clearTransitionTimer();
             };
           }
         } else if (destinationCoords) {
@@ -255,9 +296,12 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             animationMode: 'flyTo',
             pitch: is3DActive ? 45 : 0,
           });
-          transitionTimerRef.current = setTimeout(() => setIsProgrammaticMove(false), 1100);
+          transitionTimerRef.current = setTimeout(() => {
+            setIsProgrammaticMove(false);
+            transitionTimerRef.current = null;
+          }, 1100);
           return () => {
-            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+            clearTransitionTimer();
           };
         }
       }
@@ -276,28 +320,19 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           const shouldMove = cameraMode !== MapCameraMode.FREE || isForcedCenter || isNewMode || isForcedRecenter;
           
           if (shouldMove) {
-            setIsProgrammaticMove(true);
+            console.log('[Camera] POI/Event: Flying to target');
+            // REMOVED PADDING FROM HERE - It's now handled via Props
             cameraRef.current.setCamera({
               centerCoordinate: targetCoords,
               zoomLevel: selectedEvent ? 13.0 : 18.0,
               animationDuration: 1000,
               animationMode: 'flyTo',
               pitch: is3DActive ? 60 : 0,
-              padding: {
-                paddingBottom: SCREEN_HEIGHT * 0.45,
-                paddingTop: insets.top + 40,
-                paddingLeft: 20,
-                paddingRight: 20,
-              },
             });
-
-            transitionTimerRef.current = setTimeout(() => {
-              setIsProgrammaticMove(false);
-            }, 1100);
           }
           
           return () => {
-            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+            clearTransitionTimer();
           };
         }
       }
@@ -311,26 +346,27 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         lastProcessedRecenterRef.current = recenterCount;
         setCameraMode(MapCameraMode.FREE);
 
-        if (userCoords) {
+        if (userCoordsRef.current) {
           setIsProgrammaticMove(true);
           cameraRef.current.setCamera({
-            centerCoordinate: userCoords,
+            centerCoordinate: userCoordsRef.current,
             zoomLevel: DEFAULT_ZOOM,
             animationDuration: 1000,
             animationMode: 'flyTo',
             pitch: is3DActive ? 60 : 0,
           });
-          transitionTimerRef.current = setTimeout(() => setIsProgrammaticMove(false), 1100);
+          transitionTimerRef.current = setTimeout(() => {
+            setIsProgrammaticMove(false);
+            transitionTimerRef.current = null;
+          }, 1100);
           return () => {
-            if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+            clearTransitionTimer();
           };
         }
       }
     }
 
-    prevUiState.current = uiState;
-    prevIsFetching.current = isFetching;
-    prevRouteRef.current = currentRoute;
+    lastTargetRef.current = targetKey;
   }, [
     uiState,
     recenterCount,
@@ -340,8 +376,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     currentRoute,
     isFetching,
     is3DActive,
-    userCoords,
-    userHeading,
+    clearTransitionTimer,
   ]);
 
   // Handle 3D Pitch toggle independently for better responsiveness
@@ -363,11 +398,33 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     [userCoords, lastCameraPosition]
   );
 
+  // Compute reactive padding based on UI state
+  const reactivePadding = React.useMemo(() => {
+    if (uiState === MapUIState.POI_DETAIL) {
+      return {
+        paddingBottom: SCREEN_HEIGHT * 0.45,
+        paddingTop: insets.top + 40,
+        paddingLeft: 20,
+        paddingRight: 20,
+      };
+    }
+    if (uiState === MapUIState.PLANNING) {
+      return {
+        paddingTop: insets.top + 100,
+        paddingRight: 50,
+        paddingBottom: insets.bottom + 340,
+        paddingLeft: 50,
+      };
+    }
+    return { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 };
+  }, [uiState, insets]);
+
   return (
     <MapLibreGL.Camera
       ref={cameraRef}
       minZoomLevel={2}
       defaultSettings={defaultSettings}
+      padding={reactivePadding}
       userTrackingMode={cameraMode}
       followUserLocation={cameraMode !== 0}
       followUserMode={

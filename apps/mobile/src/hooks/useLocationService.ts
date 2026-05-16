@@ -123,7 +123,7 @@ export const useLocationService = (): LocationState => {
       positionSubscription?.remove();
       headingSubscription?.remove();
     };
-  }, [status, isNavigating, isPlanning]); // Restart tracking when mode changes to apply new accuracy settings
+  }, [status, isNavigating || isPlanning]); // Stabilize: Only restart tracking when the broad mode (Active vs Idle) changes
 
   // 4. Background Telemetry (Crowd Radar)
   useEffect(() => {

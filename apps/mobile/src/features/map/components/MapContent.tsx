@@ -80,6 +80,11 @@ export const MapContent = function MapContent({
   const [discreteZoom, setDiscreteZoom] = React.useState(Math.round(initialZoom));
   const { getFilteredPOIs } = usePOIStore();
 
+  const realtimeCameraRef = useRef<{ center: number[]; zoom: number }>({
+    center: lastCameraPosition?.center || MAP_CENTER,
+    zoom: lastCameraPosition?.zoom || initialZoom,
+  });
+
   const zoomSharedValue = useSharedValue(initialZoom);
   const lastZoomUpdateRef = useRef(0);
   const ZOOM_THROTTLE_MS = 100;
@@ -97,6 +102,14 @@ export const MapContent = function MapContent({
       const { geometry, properties } = e;
       const now = Date.now();
       const isUserInteraction = e.properties?.isUserInteraction;
+
+      // Update real-time ref ALWAYS, even during animations
+      if (geometry?.coordinates) {
+        realtimeCameraRef.current = {
+          center: geometry.coordinates,
+          zoom: properties?.zoomLevel || realtimeCameraRef.current.zoom,
+        };
+      }
 
       if (isChanging) {
         isPanningRef.current = true;
@@ -145,7 +158,8 @@ export const MapContent = function MapContent({
 
       // IF USER TOUCHES THE MAP:
       // We must immediately break ANY tracking or programmatic lock.
-      if (isUserInteraction && cameraMode !== MapCameraMode.FREE) {
+      if (isUserInteraction && (cameraMode !== MapCameraMode.FREE || isProgrammaticMoveRef.current)) {
+        console.log('[MapContent] Interaction detected: Breaking camera locks');
         setCameraMode(MapCameraMode.FREE);
         // Direct call to store to avoid any closure/reference issues
         useMapUIStore.getState().setIsProgrammaticMove(false);
@@ -432,7 +446,10 @@ export const MapContent = function MapContent({
         return;
       }
 
-      if (onDeselect) onDeselect();
+      if (onDeselect) {
+        console.log('[MapContent] Map background pressed: Triggering deselect');
+        onDeselect();
+      }
     },
     [onDeselect, handlePoiPress]
   );
@@ -457,7 +474,13 @@ export const MapContent = function MapContent({
         zoomEnabled={true}
         onPress={handleMapPress}
         onRegionIsChanging={(e) => handleCameraChange(e, true)}
-        onRegionDidChange={(e) => handleCameraChange(e, false)}
+        onRegionDidChange={(e) => {
+          handleCameraChange(e, false);
+          
+          const center = e.geometry?.coordinates as [number, number];
+          const zoom = e.properties?.zoomLevel;
+          cameraRef.current?.handleRegionChangeComplete(center, zoom);
+        }}
         onDidFinishLoadingStyle={() => {
           if (!hasInitialRendered.current) {
             hasInitialRendered.current = true;
@@ -496,6 +519,7 @@ export const MapContent = function MapContent({
           isFetching={isFetching}
           selectedPoiId={selectedPoiId}
           selectedEventId={selectedEventId}
+          realtimeCameraRef={realtimeCameraRef}
         />
 
         <MapLayers
