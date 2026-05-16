@@ -66,6 +66,7 @@ export const MapContent = function MapContent({
     setLastCameraPosition,
     setInitialLoadComplete,
     isProgrammaticMove,
+    setIsProgrammaticMove,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
   const isProgrammaticMoveRef = React.useRef(isProgrammaticMove);
@@ -142,20 +143,12 @@ export const MapContent = function MapContent({
         setLastCameraPosition({ center, zoom, pitch });
       }
 
-      // If camera is changing due to user interaction (drag, pinch, etc), stop following
-      // On Android, isUserInteraction can be unreliable during fast gestures,
-      // so we also check if region is actively changing and we're NOT in a programmatic state.
-      // If camera is changing due to user interaction (drag, pinch, etc), stop following.
-      // CRITICAL: isUserInteraction should ALWAYS break any lock to prevent "vibrations".
-      // On Android, we are even more aggressive: if the region is changing and we're NOT
-      // in a programmatic move, we FORCE free mode immediately.
-      const shouldSwitchToFree =
-        (isUserInteraction || (isChanging && !isProgrammaticMoveRef.current)) &&
-        cameraMode !== MapCameraMode.FREE;
-      
-      if (shouldSwitchToFree) {
-        // console.log('[MapContent] Breaking lock -> FREE');
+      // IF USER TOUCHES THE MAP:
+      // We must immediately break ANY tracking or programmatic lock.
+      if (isUserInteraction && cameraMode !== MapCameraMode.FREE) {
         setCameraMode(MapCameraMode.FREE);
+        // Direct call to store to avoid any closure/reference issues
+        useMapUIStore.getState().setIsProgrammaticMove(false);
       }
     },
     [

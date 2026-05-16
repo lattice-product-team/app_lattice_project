@@ -194,10 +194,20 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
     // 1. NAVIGATION MODE
     if (uiState === MapUIState.NAVIGATING) {
-      if (isNewMode || isForcedRecenter || isForcedCenter || isNewTarget) {
+      const isForced = isNewMode || isForcedRecenter || isForcedCenter || isNewTarget;
+      
+      // CRITICAL: If the user has panned away (FREE mode) and this is just a regular GPS update 
+      // (not a button tap/new mode), we MUST NOT move the camera.
+      if (cameraMode === MapCameraMode.FREE && !isForcedRecenter && !isNewMode) {
+        return;
+      }
+
+      if (isForced) {
         lastProcessedRecenterRef.current = recenterCount;
         lastProcessedForceCenterRef.current = forceCenterCount;
         lastTargetRef.current = targetKey;
+        
+        // Use a much shorter programmatic lock (only for the duration of the initial flyTo)
         setIsProgrammaticMove(true);
 
         cameraRef.current.setCamera({
@@ -205,21 +215,25 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           zoomLevel: 18,
           pitch: 45,
           heading: userHeading || 0,
-          animationDuration: isNewMode ? 1200 : 800,
+          animationDuration: 1000,
           animationMode: 'flyTo',
         });
 
-        transitionTimerRef.current = setTimeout(
-          () => {
+        // Release the lock immediately after animation finishes
+        if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+        transitionTimerRef.current = setTimeout(() => {
+          setIsProgrammaticMove(false);
+          // Only re-engage follow mode if we weren't already in it
+          if (cameraMode === MapCameraMode.FREE || isForcedRecenter || isNewMode) {
             setCameraMode(MapCameraMode.FOLLOW_WITH_COURSE);
-            setTimeout(() => setIsProgrammaticMove(false), 500);
-          },
-          isNewMode ? 1300 : 900
-        );
+          }
+        }, 1100);
+
         return () => {
           if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
         };
       }
+      return;
     }
 
     // 2. PLANNING MODE
@@ -350,6 +364,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     currentRoute,
     isFetching,
     is3DActive,
+    userCoords,
+    userHeading,
   ]);
 
   // Handle 3D Pitch toggle independently for better responsiveness
@@ -377,6 +393,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       minZoomLevel={2}
       defaultSettings={defaultSettings}
       userTrackingMode={cameraMode}
+      followUserLocation={cameraMode !== 0}
+      followUserMode={
+        cameraMode === 2 ? 'heading' : cameraMode === 3 ? 'course' : 'normal'
+      }
       followZoomLevel={uiState === MapUIState.NAVIGATING ? 18 : undefined}
       followPitch={uiState === MapUIState.NAVIGATING ? 45 : undefined}
       onUserTrackingModeChange={(e) => {

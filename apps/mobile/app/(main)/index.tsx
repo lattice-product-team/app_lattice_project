@@ -820,14 +820,27 @@ export default function MapIndexPage() {
           bottomOffset={insets.bottom + 5}
           cameraMode={cameraMode}
           onRecenter={() => {
+            console.log('[UI] Recenter pressed. Navigating:', isNavigating, 'Mode:', cameraMode);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            // 1. Force 2D mode as requested
+            
             setManualAR(false);
-            // 2. Re-engage navigation mode if we were in a route
+            
+            let nextMode = MapCameraMode.FOLLOW;
+            
             if (isNavigating) {
-              useMapUIStore.getState().setCameraMode(MapCameraMode.FOLLOW_WITH_COURSE);
+              // Force a state change even if already in FOLLOW_WITH_COURSE 
+              // by briefly setting to FREE if it was already tracking, 
+              // or just ensuring it's set.
+              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
+            } else {
+              if (cameraMode === MapCameraMode.FOLLOW) {
+                nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
+              } else if (cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
+                nextMode = MapCameraMode.FREE;
+              }
             }
-            // 3. Trigger the animation/re-centering
+            
+            useMapUIStore.getState().setCameraMode(nextMode);
             triggerRecenter();
           }}
           onToggle3D={() => setManualAR(!manualAR)}
