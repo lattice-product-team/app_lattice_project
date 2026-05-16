@@ -90,6 +90,8 @@ export const navigationService = {
           text: m.instruction,
           distance: (m.length || 0) * 1000,
           maneuverType: m.type?.toString() || '',
+          index: m.begin_shape_index,
+          coordinate: legCoords[m.begin_shape_index],
         })));
       }
 

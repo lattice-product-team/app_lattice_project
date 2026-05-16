@@ -24,7 +24,8 @@ export const useRoutingLogic = () => {
   const { selectedEvent } = useEventStore();
   const { setRoutes, setNextInstruction, transportMode, setFetching, isPlanning } = useNavigationStore();
 
-  const { logicalCoords: userCoords } = useLocationStore();
+  // Use stable selectors for location to avoid unnecessary re-renders
+  const userCoords = useLocationStore(s => s.logicalCoords);
 
   const isRemote = useMemo(() => {
     if (!userCoords || (!selectedEvent?.center && !selectedPoi?.coordinates)) return false;
@@ -33,7 +34,7 @@ export const useRoutingLogic = () => {
     
     const dist = calculateDistance(userCoords as [number, number], dest as [number, number]);
     return dist > 50000; // More than 50km is considered remote
-  }, [userCoords, selectedEvent, selectedPoi]);
+  }, [userCoords?.[0], userCoords?.[1], selectedEvent, selectedPoi]);
 
   useEffect(() => {
     setRemote(isRemote);
@@ -64,7 +65,7 @@ export const useRoutingLogic = () => {
       lastFetchCoords.current = null;
       lastDestinationId.current = null;
     }
-  }, [selectedPoiId, selectedEvent?.id]);
+  }, [selectedPoiId, selectedEvent?.id, isPlanning]);
 
   useEffect(() => {
     const fetchBothRoutes = async () => {
@@ -75,23 +76,14 @@ export const useRoutingLogic = () => {
       const currentUserCoords = userCoordsRef.current;
 
       // Only calculate routes when the user explicitly requested it (planning) or is navigating.
-      // Tapping a pin on the map should NOT trigger a route fetch.
-      // Fetch routes when a target is selected to provide accurate data to the detail sheet
       const { isNavigating } = useNavigationStore.getState();
 
       if (!destinationCoords || !currentUserCoords || !destId || isFetchingRef.current) return;
 
-      // Professional Throttling: Only re-fetch if:
-      // 1. Initial fetch for this destination
-      // 2. We moved significantly
-      // 3. We are in planning mode (always update)
-      // 4. We JUST transitioned from planning to navigating (force fresh route for start)
-      
       const isInitialFetch = !lastFetchCoords.current || lastDestinationId.current !== destId;
-      const justStartedNavigating = lastIsPlanning.current && !isPlanning;
+      const justStartedNavigating = lastIsPlanning.current && !isPlanning && isNavigating;
       
       // Lock the origin if this is the first fetch for this destination
-      // We prioritize discoveryLocation if available (locked map center)
       if (isInitialFetch || !lockedOrigin.current) {
         lockedOrigin.current = discoveryLocation || currentUserCoords as [number, number];
       }
@@ -101,11 +93,11 @@ export const useRoutingLogic = () => {
       lastIsPlanning.current = isPlanning;
 
       // If we're planning, we ONLY fetch if it's the initial fetch for this destination.
-      // We don't want to keep refetching just because the user is moving while looking at the sheet.
       if (isPlanning && !isInitialFetch) {
         return;
       }
 
+      // If we're navigating, we only re-fetch if we moved significantly (re-routing)
       if (!isInitialFetch && distanceMoved < REFETCH_THRESHOLD_METERS && !isPlanning && !justStartedNavigating) {
         return;
       }
@@ -119,20 +111,17 @@ export const useRoutingLogic = () => {
       lastDestinationId.current = destId as string;
 
       try {
-        // Use lockedOrigin for Planning, or live currentUserCoords for active Navigation
         const effectiveOrigin = (isPlanning && lockedOrigin.current) ? lockedOrigin.current : currentUserCoords;
         if (!effectiveOrigin) return;
 
         const origin = { lat: effectiveOrigin[1], lng: effectiveOrigin[0] };
         const destination = { lat: destinationCoords[1], lng: destinationCoords[0] };
 
-        // 1. Driving is always attempted
         const driving = await navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() }).catch(e => {
           console.warn('[Logic] Driving route failed:', e);
           return null;
         });
 
-        // 2. Walking/Bicycle only if NOT remote
         let walking = null;
         let bicycle = null;
 
@@ -145,7 +134,6 @@ export const useRoutingLogic = () => {
 
         const routes = { driving, walking, bicycle };
         
-        // Only update if we have at least one successful route
         if (driving || walking || bicycle) {
           const metadata = {
             driving: driving ? { distance: driving.properties.distance, duration: driving.properties.durationEstimate, destinationName } : null,
@@ -169,19 +157,50 @@ export const useRoutingLogic = () => {
       }
     };
 
-    const timer = setTimeout(fetchBothRoutes, 300); // 300ms debounce
+    const timer = setTimeout(fetchBothRoutes, 300);
     return () => clearTimeout(timer);
-  }, [selectedPoiId, selectedEvent?.id, isPlanning, transportMode, isRemote, userCoords === null]); // Only re-run if target changes, mode changes, or location becomes available/unavailable
+  }, [selectedPoiId, selectedEvent?.id, isPlanning, transportMode, isRemote, userCoords?.[0], userCoords?.[1]]);
 
-
-  // Handle instruction updates when transportMode changes (instant)
+  // Navigation Progress Tracking Effect
   useEffect(() => {
-    const routes = useNavigationStore.getState().routes;
-    const currentRoute = routes[transportMode];
-    if (currentRoute?.maneuvers && currentRoute.maneuvers.length > 0) {
-      setNextInstruction(currentRoute.maneuvers[0]);
+    const { isNavigating, currentRoute, setNextInstruction } = useNavigationStore.getState();
+    if (!isNavigating || !currentRoute || !userCoords) return;
+
+    // 1. Find the next relevant maneuver
+    const maneuvers = currentRoute.maneuvers || [];
+    if (maneuvers.length === 0) return;
+
+    // We look for the first maneuver that we haven't reached yet
+    // A maneuver is "reached" if we are very close to it (< 15m) or if we've passed it
+    // For simplicity, we'll find the maneuver with the smallest distance to us
+    let closestManeuverIndex = 0;
+    let minDistance = Infinity;
+
+    maneuvers.forEach((m, i) => {
+      if (!m.coordinate) return;
+      const dist = calculateDistance(userCoords as [number, number], m.coordinate as [number, number]);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestManeuverIndex = i;
+      }
+    });
+
+    // The "Next" maneuver is either the closest one (if we haven't reached it)
+    // or the one immediately after the closest one (if we are AT the closest one)
+    let nextIndex = closestManeuverIndex;
+    if (minDistance < 20 && closestManeuverIndex < maneuvers.length - 1) {
+      nextIndex = closestManeuverIndex + 1;
     }
-  }, [transportMode, setNextInstruction]);
+
+    const nextM = maneuvers[nextIndex];
+    if (nextM) {
+      const distToNext = calculateDistance(userCoords as [number, number], nextM.coordinate as [number, number]);
+      setNextInstruction({
+        ...nextM,
+        distance: distToNext
+      });
+    }
+  }, [userCoords?.[0], userCoords?.[1], transportMode]);
 
   return { isRemote };
 };

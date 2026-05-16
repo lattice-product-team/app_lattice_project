@@ -459,7 +459,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       userTrackingMode={cameraMode}
       followUserLocation={cameraMode !== 0}
       followUserMode={
-        cameraMode === 2 ? 'heading' : cameraMode === 3 ? 'course' : 'normal'
+        cameraMode === MapCameraMode.FOLLOW_WITH_HEADING ? 'compass' : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE ? 'course' : 'normal'
       }
       followZoomLevel={uiState === MapUIState.NAVIGATING ? 18 : undefined}
       followPitch={uiState === MapUIState.NAVIGATING ? 45 : undefined}
