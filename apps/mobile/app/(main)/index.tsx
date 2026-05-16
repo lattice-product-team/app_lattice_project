@@ -820,24 +820,18 @@ export default function MapIndexPage() {
           bottomOffset={insets.bottom + 5}
           cameraMode={cameraMode}
           onRecenter={() => {
-            console.log('[UI] Recenter pressed. Navigating:', isNavigating, 'Mode:', cameraMode);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            
             setManualAR(false);
             
+            // Expanded Cycle: FREE -> FOLLOW -> HEADING -> COURSE -> FREE
             let nextMode = MapCameraMode.FOLLOW;
             
-            if (isNavigating) {
-              // Force a state change even if already in FOLLOW_WITH_COURSE 
-              // by briefly setting to FREE if it was already tracking, 
-              // or just ensuring it's set.
-              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
-            } else {
-              if (cameraMode === MapCameraMode.FOLLOW) {
-                nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
-              } else if (cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
-                nextMode = MapCameraMode.FREE;
-              }
+            if (cameraMode === MapCameraMode.FOLLOW) {
+              nextMode = MapCameraMode.FOLLOW_WITH_HEADING; // "Donde miras"
+            } else if (cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
+              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;  // "Donde vas"
+            } else if (cameraMode === MapCameraMode.FOLLOW_WITH_COURSE) {
+              nextMode = MapCameraMode.FREE;
             }
             
             useMapUIStore.getState().setCameraMode(nextMode);

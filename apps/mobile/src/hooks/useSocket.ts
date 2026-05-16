@@ -6,69 +6,81 @@ import { useAuthStore } from '../store/useAuthStore';
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl as string;
 const SOCKET_URL = (API_URL?.replace('/api/v1', '').replace('/v1', '') || '').replace(/\/$/, '');
-console.log('[Socket] Initializing with URL:', SOCKET_URL);
+
+// Global socket instance to ensure singleton pattern
+let globalSocket: Socket | null = null;
+let connectionPromise: Promise<Socket> | null = null;
 
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
   const isGuest = useAuthStore((state) => state.isGuest);
-  const socketRef = useRef<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const appState = useRef(AppState.currentState);
+  const [isConnected, setIsConnected] = useState(globalSocket?.connected || false);
 
   const disconnect = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
+    if (globalSocket) {
+      console.log('[Socket] Disconnecting global instance');
+      globalSocket.disconnect();
+      globalSocket = null;
+      connectionPromise = null;
       setIsConnected(false);
-      console.log('[Socket] Disconnected manually');
     }
   }, []);
 
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     // Don't connect for guests or unauthenticated users
     if (!token || isGuest || !SOCKET_URL) return;
 
-    // Avoid multiple connections
-    if (socketRef.current?.connected) return;
-    if (socketRef.current) disconnect();
+    // If already connected, just update state
+    if (globalSocket?.connected) {
+      setIsConnected(true);
+      return;
+    }
+
+    // If connection is in progress, wait for it
+    if (connectionPromise) return connectionPromise;
 
     const isProd = SOCKET_URL.includes('projects.kore29.com');
     const connectionUrl = isProd ? 'https://projects.kore29.com' : SOCKET_URL;
     const socketPath = isProd ? '/lattice/api/socket.io' : '/socket.io';
 
-    console.log('[Socket] Connecting to:', connectionUrl, 'Path:', socketPath, 'Token present:', !!token);
+    console.log('[Socket] Connecting to:', connectionUrl, 'Path:', socketPath);
 
-    const socketInstance = io(connectionUrl, {
-      auth: { token },
-      transports: ['polling', 'websocket'],
-      path: socketPath,
-      secure: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 5000,
-      forceNew: true,
+    connectionPromise = new Promise((resolve) => {
+      const socketInstance = io(connectionUrl, {
+        auth: { token },
+        transports: ['polling', 'websocket'],
+        path: socketPath,
+        secure: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 5000,
+        forceNew: false,
+      });
+
+      globalSocket = socketInstance;
+
+      socketInstance.on('connect', () => {
+        console.log('[Socket] Connected SUCCESSFULLY! Transport:', socketInstance.io.engine.transport.name);
+        setIsConnected(true);
+        resolve(socketInstance);
+      });
+
+      socketInstance.on('disconnect', (reason) => {
+        console.log('[Socket] Mobile disconnected. Reason:', reason);
+        setIsConnected(false);
+      });
+
+      socketInstance.on('connect_error', (err) => {
+        if (err.message.includes('Authentication error')) {
+          console.warn('[Socket] Auth Error (Invalid/Expired Token):', err.message);
+          disconnect();
+        } else {
+          console.error('[Socket] Connection error:', err.message);
+        }
+      });
     });
 
-    socketInstance.on('connect', () => {
-      console.log('[Socket] Connected SUCCESSFULLY! Transport:', socketInstance.io.engine.transport.name);
-      setIsConnected(true);
-    });
-
-    socketInstance.on('disconnect', (reason) => {
-      console.log('[Socket] Mobile disconnected. Reason:', reason);
-      setIsConnected(false);
-    });
-
-    socketInstance.on('connect_error', (err) => {
-      if (err.message.includes('Authentication error')) {
-        console.warn('[Socket] Auth Error (Invalid/Expired Token):', err.message);
-        socketInstance.disconnect(); 
-      } else {
-        console.error('[Socket] Connection error:', err.message);
-      }
-    });
-
-    socketRef.current = socketInstance;
+    return connectionPromise;
   }, [token, isGuest, disconnect]);
 
   // Handle connection/disconnection based on token and guest mode
@@ -78,20 +90,17 @@ export const useSocket = () => {
     } else {
       disconnect();
     }
-    return () => {
-      // Don't disconnect on every re-render, only on unmount or token change
-    };
   }, [token, isGuest, connect, disconnect]);
 
   // Lifecycle management
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+      if (AppState.currentState.match(/inactive|background/) && nextAppState === 'active') {
         connect();
       } else if (nextAppState.match(/inactive|background/)) {
-        disconnect();
+        // Optional: keep alive or disconnect. For battery optimization, we disconnect.
+        // disconnect(); 
       }
-      appState.current = nextAppState;
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
@@ -99,13 +108,13 @@ export const useSocket = () => {
   }, [connect, disconnect]);
 
   const subscribe = useCallback((event: string, callback: (data: any) => void) => {
-    const currentSocket = socketRef.current;
-    if (currentSocket) {
-      currentSocket.on(event, callback);
+    if (globalSocket) {
+      globalSocket.on(event, callback);
       return () => {
-        currentSocket.off(event, callback);
+        globalSocket?.off(event, callback);
       };
     }
+    return () => {};
   }, []);
 
   return { isConnected, subscribe };

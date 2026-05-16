@@ -70,6 +70,8 @@ export default function RootLayout() {
 
   // Master Safety Timeout: Absolute 10-second limit to hide splash no matter what
   useEffect(() => {
+    if (isAppFullyReady) return;
+
     const timer = setTimeout(() => {
       if (showSplashOverlay) {
         console.warn('🚨 [RootLayout] Master Safety Timeout Triggered: Forcing Splash Hide');
@@ -81,7 +83,7 @@ export default function RootLayout() {
       }
     }, 10000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isAppFullyReady]);
 
   const animatedSplashStyle = useAnimatedStyle(() => ({
     opacity: splashOpacity.value,
