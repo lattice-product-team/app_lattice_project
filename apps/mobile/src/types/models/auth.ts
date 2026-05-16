@@ -28,6 +28,9 @@ export interface Ticket {
     type: 'Point';
     coordinates: [number, number];
   };
+  eventName?: string;
+  eventColor?: string;
+  eventBanner?: string;
   isActive?: boolean;
   createdAt?: string;
 }

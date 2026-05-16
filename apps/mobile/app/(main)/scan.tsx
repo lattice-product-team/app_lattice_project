@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { X, Zap, ZapOff, RefreshCcw } from 'lucide-react-native';
+import { ChevronLeft, Zap, ZapOff, RefreshCcw, Ticket as TicketIcon, ScanLine } from 'lucide-react-native';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring 
+} from 'react-native-reanimated';
 import { useTicketScanner } from '../../src/features/tickets/hooks/useTicketScanner';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { typography } from '../../src/styles/typography';
@@ -13,6 +18,18 @@ export default function TicketScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [torch, setTorch] = useState(false);
   const { scanned, isProcessing, handleBarCodeScanned, resetScanner } = useTicketScanner();
+
+  // Dynamic Island State (0: Tickets, 1: Scan)
+  // Since this is the Scan Screen, we start at 1
+  const islandMode = useSharedValue(1);
+
+  const modeIndicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: islandMode.value * 110 }],
+  }));
+
+  const handleBack = () => {
+    router.replace('/(main)');
+  };
 
   useEffect(() => {
     if (!permission) requestPermission();
@@ -52,50 +69,72 @@ export default function TicketScanScreen() {
           barcodeTypes: ['qr'],
         }}
       >
-        {/* Overlay Mask */}
-        <View style={styles.overlay}>
-          <View style={styles.topSection}>
-            <Pressable 
-              onPress={() => router.back()}
-              style={styles.closeButton}
-            >
-              <X color="#fff" size={28} />
+        {/* Dynamic Island Header */}
+        <View style={styles.headerContainer}>
+          <View style={[styles.island, { backgroundColor: 'rgba(0,0,0,0.6)', borderColor: 'rgba(255,255,255,0.1)' }]}>
+            {/* Back Button */}
+            <Pressable onPress={handleBack} style={styles.backButton}>
+              <ChevronLeft size={20} color="#fff" />
             </Pressable>
-            <Text style={styles.headerTitle}>Escanear Ticket</Text>
-            <Pressable 
-              onPress={() => setTorch(!torch)}
-              style={styles.torchButton}
-            >
-              {torch ? <Zap color="#FFD700" size={24} fill="#FFD700" /> : <ZapOff color="#fff" size={24} />}
-            </Pressable>
-          </View>
 
+            <View style={styles.divider} />
+
+            {/* Mode Selector */}
+            <View style={styles.selectorContainer}>
+              <Animated.View style={[styles.activeIndicator, { backgroundColor: 'rgba(255,255,255,0.15)' }, modeIndicatorStyle]} />
+              
+              <Pressable 
+                onPress={() => {
+                  router.push('/(main)/tickets');
+                }}
+                style={styles.modeOption}
+              >
+                <TicketIcon size={18} color="rgba(255,255,255,0.6)" />
+                <Text style={[styles.modeText, { color: 'rgba(255,255,255,0.6)' }]}>Entradas</Text>
+              </Pressable>
+
+              <Pressable 
+                onPress={() => {
+                  islandMode.value = withSpring(1);
+                }}
+                style={styles.modeOption}
+              >
+                <ScanLine size={18} color="#fff" />
+                <Text style={[styles.modeText, { color: '#fff' }]}>Escanear</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
+        {/* Scan Finder & Torch */}
+        <View style={styles.contentOverlay}>
           <View style={styles.finderContainer}>
             <View style={[styles.finder, { borderColor: theme.colors.brand.primary }]}>
-              {/* Corner Accents */}
               <View style={[styles.corner, styles.topLeft, { borderColor: theme.colors.brand.primary }]} />
               <View style={[styles.corner, styles.topRight, { borderColor: theme.colors.brand.primary }]} />
               <View style={[styles.corner, styles.bottomLeft, { borderColor: theme.colors.brand.primary }]} />
               <View style={[styles.corner, styles.bottomRight, { borderColor: theme.colors.brand.primary }]} />
             </View>
-            <Text style={styles.instructionText}>Encuadra el código QR de tu entrada Lattice</Text>
+            
+            <View style={styles.controlsRow}>
+              <Pressable onPress={() => setTorch(!torch)} style={styles.torchButton}>
+                {torch ? <Zap color="#FFD700" size={24} fill="#FFD700" /> : <ZapOff color="#fff" size={24} />}
+              </Pressable>
+            </View>
           </View>
 
           <View style={styles.bottomSection}>
             {isProcessing && (
-              <View style={styles.processingCard}>
+              <View style={styles.statusCard}>
                 <ActivityIndicator color={theme.colors.brand.primary} />
-                <Text style={styles.processingText}>Validando entrada...</Text>
+                <Text style={styles.statusText}>Validando...</Text>
               </View>
             )}
             
             {scanned && !isProcessing && (
-              <Pressable 
-                onPress={resetScanner}
-                style={styles.retryButton}
-              >
+              <Pressable onPress={resetScanner} style={styles.retryButton}>
                 <RefreshCcw color="#fff" size={20} />
-                <Text style={styles.retryText}>Volver a intentar</Text>
+                <Text style={styles.retryText}>Reintentar</Text>
               </Pressable>
             )}
           </View>
@@ -110,42 +149,72 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'space-between',
+  headerContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    alignItems: 'center',
+    zIndex: 1000,
   },
-  topSection: {
+  island: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 60,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    gap: 8,
   },
-  closeButton: {
-    width: 44,
-    height: 44,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 18,
+  divider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  selectorContainer: {
+    flexDirection: 'row',
+    position: 'relative',
+    width: 220,
+    height: 44,
+    alignItems: 'center',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    width: 105,
+    height: 36,
+    borderRadius: 18,
+    left: 2,
+  },
+  modeOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    zIndex: 1,
+  },
+  modeText: {
+    fontSize: 13,
     fontFamily: typography.primary.bold,
   },
-  torchButton: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+  contentOverlay: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 40,
   },
   finderContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   finder: {
     width: 260,
     height: 260,
-    borderWidth: 0,
     borderRadius: 32,
     position: 'relative',
     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -156,47 +225,28 @@ const styles = StyleSheet.create({
     height: 40,
     borderWidth: 4,
   },
-  topLeft: {
-    top: -2,
-    left: -2,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 32,
+  topLeft: { top: -2, left: -2, borderRightWidth: 0, borderBottomWidth: 0, borderTopLeftRadius: 32 },
+  topRight: { top: -2, right: -2, borderLeftWidth: 0, borderBottomWidth: 0, borderTopRightRadius: 32 },
+  bottomLeft: { bottom: -2, left: -2, borderRightWidth: 0, borderTopWidth: 0, borderBottomLeftRadius: 32 },
+  bottomRight: { bottom: -2, right: -2, borderLeftWidth: 0, borderTopWidth: 0, borderBottomRightRadius: 32 },
+  controlsRow: {
+    marginTop: 40,
   },
-  topRight: {
-    top: -2,
-    right: -2,
-    borderLeftWidth: 0,
-    borderBottomWidth: 0,
-    borderTopRightRadius: 32,
-  },
-  bottomLeft: {
-    bottom: -2,
-    left: -2,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 32,
-  },
-  bottomRight: {
-    bottom: -2,
-    right: -2,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-    borderBottomRightRadius: 32,
-  },
-  instructionText: {
-    color: '#fff',
-    marginTop: 32,
-    fontSize: 15,
-    fontFamily: typography.primary.medium,
-    textAlign: 'center',
-    paddingHorizontal: 40,
+  torchButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   bottomSection: {
-    paddingBottom: 80,
     alignItems: 'center',
+    paddingBottom: 40,
   },
-  processingCard: {
+  statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.8)',
@@ -205,7 +255,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 12,
   },
-  processingText: {
+  statusText: {
     color: '#fff',
     fontSize: 16,
     fontFamily: typography.primary.bold,
@@ -224,25 +274,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: typography.primary.bold,
   },
-  errorTitle: {
-    fontSize: 22,
-    fontFamily: typography.primary.bold,
-    marginBottom: 12,
-  },
-  errorSub: {
-    fontSize: 16,
-    fontFamily: typography.primary.regular,
-    textAlign: 'center',
-    marginBottom: 32,
-  },
-  button: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 16,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: typography.primary.bold,
-  },
+  errorTitle: { fontSize: 22, fontFamily: typography.primary.bold, marginBottom: 12 },
+  errorSub: { fontSize: 16, fontFamily: typography.primary.regular, textAlign: 'center', marginBottom: 32 },
+  button: { paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16 },
+  buttonText: { color: '#fff', fontSize: 16, fontFamily: typography.primary.bold },
 });

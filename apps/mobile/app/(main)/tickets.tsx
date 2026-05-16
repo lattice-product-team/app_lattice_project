@@ -1,63 +1,70 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
-import { ChevronDown, ScanLine, Ticket as TicketIcon, X } from 'lucide-react-native';
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Pressable, Dimensions } from 'react-native';
+import { ChevronLeft, ScanLine, Ticket as TicketIcon } from 'lucide-react-native';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withSpring 
+} from 'react-native-reanimated';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { typography } from '../../src/styles/typography';
 import { WalletStack } from '../../src/features/tickets/components/WalletStack';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useRouter } from 'expo-router';
 
-export default function TicketsScreen() {
+const TicketsScreen = () => {
   const theme = useAppTheme();
   const router = useRouter();
   const { tickets } = useAuthStore();
-  const [showMenu, setShowMenu] = useState(false);
+  
+  // Dynamic Island State (0: Tickets, 1: Scan)
+  const islandMode = useSharedValue(0);
+
+  const modeIndicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: islandMode.value * 110 }],
+  }));
+
+  const handleBack = () => {
+    router.replace('/(main)');
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
-      {/* Header with Dropdown-style Menu and Close Button */}
+      {/* Dynamic Island Header */}
       <View style={styles.headerContainer}>
-        <View style={styles.header}>
-          <Pressable 
-            onPress={() => setShowMenu(!showMenu)}
-            style={[styles.menuTrigger, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
-          >
-            <Text style={[styles.menuTitle, { color: theme.colors.text.primary }]}>Mis Entradas</Text>
-            <ChevronDown size={20} color={theme.colors.text.primary} style={{ transform: [{ rotate: showMenu ? '180deg' : '0deg' }] }} />
+        <View style={[styles.island, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
+          {/* Back Button */}
+          <Pressable onPress={handleBack} style={styles.backButton}>
+            <ChevronLeft size={20} color={theme.colors.text.primary} />
           </Pressable>
 
-          <Pressable 
-            onPress={() => router.back()}
-            style={[styles.closeButton, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
-          >
-            <X size={20} color={theme.colors.text.primary} />
-          </Pressable>
-        </View>
+          <View style={styles.divider} />
 
-        {showMenu && (
-          <View style={[styles.dropdown, { backgroundColor: theme.colors.bg.surface, borderColor: theme.colors.border.subtle }]}>
-            <Pressable 
-              onPress={() => setShowMenu(false)}
-              style={styles.dropdownItem}
-            >
-              <TicketIcon size={20} color={theme.colors.brand.primary} />
-              <Text style={[styles.dropdownText, { color: theme.colors.text.primary }]}>Mis Entradas</Text>
-            </Pressable>
-            
-            <View style={[styles.divider, { backgroundColor: theme.colors.border.subtle }]} />
+          {/* Mode Selector */}
+          <View style={styles.selectorContainer}>
+            <Animated.View style={[styles.activeIndicator, { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }, modeIndicatorStyle]} />
             
             <Pressable 
               onPress={() => {
-                setShowMenu(false);
+                islandMode.value = withSpring(0);
+              }}
+              style={styles.modeOption}
+            >
+              <TicketIcon size={18} color={theme.colors.text.primary} />
+              <Text style={[styles.modeText, { color: theme.colors.text.primary }]}>Entradas</Text>
+            </Pressable>
+
+            <Pressable 
+              onPress={() => {
                 router.push('/(main)/scan');
               }}
-              style={styles.dropdownItem}
+              style={styles.modeOption}
             >
-              <ScanLine size={20} color={theme.colors.text.secondary} />
-              <Text style={[styles.dropdownText, { color: theme.colors.text.secondary }]}>Escanear Ticket</Text>
+              <ScanLine size={18} color={theme.colors.text.secondary} />
+              <Text style={[styles.modeText, { color: theme.colors.text.secondary }]}>Escanear</Text>
             </Pressable>
           </View>
-        )}
+        </View>
       </View>
 
       {/* Wallet Content */}
@@ -83,7 +90,9 @@ export default function TicketsScreen() {
       </View>
     </SafeAreaView>
   );
-}
+};
+
+export default TicketsScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -92,65 +101,59 @@ const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    zIndex: 100,
+    alignItems: 'center',
+    zIndex: 1000,
   },
-  header: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  menuTrigger: {
-    flex: 1,
+  island: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
+    height: 56,
+    borderRadius: 28,
     borderWidth: 1,
+    paddingHorizontal: 8,
+    gap: 8,
   },
-  closeButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuTitle: {
-    fontSize: 18,
-    fontFamily: typography.primary.bold,
+  divider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
-  dropdown: {
+  selectorContainer: {
+    flexDirection: 'row',
+    position: 'relative',
+    width: 220,
+    height: 44,
+    alignItems: 'center',
+  },
+  activeIndicator: {
     position: 'absolute',
-    top: 64,
-    left: 0,
-    right: 60,
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    width: 105,
+    height: 36,
+    borderRadius: 18,
+    left: 2,
   },
-  dropdownItem: {
+  modeOption: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 12,
+    justifyContent: 'center',
+    gap: 8,
+    zIndex: 1,
   },
-  dropdownText: {
-    fontSize: 16,
-    fontFamily: typography.primary.medium,
-  },
-  divider: {
-    height: 1,
-    marginHorizontal: 8,
+  modeText: {
+    fontSize: 13,
+    fontFamily: typography.primary.bold,
   },
   content: {
     flex: 1,
-    paddingTop: 20,
+    paddingTop: 40,
   },
   emptyState: {
     flex: 1,

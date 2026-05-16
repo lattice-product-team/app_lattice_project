@@ -1,4 +1,4 @@
-import { db, tickets, users, passkeyCredentials, eq, sql } from '@app/db';
+import { db, tickets, users, events, passkeyCredentials, eq, sql } from '@app/db';
 import { Request, Response } from 'express';
 import { verifyToken, generateToken } from './auth.utils.js';
 
@@ -21,8 +21,12 @@ export const getTickets = async (req: Request, res: Response) => {
       isActive: tickets.isActive,
       createdAt: tickets.createdAt,
       seatLocation: sql<string>`ST_AsGeoJSON(${tickets.seatLocation})`,
+      eventName: events.name,
+      eventColor: events.primaryColor,
+      eventBanner: events.bannerUrl,
     })
     .from(tickets)
+    .innerJoin(events, eq(tickets.eventId, events.id))
     .where(eq(tickets.userId, userId));
     
     // Parse GeoJSON
@@ -71,8 +75,12 @@ export const claimTicket = async (req: Request, res: Response) => {
       seatNumber: tickets.seatNumber,
       isActive: tickets.isActive,
       seatLocation: sql<string>`ST_AsGeoJSON(${tickets.seatLocation})`,
+      eventName: events.name,
+      eventColor: events.primaryColor,
+      eventBanner: events.bannerUrl,
     })
     .from(tickets)
+    .innerJoin(events, eq(tickets.eventId, events.id))
     .where(eq(tickets.code, ticket_code));
 
     res.json({ 

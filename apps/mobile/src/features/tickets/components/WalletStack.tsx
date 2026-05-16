@@ -15,7 +15,6 @@ import { TicketCard } from './TicketCard';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useUnclaimTicket } from '../../auth/hooks/useAuthActions';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
-import { Trash2 } from 'lucide-react-native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const STACK_OFFSET = 60;
@@ -118,7 +117,6 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(null);
   const expandProgress = useSharedValue(0);
-  const { mutateAsync: unclaimTicket } = useUnclaimTicket();
   const isAnySelected = selectedTicketId !== null;
 
   const toggleExpand = () => {
@@ -134,28 +132,6 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
     } else {
       setSelectedTicketId(ticket.id);
     }
-  };
-
-  const handleUnclaim = (ticketId: number) => {
-    Alert.alert(
-      'Eliminar Ticket',
-      '¿Estás seguro de que quieres eliminar esta entrada de tu Wallet?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive', 
-          onPress: async () => {
-            try {
-              await unclaimTicket(String(ticketId));
-              setSelectedTicketId(null);
-            } catch (e) {
-              Alert.alert('Error', 'No se ha podido eliminar la entrada.');
-            }
-          } 
-        }
-      ]
-    );
   };
 
   return (
@@ -182,14 +158,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
             onPress={() => setSelectedTicketId(null)}
             style={[styles.backButton, { backgroundColor: theme.colors.glass.background }]}
           >
-            <Text style={[styles.backText, { color: theme.colors.text.primary }]}>Volver al Wallet</Text>
-          </Pressable>
-
-          <Pressable 
-            onPress={() => handleUnclaim(Number(selectedTicketId))}
-            style={styles.unclaimButton}
-          >
-            <Trash2 size={20} color={theme.colors.status.error} />
+            <Text style={[styles.backText, { color: theme.colors.text.primary }]}>Cerrar Detalle</Text>
           </Pressable>
         </Animated.View>
       )}
@@ -220,7 +189,6 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     flexDirection: 'row',
-    gap: 12,
   },
   backButton: {
     flex: 1,
@@ -234,15 +202,5 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 16,
     fontFamily: 'PlusJakartaSans-Bold',
-  },
-  unclaimButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,59,48,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,59,48,0.2)',
   },
 });

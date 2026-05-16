@@ -1,17 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Cpu, MapPin } from 'lucide-react-native';
+import { Cpu, MapPin, Sparkles, Navigation } from 'lucide-react-native';
 import { Ticket } from '../../../types/models/auth';
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
+import { useEventStore } from '../../event/store/useEventStore';
 import { useRouter } from 'expo-router';
+import { typography } from '../../../styles/typography';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 48;
-const CARD_HEIGHT = CARD_WIDTH * 1.5;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH - 48;
+const CARD_HEIGHT = CARD_WIDTH * 1.5; 
 
 interface TicketCardProps {
   ticket: Ticket;
@@ -29,132 +31,127 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   const theme = useLatticeTheme();
   const router = useRouter();
   const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
+  const setSelectedEvent = useEventStore((s) => s.setSelectedEvent);
   
-  const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna');
+  const isVip = ticket.zoneName?.toLowerCase().includes('vip');
+  const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna') || ticket.zoneName?.toLowerCase().includes('grandstand');
 
-  const handleGoToSeat = () => {
-    if (ticket.seatLocation?.coordinates) {
-      triggerForceCenter('list_click');
-      // We use a timeout to let the UI close before flying
-      router.push('/(main)');
-      // The MapCameraManager will pick up the new coordinates via store or props
-      // In this case, we need to ensure the store knows where to go.
+  const handleGoToEvent = () => {
+    const hasSpecificLocation = ticket.seatLocation?.coordinates && (ticket.seatRow || ticket.seatNumber || isTribuna || isVip);
+    
+    triggerForceCenter('list_click');
+    router.replace('/(main)');
+
+    if (hasSpecificLocation && ticket.seatLocation) {
       useMapUIStore.getState().setDiscoveryLocation(ticket.seatLocation.coordinates);
+    } else if (ticket.id) {
+       const eventId = (ticket as any).eventId || 3; 
+       setSelectedEvent(String(eventId));
     }
   };
 
-  // Brand gradient combinations
-  const gradientColors = isTribuna
-    ? [theme.colors.brand.primary, theme.colors.brand.secondaryVariant]
-    : [theme.colors.brand.secondary, theme.colors.brand.primaryVariant];
+  // Modern Premium Gradients
+  const gradientColors = isVip 
+    ? ['#0f0f0f', '#1a1a1a'] 
+    : isTribuna
+      ? ['#991B1B', '#7F1D1D'] 
+      : ['#3730A3', '#312E81'];
 
   return (
     <Animated.View
-      entering={FadeIn.delay(index * 100)}
+      entering={FadeIn.delay(index * 50)}
       style={[styles.cardContainer, { backgroundColor: theme.colors.bg.main }]}
     >
-      <TouchableOpacity activeOpacity={0.9} onPress={onCardPress} style={{ flex: 1 }}>
+      <TouchableOpacity activeOpacity={0.98} onPress={onCardPress} style={{ flex: 1 }}>
         <LinearGradient
           colors={gradientColors as any}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.gradient}
-        >
-          {/* Top Glass Header */}
-          <View
-            style={[
-              styles.glassHeader,
-              {
-                backgroundColor: theme.colors.glass.background,
-                borderColor: theme.colors.glass.border,
-              },
-            ]}
-          >
-            <View>
-              <Text style={[styles.brandTitle, { color: theme.colors.text.inverse }]}>LATTICE</Text>
-              <Text style={[styles.brandSub, { color: theme.colors.interactive.disabled }]}>
-                LATTICE ELITE
-              </Text>
+          style={StyleSheet.absoluteFill}
+        />
+
+        {/* Subtle Background Image of the Event */}
+        <Image
+          source={{ uri: ticket.eventBanner || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
+          style={[StyleSheet.absoluteFill, { opacity: 0.15 }]} // More subtle as requested
+          contentFit="cover"
+        />
+
+        <View style={styles.mainWrapper}>
+          {/* Header with Go To Event Button */}
+          <View style={styles.header}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.brandTitle}>LATTICE ELITE</Text>
+              <Text style={styles.eventTitle} numberOfLines={1}>{ticket.eventName || 'BARCELONA EVENT'}</Text>
             </View>
-            <View style={[styles.chipContainer, { backgroundColor: theme.colors.overlay.thin }]}>
-              <Cpu
-                size={24}
-                color={theme.colors.text.inverse}
-                strokeWidth={2}
-                style={{ opacity: 0.7 }}
-              />
-            </View>
+            
+            <TouchableOpacity 
+              onPress={handleGoToEvent}
+              activeOpacity={0.8}
+              style={[styles.miniActionButton, { backgroundColor: isVip ? '#FFD700' : 'rgba(255,255,255,0.15)' }]}
+            >
+              <Navigation size={14} color={isVip ? "#000" : "#fff"} strokeWidth={2.5} />
+              <Text style={[styles.miniActionText, { color: isVip ? "#000" : "#fff" }]}>GO</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Main Info Section */}
-          <View style={styles.content}>
-            <View style={styles.mainField}>
-              <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>ZONE</Text>
-              <Text style={[styles.value, { color: theme.colors.text.inverse }]}>
-                {ticket.zoneName || 'General Admission'}
-              </Text>
+          {/* Main Content */}
+          <View style={styles.centerContent}>
+            {isVip && (
+              <View style={styles.vipBadge}>
+                <Sparkles size={12} color="#FFD700" fill="#FFD700" />
+                <Text style={styles.vipText}>VIP PASS</Text>
+              </View>
+            )}
+
+            <View style={styles.zoneBox}>
+               <Text style={styles.label}>ACCESS ZONE</Text>
+               <Text style={styles.value} numberOfLines={1}>{ticket.zoneName?.toUpperCase() || 'GENERAL ADMISSION'}</Text>
             </View>
 
             <View style={styles.grid}>
               <View style={styles.field}>
-                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>
-                  GATE
-                </Text>
-                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>
-                  {ticket.gate || '03'}
-                </Text>
+                <Text style={styles.label}>GATE</Text>
+                <Text style={styles.subValue}>{ticket.gate || 'MAIN'}</Text>
               </View>
               <View style={styles.field}>
-                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>
-                  ROW
-                </Text>
-                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>
-                  {ticket.seatRow || '—'}
-                </Text>
+                <Text style={styles.label}>ROW</Text>
+                <Text style={styles.subValue}>{ticket.seatRow || '—'}</Text>
               </View>
               <View style={styles.field}>
-                <Text style={[styles.label, { color: theme.colors.interactive.disabled }]}>
-                  SEAT
-                </Text>
-                <Text style={[styles.subValue, { color: theme.colors.text.inverse }]}>
-                  {ticket.seatNumber || '—'}
-                </Text>
+                <Text style={styles.label}>SEAT</Text>
+                <Text style={styles.subValue}>{ticket.seatNumber || '—'}</Text>
               </View>
-            </View>
-
-            {isSelected && ticket.seatLocation && (
-              <Pressable 
-                onPress={handleGoToSeat}
-                style={[styles.seatButton, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}
-              >
-                <MapPin size={18} color="#fff" />
-                <Text style={styles.seatButtonText}>Ir a mi asiento</Text>
-              </Pressable>
-            )}
-          </View>
-
-          {/* Bottom QR Section (Clean) */}
-          <View style={[styles.footer, { backgroundColor: theme.colors.bg.surface }]}>
-            <View style={[styles.qrWrapper, { backgroundColor: theme.colors.bg.surface }]}>
-              <Image
-                source={{
-                  uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${ticket.code}&color=1d1c1d`,
-                }}
-                style={styles.qrCode}
-                contentFit="contain"
-              />
-            </View>
-            <View style={[styles.codeContainer, { backgroundColor: theme.colors.overlay.thin }]}>
-              <Text style={[styles.ticketCode, { color: theme.colors.text.primary }]}>
-                {ticket.code}
-              </Text>
             </View>
           </View>
 
-          {/* Abstract Decorations */}
-          <View style={[styles.decorCircle, { backgroundColor: theme.colors.overlay.thin }]} />
-          <View style={[styles.decorLines, { backgroundColor: theme.colors.overlay.thin }]} />
-        </LinearGradient>
+          {/* Footer (QR Section when selected) */}
+          {!isSelected ? (
+            <View style={styles.footer}>
+               <View style={styles.ticketMeta}>
+                  <Text style={styles.ticketCode}>{ticket.code}</Text>
+                  <View style={styles.dot} />
+                  <Text style={styles.ticketDate}>LATTICE TICKETING SYSTEM</Text>
+               </View>
+            </View>
+          ) : (
+            <Animated.View entering={FadeIn} style={styles.qrSection}>
+              <View style={styles.qrContainer}>
+                 <Image
+                  source={{
+                    uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${ticket.code}&color=1d1c1d`,
+                  }}
+                  style={styles.qrCode}
+                  contentFit="contain"
+                />
+              </View>
+              <Text style={styles.qrCodeText}>{ticket.code}</Text>
+            </Animated.View>
+          )}
+        </View>
+
+        {/* Abstract decoration */}
+        <View style={styles.decorCircle} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -167,126 +164,152 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
-    elevation: 15,
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  gradient: {
+  mainWrapper: {
     flex: 1,
-    padding: 32,
+    padding: 24,
     justifyContent: 'space-between',
   },
-  glassHeader: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  chipContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   brandTitle: {
-    fontSize: 18,
-    fontFamily: 'Outfit-Bold',
-    letterSpacing: 1,
-  },
-  brandSub: {
     fontSize: 10,
-    fontFamily: 'PlusJakartaSans-ExtraBold',
+    fontFamily: typography.primary.bold,
+    color: 'rgba(255,255,255,0.4)',
     letterSpacing: 2,
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontFamily: typography.primary.bold,
+    color: '#fff',
     marginTop: 2,
   },
-  content: {
-    paddingVertical: 20,
+  miniActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  mainField: {
-    marginBottom: 24,
+  miniActionText: {
+    fontSize: 11,
+    fontFamily: typography.primary.bold,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 20,
+  },
+  vipBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,215,0,0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginBottom: -8,
+  },
+  vipText: {
+    color: '#FFD700',
+    fontSize: 10,
+    fontFamily: typography.primary.bold,
+  },
+  zoneBox: {
+    gap: 4,
+  },
+  label: {
+    fontSize: 9,
+    fontFamily: typography.primary.bold,
+    color: 'rgba(255,255,255,0.3)',
+    letterSpacing: 1.5,
+  },
+  value: {
+    fontSize: 26,
+    fontFamily: typography.primary.bold,
+    color: '#fff',
   },
   grid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginTop: 8,
   },
   field: {
     flex: 1,
   },
-  label: {
-    fontSize: 10,
-    fontFamily: 'PlusJakartaSans-Bold',
-    letterSpacing: 1.5,
-    marginBottom: 8,
-  },
-  value: {
-    fontSize: 28,
-    fontFamily: 'Outfit-Bold',
-    letterSpacing: -0.5,
-  },
   subValue: {
-    fontSize: 20,
-    fontFamily: 'Outfit-Medium',
-  },
-  seatButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  seatButtonText: {
+    fontSize: 18,
+    fontFamily: typography.primary.bold,
     color: '#fff',
-    fontSize: 14,
-    fontFamily: 'PlusJakartaSans-Bold',
+    marginTop: 2,
   },
   footer: {
-    borderRadius: 28,
-    padding: 24,
+    marginTop: 10,
+  },
+  ticketMeta: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  qrWrapper: {
-    width: 160,
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  qrCode: {
-    width: 140,
-    height: 140,
-  },
-  codeContainer: {
-    marginTop: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 12,
+    gap: 8,
   },
   ticketCode: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans-Bold',
-    letterSpacing: 3,
-    opacity: 0.6,
+    fontSize: 11,
+    fontFamily: typography.primary.bold,
+    color: 'rgba(255,255,255,0.3)',
+    letterSpacing: 1,
+  },
+  ticketDate: {
+    fontSize: 9,
+    fontFamily: typography.primary.medium,
+    color: 'rgba(255,255,255,0.2)',
+  },
+  dot: {
+    width: 2,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  qrSection: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    padding: 16,
+    borderRadius: 24,
+    marginTop: 10,
+  },
+  qrContainer: {
+    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+  },
+  qrCode: {
+    width: 120,
+    height: 120,
+  },
+  qrCodeText: {
+    marginTop: 12,
+    fontSize: 10,
+    fontFamily: typography.primary.bold,
+    color: '#fff',
+    opacity: 0.4,
+    letterSpacing: 2,
   },
   decorCircle: {
     position: 'absolute',
-    top: -60,
-    right: -60,
+    bottom: -60,
+    left: -60,
     width: 200,
     height: 200,
     borderRadius: 100,
-  },
-  decorLines: {
-    position: 'absolute',
-    bottom: 240,
-    left: -20,
-    width: 100,
-    height: 2,
-    transform: [{ rotate: '45deg' }],
+    backgroundColor: 'rgba(255,255,255,0.02)',
   },
 });
