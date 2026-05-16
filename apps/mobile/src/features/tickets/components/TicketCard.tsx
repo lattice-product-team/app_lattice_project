@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Cpu, MapPin, Sparkles, Navigation } from 'lucide-react-native';
 import { Ticket } from '../../../types/models/auth';
@@ -7,9 +7,11 @@ import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
-import { useEventStore } from '../../event/store/useEventStore';
+import { usePOIStore } from '../../poi/store/usePOIStore';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useRouter } from 'expo-router';
 import { typography } from '../../../styles/typography';
+import { normalizePOI } from '../../poi/adapters/poiAdapter';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 48;
@@ -31,7 +33,10 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   const theme = useLatticeTheme();
   const router = useRouter();
   const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
-  const setSelectedEvent = useEventStore((s) => s.setSelectedEvent);
+  
+  // Stores
+  const { selectPoi, setSelectedEvent } = usePOIStore();
+  const { setPlanning } = useNavigationStore();
   
   const isVip = ticket.zoneName?.toLowerCase().includes('vip');
   const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna') || ticket.zoneName?.toLowerCase().includes('grandstand');
@@ -39,14 +44,34 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   const handleGoToEvent = () => {
     const hasSpecificLocation = ticket.seatLocation?.coordinates && (ticket.seatRow || ticket.seatNumber || isTribuna || isVip);
     
+    // 1. Prepare Camera
     triggerForceCenter('list_click');
+    
+    // 2. Switch to Map
     router.replace('/(main)');
 
+    // 3. Automation: Start Route Planning directly
+    setPlanning(true);
+
+    // 4. Set Target
     if (hasSpecificLocation && ticket.seatLocation) {
-      useMapUIStore.getState().setDiscoveryLocation(ticket.seatLocation.coordinates);
-    } else if (ticket.id) {
-       const eventId = (ticket as any).eventId || 3; 
-       setSelectedEvent(String(eventId));
+      console.log('[Ticket] Routing to SPECIFIC ZONE:', ticket.zoneName);
+      
+      // Create a virtual POI for the seat to ensure routing picks it up
+      const seatPoi = normalizePOI({
+        id: `ticket-${ticket.id}`,
+        properties: {
+          name: `${ticket.zoneName} - ${ticket.seatRow}${ticket.seatNumber}`,
+          category: isVip ? 'vip' : 'seat',
+          label: ticket.zoneName,
+        },
+        geometry: ticket.seatLocation
+      });
+      
+      selectPoi(seatPoi, false); // select but don't sync UI (we already set planning mode)
+    } else if (ticket.eventId) {
+       console.log('[Ticket] Routing to EVENT area:', ticket.eventName);
+       setSelectedEvent(ticket.eventId, false); // same here
     }
   };
 
@@ -73,7 +98,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({
         {/* Subtle Background Image of the Event */}
         <Image
           source={{ uri: ticket.eventBanner || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
-          style={[StyleSheet.absoluteFill, { opacity: 0.15 }]} // More subtle as requested
+          style={[StyleSheet.absoluteFill, { opacity: 0.15 }]} 
           contentFit="cover"
         />
 

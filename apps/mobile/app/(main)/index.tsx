@@ -21,7 +21,7 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Compass, Map as MapIcon } from 'lucide-react-native';
+import { Compass, Map as MapIcon, Ticket as TicketIcon } from 'lucide-react-native';
 
 // Core Components
 import { MapContent } from '../../src/features/map/components/MapContent';
@@ -566,7 +566,6 @@ export default function MapIndexPage() {
     const isLayerActive = uiLayer.value === UILayer.PROFILE || uiLayer.value === UILayer.PLANNING;
 
     // Hide if: profile/planning active, if AR is active, OR if NAVIGATING
-    // We NO LONGER hide if searching (Level 3) so it stays "behind" the sheet
     const shouldHide = isLayerActive || isARActive || isNavigating;
 
     return {
@@ -807,25 +806,6 @@ export default function MapIndexPage() {
         <NavigationInfo />
       </Animated.View>
 
-      {/* 3. Global Dimmer (Z-Index: 900) - Temporarily disabled for diagnostic */}
-      {/* 
-      <Animated.View
-        pointerEvents="box-none"
-        style={[StyleSheet.absoluteFill, { zIndex: 900 }]}
-      >
-        <Animated.View
-          animatedProps={dimmerProps}
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: 'black' },
-            mapOverlayStyle,
-            dimmerStyle,
-          ]}
-          pointerEvents="none"
-        />
-      </Animated.View>
-      */}
-
       {/* 4. HUD Buttons & Controls (Z-Index: 1000) */}
       <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]} pointerEvents="box-none">
         <AdaptiveControlOverlay
@@ -842,7 +822,6 @@ export default function MapIndexPage() {
           }}
           onToggle3D={() => {
             // Functionality disabled as per requirement
-            // setManualAR(!manualAR)
           }}
           is3DActive={false} // Force 2D
           isConnected={isConnected}
@@ -1050,7 +1029,7 @@ const styles = StyleSheet.create({
   modeToggleContainer: {
     position: 'absolute',
     left: 12,
-    zIndex: 2000,
+    zIndex: 2500,
   },
   modePill: {
     flexDirection: 'row',
