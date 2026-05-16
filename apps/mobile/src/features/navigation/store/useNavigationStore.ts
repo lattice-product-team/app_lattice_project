@@ -118,36 +118,38 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
   },
   
   startNavigation: (islandState) => {
-    // 1. UPDATE INTERNAL STATE FIRST to avoid race conditions with camera centering
-    set({ 
-      isPlanning: false, 
-      isNavigating: true 
-    });
-
+    console.log('[NavigationStore] startNavigation triggered');
     try {
       const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
       const { usePOIStore } = require('../../poi/store/usePOIStore');
       const { useEventStore } = require('../../event/store/useEventStore');
       const { withSpring } = require('react-native-reanimated');
-      const { theme } = require('../../../../styles/theme');
+      const { theme } = require('../../../styles/theme');
       
       const uiStore = useMapUIStore.getState();
       
-      // 2. Clear selections to prevent camera "theft"
-      usePOIStore.getState().setSelectedPoi(null);
-      useEventStore.getState().setSelectedEvent(null);
-      
-      // 3. Transition UI state
+      // 1. Update state
+      set({ 
+        isPlanning: false, 
+        isNavigating: true 
+      });
+
+      // 2. Transition UI state
       uiStore.setUIState(MapUIState.NAVIGATING);
       
-      // 4. Force camera tracking mode
+      // 3. Force camera tracking mode
       uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
       uiStore.triggerRecenter();
 
-      // 5. Collapse the island drawer
+      // 4. Collapse the island drawer
       if (islandState) {
         islandState.value = withSpring(0, theme.motion.physics.magnetic);
       }
+
+      // 5. Clear selections LAST to prevent camera "theft" during transition
+      usePOIStore.getState().setSelectedPoi(null);
+      useEventStore.getState().setSelectedEvent(null);
+      
     } catch (e) {
       console.warn('[NavigationStore] startNavigation failed:', e);
     }

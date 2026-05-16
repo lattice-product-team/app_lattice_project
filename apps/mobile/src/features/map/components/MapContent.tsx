@@ -496,7 +496,7 @@ export const MapContent = function MapContent({
           animated={true}
           showsUserHeadingIndicator={true}
           androidRenderMode="compass"
-          renderMode="native"
+          renderMode="normal"
         />
 
         <MapImageManager events={events} />

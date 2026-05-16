@@ -51,15 +51,16 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
 
   const internalState = useSharedValue(0);
 
+  // Sync internal animation state with external visibility and navigation status
   useEffect(() => {
-    // Hide if not planning OR if navigating
     const shouldShow = isPlanning && !isNavigating;
     internalState.value = withSpring(shouldShow ? 1 : 0, theme.motion.physics.magnetic);
   }, [isPlanning, isNavigating, theme.motion.physics.magnetic]);
 
   const rContainerStyle = useAnimatedStyle(() => {
-    const height = 280 + insets.bottom;
-    const margin = 16;
+    const height = 320 + insets.bottom;
+    const isHidden = internalState.value < 0.01;
+    
     return {
       transform: [
         { 
@@ -71,13 +72,14 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
           ) 
         }
       ],
-      opacity: interpolate(internalState.value, [0, 0.1], [0, 1], Extrapolation.CLAMP),
-      marginHorizontal: margin,
+      opacity: internalState.value,
+      marginHorizontal: 16,
       bottom: insets.bottom + 8,
     };
   });
 
   const handleStart = () => {
+    console.log('[RoutePlanningSheet] handleStart triggered');
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     startNavigation(islandState);
   };

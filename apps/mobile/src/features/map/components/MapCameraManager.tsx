@@ -6,6 +6,7 @@ import { DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
 import { calculateBBox, calculateCentroid } from '../../../utils/geoUtils';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
+import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -46,9 +47,6 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     recenterCount,
     forceCenterCount,
     lastCameraPosition,
-    uiState,
-    isNavigating,
-    isPlanning,
     cameraMode,
     currentRoute,
     transportMode,
@@ -60,13 +58,15 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     setLastProcessedTarget,
   } = props;
 
+  const { isNavigating, isPlanning } = useNavigationStore();
+  const { uiState, setCameraMode, isProgrammaticMove, setIsProgrammaticMove } = useMapUIStore();
+
   const cameraRef = React.useRef<any>(null);
   const insets = useSafeAreaInsets();
   const lastTargetRef = React.useRef<string | null>(null);
   const lastActionTimestamp = React.useRef<number>(0);
   const transitionTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const CAMERA_ACTION_THROTTLE = 500; // ms
-  const { setCameraMode, isProgrammaticMove, setIsProgrammaticMove } = useMapUIStore();
 
   const clearTransitionTimer = React.useCallback(() => {
     if (transitionTimerRef.current) {
