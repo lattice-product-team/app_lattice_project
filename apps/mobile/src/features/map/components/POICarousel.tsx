@@ -133,6 +133,7 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
   const theme = useLatticeTheme();
   const logicalCoords = useLocationStore((s) => s.logicalCoords);
   const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
+  const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
   
   const userCoords = discoveryLocation || logicalCoords;
 
@@ -175,7 +176,15 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
           contentContainerStyle={styles.scrollContent}
         >
           {sortedPois.map((poi, index) => (
-            <POICarouselCard key={poi.id} poi={poi} index={index} onPress={() => onSelectPoi(poi)} />
+            <POICarouselCard
+              key={poi.id}
+              poi={poi}
+              index={index}
+              onPress={() => {
+                triggerForceCenter('list_click');
+                onSelectPoi(poi);
+              }}
+            />
           ))}
         </ScrollView>
       </GestureDetector>

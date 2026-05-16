@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { Search, XCircle, Mic } from 'lucide-react-native';
 import Animated, { 
   useAnimatedStyle, 
@@ -182,20 +182,36 @@ export const FloatingSearchBar = React.memo(
             onPress={onPress}
             disabled={editable}
           >
-            <TextInput
-              ref={ref}
-              value={value}
-              onChangeText={onChangeText}
-              onFocus={onFocus}
-              placeholder={placeholder}
-              placeholderTextColor={theme.colors.text.muted}
-              style={[styles.input, { color: theme.colors.text.primary }]}
-              selectionColor={theme.colors.brand.primary}
-              returnKeyType="search"
-              onSubmitEditing={onSubmit}
-              editable={editable}
-              pointerEvents={editable ? 'auto' : 'none'}
-            />
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+              <TextInput
+                ref={ref}
+                value={value}
+                onChangeText={onChangeText}
+                onFocus={onFocus}
+                placeholder={Platform.OS === 'ios' ? placeholder : ''}
+                placeholderTextColor={theme.colors.text.muted}
+                style={[styles.input, { color: theme.colors.text.primary }]}
+                selectionColor={theme.colors.brand.primary}
+                returnKeyType="search"
+                onSubmitEditing={onSubmit}
+                editable={editable}
+                pointerEvents={editable ? 'auto' : 'none'}
+              />
+              {Platform.OS === 'android' && !value && (
+                <Text 
+                  style={[
+                    styles.input, 
+                    styles.placeholderOverlay, 
+                    { color: theme.colors.text.muted }
+                  ]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  pointerEvents="none"
+                >
+                  {placeholder}
+                </Text>
+              )}
+            </View>
           </Pressable>
 
           {value.length > 0 && (
@@ -260,6 +276,15 @@ const styles = StyleSheet.create({
     fontFamily: typography.secondary.medium,
     paddingVertical: 0,
     letterSpacing: -0.2,
+  },
+  placeholderOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
+    // Ensure it matches vertical alignment
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   clearButton: {
     padding: 4,

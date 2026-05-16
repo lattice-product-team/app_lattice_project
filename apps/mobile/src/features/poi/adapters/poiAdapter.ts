@@ -13,58 +13,91 @@ export const isValidCoordinate = (coords?: number[] | null): boolean => {
 };
 
 /**
- * Adapter to normalize raw GeoJSON data into a consistent UI model.
+ * Adapter to normalize raw GeoJSON data or flat discovery objects into a consistent UI model.
  */
 export const normalizePOI = (raw: any): StandardUIPOI => {
-  const properties = raw?.properties || {};
-  const geometry = raw?.geometry || { coordinates: [0, 0] };
+  // If it's already a StandardUIPOI, return it (idempotency)
+  if (raw?.__normalized) return raw;
+
+  // Polymorphic extraction: Support GeoJSON (properties/geometry) or Flat objects
+  const properties = raw?.properties || raw || {};
+  const geometry = raw?.geometry || {};
   
-  // Robust category detection: check category, then type, then default
+  // Coordinates can be in geometry.coordinates (GeoJSON) or directly in coords/coordinates (Flat)
+  const rawCoords = 
+    geometry.coordinates || 
+    raw?.coordinates || 
+    raw?.coords || 
+    (raw?.longitude !== undefined ? [raw.longitude, raw.latitude] : [0, 0]);
+  
+  const coordinates: [number, number] = [rawCoords[0] || 0, rawCoords[1] || 0];
+
+  // Helper to filter out placeholder strings that aren't real URLs
+  const isRealUrl = (url: string) => typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:'));
+
+  const rawImages = properties.images || raw?.images || properties.galleryUrls || raw?.galleryUrls || [];
+  const validImages = Array.isArray(rawImages) ? rawImages.filter(isRealUrl) : [];
+  
+  const bannerCandidate = properties.bannerUrl || raw?.bannerUrl || validImages[0];
+  const bannerUrl = isRealUrl(bannerCandidate) ? bannerCandidate : validImages[0];
+
+  // Robust category detection
   const category = (properties.category || properties.type || 'generic').toLowerCase();
   const metadata = getCategoryMetadata(category);
 
   return {
-    id: String(properties.id || ''),
-    displayName: properties.name || properties.label || 'Unknown Location',
+    id: String(properties.id || raw?.id || ''),
+    displayName: properties.name || properties.label || raw?.displayName || 'Unknown Location',
     category: category,
-    categoryLabel: metadata.label,
+    categoryLabel: properties.categoryLabel || metadata.label,
     categoryIcon: metadata.icon,
     iconFamily: metadata.iconFamily,
-    mainColor: metadata.color,
-    coordinates: [geometry.coordinates?.[0] || 0, geometry.coordinates?.[1] || 0],
+    mainColor: properties.mainColor || metadata.color,
+    coordinates,
     parentId: properties.parentId || properties.event_id || properties.eventId,
-    description: properties.description,
-    images: properties.images,
-    bannerUrl: properties.bannerUrl,
-    galleryUrls: properties.galleryUrls,
-    rating: properties.metadata?.social?.rating,
-    reviewsCount: properties.metadata?.social?.reviews_count,
+    description: properties.description || raw?.description,
+    images: validImages,
+    bannerUrl,
+    galleryUrls: validImages,
+    rating: properties.metadata?.social?.rating || raw?.rating,
+    reviewsCount: properties.metadata?.social?.reviews_count || raw?.reviewsCount,
     raw: properties,
-  };
+    __normalized: true, // Internal flag to avoid double normalization
+  } as any;
 };
 
 /**
  * Adapter to normalize LatticeEvent into StandardUIPOI.
  */
 export const normalizeEvent = (event: any): StandardUIPOI => {
-  const id = String(event.id);
-  const color = event.color || getStableColor(id);
+  if (event?.__normalized) return event;
+
+  const id = String(event.id || '');
+  const color = event.color || event.mainColor || getStableColor(id);
+
+  // Robust coordinate extraction for events (Flat or GeoJSON style)
+  const coords = 
+    event.center?.coordinates || 
+    event.coordinates || 
+    event.coords || 
+    (event.longitude !== undefined ? [event.longitude, event.latitude] : [0, 0]);
   
   return {
     id,
-    displayName: event.name,
+    displayName: event.name || event.displayName || 'Unknown Event',
     category: 'event',
     categoryLabel: 'Evento',
     categoryIcon: 'calendar-star',
     iconFamily: 'material' as const,
     mainColor: color,
-    coordinates: [event.center?.coordinates[0] || 0, event.center?.coordinates[1] || 0],
-    images: event.bannerUrl ? [event.bannerUrl] : [],
-    bannerUrl: event.bannerUrl,
-    galleryUrls: event.galleryUrls || [],
-    imageKey: event.bannerUrl ? `event-img-${id}` : 'placeholder-event',
+    coordinates: [coords[0] || 0, coords[1] || 0],
+    images: event.images || (event.bannerUrl ? [event.bannerUrl] : []),
+    bannerUrl: event.bannerUrl || event.images?.[0],
+    galleryUrls: event.galleryUrls || event.images || [],
+    imageKey: (event.bannerUrl || event.images?.[0]) ? `event-img-${id}` : 'placeholder-event',
     raw: event,
-  };
+    __normalized: true,
+  } as any;
 };
 
 /**

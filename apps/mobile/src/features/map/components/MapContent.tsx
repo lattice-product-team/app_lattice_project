@@ -70,6 +70,7 @@ export const MapContent = function MapContent({
     lastProcessedTarget,
     setLastProcessedTarget,
     visibleBounds,
+    triggerSource,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
   const userCoords = useLocationStore((s) => s.coords);
@@ -297,7 +298,7 @@ export const MapContent = function MapContent({
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCameraMode(MapCameraMode.FREE);
-      triggerForceCenter();
+      triggerForceCenter('map_click');
 
       const isEvent =
         properties.category === 'event' || properties.type === 'event' || !!properties.imageKey;
@@ -525,6 +526,7 @@ export const MapContent = function MapContent({
           realtimeCameraRef={realtimeCameraRef}
           lastProcessedTarget={lastProcessedTarget}
           setLastProcessedTarget={setLastProcessedTarget}
+          triggerSource={triggerSource}
         />
 
         <MapLayers

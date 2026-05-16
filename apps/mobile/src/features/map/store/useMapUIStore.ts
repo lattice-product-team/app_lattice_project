@@ -19,11 +19,14 @@ export enum MapCameraMode {
   FOLLOW_WITH_COURSE = 3, // UserTrackingMode.FollowWithCourse
 }
 
+export type MapCameraTriggerSource = 'map_click' | 'list_click' | 'exploration' | 'recenter' | 'initial' | null;
+
 interface MapUIStore {
   uiState: MapUIState;
   cameraMode: MapCameraMode;
   recenterCount: number;
   forceCenterCount: number;
+  triggerSource: MapCameraTriggerSource;
   isInitialLoadComplete: boolean;
   lastCameraPosition: {
     center: [number, number];
@@ -39,8 +42,9 @@ interface MapUIStore {
   setUIState: (state: MapUIState) => void;
   setCameraMode: (mode: MapCameraMode) => void;
   setIsProgrammaticMove: (isMove: boolean) => void;
-  triggerRecenter: () => void;
-  triggerForceCenter: () => void;
+  triggerRecenter: (source?: MapCameraTriggerSource) => void;
+  triggerForceCenter: (source?: MapCameraTriggerSource) => void;
+  setTriggerSource: (source: MapCameraTriggerSource) => void;
   setInitialLoadComplete: (isComplete: boolean) => void;
   setLastCameraPosition: (pos: { center: [number, number]; zoom: number; pitch: number }) => void;
   setDiscoveryLocation: (loc: [number, number] | null) => void;
@@ -62,6 +66,7 @@ export const useMapUIStore = create<MapUIStore>()(
       cameraMode: MapCameraMode.FREE,
       recenterCount: 0,
       forceCenterCount: 0,
+      triggerSource: null,
       isInitialLoadComplete: false,
       lastCameraPosition: null,
       discoveryLocation: null,
@@ -106,18 +111,22 @@ export const useMapUIStore = create<MapUIStore>()(
 
       setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
 
-      triggerRecenter: () =>
+      triggerRecenter: (source = 'recenter') =>
         set((state) => ({
           recenterCount: state.recenterCount + 1,
+          triggerSource: source,
           // We no longer toggle cameraMode here as the camera is now purely passive.
           // The UI might still use cameraMode for icons, but the action is a one-time snap.
           cameraMode: MapCameraMode.FOLLOW, 
         })),
 
-      triggerForceCenter: () =>
+      triggerForceCenter: (source = null) =>
         set((state) => ({
           forceCenterCount: state.forceCenterCount + 1,
+          triggerSource: source,
         })),
+
+      setTriggerSource: (triggerSource) => set({ triggerSource }),
 
       setInitialLoadComplete: (isComplete) => set({ isInitialLoadComplete: isComplete }),
 

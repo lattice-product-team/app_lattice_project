@@ -42,17 +42,32 @@ export const useDetailModel = (): DetailModel | null => {
   const openAR = useARStore((s) => s.openAR);
 
   // Get user location for estimates
+  const coords = useLocationStore((s) => s.coords);
   const logicalCoords = useLocationStore((s) => s.logicalCoords);
   const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
-  const userCoords = discoveryLocation || logicalCoords;
+  const userCoords = discoveryLocation || logicalCoords || coords;
 
   const currentDuration = routeMetadata?.duration;
   const currentDistance = routeMetadata?.distance;
 
-  const destinationCoords =
-    selectedPoi?.coordinates ||
-    selectedEvent?.center?.coordinates ||
-    (selectedEvent as any)?.coordinates;
+  // Coordinate Fallback Logic: POI Coords -> Parent Event Coords -> [0,0]
+  const destinationCoords = useMemo(() => {
+    // 1. Try POI coordinates
+    if (selectedPoi?.coordinates && (selectedPoi.coordinates[0] !== 0 || selectedPoi.coordinates[1] !== 0)) {
+      return selectedPoi.coordinates as [number, number];
+    }
+    
+    // 2. Try Event coordinates (if POI is selected but has no coords, or if Event is selected)
+    const targetEvent = selectedEvent || allEvents?.find((e) => String(e.id) === String(selectedPoi?.parentId));
+    const eventCoords = targetEvent?.center?.coordinates || (targetEvent as any)?.coordinates;
+    
+    if (eventCoords && (eventCoords[0] !== 0 || eventCoords[1] !== 0)) {
+      console.log('[useDetailModel] 🛡️ Fallback to Event coordinates for POI:', selectedPoi?.displayName);
+      return eventCoords as [number, number];
+    }
+
+    return undefined;
+  }, [selectedPoi, selectedEvent, allEvents]);
 
   const { estimatedDistance, estimatedDuration } = useMemo(() => {
     if (!userCoords || !destinationCoords)
@@ -220,8 +235,8 @@ export const useDetailModel = (): DetailModel | null => {
         name: selectedPoi.displayName,
         subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
-        bannerUrl: (selectedPoi as any).bannerUrl,
-        galleryUrls: (selectedPoi as any).galleryUrls || [],
+        bannerUrl: (selectedPoi as any).bannerUrl || selectedPoi.images?.[0] || (selectedPoi as any).galleryUrls?.[0],
+        galleryUrls: selectedPoi.images || (selectedPoi as any).galleryUrls || [],
         categoryIcon: catMetadata.icon,
         parentName,
         social: social

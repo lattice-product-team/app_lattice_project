@@ -14,11 +14,12 @@ import { typography } from '../../../styles/typography';
 import { semanticColors } from '../../../styles/semanticColors';
 import { EventCarouselCard } from './EventCarouselCard';
 import { useSearchEvents } from '../hooks/useSearchEvents';
+// Stores & Hooks
 import { usePOIStore } from '../../poi/store/usePOIStore';
+import { useMapUIStore } from '../store/useMapUIStore';
 import { LatticeEvent } from '../../../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 interface Category {
   id: string;
   label: string;
@@ -51,6 +52,7 @@ export const DiscoveryDashboard = React.memo(
     const theme = useAppTheme();
     const { activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
     const { events: allEvents, loading: eventsLoading } = useSearchEvents('');
+    const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
 
     const filteredEvents = useMemo(() => {
       if (activeCategoryFilters.length === 0) return allEvents;
@@ -190,7 +192,10 @@ export const DiscoveryDashboard = React.memo(
                   <EventCarouselCard
                     key={event.id}
                     event={event as any}
-                    onPress={() => onSelectEvent?.(event as any)}
+                    onPress={() => {
+                      triggerForceCenter('exploration');
+                      onSelectEvent?.(event as any);
+                    }}
                   />
                 ))}
                 {filteredEvents.length === 0 && (

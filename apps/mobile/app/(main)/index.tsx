@@ -102,6 +102,7 @@ export default function MapIndexPage() {
   const user = useAuthStore((state) => state.user);
   const openAuthPrompt = useAuthStore((state) => state.openAuthPrompt);
   const triggerRecenter = useMapUIStore((state) => state.triggerRecenter);
+  const triggerForceCenter = useMapUIStore((state) => state.triggerForceCenter);
   const cameraMode = useMapUIStore((state) => state.cameraMode);
   const lastCameraPosition = useMapUIStore((state) => state.lastCameraPosition);
   const setDiscoveryLocation = useMapUIStore((state) => state.setDiscoveryLocation);
@@ -329,13 +330,14 @@ export default function MapIndexPage() {
       // Save current level before collapsing
       preSearchLevel.value = islandState.value;
 
+      triggerForceCenter('exploration');
       setSelectedEvent(event.id);
       setCurrentEvent(event);
 
       islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     },
-    [setSelectedEvent, setCurrentEvent, selectPoi, islandState]
+    [setSelectedEvent, setCurrentEvent, selectPoi, islandState, triggerForceCenter]
   );
 
   const handleCloseDetails = useCallback(() => {
@@ -693,25 +695,32 @@ export default function MapIndexPage() {
 
   const handleDiscoveryItemPress = useCallback(
     (item: any) => {
-      // Basic heuristic to distinguish POI vs Event
-      if (
-        item.capacity !== undefined ||
-        item.currentOccupancy !== undefined ||
-        item.crowdLevel !== undefined
-      ) {
-        selectPoi(item);
-        if (setSelectedEvent as any) (setSelectedEvent as any)(null);
-        setCurrentEvent(null);
-      } else {
+      // 1. Trigger camera animation flag
+      triggerForceCenter('exploration');
+
+      // 2. Identify type: Use explicit discoveryType from server, or fallback to heuristics
+      const type = item.discoveryType || (item.startDate ? 'event' : 'poi');
+      const isEvent = type === 'event';
+      
+      if (isEvent) {
+        console.log('[Explore] Selecting EVENT:', item.name);
         handleEventSelect(item);
+      } else {
+        console.log('[Explore] Selecting POI:', item.name || item.displayName);
+        // Ensure we clear any previous event state so the POI detail takes over
+        setSelectedEvent(null);
+        setCurrentEvent(null);
+        selectPoi(normalizePOI(item));
       }
 
-      // Auto-switch to Map mode when an item is selected from Explore
-      const nextMode = 1;
-      toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
-      screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
-      setActiveMode(nextMode);
-      setLastScreenMode(nextMode);
+      // 3. Auto-switch to Map mode with small delay to let state settle
+      setTimeout(() => {
+        const nextMode = 1;
+        toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
+        screenMode.value = withSpring(nextMode, theme.motion.physics.magnetic);
+        setActiveMode(nextMode);
+        setLastScreenMode(nextMode);
+      }, 50);
     },
     [
       handleEventSelect,
@@ -721,6 +730,7 @@ export default function MapIndexPage() {
       toggleDrag,
       screenMode,
       theme.motion.physics.magnetic,
+      triggerForceCenter,
     ]
   );
 

@@ -7,6 +7,7 @@ import { getEventMetadata } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
 import * as Haptics from 'expo-haptics';
+import { useMapUIStore } from '../store/useMapUIStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH * 0.8, 280);
@@ -76,6 +77,7 @@ interface EventCarouselProps {
 }
 
 export const EventCarousel = ({ events, onSelectEvent, title }: EventCarouselProps) => {
+  const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
   if (!events || events.length === 0) return null;
 
   return (
@@ -97,7 +99,10 @@ export const EventCarousel = ({ events, onSelectEvent, title }: EventCarouselPro
             key={event.id}
             event={event}
             index={index}
-            onPress={() => onSelectEvent(event)}
+            onPress={() => {
+              triggerForceCenter('list_click');
+              onSelectEvent(event);
+            }}
           />
         ))}
       </ScrollView>
