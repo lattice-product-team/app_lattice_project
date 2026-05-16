@@ -32,32 +32,37 @@ export const useSocket = () => {
     if (socketRef.current?.connected) return;
     if (socketRef.current) disconnect();
 
-    console.log('[Socket] Connecting to:', SOCKET_URL);
+    const isProd = SOCKET_URL.includes('projects.kore29.com');
+    const connectionUrl = isProd ? 'https://projects.kore29.com' : SOCKET_URL;
+    const socketPath = isProd ? '/lattice/api/socket.io' : '/socket.io';
 
-    const socketInstance = io(SOCKET_URL, {
+    console.log('[Socket] Connecting to:', connectionUrl, 'Path:', socketPath, 'Token present:', !!token);
+
+    const socketInstance = io(connectionUrl, {
       auth: { token },
-      transports: ['websocket', 'polling'], // Prioritize websocket for tunnel stability
-      timeout: 30000, // Increase timeout to 30s for slow tunnels
+      transports: ['polling', 'websocket'],
+      path: socketPath,
+      secure: true,
       reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 2000,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 5000,
       forceNew: true,
     });
 
     socketInstance.on('connect', () => {
-      console.log('[Socket] Mobile connected');
+      console.log('[Socket] Connected SUCCESSFULLY! Transport:', socketInstance.io.engine.transport.name);
       setIsConnected(true);
     });
 
-    socketInstance.on('disconnect', () => {
-      console.log('[Socket] Mobile disconnected');
+    socketInstance.on('disconnect', (reason) => {
+      console.log('[Socket] Mobile disconnected. Reason:', reason);
       setIsConnected(false);
     });
 
     socketInstance.on('connect_error', (err) => {
       if (err.message.includes('Authentication error')) {
-        console.warn('[Socket] Auth error (token may be expired):', err.message);
-        socketInstance.disconnect(); // Stop retrying
+        console.warn('[Socket] Auth Error (Invalid/Expired Token):', err.message);
+        socketInstance.disconnect(); 
       } else {
         console.error('[Socket] Connection error:', err.message);
       }

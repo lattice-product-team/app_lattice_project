@@ -113,12 +113,21 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   // Centralized "Safety Reset" protocol - Increased duration for Android reliability
   const safetyReset = React.useCallback(() => {
     if (!cameraRef.current) return;
-    cameraRef.current.setCamera({
+    
+    const config: any = {
       animationDuration: 400, // Use a small duration to ensure Android processes the update
       padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
       pitch: is3DActive ? 60 : 0,
-    });
-  }, [is3DActive]);
+    };
+
+    // CRITICAL FIX: On Android, we MUST provide a centerCoordinate during padding resets
+    // otherwise the native map engine snaps back to the last programmatic target (the POI).
+    if (Platform.OS === 'android' && lastCameraPosition?.center) {
+      config.centerCoordinate = lastCameraPosition.center;
+    }
+
+    cameraRef.current.setCamera(config);
+  }, [is3DActive, lastCameraPosition]);
 
   // Main Mode Transition Orchestrator
   useEffect(() => {
@@ -367,14 +376,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       ref={cameraRef}
       minZoomLevel={2}
       defaultSettings={defaultSettings}
-      followUserLocation={cameraMode !== MapCameraMode.FREE}
-      followUserMode={
-        cameraMode === MapCameraMode.FOLLOW_WITH_HEADING
-          ? 'compass'
-          : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE
-            ? 'course'
-            : 'normal'
-      }
+      userTrackingMode={cameraMode}
       followZoomLevel={uiState === MapUIState.NAVIGATING ? 18 : undefined}
       followPitch={uiState === MapUIState.NAVIGATING ? 45 : undefined}
       onUserTrackingModeChange={(e) => {

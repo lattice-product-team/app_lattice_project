@@ -22,7 +22,7 @@ export const NavigationInfo = () => {
   const { isNavigating, routeMetadata, setNavigating, setPlanning } = useNavigationStore();
   const { setSelectedEvent } = usePOIStore();
   const { setCurrentEvent } = useEventStore();
-  const { cameraMode, setCameraMode } = useMapUIStore();
+  const { cameraMode, setCameraMode, triggerRecenter } = useMapUIStore();
   const theme = useLatticeTheme();
   const insets = useSafeAreaInsets();
 

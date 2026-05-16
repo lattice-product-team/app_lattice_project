@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import MapLibreGL from '@maplibre/maplibre-react-native';
 import { mmkvStorage } from '../../../services/storage';
 
 export enum MapUIState {
@@ -12,10 +13,10 @@ export enum MapUIState {
 }
 
 export enum MapCameraMode {
-  FREE = 'FREE',
-  FOLLOW = 'FOLLOW',
-  FOLLOW_WITH_HEADING = 'FOLLOW_WITH_HEADING',
-  FOLLOW_WITH_COURSE = 'FOLLOW_WITH_COURSE',
+  FREE = 0, // UserTrackingMode.None
+  FOLLOW = 1, // UserTrackingMode.Follow
+  FOLLOW_WITH_HEADING = 2, // UserTrackingMode.FollowWithHeading
+  FOLLOW_WITH_COURSE = 3, // UserTrackingMode.FollowWithCourse
 }
 
 interface MapUIStore {
@@ -66,14 +67,15 @@ export const useMapUIStore = create<MapUIStore>()(
 
       setUIState: (uiState) => {
         if (isProcessingSetUIState) return;
-        
+
         const currentState = get().uiState;
         if (currentState === uiState) return;
 
         isProcessingSetUIState = true;
         try {
           // Update state first. Force FREE camera when returning to exploration to stop any centering/locks.
-          const cameraMode = uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : get().cameraMode;
+          const cameraMode =
+            uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : get().cameraMode;
           set({ uiState, cameraMode });
 
           // Cross-store cleanup to ensure only one mode is "active" across the app
@@ -101,8 +103,8 @@ export const useMapUIStore = create<MapUIStore>()(
 
       triggerRecenter: () =>
         set((state) => {
-          let nextMode = MapCameraMode.FOLLOW;
-          
+          let nextMode: MapCameraMode;
+
           if (state.cameraMode === MapCameraMode.FREE) {
             nextMode = MapCameraMode.FOLLOW;
           } else if (state.cameraMode === MapCameraMode.FOLLOW) {
