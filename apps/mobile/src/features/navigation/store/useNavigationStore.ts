@@ -147,8 +147,8 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
       }
 
       // 5. Clear selections LAST to prevent camera "theft" during transition
-      usePOIStore.getState().setSelectedPoi(null);
-      useEventStore.getState().setSelectedEvent(null);
+      usePOIStore.getState().selectPoi(null);
+      useEventStore.getState().clearEvent();
       
     } catch (e) {
       console.warn('[NavigationStore] startNavigation failed:', e);
@@ -157,6 +157,25 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
 
   setNextInstruction: (nextInstruction) => set({ nextInstruction }),
   setFetching: (isFetching) => set({ isFetching }),
+
+  stopNavigation: () => {
+    console.log('[NavigationStore] stopNavigation triggered');
+    try {
+      const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
+      const uiStore = useMapUIStore.getState();
+      
+      // Atomic update of all relevant states
+      uiStore.setUIState(MapUIState.PLANNING);
+      uiStore.setCameraMode(MapCameraMode.FREE);
+      
+      set({ 
+        isNavigating: false, 
+        isPlanning: true 
+      });
+    } catch (e) {
+      console.warn('[NavigationStore] stopNavigation failed:', e);
+    }
+  },
 
   clearNavigation: () => {
     try {

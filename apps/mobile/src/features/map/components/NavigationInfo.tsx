@@ -19,7 +19,7 @@ import { formatDuration, formatDistance } from '../../../utils/geoUtils';
  * Aesthetic: Google Maps style (large duration, exit button) + Lattice Glassmorphism.
  */
 export const NavigationInfo = () => {
-  const { isNavigating, routeMetadata, setNavigating, setPlanning } = useNavigationStore();
+  const { isNavigating, routeMetadata, stopNavigation } = useNavigationStore();
   const { setSelectedEvent } = usePOIStore();
   const { setCurrentEvent } = useEventStore();
   const { cameraMode, setCameraMode, triggerRecenter } = useMapUIStore();
@@ -30,12 +30,7 @@ export const NavigationInfo = () => {
 
   const handleCancel = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    // Instead of exiting completely, return to the route planning overview
-    // This allows the user to see the whole route again
-    setNavigating(false);
-    setPlanning(true);
-    setCameraMode(MapCameraMode.FREE);
+    stopNavigation();
   };
 
   const handleRecenter = () => {

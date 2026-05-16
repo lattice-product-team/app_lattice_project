@@ -60,6 +60,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
   const { isNavigating, isPlanning } = useNavigationStore();
   const { uiState, setCameraMode, isProgrammaticMove, setIsProgrammaticMove } = useMapUIStore();
+  
+  // Transition lock to prevent native tracking from fighting with initial fly-to
+  const [isLockingNavigation, setIsLockingNavigation] = React.useState(false);
 
   const cameraRef = React.useRef<any>(null);
   const insets = useSafeAreaInsets();
@@ -142,9 +145,19 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
   }, [isProgrammaticMove]);
 
   const prevUiState = React.useRef<MapUIState | null>(uiState);
+  const prevIsNavigating = React.useRef(isNavigating);
   const lastProcessedForceCenterRef = React.useRef(forceCenterCount);
   const lastProcessedRecenterRef = React.useRef(recenterCount);
   const prevRouteRef = React.useRef(currentRoute);
+
+  // Instant detection for render-cycle locking
+  const isStartingNavigation = isNavigating && !prevIsNavigating.current;
+  const isExitingNavigation = !isNavigating && prevIsNavigating.current;
+  const isLocked = isLockingNavigation || isStartingNavigation || isExitingNavigation;
+
+  useEffect(() => {
+    prevIsNavigating.current = isNavigating;
+  }, [isNavigating]);
   const userCoordsRef = React.useRef(userCoords);
   const userHeadingRef = React.useRef(userHeading);
   const localLastTargetRef = React.useRef<string | null>(lastProcessedTarget);
@@ -192,14 +205,10 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
     const isForcedRecenter = recenterCount > lastProcessedRecenterRef.current;
     const isForcedCenter = forceCenterCount > lastProcessedForceCenterRef.current;
     const isNewRoute = currentRoute !== prevRouteRef.current;
+    const isFinishFetching = !isFetching && prevIsFetching.current;
 
-    // IMMEDIATE REF SYNC: Update these NOW to prevent race conditions during re-renders.
-    // If we don't do this, a rapid re-render (e.g. from GPS restart) will see the old
-    // values and trigger a 'NewMode' steal again.
-    prevUiState.current = uiState;
-    lastProcessedRecenterRef.current = recenterCount;
-    lastProcessedForceCenterRef.current = forceCenterCount;
-    prevRouteRef.current = currentRoute;
+    // IMMEDIATE REF SYNC removed from here to prevent early-clearing of transition flags.
+    // We will use syncState() at the exit points.
 
     // Robust Target Resolution
     let targetCoords =
@@ -228,6 +237,9 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       cameraMode !== MapCameraMode.FREE ||
       isForcedCenter ||
       isForcedRecenter ||
+      isNewRoute ||
+      isFinishFetching ||
+      isExitingNavigation ||
       (isEnteringDetail && isNewTarget) ||
       (isNewTarget && targetKey !== null);
 
@@ -269,8 +281,11 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
         if (userCoordsRef.current) {
           setIsProgrammaticMove(true);
           
-          // Force a small delay to ensure the MapLibre component has updated its internal state
-          // before we issue the setCamera command.
+          // If this is the start of navigation, lock native tracking to allow smooth fly-to
+          if (isNewMode) {
+            setIsLockingNavigation(true);
+          }
+
           cameraRef.current.setCamera({
             centerCoordinate: userCoordsRef.current,
             zoomLevel: 18,
@@ -282,7 +297,8 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
           
           setTimeout(() => {
             setIsProgrammaticMove(false);
-          }, 1200);
+            setIsLockingNavigation(false);
+          }, 1300);
         }
       }
       syncState();
@@ -291,8 +307,7 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
 
     // 2. PLANNING MODE
     else if (uiState === MapUIState.PLANNING && !isNavigating) {
-      const isFinishFetching = !isFetching && prevIsFetching.current;
-      if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching || isNewRoute) {
+      if (isNewMode || isForcedCenter || isNewTarget || isFinishFetching || isNewRoute || isForcedRecenter || isExitingNavigation) {
         setCameraMode(MapCameraMode.FREE);
 
         const destinationCoords = targetCoords;
@@ -310,28 +325,46 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
             // Move camera if mode changed, route changed, or explicitly requested.
             // We ignore cameraMode === FREE here because if the route is NEW, 
             // the user almost certainly wants to see it.
-            const shouldMove = isNewMode || isForcedCenter || isNewRoute || isFinishFetching || isForcedRecenter;
+            // RECENTER Logic (Focus on user even in planning)
+            if (isForcedRecenter && userCoordsRef.current) {
+              console.log('[Camera] Planning: Recentering to user');
+              setIsProgrammaticMove(true);
+              cameraRef.current.setCamera({
+                centerCoordinate: userCoordsRef.current,
+                zoomLevel: 16,
+                pitch: 0,
+                heading: 0,
+                animationDuration: 1000,
+                animationMode: 'flyTo',
+              });
+              setTimeout(() => setIsProgrammaticMove(false), 1100);
+              return;
+            }
+
+            // OVERVIEW Logic (Fit route bounds)
+            // We wait for the fetch to complete if it's a new mode to avoid buggy intermediate jumps
+            const shouldFitBounds = (!isFetching && isNewMode) || isForcedCenter || isNewRoute || isFinishFetching || isExitingNavigation;
             
-            if (shouldMove) {
-              console.log(`[Camera] Planning: Fitting route bounds. Reason: ${isNewMode ? 'NewMode' : isNewRoute ? 'NewRoute' : isFinishFetching ? 'FetchComplete' : 'Forced'}`);
+            if (shouldFitBounds) {
+              console.log(`[Camera] Planning: Fitting route bounds. Reason: ${isNewMode ? 'NewMode' : isExitingNavigation ? 'ExitNav' : isNewRoute ? 'NewRoute' : isFinishFetching ? 'FetchComplete' : 'Forced'}`);
               setIsProgrammaticMove(true);
               cameraRef.current.setCamera({
                 bounds: {
                   ne: [bbox[2], bbox[3]],
                   sw: [bbox[0], bbox[1]],
                 },
-                pitch: is3DActive ? 45 : 0,
+                pitch: 0,
                 heading: 0,
-                animationDuration: 1200,
+                animationDuration: 1500,
                 animationMode: 'flyTo',
               });
-              setTimeout(() => setIsProgrammaticMove(false), 1300);
+              setTimeout(() => setIsProgrammaticMove(false), 1600);
             }
             return () => {
               clearTransitionTimer();
             };
           }
-        } else if (destinationCoords) {
+        } else if (destinationCoords && !isFetching) {
           console.log('[Camera] Planning: Flying to destination fallback');
           cameraRef.current.setCamera({
             centerCoordinate: destinationCoords,
@@ -461,12 +494,12 @@ export const MapCameraManager = forwardRef<MapCameraHandle, MapCameraManagerProp
       defaultSettings={defaultSettings}
       padding={reactivePadding}
       userTrackingMode={cameraMode}
-      followUserLocation={cameraMode !== 0}
+      followUserLocation={cameraMode !== MapCameraMode.FREE && !isLocked}
       followUserMode={
         cameraMode === MapCameraMode.FOLLOW_WITH_HEADING ? 'compass' : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE ? 'course' : 'normal'
       }
-      followZoomLevel={isNavigating ? 18 : undefined}
-      followPitch={isNavigating ? 45 : undefined}
+      followZoomLevel={isNavigating && !isLocked ? 18 : undefined}
+      followPitch={isNavigating && !isLocked ? 60 : undefined}
       maxZoomLevel={20}
       onUserTrackingModeChange={(e) => {
         // If the native map stops following (due to user drag), sync our state to FREE

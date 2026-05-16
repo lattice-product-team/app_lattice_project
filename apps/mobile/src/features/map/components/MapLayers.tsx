@@ -42,8 +42,7 @@ const RouteLayer = React.memo(({
   }, [currentRoute]);
 
   const isVisible = (uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING) && 
-                    !!currentRoute && 
-                    !isDrawerOpen;
+                    !!currentRoute;
 
   if (!isVisible) return null;
 
