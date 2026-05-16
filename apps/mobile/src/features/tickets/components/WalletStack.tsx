@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text, Alert } from 'react-native';
 import Animated, {
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
+  withTiming,
   interpolate,
   Extrapolation,
   FadeIn,
@@ -15,7 +17,7 @@ import { useUnclaimTicket } from '../../auth/hooks/useAuthActions';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { Trash2 } from 'lucide-react-native';
 
-const { height } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const STACK_OFFSET = 60;
 const EXPANDED_OFFSET = 180;
 
@@ -48,23 +50,31 @@ const WalletItem: React.FC<WalletItemProps> = ({
   const isAnySelected = selectedTicketId !== null;
 
   const animatedStyle = useAnimatedStyle(() => {
+    // 1. If this specific ticket is selected, it stays at the top
     if (isSelected) {
       return {
         transform: [
           { translateY: withSpring(0) },
           { scale: withSpring(1) }
         ],
-        opacity: withTiming(1),
+        opacity: withSpring(1),
+        zIndex: 100,
       };
     }
 
+    // 2. If another ticket is selected, this one hides below screen
     if (isAnySelected) {
       return {
-        transform: [{ translateY: withSpring(height) }],
-        opacity: withTiming(0),
+        transform: [
+          { translateY: withSpring(SCREEN_HEIGHT) },
+          { scale: withSpring(0.9) }
+        ],
+        opacity: withSpring(0),
+        zIndex: 0,
       };
     }
 
+    // 3. Normal Stack / Expanded state logic
     const translateY = interpolate(
       expandProgress.value,
       [0, 1],
@@ -80,13 +90,17 @@ const WalletItem: React.FC<WalletItemProps> = ({
     );
 
     return {
-      transform: [{ translateY }, { scale }],
+      transform: [
+        { translateY: withSpring(translateY) },
+        { scale: withSpring(scale) }
+      ],
+      opacity: withSpring(1),
       zIndex: index,
     };
   });
 
   return (
-    <View style={[styles.pressable, isSelected && { position: 'relative', zIndex: 100 }]}>
+    <View style={styles.pressable}>
       <Animated.View style={[styles.cardWrapper, animatedStyle]}>
         <TicketCard
           ticket={ticket}

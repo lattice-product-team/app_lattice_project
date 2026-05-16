@@ -354,6 +354,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: typography.primary.bold,
     textAlign: 'center',
+    includeFontPadding: false,
+    letterSpacing: Platform.OS === 'android' ? -0.2 : 0,
   },
   subtitle: {
     fontSize: 14,
@@ -361,6 +363,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
     marginTop: 4,
+    includeFontPadding: false,
+    letterSpacing: Platform.OS === 'android' ? 0.2 : 0.5,
   },
   content: {
     padding: 24,
@@ -369,6 +373,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: typography.primary.bold,
     marginBottom: 12,
+    includeFontPadding: false,
   },
   eventBadge: {
     flexDirection: 'row',
@@ -390,6 +395,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontFamily: typography.primary.regular,
+    includeFontPadding: false,
   },
   infoSection: {
     marginTop: 8,

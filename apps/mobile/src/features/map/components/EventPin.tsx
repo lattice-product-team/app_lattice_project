@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Image, TouchableOpacity, Text } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useAppTheme } from '../../../hooks/useAppTheme';
+import { typography } from '../../../styles/typography';
 
 interface EventPinProps {
   id: string | number;
@@ -115,6 +117,8 @@ const styles = StyleSheet.create({
   labelText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: typography.primary.semibold,
+    includeFontPadding: false,
+    paddingHorizontal: 2, // Extra breathing room for Android
   },
 });

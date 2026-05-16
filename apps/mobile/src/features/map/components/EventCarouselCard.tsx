@@ -253,11 +253,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontFamily: typography.primary.bold,
-    letterSpacing: -0.3,
+    includeFontPadding: false,
+    letterSpacing: Platform.OS === 'android' ? -0.1 : -0.3,
   },
   description: {
     fontSize: 13,
     fontFamily: typography.primary.medium,
+    includeFontPadding: false,
     marginBottom: 2,
   },
   detailsRow: {

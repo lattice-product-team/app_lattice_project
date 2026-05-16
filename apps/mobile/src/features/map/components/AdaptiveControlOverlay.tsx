@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Navigation, Binoculars, Ticket as TicketIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { useARStore, ARFilterMode } from '../store/useARStore';
@@ -39,6 +39,7 @@ export const AdaptiveControlOverlay = React.memo(({
 }: AdaptiveControlOverlayProps) => {
   const theme = useAppTheme();
   const router = useRouter();
+  const segments = useSegments();
   const { isGuest, openAuthPrompt } = useAuthStore();
   const iconColor = theme.colors.text.primary;
   const { uiState } = useMapUIStore();
@@ -61,6 +62,23 @@ export const AdaptiveControlOverlay = React.memo(({
     };
   }, [uiState, isARActive, bottomOffset]);
 
+  const handleTicketPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // GUARD: Check if we are already in the tickets screen to prevent double navigation
+    const isAlreadyInTickets = segments.includes('tickets');
+    if (isAlreadyInTickets) {
+      console.log('[AdaptiveControl] Already in tickets, ignoring.');
+      return;
+    }
+
+    if (isGuest) {
+      openAuthPrompt('/(main)/tickets');
+    } else {
+      router.push('/(main)/tickets');
+    }
+  };
+
   return (
     <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
       {/* 1. Top Vertical Pill (Wallet & Recenter) */}
@@ -75,14 +93,7 @@ export const AdaptiveControlOverlay = React.memo(({
         ]}
       >
         <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            if (isGuest) {
-              openAuthPrompt('/(main)/tickets');
-            } else {
-              router.push('/(main)/tickets');
-            }
-          }}
+          onPress={handleTicketPress}
           hitSlop={12}
           style={({ pressed }) => [styles.action, pressed && { opacity: 0.7 }]}
         >

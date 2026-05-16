@@ -562,14 +562,12 @@ export default function MapIndexPage() {
   }));
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    // Hide if searching (Level 3), if specific overlay layers are active (Profile, Planning), or if AR is active
-    const isLevel3 = islandState.value > 0.8;
-
     // We allow the toggle to be visible during EVENT layer (POI details)
     const isLayerActive = uiLayer.value === UILayer.PROFILE || uiLayer.value === UILayer.PLANNING;
 
-    // Hide if searching, if profile/planning active, if AR is active, OR if NAVIGATING
-    const shouldHide = isLevel3 || isLayerActive || isARActive || isNavigating;
+    // Hide if: profile/planning active, if AR is active, OR if NAVIGATING
+    // We NO LONGER hide if searching (Level 3) so it stays "behind" the sheet
+    const shouldHide = isLayerActive || isARActive || isNavigating;
 
     return {
       opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),

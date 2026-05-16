@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TouchableOpacity, Platform } from 'react-native';
 import { Navigation, X, Car, Footprints, Bike } from 'lucide-react-native';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode } from '../store/useMapUIStore';
@@ -163,19 +163,22 @@ const styles = StyleSheet.create({
   },
   durationText: {
     fontSize: 34,
-    fontWeight: '800',
-    letterSpacing: -1,
+    fontFamily: typography.primary.bold,
+    ...typography.primary, // includes includeFontPadding and adjusted letterSpacing
+    letterSpacing: Platform.OS === 'android' ? -0.2 : -1,
     marginBottom: 4,
   },
   subText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: typography.primary.semibold,
+    includeFontPadding: false,
     letterSpacing: -0.2,
     marginBottom: 2,
   },
   destinationText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: typography.primary.medium,
+    includeFontPadding: false,
     letterSpacing: -0.1,
   },
   exitButton: {

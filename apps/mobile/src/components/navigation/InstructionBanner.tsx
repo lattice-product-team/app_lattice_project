@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import {
   ArrowUp,
   ArrowUpLeft,
@@ -15,6 +15,7 @@ import { useNavigationStore } from '../../features/navigation/store/useNavigatio
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../../hooks/useAppTheme';
+import { typography } from '../../styles/typography';
 
 /**
  * InstructionBanner: Top-mounted banner for turn-by-turn navigation instructions.
@@ -125,13 +126,15 @@ const styles = StyleSheet.create({
   distanceText: {
     color: '#FFFFFF',
     fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -0.5,
+    fontFamily: typography.primary.bold,
+    includeFontPadding: false,
+    letterSpacing: Platform.OS === 'android' ? -0.2 : -0.5,
   },
   instructionText: {
     color: 'rgba(255, 255, 255, 0.8)',
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: typography.primary.semibold,
+    includeFontPadding: false,
     marginTop: 4,
   },
   loadingContainer: {

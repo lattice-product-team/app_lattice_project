@@ -275,7 +275,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: typography.secondary.medium,
     paddingVertical: 0,
-    letterSpacing: -0.2,
+    includeFontPadding: false,
+    letterSpacing: Platform.OS === 'android' ? 0 : -0.2,
   },
   placeholderOverlay: {
     position: 'absolute',
