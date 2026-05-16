@@ -19,7 +19,7 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
   const theme = useAppTheme();
 
   return (
-    <View className="mb-6">
+    <View className="mb-8">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -31,56 +31,58 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
           <Pressable
             key={event.id}
             onPress={() => onPress(event)}
-            style={{ width: CARD_WIDTH, height: CARD_WIDTH * 1.2 }}
-            className="rounded-[32px] overflow-hidden"
+            style={{ width: CARD_WIDTH, height: CARD_WIDTH * 1.15 }}
+            className="rounded-[40px] overflow-hidden"
           >
             <Image
               source={{ uri: event.bannerUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30' }}
               style={{ width: '100%', height: '100%' }}
               contentFit="cover"
-              transition={200}
+              transition={400}
             />
+            
+            {/* Top Overlay: Badge */}
+            <View className="absolute top-5 left-5 right-5 flex-row justify-between items-start">
+              <View className="bg-brand-primary px-4 py-1.5 rounded-full backdrop-blur-md flex-row items-center gap-1.5 shadow-sm">
+                <View className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <Text style={{ fontFamily: typography.primary.bold, fontSize: 11, color: '#fff', letterSpacing: 0.5 }}>
+                  LIVE NOW
+                </Text>
+              </View>
+            </View>
+
             <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.8)']}
-              style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '50%' }}
+              colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.9)']}
+              style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '65%' }}
             />
-            <View className="absolute bottom-0 left-0 right-0 p-5">
-              <View className="flex-row items-center gap-2 mb-2">
-                <View className="px-2.5 py-1 rounded-full bg-yellow-400">
-                  <Text style={{ fontFamily: typography.primary.bold, fontSize: 10, color: '#000' }}>
-                    LIVE
+
+            <View className="absolute bottom-0 left-0 right-0 p-8">
+              <Text style={{ fontFamily: typography.primary.medium, color: theme.colors.brand.primary, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                {event.subtitle || event.locationName || 'Live Event'}
+              </Text>
+              <Text
+                style={{ fontFamily: typography.primary.bold, color: '#fff', fontSize: 28, lineHeight: 32, marginBottom: 20 }}
+                numberOfLines={2}
+              >
+                {event.displayName || event.name}
+              </Text>
+              
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-2">
+                  <View className="w-8 h-8 rounded-full bg-white/10 items-center justify-center border border-white/20">
+                     <Text style={{ fontSize: 14 }}>📅</Text>
+                  </View>
+                  <Text style={{ fontFamily: typography.primary.medium, color: '#fff', opacity: 0.8, fontSize: 13 }}>
+                    Hasta el {new Date(event.endDate || '').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                   </Text>
                 </View>
-                <Text style={{ fontFamily: typography.primary.medium, color: '#fff', opacity: 0.8, fontSize: 12 }}>
-                  {new Date(event.startDate || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-                <View className="flex-row items-center gap-1 ml-auto">
-                  <Star size={14} color="#FACC15" fill="#FACC15" />
-                  <Text style={{ fontFamily: typography.primary.bold, color: '#FACC15', fontSize: 12 }}>
-                    {((event as any).metadata?.social?.rating || 4.5 + Math.random() * 0.5).toFixed(1)}
+
+                <View className="bg-white px-5 py-2.5 rounded-2xl shadow-lg">
+                  <Text style={{ fontFamily: typography.primary.bold, color: '#000', fontSize: 13 }}>
+                    Ver ahora
                   </Text>
                 </View>
               </View>
-              <Text
-                style={{ fontFamily: typography.primary.bold, color: '#fff', fontSize: 24, marginBottom: 4 }}
-                numberOfLines={2}
-              >
-                {event.name}
-              </Text>
-              <Text
-                style={{ fontFamily: typography.primary.regular, color: '#fff', opacity: 0.7, fontSize: 14, marginBottom: 12 }}
-                numberOfLines={1}
-              >
-                {event.locationName || 'Downtown Area'}
-              </Text>
-              <Pressable
-                onPress={() => onPress(event)}
-                className="bg-yellow-400 py-3 rounded-2xl items-center justify-center"
-              >
-                <Text style={{ fontFamily: typography.primary.bold, color: '#000', fontSize: 14 }}>
-                  CONSULTA MÁS DETALLES
-                </Text>
-              </Pressable>
             </View>
           </Pressable>
         ))}

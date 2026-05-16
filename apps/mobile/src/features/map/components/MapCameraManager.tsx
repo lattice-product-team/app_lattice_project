@@ -144,6 +144,42 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     }
   }, [forceCenterCount, selectedCoords, props.selectedEvent, triggerSource, flyTo]);
 
+  // ROUTE PLANNING FOCUS: Auto-fit bounds when a route is generated or changed
+  useEffect(() => {
+    if (props.isPlanning && props.currentRoute?.geometry?.coordinates) {
+      const coords = props.currentRoute.geometry.coordinates;
+      if (coords.length < 2) return;
+
+      console.log('[MapCameraManager] 🗺️ Fitting camera to route bounds (Planning Mode)');
+      
+      // Calculate Bounding Box
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const [x, y] of coords) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+
+      setIsProgrammaticMove(true);
+      cameraRef.current?.setCamera({
+        bounds: {
+          ne: [maxX, maxY],
+          sw: [minX, minY],
+          paddingLeft: 50,
+          paddingRight: 50,
+          paddingTop: 120,
+          paddingBottom: 380, // Leave significant space for the RoutePlanningSheet
+        },
+        animationDuration: 1500,
+        animationMode: 'flyTo',
+      });
+
+      const timer = setTimeout(() => setIsProgrammaticMove(false), 1600);
+      return () => clearTimeout(timer);
+    }
+  }, [props.isPlanning, props.currentRoute, setIsProgrammaticMove]);
+
   return (
     <MapLibreGL.Camera
       ref={cameraRef}

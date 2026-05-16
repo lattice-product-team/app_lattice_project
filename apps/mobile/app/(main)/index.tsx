@@ -1,12 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Keyboard,
-  TextInput,
-  Platform,
-} from 'react-native';
+import { View, StyleSheet, Dimensions, Keyboard, TextInput, Platform } from 'react-native';
 import { ScrollView, Pressable } from 'react-native-gesture-handler';
 import { Stack, useRouter } from 'expo-router';
 import MapLibreGL from '@maplibre/maplibre-react-native';
@@ -55,7 +48,11 @@ import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useSocket } from '../../src/hooks/useSocket';
 import { useLocationStore } from '../../src/store/useLocationStore';
-import { useMapUIStore, MapCameraMode, MapUIState } from '../../src/features/map/store/useMapUIStore';
+import {
+  useMapUIStore,
+  MapCameraMode,
+  MapUIState,
+} from '../../src/features/map/store/useMapUIStore';
 import { useEventStore } from '../../src/features/event/store/useEventStore';
 import { useNavigationStore } from '../../src/features/navigation/store/useNavigationStore';
 import { useProfileStore } from '../../src/features/profile/store/useProfileStore';
@@ -392,7 +389,7 @@ export default function MapIndexPage() {
 
   const islandHeight = useDerivedValue(() => {
     if (uiLayer.value >= UILayer.NAVIGATING - 0.5) return 0;
-    
+
     const fullHeight = SCREEN_HEIGHT;
     if (islandState.value <= 0.5) {
       return interpolate(islandState.value, [0, 0.5], [55, 380], Extrapolation.CLAMP);
@@ -565,11 +562,13 @@ export default function MapIndexPage() {
   }));
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    // Hide if searching (Level 3), if any overlay layer is active, or if AR is active
+    // Hide if searching (Level 3), if specific overlay layers are active (Profile, Planning), or if AR is active
     const isLevel3 = islandState.value > 0.8;
-    const isLayerActive = uiLayer.value !== UILayer.BASE;
 
-    // Hide if searching, if any layer is active, if AR is active, OR if NAVIGATING
+    // We allow the toggle to be visible during EVENT layer (POI details)
+    const isLayerActive = uiLayer.value === UILayer.PROFILE || uiLayer.value === UILayer.PLANNING;
+
+    // Hide if searching, if profile/planning active, if AR is active, OR if NAVIGATING
     const shouldHide = isLevel3 || isLayerActive || isARActive || isNavigating;
 
     return {
@@ -701,7 +700,7 @@ export default function MapIndexPage() {
       // 2. Identify type: Use explicit discoveryType from server, or fallback to heuristics
       const type = item.discoveryType || (item.startDate ? 'event' : 'poi');
       const isEvent = type === 'event';
-      
+
       if (isEvent) {
         console.log('[Explore] Selecting EVENT:', item.name);
         handleEventSelect(item);
@@ -839,7 +838,7 @@ export default function MapIndexPage() {
           onRecenter={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             setManualAR(false);
-            
+
             // The store now handles the expanded cycle and navigation context
             triggerRecenter();
           }}
@@ -893,11 +892,7 @@ export default function MapIndexPage() {
             <View style={styles.modePillLabels}>
               <View style={styles.modeLabel}>
                 <Animated.View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Compass
-                    size={20}
-                    color={exploreColor}
-                    strokeWidth={2.2}
-                  />
+                  <Compass size={20} color={exploreColor} strokeWidth={2.2} />
                   <Animated.Text style={[styles.modeText, exploreTextStyle]}>Explore</Animated.Text>
                 </Animated.View>
               </View>

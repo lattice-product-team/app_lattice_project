@@ -79,13 +79,13 @@ export const BentoGrid = React.memo(({ title, items, onPress }: Props) => {
                   style={{ fontFamily: typography.primary.bold, color: '#fff', fontSize: isWide ? 18 : 16 }}
                   numberOfLines={1}
                 >
-                  {item.name}
+                  {item.displayName || item.name}
                 </Text>
                 <Text
                   style={{ fontFamily: typography.primary.regular, color: '#fff', opacity: 0.7, fontSize: 12 }}
                   numberOfLines={1}
                 >
-                  {item.locationName || item.address || item.type}
+                  {item.subtitle || item.locationName || item.address || item.type}
                 </Text>
               </View>
             </Pressable>
