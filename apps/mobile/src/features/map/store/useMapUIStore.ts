@@ -104,40 +104,12 @@ export const useMapUIStore = create<MapUIStore>()(
       setIsProgrammaticMove: (isProgrammaticMove) => set({ isProgrammaticMove }),
 
       triggerRecenter: () =>
-        set((state) => {
-          const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
-          const { isNavigating, transportMode } = useNavigationStore.getState();
-          let nextMode: MapCameraMode;
-
-          if (isNavigating) {
-            // Navigation context: Default to COURSE (Where I go) for driving, HEADING (Where I look) for walking
-            // If already in one of those, toggle to the other.
-            if (state.cameraMode === MapCameraMode.FOLLOW_WITH_COURSE) {
-              nextMode = MapCameraMode.FOLLOW_WITH_HEADING; // Donde apunto
-            } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
-              nextMode = MapCameraMode.FOLLOW_WITH_COURSE; // Donde voy
-            } else {
-              // Not following yet: Pick the best default for the transport mode
-              nextMode = transportMode === 'driving' ? MapCameraMode.FOLLOW_WITH_COURSE : MapCameraMode.FOLLOW_WITH_HEADING;
-            }
-          } else {
-            // Exploring context: simple follow vs free cycle
-            if (state.cameraMode === MapCameraMode.FREE) {
-              nextMode = MapCameraMode.FOLLOW;
-            } else if (state.cameraMode === MapCameraMode.FOLLOW) {
-              nextMode = MapCameraMode.FOLLOW_WITH_HEADING;
-            } else if (state.cameraMode === MapCameraMode.FOLLOW_WITH_HEADING) {
-              nextMode = MapCameraMode.FOLLOW_WITH_COURSE;
-            } else {
-              nextMode = MapCameraMode.FREE;
-            }
-          }
-
-          return {
-            recenterCount: state.recenterCount + 1,
-            cameraMode: nextMode,
-          };
-        }),
+        set((state) => ({
+          recenterCount: state.recenterCount + 1,
+          // We no longer toggle cameraMode here as the camera is now purely passive.
+          // The UI might still use cameraMode for icons, but the action is a one-time snap.
+          cameraMode: MapCameraMode.FOLLOW, 
+        })),
 
       triggerForceCenter: () =>
         set((state) => ({

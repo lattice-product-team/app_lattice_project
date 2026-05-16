@@ -833,8 +833,11 @@ export default function MapIndexPage() {
             // The store now handles the expanded cycle and navigation context
             triggerRecenter();
           }}
-          onToggle3D={() => setManualAR(!manualAR)}
-          is3DActive={manualAR}
+          onToggle3D={() => {
+            // Functionality disabled as per requirement
+            // setManualAR(!manualAR)
+          }}
+          is3DActive={false} // Force 2D
           isConnected={isConnected}
         />
       </Animated.View>

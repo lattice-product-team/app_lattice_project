@@ -71,11 +71,6 @@ export const MapContent = function MapContent({
     setLastProcessedTarget,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
-  const isProgrammaticMoveRef = React.useRef(isProgrammaticMove);
-  useEffect(() => {
-    isProgrammaticMoveRef.current = isProgrammaticMove;
-  }, [isProgrammaticMove]);
-
   const userCoords = useLocationStore((s) => s.coords);
 
   const initialZoom = 14;
@@ -161,7 +156,8 @@ export const MapContent = function MapContent({
       // IF USER TOUCHES THE MAP:
       // We break tracking ONLY if the user is actually interacting with the map surface.
       // We add a small guard: if we are in a programmatic move, we give it a bit of room.
-      if (isUserInteraction && cameraMode !== MapCameraMode.FREE && !isProgrammaticMoveRef.current) {
+      const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+      if (isUserInteraction && cameraMode !== MapCameraMode.FREE && !currentIsProgrammatic) {
         // console.log('[MapContent] User interaction detected: Breaking camera locks');
         setCameraMode(MapCameraMode.FREE);
       }
@@ -495,7 +491,7 @@ export const MapContent = function MapContent({
           visible={true}
           animated={true}
           showsUserHeadingIndicator={true}
-          androidRenderMode="compass"
+          androidRenderMode="normal"
           renderMode="normal"
         />
 

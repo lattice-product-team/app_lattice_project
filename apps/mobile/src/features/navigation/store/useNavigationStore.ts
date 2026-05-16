@@ -137,9 +137,9 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
       // 2. Transition UI state
       uiStore.setUIState(MapUIState.NAVIGATING);
       
-      // 3. Force camera tracking mode
-      uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
-      uiStore.triggerRecenter();
+      // 3. DO NOT force camera changes. Keep it static as per user requirement.
+      // Removed: uiStore.setIsProgrammaticMove(true);
+      // Removed: uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
 
       // 4. Collapse the island drawer
       if (islandState) {
