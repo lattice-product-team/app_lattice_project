@@ -161,39 +161,43 @@ export const usePOIStore = create<POIState>((set) => ({
       const isNavigating = require('../../navigation/store/useNavigationStore').useNavigationStore.getState().isNavigating;
       if (isNavigating) {
         // Only show the destination POI if one is selected
-        return allPOIs.filter(p => p.id === selectedPoiId);
+        return allPOIs.filter(p => String(p.id) === String(selectedPoiId));
       }
     } catch (e) {
       // Fallback silently if store is not accessible
     }
 
-    // 1. Zoom-based visibility threshold
-    if (zoom < 12.0) return [];
+    // 1. Zoom-based visibility threshold (but always keep selected)
+    if (zoom < 12.0 && !selectedPoiId) return [];
 
-    // 2. Category Filtering Logic
-    if (activeCategoryFilters.length > 0) {
-      // Mapping from dashboard IDs to POI/Event categories
-      const categoryMap: Record<string, string[]> = {
-        services: ['services', 'info', 'toilet', 'wc', 'utility'],
-        gastro: ['food', 'restaurant', 'gastro', 'bar', 'cafe', 'drinks'],
-        parking: ['parking', 'garage', 'transport'],
-        transport: ['transport', 'bus', 'train', 'shuttle'],
-        emergency: ['emergency', 'medical', 'security', 'police', 'hospital'],
-      };
+    // Filter logic
+    const filtered = allPOIs.filter(p => {
+      // ALWAYS keep the selected POI
+      if (selectedPoiId && String(p.id) === String(selectedPoiId)) return true;
+      
+      // Zoom threshold for others
+      if (zoom < 12.0) return false;
 
-      return allPOIs.filter((p) => {
-        // Always show the explicitly selected POI
-        if (p.id === usePOIStore.getState().selectedPoiId) return true;
+      // Category filters
+      if (activeCategoryFilters.length > 0) {
+        const categoryMap: Record<string, string[]> = {
+          services: ['services', 'info', 'toilet', 'wc', 'utility'],
+          gastro: ['food', 'restaurant', 'gastro', 'bar', 'cafe', 'drinks'],
+          parking: ['parking', 'garage', 'transport'],
+          transport: ['transport', 'bus', 'train', 'shuttle'],
+          emergency: ['emergency', 'medical', 'security', 'police', 'hospital'],
+        };
 
-        // Check if the POI's category matches any of the active filters
         return activeCategoryFilters.some((filterId: string) => {
           const matchedCategories = categoryMap[filterId] || [filterId];
           return matchedCategories.includes(p.category.toLowerCase());
         });
-      });
-    }
+      }
 
-    // 3. Default: Filter out events from the POI collection (they are handled by MarkerViews)
-    return allPOIs.filter((p) => p.category !== 'event');
+      // Default: filter events
+      return p.category !== 'event';
+    });
+
+    return filtered;
   },
 }));

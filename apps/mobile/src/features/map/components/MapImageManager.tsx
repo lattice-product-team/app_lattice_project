@@ -35,7 +35,7 @@ export const MapImageManager = ({ events }: MapImageManagerProps) => {
     const images: Record<string, any> = {};
 
     // Register Event Images
-    events.forEach((event) => {
+    events?.forEach((event) => {
       if (event.imageKey && event.images?.[0] && event.imageKey !== 'placeholder-event') {
         images[event.imageKey] = { uri: event.images[0] };
       }

@@ -45,7 +45,9 @@ export const useRoutingLogic = () => {
   const isFetchingRef = useRef(false);
   const lockedOrigin = useRef<[number, number] | null>(null);
   const lastDestinationId = useRef<string | null>(null);
-  const REFETCH_THRESHOLD_METERS = 50; // Increased to be less aggressive
+  const REFETCH_THRESHOLD_METERS = 100; // Increased to be less aggressive
+  const lastFetchTime = useRef<number>(0);
+  const MIN_FETCH_INTERVAL_MS = 5000; // Throttle to 5 seconds between fetches
 
   const lastIsPlanning = useRef(isPlanning);
 
@@ -99,8 +101,12 @@ export const useRoutingLogic = () => {
       }
 
       // If we're navigating, we only re-fetch if we moved significantly (re-routing)
-      if (!isInitialFetch && distanceMoved < REFETCH_THRESHOLD_METERS && !isPlanning && !justStartedNavigating) {
-        return;
+      // AND we haven't fetched too recently (throttle)
+      const timeSinceLastFetch = Date.now() - lastFetchTime.current;
+      if (!isInitialFetch && !isPlanning && !justStartedNavigating) {
+        if (distanceMoved < REFETCH_THRESHOLD_METERS || timeSinceLastFetch < MIN_FETCH_INTERVAL_MS) {
+          return;
+        }
       }
 
       console.log(`[Logic] 🛰 Fetching routes for: ${destinationName} (Remote: ${isRemote}, Mode: ${isPlanning ? 'Planning' : 'Navigating'})`);
@@ -109,6 +115,7 @@ export const useRoutingLogic = () => {
 
       if (isPlanning && !hasAnyRoute) setFetching(true);
       isFetchingRef.current = true;
+      lastFetchTime.current = Date.now();
       lastDestinationId.current = destId as string;
 
       try {

@@ -115,7 +115,6 @@ const POIMarkers = React.memo(({
             key={`poi-${id}`}
             id={`ann-${id}`}
             coordinate={feature.geometry.coordinates}
-            onSelected={() => onPoiPress(feature)}
             style={{ zIndex: isSelected ? 100 : 1 }}
           >
             <View 

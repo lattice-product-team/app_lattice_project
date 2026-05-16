@@ -8,8 +8,8 @@ export const mapPinStyles = StyleSheet.create({
   markerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 64, 
-    height: 64,
+    width: 120, // Increased width to accommodate longer names
+    minHeight: 44,
   },
 
   pinFrame: {
@@ -19,12 +19,7 @@ export const mapPinStyles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    // Minimal flat shadow for depth without neon
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    // Shadow removed per user request
   },
   eventPinSize: {
     width: 44,
@@ -61,9 +56,7 @@ export const mapPinStyles = StyleSheet.create({
     fontWeight: '900',
     textAlign: 'center',
     textTransform: 'uppercase',
-    textShadowColor: '#FFFFFF',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8, // Stronger halo
+    textShadowRadius: 0,
     letterSpacing: 0.6,
   },
   // Stem no longer used

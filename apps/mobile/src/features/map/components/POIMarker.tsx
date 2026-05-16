@@ -7,6 +7,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
   interpolate,
   Extrapolation,
   SharedValue,
@@ -43,6 +44,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
       isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0
     );
     const mountScale = useSharedValue(0);
+    const mountOpacity = useSharedValue(0);
 
     useAnimatedReaction(
       () => zoomSharedValue.value >= 14.0,
@@ -55,10 +57,8 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     );
 
     React.useEffect(() => {
-      mountScale.value = withSpring(1, {
-        damping: 12,
-        stiffness: 100,
-      });
+      mountScale.value = withTiming(1, { duration: 200 });
+      mountOpacity.value = withTiming(1, { duration: 200 });
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -70,16 +70,15 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
       );
 
       // Selected markers are even larger
-      const scale = isSelected ? 1.8 : baseScale;
+      const scale = isSelected ? 1.3 : baseScale;
 
       const opacity = interpolate(zoomSharedValue.value, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
 
       return {
         transform: [
           { scale: scale * mountScale.value }, // Multiply by mount animation
-          { translateY: interpolate(mountScale.value, [0, 1], [-20, 0]) }, // Slight drop-in effect
         ],
-        opacity: (isSelected || isLinkedToSelectedEvent ? 1 : opacity) * mountScale.value,
+        opacity: (isSelected || isLinkedToSelectedEvent ? 1 : opacity) * mountOpacity.value,
       };
     });
 
@@ -106,13 +105,28 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               isSelected={isSelected || isLinkedToSelectedEvent}
             >
               <View style={[mapPinStyles.placeholder, { backgroundColor: color }]}>
-                <IconComponent
-                  size={16}
-                  color="#FFFFFF"
-                  strokeWidth={metadata.strokeWidth || 2.5}
-                />
+                {IconComponent ? (
+                  <IconComponent
+                    size={16}
+                    color="#FFFFFF"
+                    strokeWidth={metadata.strokeWidth || 2.5}
+                  />
+                ) : (
+                  <View style={{ width: 16, height: 16 }} />
+                )}
               </View>
             </MapPinFrame>
+
+            {properties.name && (
+              <View style={mapPinStyles.labelBadge}>
+                <Text 
+                  style={[mapPinStyles.labelText, { color, textShadowRadius: 0 }]}
+                  numberOfLines={1}
+                >
+                  {properties.name}
+                </Text>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </Animated.View>
