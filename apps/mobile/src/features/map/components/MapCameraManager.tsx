@@ -53,19 +53,21 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   const lastProcessedRecenter = useRef(recenterCount);
   const lastProcessedForceCenter = useRef(forceCenterCount);
 
-  // IMPERATIVE CENTER TRIGGER: Disabled for debugging
+  // IMPERATIVE CENTER TRIGGER: Listen to explicit recenter requests from UI buttons.
   useEffect(() => {
     if (recenterCount > lastProcessedRecenter.current && userCoords) {
-      console.log('[MapCameraManager] ⚡ RECENTER clicked but SNAP logic is DISABLED');
+      console.log('[MapCameraManager] ⚡ EXPLICIT RECENTER SNAP triggered by button click');
       lastProcessedRecenter.current = recenterCount;
+      snapToLocation([userCoords[0], userCoords[1]]);
     }
-  }, [recenterCount, userCoords]);
+  }, [recenterCount, userCoords, snapToLocation]);
 
-  // IMPERATIVE POI FOCUS TRIGGER: Disabled for debugging
+  // IMPERATIVE POI FOCUS TRIGGER: Listen to explicit POI selection events.
   useEffect(() => {
     if (forceCenterCount > lastProcessedForceCenter.current && props.selectedCoords) {
-      console.log('[MapCameraManager] ⚡ POI clicked but SNAP logic is DISABLED');
+      console.log('[MapCameraManager] ⚡ POI selected but SNAP logic is DISABLED');
       lastProcessedForceCenter.current = forceCenterCount;
+      // snapToLocation(props.selectedCoords); // DISABLED to keep camera static
     }
   }, [forceCenterCount, props.selectedCoords]);
 

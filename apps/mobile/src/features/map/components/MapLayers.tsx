@@ -21,6 +21,7 @@ interface MapLayersProps {
   zoomLevel: number;
   zoomSharedValue: SharedValue<number>;
   islandState: SharedValue<number>;
+  visibleBounds: number[][] | null;
 }
 
 /**
@@ -65,47 +66,77 @@ const POIMarkers = React.memo(({
   selectedPoiId, 
   onPoiPress, 
   theme, 
-  zoomSharedValue 
+  zoomSharedValue,
+  visibleBounds 
 }: { 
   features: any[], 
   selectedPoiId: any, 
   onPoiPress: any, 
   theme: any, 
-  zoomSharedValue: any 
+  zoomSharedValue: any,
+  visibleBounds: number[][] | null
 }) => {
-  // Only render the SELECTED poi as a PointAnnotation for high-fidelity interaction.
-  // The rest are handled by the ShapeSource/SymbolLayer for performance.
-  const selectedFeature = useMemo(() => 
-    features.find(f => String(f.properties?.id) === String(selectedPoiId)),
-    [features, selectedPoiId]
-  );
+  // Helper to check if a point is within visible bounds with a safety margin
+  const isPointInBounds = (coords: number[], bounds: number[][] | null) => {
+    if (!bounds || bounds.length < 2) return true; // Default to visible if no bounds
+    const [[neLng, neLat], [swLng, swLat]] = bounds;
+    const [lng, lat] = coords;
+    
+    // Add 10% padding to bounds to prevent flickering at edges
+    const lngPad = Math.abs(neLng - swLng) * 0.1;
+    const latPad = Math.abs(neLat - swLat) * 0.1;
+    
+    const minLng = Math.min(neLng, swLng) - lngPad;
+    const maxLng = Math.max(neLng, swLng) + lngPad;
+    const minLat = Math.min(neLat, swLat) - latPad;
+    const maxLat = Math.max(neLat, swLat) + latPad;
 
-  if (!selectedFeature) return null;
+    return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+  };
 
+  const visibleFeatures = useMemo(() => {
+    if (!visibleBounds) return features;
+    return features.filter(f => 
+      String(f.properties?.id) === String(selectedPoiId) || // Always keep selected
+      isPointInBounds(f.geometry.coordinates, visibleBounds)
+    );
+  }, [features, visibleBounds, selectedPoiId]);
+
+  // Render ONLY visible pois as PointAnnotations for performance.
+  // We use the ID to ensure stability across re-renders.
   return (
-    <MapLibreGL.PointAnnotation
-      key={`poi-selected-${selectedPoiId}`}
-      id={`ann-selected-${selectedPoiId}`}
-      coordinate={selectedFeature.geometry.coordinates}
-      onSelected={() => onPoiPress(selectedFeature)}
-      style={{ zIndex: 100 }}
-    >
-      <View 
-        style={[
-          mapPinStyles.markerWrapper, 
-          { backgroundColor: 'transparent' }
-        ]}
-        collapsable={false}
-      >
-        <POIMarker
-          poi={selectedFeature}
-          theme={theme}
-          isSelected={true}
-          onPress={onPoiPress}
-          zoomSharedValue={zoomSharedValue}
-        />
-      </View>
-    </MapLibreGL.PointAnnotation>
+    <>
+      {visibleFeatures.map((feature) => {
+        const id = String(feature.properties?.id);
+        const isSelected = id === String(selectedPoiId);
+        
+        return (
+          <MapLibreGL.PointAnnotation
+            key={`poi-${id}`}
+            id={`ann-${id}`}
+            coordinate={feature.geometry.coordinates}
+            onSelected={() => onPoiPress(feature)}
+            style={{ zIndex: isSelected ? 100 : 1 }}
+          >
+            <View 
+              style={[
+                mapPinStyles.markerWrapper, 
+                { backgroundColor: 'transparent' }
+              ]}
+              collapsable={false}
+            >
+              <POIMarker
+                poi={feature}
+                theme={theme}
+                isSelected={isSelected}
+                onPress={onPoiPress}
+                zoomSharedValue={zoomSharedValue}
+              />
+            </View>
+          </MapLibreGL.PointAnnotation>
+        );
+      })}
+    </>
   );
 });
 
@@ -121,6 +152,7 @@ export const MapLayers = React.memo(({
   zoomLevel,
   zoomSharedValue,
   islandState,
+  visibleBounds,
 }: MapLayersProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -165,9 +197,8 @@ export const MapLayers = React.memo(({
     type: 'FeatureCollection',
     features: [
       ...(selectedFeature ? [selectedFeature] : []),
-      ...(zoomLevel >= 14 ? backgroundPois.features : [])
     ]
-  }), [selectedFeature, backgroundPois, zoomLevel]);
+  }), [selectedFeature]);
 
   const handleShapePress = (e: any) => {
     if (e.features && e.features.length > 0) {
@@ -175,54 +206,32 @@ export const MapLayers = React.memo(({
     }
   };
 
+  const backgroundEvents = useMemo(() => {
+    const features = eventMarkers.features.filter(f => String(f.properties?.id) !== String(selectedEventId));
+    return { type: 'FeatureCollection', features };
+  }, [eventMarkers, selectedEventId]);
+
+  const selectedEventFeature = useMemo(() => {
+    const feature = eventMarkers.features.find(f => String(f.properties?.id) === String(selectedEventId));
+    return feature ? { type: 'FeatureCollection', features: [feature] } : EMPTY_GEOJSON;
+  }, [eventMarkers, selectedEventId]);
+
   return (
     <>
-      {/* 1. Background Sources */}
+      {/* 1. Background Sources (Empty, logic moved to POIMarkers) */}
       <MapLibreGL.ShapeSource 
         id="poiSource" 
         shape={backgroundPois}
-        hitbox={{ width: 30, height: 30 }}
-        onPress={handleShapePress}
-      >
-        <MapLibreGL.CircleLayer
-          id="backgroundPoiDots"
-          style={{
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              14, 4,
-              18, 8
-            ],
-            circleColor: ['get', 'color'],
-            circleStrokeWidth: 2,
-            circleStrokeColor: '#FFFFFF',
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13.5, 0,
-              14.5, 1
-            ],
-            circleStrokeOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13.5, 0,
-              14.5, 1
-            ],
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+      />
 
       <MapLibreGL.ShapeSource 
-        id="eventsSource" 
-        shape={eventMarkers}
+        id="eventsBackgroundSource" 
+        shape={backgroundEvents as any}
         hitbox={{ width: 44, height: 44 }}
         onPress={handleShapePress}
       >
         <MapLibreGL.SymbolLayer
-          id="eventLabels"
+          id="eventLabelsBackground"
           style={{
             textField: ['get', 'name'],
             textSize: 16,
@@ -241,6 +250,26 @@ export const MapLayers = React.memo(({
         />
       </MapLibreGL.ShapeSource>
 
+      <MapLibreGL.ShapeSource 
+        id="eventsSelectedSource" 
+        shape={selectedEventFeature as any}
+        onPress={handleShapePress}
+      >
+        <MapLibreGL.SymbolLayer
+          id="eventLabelSelected"
+          style={{
+            textField: ['get', 'name'],
+            textSize: 18,
+            textColor: ['get', 'color'],
+            textHaloColor: '#FFFFFF',
+            textHaloWidth: 4,
+            textAnchor: 'center',
+            textOpacity: 1,
+            textTransform: 'uppercase',
+          }}
+        />
+      </MapLibreGL.ShapeSource>
+
       {/* 2. POI MARKERS - Isolated from Route re-renders */}
       <POIMarkers 
         features={backgroundPois.features}
@@ -248,34 +277,14 @@ export const MapLayers = React.memo(({
         onPoiPress={onPoiPress}
         theme={theme}
         zoomSharedValue={zoomSharedValue}
+        visibleBounds={visibleBounds}
       />
 
-      {/* 3. LABELS */}
+      {/* 3. LABELS (Empty, logic moved to POIMarkers) */}
       <MapLibreGL.ShapeSource 
         id="labelsSource" 
-        shape={labelGeoJSON as any}
-      >
-        <MapLibreGL.SymbolLayer
-          id="poiLabelLayer"
-          minZoomLevel={13.5}
-          style={{
-            textField: ['get', 'name'],
-            textSize: 12,
-            textColor: ['get', 'color'],
-            textHaloColor: '#FFFFFF',
-            textHaloWidth: 2,
-            textAnchor: 'top',
-            textOffset: [0, 2.2],
-            textOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13.5, 0,
-              14.5, 1
-            ]
-          }}
-        />
-      </MapLibreGL.ShapeSource>
+        shape={EMPTY_GEOJSON}
+      />
 
       {/* 4. ROUTE - Isolated from POI re-renders */}
       <RouteLayer 

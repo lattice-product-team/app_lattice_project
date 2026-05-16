@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
 import Animated, {
   useAnimatedStyle,
+  useSharedValue,
   withSpring,
   interpolate,
   Extrapolation,
   SharedValue,
+  useAnimatedReaction,
+  runOnJS,
 } from 'react-native-reanimated';
 
 interface POIMarkerProps {
@@ -36,37 +39,57 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const metadata = getCategoryMetadata(categoryKey);
     const color = metadata.color || theme.colors.brand.primary;
     const IconComponent = metadata.icon;
+    const [isPointerEnabled, setIsPointerEnabled] = useState(
+      isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0
+    );
+    const mountScale = useSharedValue(0);
+
+    useAnimatedReaction(
+      () => zoomSharedValue.value >= 14.0,
+      (enabled) => {
+        if (enabled !== isPointerEnabled && !isSelected && !isLinkedToSelectedEvent) {
+          runOnJS(setIsPointerEnabled)(enabled);
+        }
+      },
+      [isPointerEnabled, isSelected, isLinkedToSelectedEvent]
+    );
+
+    React.useEffect(() => {
+      mountScale.value = withSpring(1, {
+        damping: 12,
+        stiffness: 100,
+      });
+    }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
       const baseScale = interpolate(
         zoomSharedValue.value,
         [14, 16, 18],
-        [0.6, 0.9, 1],
+        [0.8, 1, 1.3], // Enlarged scales
         Extrapolation.CLAMP
       );
 
-      // Selected markers are larger, background markers use baseScale
-      const scale = isSelected ? 1.4 : baseScale;
+      // Selected markers are even larger
+      const scale = isSelected ? 1.8 : baseScale;
 
-      const opacity = interpolate(
-        zoomSharedValue.value,
-        [13.5, 14.5],
-        [0, 1],
-        Extrapolation.CLAMP
-      );
-
+      const opacity = interpolate(zoomSharedValue.value, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
 
       return {
-        transform: [{ scale }],
-        opacity: isSelected || isLinkedToSelectedEvent ? 1 : opacity,
+        transform: [
+          { scale: scale * mountScale.value }, // Multiply by mount animation
+          { translateY: interpolate(mountScale.value, [0, 1], [-20, 0]) }, // Slight drop-in effect
+        ],
+        opacity: (isSelected || isLinkedToSelectedEvent ? 1 : opacity) * mountScale.value,
       };
     });
 
-
-    const pointerEvents = (isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0) ? 'auto' : 'none';
+    const pointerEvents = isSelected || isLinkedToSelectedEvent || isPointerEnabled ? 'auto' : 'none';
 
     return (
-      <Animated.View style={[mapPinStyles.markerWrapper, animatedStyle]} pointerEvents={pointerEvents}>
+      <Animated.View
+        style={[mapPinStyles.markerWrapper, animatedStyle]}
+        pointerEvents={pointerEvents}
+      >
         <TouchableOpacity onPress={() => onPress(poi)} activeOpacity={0.9}>
           <View
             style={[
@@ -90,7 +113,6 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
                 />
               </View>
             </MapPinFrame>
-
           </View>
         </TouchableOpacity>
       </Animated.View>

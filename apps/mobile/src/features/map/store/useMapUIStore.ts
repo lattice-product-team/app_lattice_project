@@ -33,6 +33,7 @@ interface MapUIStore {
   discoveryLocation: [number, number] | null;
   isProgrammaticMove: boolean;
   lastScreenMode: number;
+  visibleBounds: number[][] | null;
 
   // Actions
   setUIState: (state: MapUIState) => void;
@@ -45,6 +46,7 @@ interface MapUIStore {
   setDiscoveryLocation: (loc: [number, number] | null) => void;
   setLastScreenMode: (mode: number) => void;
   setLastProcessedTarget: (target: string | null) => void;
+  setVisibleBounds: (bounds: number[][] | null) => void;
 }
 
 // Recursion guard for cross-store synchronization
@@ -66,6 +68,7 @@ export const useMapUIStore = create<MapUIStore>()(
       isProgrammaticMove: false,
       lastScreenMode: 0,
       lastProcessedTarget: null,
+      visibleBounds: null,
 
       setUIState: (uiState) => {
         if (isProcessingSetUIState) return;
@@ -125,6 +128,7 @@ export const useMapUIStore = create<MapUIStore>()(
       setLastScreenMode: (lastScreenMode) => set({ lastScreenMode }),
 
       setLastProcessedTarget: (lastProcessedTarget) => set({ lastProcessedTarget }),
+      setVisibleBounds: (visibleBounds) => set({ visibleBounds }),
     }),
     {
       name: 'map-ui-storage',

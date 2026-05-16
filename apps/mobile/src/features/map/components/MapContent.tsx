@@ -69,6 +69,7 @@ export const MapContent = function MapContent({
     setIsProgrammaticMove,
     lastProcessedTarget,
     setLastProcessedTarget,
+    visibleBounds,
   } = useMapUIStore();
   const { currentEventId, selectedEvent, setCurrentEvent: setGlobalCurrentEvent } = useEventStore();
   const userCoords = useLocationStore((s) => s.coords);
@@ -471,9 +472,14 @@ export const MapContent = function MapContent({
         zoomEnabled={true}
         onPress={handleMapPress}
         onRegionIsChanging={(e) => handleCameraChange(e, true)}
-        onRegionDidChange={(e) => {
+        onRegionDidChange={async (e) => {
           handleCameraChange(e, false);
           
+          if (mapRef.current) {
+            const bounds = await mapRef.current.getVisibleBounds();
+            useMapUIStore.getState().setVisibleBounds(bounds);
+          }
+
           const center = e.geometry?.coordinates as [number, number];
           const zoom = e.properties?.zoomLevel;
           cameraRef.current?.handleRegionChangeComplete(center, zoom);
@@ -534,6 +540,7 @@ export const MapContent = function MapContent({
           zoomLevel={discreteZoom}
           zoomSharedValue={zoomSharedValue}
           islandState={islandState}
+          visibleBounds={visibleBounds}
         />
       </MapLibreGL.MapView>
     </View>

@@ -45,7 +45,7 @@ export const useRoutingLogic = () => {
   const isFetchingRef = useRef(false);
   const lockedOrigin = useRef<[number, number] | null>(null);
   const lastDestinationId = useRef<string | null>(null);
-  const REFETCH_THRESHOLD_METERS = 30; // Only re-route if moved significantly
+  const REFETCH_THRESHOLD_METERS = 50; // Increased to be less aggressive
 
   const lastIsPlanning = useRef(isPlanning);
 
@@ -118,30 +118,44 @@ export const useRoutingLogic = () => {
         const origin = { lat: effectiveOrigin[1], lng: effectiveOrigin[0] };
         const destination = { lat: destinationCoords[1], lng: destinationCoords[0] };
 
-        // Driving is always attempted
-        const driving = await navigationService.getRoute({ origin, destination, mode: 'driving', timestamp: Date.now() }).catch(e => {
-          console.warn('[Logic] Driving route failed:', e);
-          return null;
-        });
-
-        // Walking/Bicycle only if NOT remote
+        // INITIAL PLANNING: Fetch all modes for comparison
+        // ACTIVE NAVIGATION: ONLY fetch the current transport mode to save API quota (429 errors)
+        
+        let driving = null;
         let walking = null;
         let bicycle = null;
 
-        if (!isRemote) {
-          [walking, bicycle] = await Promise.all([
-            navigationService.getRoute({ origin, destination, mode: 'walking', timestamp: Date.now() }).catch(() => null),
-            navigationService.getRoute({ origin, destination, mode: 'bicycle', timestamp: Date.now() }).catch(() => null),
-          ]);
+        if (isPlanning || isInitialFetch) {
+          // Fetch everything once
+          driving = await navigationService.getRoute({ origin, destination, mode: 'driving' }).catch(() => null);
+          if (!isRemote) {
+            [walking, bicycle] = await Promise.all([
+              navigationService.getRoute({ origin, destination, mode: 'walking' }).catch(() => null),
+              navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch(() => null),
+            ]);
+          }
+        } else {
+          // Re-routing during navigation: ONLY fetch the active mode
+          if (transportMode === 'driving') {
+            driving = await navigationService.getRoute({ origin, destination, mode: 'driving' }).catch(() => null);
+          } else if (transportMode === 'walking' && !isRemote) {
+            walking = await navigationService.getRoute({ origin, destination, mode: 'walking' }).catch(() => null);
+          } else if (transportMode === 'bicycle' && !isRemote) {
+            bicycle = await navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch(() => null);
+          }
         }
 
-        const routes = { driving, walking, bicycle };
+        const routes = {
+          driving: driving || (isPlanning ? null : currentStore.routes.driving),
+          walking: walking || (isPlanning ? null : currentStore.routes.walking),
+          bicycle: bicycle || (isPlanning ? null : currentStore.routes.bicycle),
+        };
         
         if (driving || walking || bicycle) {
           const metadata = {
-            driving: driving ? { distance: driving.properties.distance, duration: driving.properties.durationEstimate, destinationName } : null,
-            walking: walking ? { distance: walking.properties.distance, duration: walking.properties.durationEstimate, destinationName } : null,
-            bicycle: bicycle ? { distance: bicycle.properties.distance, duration: bicycle.properties.durationEstimate, destinationName } : null,
+            driving: driving ? { distance: driving.properties.distance, duration: driving.properties.durationEstimate, destinationName } : currentStore.metadata.driving,
+            walking: walking ? { distance: walking.properties.distance, duration: walking.properties.durationEstimate, destinationName } : currentStore.metadata.walking,
+            bicycle: bicycle ? { distance: bicycle.properties.distance, duration: bicycle.properties.durationEstimate, destinationName } : currentStore.metadata.bicycle,
           };
 
           setRoutes(routes, metadata);
