@@ -318,7 +318,7 @@ export const MapContent = function MapContent({
         // Normal POI selection
         setSelectedEvent(null);
         setGlobalCurrentEvent(null);
-        selectPoi(normalizePOI(feature));
+        selectPoi(normalizePOI(rawData || feature));
       }
     },
     [

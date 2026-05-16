@@ -147,9 +147,10 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
       cameraRef.current?.setCamera({
         bounds: {
           ne: [maxX, maxY], sw: [minX, minY],
-          paddingLeft: 60, paddingRight: 60, // Slightly more padding to feel "closer" but see all
-          paddingTop: 140, paddingBottom: 400, // Balanced for UI elements
+          paddingLeft: 60, paddingRight: 60, 
+          paddingTop: 140, paddingBottom: 400, 
         },
+        pitch: 0, // Reset tilt for route overview
         animationDuration: 1200,
         animationMode: 'flyTo',
       });

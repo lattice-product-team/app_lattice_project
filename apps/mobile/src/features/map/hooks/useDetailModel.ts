@@ -235,8 +235,8 @@ export const useDetailModel = (): DetailModel | null => {
         name: selectedPoi.displayName,
         subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
-        bannerUrl: (selectedPoi as any).bannerUrl || selectedPoi.images?.[0] || (selectedPoi as any).galleryUrls?.[0],
-        galleryUrls: selectedPoi.images || (selectedPoi as any).galleryUrls || [],
+        bannerUrl: (selectedPoi as any).bannerUrl || (selectedPoi.images?.length > 0 ? selectedPoi.images[0] : undefined) || (selectedPoi.galleryUrls?.length > 0 ? selectedPoi.galleryUrls[0] : undefined),
+        galleryUrls: selectedPoi.images?.length > 0 ? selectedPoi.images : (selectedPoi.galleryUrls || []),
         categoryIcon: catMetadata.icon,
         parentName,
         social: social

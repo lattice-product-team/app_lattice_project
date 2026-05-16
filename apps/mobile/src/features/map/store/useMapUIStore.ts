@@ -96,9 +96,9 @@ export const useMapUIStore = create<MapUIStore>()(
             usePOIStore.getState().deselect(false);
             useNavigationStore.getState().clearNavigation();
           } else if (uiState === MapUIState.NAVIGATING) {
-            usePOIStore.getState().deselect(false);
+            // We no longer deselect here. We want to keep the destination info.
           } else if (uiState === MapUIState.POI_DETAIL) {
-            useNavigationStore.getState().clearNavigation();
+            // We no longer clear navigation here.
           }
         } catch (e) {
           console.warn('[MapUIStore] Cross-store cleanup failed:', e);

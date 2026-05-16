@@ -1029,7 +1029,7 @@ const styles = StyleSheet.create({
   modeToggleContainer: {
     position: 'absolute',
     left: 12,
-    zIndex: 2500,
+    zIndex: 1500,
   },
   modePill: {
     flexDirection: 'row',
