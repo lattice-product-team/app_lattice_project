@@ -115,9 +115,6 @@ export const useMapUIStore = create<MapUIStore>()(
         set((state) => ({
           recenterCount: state.recenterCount + 1,
           triggerSource: source,
-          // We no longer toggle cameraMode here as the camera is now purely passive.
-          // The UI might still use cameraMode for icons, but the action is a one-time snap.
-          cameraMode: MapCameraMode.FOLLOW, 
         })),
 
       triggerForceCenter: (source = null) =>
