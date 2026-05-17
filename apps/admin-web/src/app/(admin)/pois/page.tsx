@@ -718,7 +718,18 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             </thead>
             <tbody className="transition-colors divide-y divide-border/30">
               {loading ? (
-                <tr><td colSpan={8} className="py-24 text-center"><Spinner color="current" size="sm" /></td></tr>
+                <tr>
+                  <td colSpan={8} className="py-24">
+                    <div className="flex flex-col items-center justify-center gap-4 animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-elevated border border-border flex items-center justify-center">
+                        <Icons.RefreshCw className="w-4 h-4 text-gravel animate-spin" />
+                      </div>
+                      <span className="text-gravel uppercase text-[10px] font-medium tracking-[0.2em]">
+                        Retrieving Asset Registry...
+                      </span>
+                    </div>
+                  </td>
+                </tr>
               ) : filteredPois.length === 0 ? (
                 <tr><td colSpan={8} className="py-24 text-center text-gravel font-medium uppercase text-[10px] tracking-[0.25em] opacity-40">No asset matches found.</td></tr>
               ) : (

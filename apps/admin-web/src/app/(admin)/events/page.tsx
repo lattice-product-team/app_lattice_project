@@ -755,8 +755,15 @@ export default function EventsPage() {
             <tbody className="transition-colors divide-y divide-border/30">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-24 text-center">
-                    <Spinner color="current" size="sm" />
+                  <td colSpan={9} className="py-24">
+                    <div className="flex flex-col items-center justify-center gap-4 animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-elevated border border-border flex items-center justify-center">
+                        <Icons.RefreshCw className="w-4 h-4 text-gravel animate-spin" />
+                      </div>
+                      <span className="text-gravel uppercase text-[10px] font-medium tracking-[0.2em]">
+                        Synchronizing Operational Data...
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ) : filteredEvents.length === 0 ? (
