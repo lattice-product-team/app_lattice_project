@@ -16,12 +16,17 @@ When ready to implement, run /opsx:apply
 
 **Steps**
 
+0. **Pre-flight Check**
+   Before starting, verify the environment. Run `openspec --version` using a shell command. 
+   If the command fails or the CLI is not found, halt immediately and instruct the user to install or configure OpenSpec.
+
 1. **If no input provided, ask what they want to build**
 
    Use the **AskUserQuestion tool** (open-ended, no preset options) to ask:
    > "What change do you want to work on? Describe what you want to build or fix."
 
-   From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
+   From their description, derive a strict kebab-case name.
+   **CRITICAL**: The name MUST be strictly lowercase, alphanumeric with hyphens only, and contain no special characters (e.g., "Add User Auth!" → `add-user-auth`).
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
@@ -46,6 +51,7 @@ When ready to implement, run /opsx:apply
    Loop through artifacts in dependency order (artifacts with no pending dependencies first):
 
    a. **For each artifact that is `ready` (dependencies satisfied)**:
+      - **Checkpoint**: Before creating a new artifact, use the `update_topic` tool (if available) or log a clear status message to reset context and inform the user (e.g., "Drafting design for <name>").
       - Get instructions:
         ```bash
         openspec instructions <artifact-id> --change "<name>" --json
@@ -57,7 +63,7 @@ When ready to implement, run /opsx:apply
         - `instruction`: Schema-specific guidance for this artifact type
         - `outputPath`: Where to write the artifact
         - `dependencies`: Completed artifacts to read for context
-      - Read any completed dependency files for context
+      - Read any completed dependency files for context. **BE SURGICAL**: Do not indiscriminately copy-paste content from previous artifacts (like the proposal) into new ones (like tasks). Synthesize the information strictly as directed by the current artifact's schema to avoid context pollution.
       - Create the artifact file using `template` as the structure
       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
       - Show brief progress: "Created <artifact-id>"

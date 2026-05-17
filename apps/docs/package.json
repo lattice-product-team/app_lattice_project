@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "./sync-docs.sh && next dev",
-    "build": "./sync-docs.sh && next build",
+    "build": "NODE_ENV=production ./sync-docs.sh && next build",
     "start": "next start",
     "lint": "next lint"
   },

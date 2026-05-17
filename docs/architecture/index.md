@@ -41,7 +41,7 @@ graph TD
 
 1.  **Mobile App (`apps/mobile`)**: The primary interface for end-users. Built with React Native and Expo, featuring MapLibre for high-performance mapping.
 2.  **Admin Web (`apps/admin-web`)**: A high-density dashboard for administrators to curate content and monitor system health.
-3.  **API Monolith (`apps/server`)**: A centralized service layer that handles business logic. It is divided into internal domains (Geo, Auth, Social).
+3.  **API Monolith (`apps/server`)**: A centralized service layer that handles business logic. It follows a **Service Layer pattern**, where controllers handle HTTP transport and delegate business logic and data orchestration to dedicated domain services (e.g., `PoiService`, `EventService`).
 4.  **Shared Packages (`packages/*`)**:
     *   `db`: Single source of truth for the database schema and migrations using Drizzle ORM.
     *   `types-schema`: Shared TypeScript interfaces ensuring type safety from the DB to the Mobile UI.

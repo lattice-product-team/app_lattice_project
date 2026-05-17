@@ -50,7 +50,7 @@ export const BentoGrid = React.memo(({ title, items, onPress }: Props) => {
               style={{ width: cardWidth, height: cardHeight, borderRadius: 24, overflow: 'hidden' }}
             >
               <Image
-                source={{ uri: item.bannerUrl || `https://source.unsplash.com/random/400x400/?${item.type},architecture` }}
+                source={{ uri: item.bannerUrl || `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80` }}
                 style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
               />

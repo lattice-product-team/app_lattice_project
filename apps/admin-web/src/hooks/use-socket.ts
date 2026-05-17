@@ -3,7 +3,26 @@
 import { useEffect, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const getSocketUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const protocol = window.location.protocol;
+    
+    if (process.env.NEXT_PUBLIC_API_URL) {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    
+    // In production routing with Cloudflare Tunnels (subpath routing)
+    if (host === 'projects.kore29.com') {
+      return `${protocol}//${host}/lattice/api`;
+    }
+    
+    return `${protocol}//${host}:3000`;
+  }
+  return 'http://localhost:3000';
+};
+
+const SOCKET_URL = getSocketUrl();
 
 export const useSocket = (token?: string) => {
   const [socket, setSocket] = useState<Socket | null>(null);

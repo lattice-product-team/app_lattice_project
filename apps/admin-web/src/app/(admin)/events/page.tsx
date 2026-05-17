@@ -305,7 +305,7 @@ export default function EventsPage() {
       {/* Full-Screen Interface */}
       {/* --- LATTICE STUDIO: EVENT INTERFACE --- */}
       {isInterfaceOpen && (
-        <div className="fixed inset-0 z-[100] bg-background animate-in fade-in duration-300">
+        <div className="fixed inset-0 w-screen h-screen z-[200] bg-background animate-in fade-in duration-300">
           {/* Map Layer (Full Screen Background) */}
           <div className="absolute inset-0">
             <AdminMap
@@ -461,7 +461,17 @@ export default function EventsPage() {
                   />
                   {bannerUrl && (
                     <div className="mt-2 h-32 w-full rounded-2xl overflow-hidden border border-border">
-                      <img src={bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                      <img 
+                        src={(bannerUrl.startsWith('PLACEHOLDER_') || bannerUrl === 'null' || bannerUrl === '')
+                          ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`
+                          : bannerUrl
+                        } 
+                        alt="Banner Preview" 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`;
+                        }}
+                      />
                     </div>
                   )}
                 </div>
@@ -745,8 +755,15 @@ export default function EventsPage() {
             <tbody className="transition-colors divide-y divide-border/30">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="py-24 text-center">
-                    <Spinner color="current" size="sm" />
+                  <td colSpan={9} className="py-24">
+                    <div className="flex flex-col items-center justify-center gap-4 animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-elevated border border-border flex items-center justify-center">
+                        <Icons.RefreshCw className="w-4 h-4 text-gravel animate-spin" />
+                      </div>
+                      <span className="text-gravel uppercase text-[10px] font-medium tracking-[0.2em]">
+                        Synchronizing Operational Data...
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ) : filteredEvents.length === 0 ? (
@@ -780,13 +797,16 @@ export default function EventsPage() {
                       <td className="py-6 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-elevated border border-border overflow-hidden shrink-0 shadow-sm">
-                            {event.bannerUrl ? (
-                              <img src={event.bannerUrl} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gravel/20 bg-elevated/40">
-                                <Icons.Image className="w-5 h-5" />
-                              </div>
-                            )}
+                            <img 
+                              src={(!event.bannerUrl || event.bannerUrl === 'null' || (typeof event.bannerUrl === 'string' && (event.bannerUrl.startsWith('PLACEHOLDER_') || event.bannerUrl === ''))) 
+                                ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>` 
+                                : event.bannerUrl} 
+                              alt="" 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`;
+                              }}
+                            />
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-foreground text-admin-base uppercase tracking-tight truncate">

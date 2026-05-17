@@ -1,0 +1,116 @@
+# Mobile App - Screen Flow
+
+This section showcases the design and flow of the mobile application through mockups and wireframes.
+
+## Onboarding and Access
+
+The flow begins with a welcome screen and login options.
+
+<div className="flex flex-col gap-4 mt-6">
+  <div className="flex flex-col items-center">
+    <h3>Welcome</h3>
+    <img src="/assets/screenshots/welcome.jpeg" alt="Welcome" width="300" />
+  </div>
+  
+  <div className="flex flex-wrap gap-4 justify-center">
+    <div className="flex flex-col items-center">
+      <h3>Email Login</h3>
+      <img src="/assets/screenshots/login-email.jpeg" alt="Login Email" width="300" />
+    </div>
+    <div className="flex flex-col items-center">
+      <h3>Google Login</h3>
+      <img src="/assets/screenshots/login-google.jpeg" alt="Login Google" width="300" />
+    </div>
+  </div>
+</div>
+
+## Exploration and Map
+
+Once inside, the user can interact with the map and explore events.
+
+<div className="flex flex-wrap gap-4 mt-6 justify-center">
+  <div className="flex flex-col items-center">
+    <h3>Main Map</h3>
+    <img src="/assets/screenshots/map.jpeg" alt="Map" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>Exploration Page</h3>
+    <img src="/assets/screenshots/explore-page.jpeg" alt="Explore" width="300" />
+  </div>
+</div>
+
+## Event Details
+
+Details of events at different levels of depth.
+
+<div className="flex flex-wrap gap-4 mt-6 justify-center">
+  <div className="flex flex-col items-center">
+    <h3>Event (Level 1)</h3>
+    <img src="/assets/screenshots/event-lvl1.jpeg" alt="Event Level 1" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>Event (Level 2)</h3>
+    <img src="/assets/screenshots/event-lvl2.jpeg" alt="Event Level 2" width="300" />
+  </div>
+</div>
+
+## Search
+
+Enhanced search interface with filters and suggestions.
+
+<div className="flex flex-wrap gap-4 mt-6 justify-center">
+  <div className="flex flex-col items-center">
+    <h3>Search (Level 2)</h3>
+    <img src="/assets/screenshots/search-bar-lvl2.jpeg" alt="Search Level 2" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>Search (Level 3)</h3>
+    <img src="/assets/screenshots/search-bar-lvl3.jpeg" alt="Search Level 3" width="300" />
+  </div>
+</div>
+
+## Tickets and Wallet
+
+Ticket management and access to the personal wallet.
+
+<div className="flex flex-wrap gap-4 mt-6 justify-center">
+  <div className="flex flex-col items-center">
+    <h3>Ticket Wallet</h3>
+    <img src="/assets/screenshots/ticket-wallet.jpeg" alt="Ticket Wallet" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>Ticket Detail</h3>
+    <img src="/assets/screenshots/ticket.jpeg" alt="Ticket" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>Ticket Scanning</h3>
+    <img src="/assets/screenshots/ticket-scan.jpeg" alt="Ticket Scan" width="300" />
+  </div>
+</div>
+
+## Navigation and Augmented Reality
+
+Navigation features to reach events.
+
+<div className="flex flex-wrap gap-4 mt-6 justify-center">
+  <div className="flex flex-col items-center">
+    <h3>Navigation Mode</h3>
+    <img src="/assets/screenshots/navigation-mode.jpeg" alt="Navigation Mode" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>Navigation Route</h3>
+    <img src="/assets/screenshots/navigation-route.jpeg" alt="Navigation Route" width="300" />
+  </div>
+  <div className="flex flex-col items-center">
+    <h3>AR Mode (Augmented Reality)</h3>
+    <img src="/assets/screenshots/ra-mode.jpeg" alt="AR Mode" width="300" />
+  </div>
+</div>
+
+## User Profile
+
+Profile management and preferences.
+
+<div className="flex flex-col items-center mt-6">
+  <img src="/assets/screenshots/user-profile.jpeg" alt="User Profile" width="300" />
+</div>

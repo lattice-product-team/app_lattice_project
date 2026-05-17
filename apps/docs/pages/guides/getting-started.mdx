@@ -19,12 +19,18 @@ Ensure you have the following installed:
 - **iOS Simulator / Android Emulator**: For the mobile app.
 
 ## 2. Environment Setup
+ 
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/lattice-product-team/app_lattice_project.git
+   cd app_lattice_project
+   ```
+2. **Copy Configuration**: Copy the template to create your root `.env` file:
+   ```bash
+   cp .env.example .env
+   ```
+3. **Configure Parameters**: Ensure `DATABASE_URL` (default: `postgres://postgres:password@localhost:5433/lattice_db`), `JWT_SECRET`, and `LAN_IP` are correctly configured (detailed in the [Installation Manual](./installation.md)).
 
-Lattice uses a decentralized `.env` strategy.
-
-1.  **Root**: Copy `.env.example` to `.env`.
-2.  **Server**: Ensure `DATABASE_URL` and `JWT_SECRET` are correctly set in the root `.env`.
-3.  **Admin Web**: Ensure `NEXT_PUBLIC_API_URL` points to your local server.
 
 ## 3. Launch Sequence
  

@@ -55,7 +55,7 @@ export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
               }}
             >
               <Image
-                source={{ uri: item.bannerUrl || `https://source.unsplash.com/random/100x100/?${item.type},architecture` }}
+                source={{ uri: item.bannerUrl || `https://images.unsplash.com/photo-1467226632440-65f0b49574f8?auto=format&fit=crop&w=200&q=80` }}
                 style={{ width: 56, height: 56, borderRadius: 12, marginRight: 12 }}
                 contentFit="cover"
               />

@@ -7,45 +7,8 @@ import { valhallaService } from '../services/valhalla.service.js';
 import { socialService } from '../services/social.service.js';
 import { discoveryService } from '../services/discovery.service.js';
 import { notifyAdmin, notifyAll, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
-
-/**
- * Professional GPU Marker Metadata Mapping
- * Ensures consistency between server-provided GeoJSON and mobile SymbolLayers.
- */
-const getMarkerMeta = (type: string, name: string) => {
-  const t = type?.toLowerCase() || '';
-  const meta = {
-    icon_name: 'info',
-    color_hex: '#5856D6', // Default brand purple
-    display_name: name || 'Point of Interest',
-  };
-
-  // 1. Icon Mapping (Matches apps/mobile/assets/icons/*.svg)
-  if (t.includes('restaurant') || t.includes('food') || t.includes('drink') || t.includes('coffee')) {
-    meta.icon_name = 'restaurant';
-    meta.color_hex = '#FF9500'; // Gastronomy Orange
-  } else if (t.includes('parking')) {
-    meta.icon_name = 'parking';
-    meta.color_hex = '#007AFF'; // Infrastructure Blue
-  } else if (t.includes('wc') || t.includes('toilet') || t.includes('restroom')) {
-    meta.icon_name = 'wc';
-    meta.color_hex = '#007AFF';
-  } else if (t.includes('medical') || t.includes('hospital') || t.includes('emergency')) {
-    meta.icon_name = 'medical';
-    meta.color_hex = '#FF3B30'; // Safety Red
-  } else if (t.includes('gate') || t.includes('entrance') || t.includes('access')) {
-    meta.icon_name = 'gate';
-    meta.color_hex = '#5856D6';
-  } else if (t.includes('info')) {
-    meta.icon_name = 'info';
-    meta.color_hex = '#5AC8FA'; // Cyan Info
-  } else if (t.includes('shop') || t.includes('store')) {
-    meta.icon_name = 'info'; // Fallback
-    meta.color_hex = '#AF52DE'; // Tech Purple
-  }
-
-  return meta;
-};
+import { poiService, getMarkerMeta } from '../services/poi.service.js';
+import { eventService } from '../services/event.service.js';
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -115,80 +78,19 @@ export const getEventSpatial = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
-    const cacheKey = `geo:event:${eventId}:spatial`;
-    const cachedData = await getCache(cacheKey);
+    const result = await eventService.getEventSpatial(eventId);
 
-    if (cachedData) {
-      res.header('X-Cache', 'HIT');
-      return res.json(JSON.parse(cachedData));
-    }
-
-    res.header('X-Cache', 'MISS');
-
-    const [event] = await db
-      .select({
-        id: events.id,
-        name: events.name,
-        boundary: sql<string>`ST_AsGeoJSON(${events.boundary})`,
-      })
-      .from(events)
-      .where(eq(events.id, eventId));
-
-    if (!event) {
+    if (!result) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    const poisResults = await db
-      .select({
-        id: pointsOfInterest.id,
-        name: pointsOfInterest.name,
-        type: pointsOfInterest.type,
-        bannerUrl: pointsOfInterest.bannerUrl,
-        galleryUrls: pointsOfInterest.galleryUrls,
-        geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
-      })
-      .from(pointsOfInterest)
-      .where(eq(pointsOfInterest.eventId, eventId));
-
-    const features: any[] = [];
-
-    if (event.boundary) {
-      features.push({
-        type: 'Feature',
-        geometry: JSON.parse(event.boundary),
-        properties: {
-          type: 'boundary',
-          name: event.name,
-        },
-      });
+    if (result.cached) {
+      res.header('X-Cache', 'HIT');
+    } else {
+      res.header('X-Cache', 'MISS');
     }
 
-    poisResults.forEach((poi: any) => {
-      const meta = getMarkerMeta(poi.type, poi.name);
-      features.push({
-        type: 'Feature',
-        geometry: JSON.parse(poi.geometry),
-        properties: {
-          id: poi.id,
-          type: poi.type,
-          name: poi.name,
-          bannerUrl: poi.bannerUrl,
-          galleryUrls: poi.galleryUrls,
-          // New GPU Optimization Properties
-          icon_name: meta.icon_name,
-          color_hex: meta.color_hex,
-          display_name: meta.display_name,
-        },
-      });
-    });
-    const responseData = {
-      type: 'FeatureCollection',
-      features,
-    };
-
-    setCache(cacheKey, JSON.stringify(responseData)).catch(() => {});
-
-    res.json(responseData);
+    res.json(result.data);
   } catch (error) {
     console.error('Error fetching event spatial data:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -205,44 +107,7 @@ export const saveEventSpatial = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid Event ID' });
     }
 
-    // 1. Update boundary
-    if (boundary) {
-      await db
-        .update(events)
-        .set({
-          boundary: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(boundary)}), 4326)`,
-        })
-        .where(eq(events.id, eventId));
-    }
-
-    // 2. Sync POIs
-    await db.delete(pointsOfInterest).where(eq(pointsOfInterest.eventId, eventId));
-
-    if (pois && Array.isArray(pois)) {
-      for (const poi of pois) {
-        await db.insert(pointsOfInterest).values({
-          eventId,
-          name: poi.name,
-          type: poi.type,
-          description: poi.description,
-          locationName: poi.locationName,
-          address: poi.address,
-          capacity: poi.capacity,
-          currentOccupancy: poi.currentOccupancy,
-          status: poi.status || 'open',
-          metadata: poi.metadata ? JSON.stringify(poi.metadata) : null,
-          location: sql`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(poi.geometry)}), 4326)`,
-        });
-      }
-    }
-
-    // Invalidate Cache
-    await deleteByPrefix('geo:pois:');
-    await deleteCache(`geo:event:${eventId}:spatial`);
-
-    // Notify Admins & Clients
-    notifyAdmin('admin:pois:updated', { type: 'EVENT_SPATIAL_UPDATED', id: id as string });
-    notifyAll('sync:event:spatial', { id: id as string });
+    const result = await eventService.saveEventSpatial(eventId, boundary, pois);
 
     res.json({ success: true, message: 'Event spatial data saved successfully' });
   } catch (error) {
@@ -334,96 +199,18 @@ export const getPois = async (req: Request, res: Response) => {
   try {
     const { category, eventId } = req.query;
 
-    // Cache Key Strategy
-    const cacheKey = `geo:pois:cat=${category || 'all'}:evt=${eventId || 'global'}`;
-    const cachedData = await getCache(cacheKey);
+    const { data, cached } = await poiService.getPois(
+      category as string | undefined,
+      eventId as string | undefined
+    );
 
-    if (cachedData) {
+    if (cached) {
       res.header('X-Cache', 'HIT');
-      return res.json(JSON.parse(cachedData));
+    } else {
+      res.header('X-Cache', 'MISS');
     }
 
-    res.header('X-Cache', 'MISS');
-
-    const query = db
-      .select({
-        id: pointsOfInterest.id,
-        name: pointsOfInterest.name,
-        type: pointsOfInterest.type,
-        description: pointsOfInterest.description,
-        crowdLevel: pointsOfInterest.crowdLevel,
-        isWheelchairAccessible: pointsOfInterest.isWheelchairAccessible,
-        hasPriorityLane: pointsOfInterest.hasPriorityLane,
-        locationName: pointsOfInterest.locationName,
-        address: pointsOfInterest.address,
-        capacity: pointsOfInterest.capacity,
-        currentOccupancy: pointsOfInterest.currentOccupancy,
-        status: pointsOfInterest.status,
-        bannerUrl: pointsOfInterest.bannerUrl,
-        galleryUrls: pointsOfInterest.galleryUrls,
-        metadata: pointsOfInterest.metadata,
-        geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
-        eventId: pointsOfInterest.eventId,
-        eventName: events.name,
-        eventPrimaryColor: events.primaryColor,
-      })
-      .from(pointsOfInterest)
-      .leftJoin(events, eq(pointsOfInterest.eventId, events.id))
-      .$dynamic();
-
-    if (category && typeof category === 'string') {
-      query.where(sql`${pointsOfInterest.type}::text = ${category}`);
-    }
-
-    if (eventId) {
-      const eid = parseInt(eventId as string, 10);
-      if (!isNaN(eid)) {
-        query.where(eq(pointsOfInterest.eventId, eid));
-      }
-    }
-
-    const results = await query;
-
-    const features = results.map((poi: any) => {
-      const meta = getMarkerMeta(poi.type, poi.name);
-      return {
-        type: 'Feature',
-        geometry: JSON.parse(poi.geometry as string),
-        properties: {
-          id: poi.id,
-          name: poi.name,
-          category: poi.type,
-          description: poi.description,
-          crowdLevel: poi.crowdLevel,
-          isWheelchairAccessible: poi.isWheelchairAccessible,
-          hasPriorityLane: poi.hasPriorityLane,
-          locationName: poi.locationName,
-          address: poi.address,
-          capacity: poi.capacity,
-          currentOccupancy: poi.currentOccupancy,
-          status: poi.status,
-          metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
-          bannerUrl: poi.bannerUrl,
-          galleryUrls: poi.galleryUrls,
-          eventId: poi.eventId,
-          eventName: poi.eventName,
-          eventColor: poi.eventPrimaryColor,
-          // New GPU Optimization Properties
-          icon_name: meta.icon_name,
-          color_hex: meta.color_hex,
-          display_name: meta.display_name,
-        },
-      };
-    });
-
-    const responseData = {
-      type: 'FeatureCollection',
-      features,
-    };
-
-    setCache(cacheKey, JSON.stringify(responseData)).catch(() => {});
-
-    res.json(responseData);
+    res.json(data);
   } catch (error) {
     console.error('Error fetching POIs:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
@@ -536,69 +323,13 @@ export const getPoi = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid POI ID' });
     }
 
-    const result = await db
-      .select({
-        id: pointsOfInterest.id,
-        name: pointsOfInterest.name,
-        type: pointsOfInterest.type,
-        description: pointsOfInterest.description,
-        crowdLevel: pointsOfInterest.crowdLevel,
-        isWheelchairAccessible: pointsOfInterest.isWheelchairAccessible,
-        hasPriorityLane: pointsOfInterest.hasPriorityLane,
-        locationName: pointsOfInterest.locationName,
-        address: pointsOfInterest.address,
-        capacity: pointsOfInterest.capacity,
-        currentOccupancy: pointsOfInterest.currentOccupancy,
-        status: pointsOfInterest.status,
-        bannerUrl: pointsOfInterest.bannerUrl,
-        galleryUrls: pointsOfInterest.galleryUrls,
-        metadata: pointsOfInterest.metadata,
-        geometry: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
-      })
-      .from(pointsOfInterest)
-      .where(sql`${pointsOfInterest.id} = ${poiId}`)
-      .limit(1);
+    const poi = await poiService.getPoi(poiId);
 
-    if (result.length === 0) {
+    if (!poi) {
       return res.status(404).json({ error: 'POI not found' });
     }
 
-    const poi = result[0];
-    const meta = getMarkerMeta(poi.type, poi.name);
-
-    // Background sync if social data is missing
-    const metadata = poi.metadata ? JSON.parse(poi.metadata as string) : {};
-    if (!metadata.social) {
-      socialService
-        .syncAssetSocialData('poi', poiId)
-        .catch((err) => console.error('[Social] Background sync failed:', err));
-    }
-
-    res.json({
-      type: 'Feature',
-      geometry: JSON.parse(poi.geometry as string),
-      properties: {
-        id: poi.id,
-        name: poi.name,
-        category: poi.type,
-        description: poi.description,
-        crowdLevel: poi.crowdLevel,
-        isWheelchairAccessible: poi.isWheelchairAccessible,
-        hasPriorityLane: poi.hasPriorityLane,
-        locationName: poi.locationName,
-        address: poi.address,
-        capacity: poi.capacity,
-        currentOccupancy: poi.currentOccupancy,
-        status: poi.status,
-        bannerUrl: poi.bannerUrl,
-        galleryUrls: poi.galleryUrls,
-        metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
-        // New GPU Optimization Properties
-        icon_name: meta.icon_name,
-        color_hex: meta.color_hex,
-        display_name: meta.display_name,
-      },
-    });
+    res.json(poi);
   } catch (error) {
     console.error('Error fetching POI:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
