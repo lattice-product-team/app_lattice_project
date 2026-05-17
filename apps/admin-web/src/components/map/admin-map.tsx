@@ -355,16 +355,30 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     if (!style || !style.layers) return;
 
     style.layers.forEach((layer: any) => {
-      // Robust approach: Hide most symbol/label layers except essential geographical names
       const isSymbolLayer = layer.type === 'symbol';
-      const isEssentialLabel = 
-        layer.id.includes('place_label') || 
-        layer.id.includes('road_label') || 
-        layer.id.includes('water_label') ||
-        layer.id.includes('country_label');
+      if (!isSymbolLayer) return;
 
-      if (isSymbolLayer && !isEssentialLabel) {
-        map.setLayoutProperty(layer.id, 'visibility', 'none');
+      const isOurLayer = layer.id.startsWith('global-');
+      // More comprehensive list of native labels to keep visible
+      const isEssentialLabel = 
+        layer.id.includes('place') || 
+        layer.id.includes('road') || 
+        layer.id.includes('street') || 
+        layer.id.includes('highway') ||
+        layer.id.includes('water') ||
+        layer.id.includes('poi') ||
+        layer.id.includes('transit') ||
+        layer.id.includes('airport') ||
+        layer.id.includes('country') ||
+        layer.id.includes('state') ||
+        layer.id.includes('city');
+
+      if (isOurLayer || isEssentialLabel) {
+        map.setLayoutProperty(layer.id, 'visibility', 'visible');
+      } else {
+        // Only hide labels that are truly non-essential (e.g. some obscure MapTiler specific layers)
+        // or if you want a very clean map. To be safe, we'll keep almost everything now.
+        map.setLayoutProperty(layer.id, 'visibility', 'visible');
       }
     });
   }, []);
@@ -433,21 +447,23 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="global-boundaries-labels"
               type="symbol"
-              minzoom={8}
+              minzoom={6}
               layout={{
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold'],
-                'text-size': ['interpolate', ['linear'], ['zoom'], 8, 9, 14, 11],
-                'text-letter-spacing': 0.2,
+                'text-size': ['interpolate', ['linear'], ['zoom'], 6, 8, 14, 12, 18, 14],
+                'text-letter-spacing': 0.1,
                 'text-transform': 'uppercase',
                 'text-anchor': 'center',
-                'text-max-width': 8,
-                'text-allow-overlap': false,
+                'text-max-width': 10,
+                'text-allow-overlap': true,
+                'text-ignore-placement': true,
               }}
               paint={{
                 'text-color': ['get', 'color'],
-                'text-halo-color': theme === 'dark' ? '#000' : '#fff',
+                'text-halo-color': theme === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
                 'text-halo-width': 2,
+                'text-halo-blur': 1,
               }}
             />
           </Source>
