@@ -164,6 +164,7 @@ export const getEventSpatial = async (req: Request, res: Response) => {
     }
 
     poisResults.forEach((poi: any) => {
+      const meta = getMarkerMeta(poi.type, poi.name);
       features.push({
         type: 'Feature',
         geometry: JSON.parse(poi.geometry),
@@ -173,6 +174,10 @@ export const getEventSpatial = async (req: Request, res: Response) => {
           name: poi.name,
           bannerUrl: poi.bannerUrl,
           galleryUrls: poi.galleryUrls,
+          // New GPU Optimization Properties
+          icon_name: meta.icon_name,
+          color_hex: meta.color_hex,
+          display_name: meta.display_name,
         },
       });
     });
