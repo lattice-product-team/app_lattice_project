@@ -78,19 +78,21 @@ All error responses follow this structure:
 | `500` | Internal Server Error | Something went wrong on our end. |
 
 ## Available APIs
-
+ 
 | API | Description | Target Audience |
 | :--- | :--- | :--- |
 | [Admin API](./admin-api.md) | Operations for platform management and telemetry. | Admin Dashboard |
 | [Mobile API](./mobile-api.md) | Discovery and client-side interactions. | Mobile App (Lattice) |
+| [API Schemas](./schemas.md) | Shared JSON schemas, enums, and geospatial types. | Mobile & Admin Clients |
 
 ## Data Formats
-
+ 
 ### Timestamp
 All timestamps MUST be in ISO 8601 format (UTC).
-
+ 
 ### Location
-Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`.
+Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`. For complete coordinate types and spatial formatting, check out our [API Schemas Guide](./schemas.md#geospatial-standards).
+
 
 ---
 

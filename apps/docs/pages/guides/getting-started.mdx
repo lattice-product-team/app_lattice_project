@@ -21,41 +21,54 @@ Lattice uses a decentralized `.env` strategy.
 3.  **Admin Web**: Ensure `NEXT_PUBLIC_API_URL` points to your local server.
 
 ## 3. Launch Sequence
-
+ 
 Follow this order to ensure all services are linked correctly:
-
+ 
 ### Step 1: Infrastructure
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
-*This starts PostgreSQL and the core API service.*
-
+*This starts PostgreSQL (on port `5433`), Redis, and Valhalla in the background.*
+ 
 ### Step 2: Dependencies
 ```bash
 pnpm install
 ```
-
+ 
 ### Step 3: Database Initialization
 ```bash
-pnpm --filter @app/db db:migrate
-pnpm --filter @app/db db:seed
+pnpm db:migrate
+pnpm db:seed
 ```
-
+*This compiles the SQL migrations and populates the database with default spatial events, POIs, and nodes.*
+ 
 ### Step 4: Start Applications
-Open three terminals or use a terminal multiplexer:
-
-- **Server**: `pnpm --filter server dev`
-- **Admin Web**: `pnpm --filter admin-web dev`
-- **Mobile**: `pnpm --filter mobile start`
+Open three separate terminals to start the core services:
+ 
+*   **Server (API)**: 
+    ```bash
+    pnpm dev:api
+    ```
+*   **Admin Web Dashboard**: 
+    ```bash
+    pnpm dev:web
+    ```
+*   **Mobile (Expo Dev Client)**: 
+    For local development with physical devices on the same Wi-Fi network (highly recommended):
+    ```bash
+    pnpm dev:mobile:lan
+    ```
+    *Alternatively, use `pnpm dev:mobile` for simulators, `pnpm dev:mobile:lan:prod` for production env testing, or `pnpm dev:mobile:tunnel` if on separate networks.*
 
 ## 4. Verification
-
+ 
 - **API Health**: Visit `http://localhost:3001/status`.
 - **Admin Dashboard**: Visit `http://localhost:3000`.
-- **Mobile**: Scan the QR code with the Expo Go app or press `i` for iOS simulator.
-
+- **Mobile Expo Console**: Scan the QR code displayed in the terminal with the Expo Go app (or Expo dev client) or press `i` (iOS simulator) or `a` (Android emulator).
+ 
 ---
-
+ 
 <Callout type="info">
-  If you encounter issues with the database connection, check the [Troubleshooting](./troubleshooting.md) guide.
+  If you encounter database connection issues or need details on configuring specific ports, check the [Troubleshooting](./troubleshooting.md) guide.
 </Callout>
+

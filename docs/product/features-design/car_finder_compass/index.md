@@ -20,4 +20,4 @@ The **Car Finder Compass** is a dedicated high-utility tool designed to relieve 
 ---
 
 > [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](file:///home/nildiaz/app_lattice_project/docs/product/features-design/car_finder_compass/code.html).
+> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).

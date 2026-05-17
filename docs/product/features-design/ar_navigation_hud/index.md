@@ -20,4 +20,4 @@ The **AR Navigation HUD** (Heads-Up Display) is the centerpiece of the immersive
 ---
 
 > [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](file:///home/nildiaz/app_lattice_project/docs/product/features-design/ar_navigation_hud/code.html).
+> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).

@@ -7,21 +7,19 @@
   *Built with a high-performance Modular Monolith architecture within a Turborepo.*
 </div>
 
----
-
 ## Documentation Portal
 
 Explore our comprehensive, domain-driven documentation. Each section is designed to provide deep technical insights and operational guidance.
 
 **[Visit the Documentation Portal](https://lattice-product-team.github.io/app_lattice_project/)**
 
-| Domain | Key Areas | Description |
-| :--- | :--- | :--- |
-| **Product** | Vision, Roadmap | Market objectives and long-term strategy. |
+| Domain           | Key Areas           | Description                                      |
+| :--------------- | :------------------ | :----------------------------------------------- |
+| **Product**      | Vision, Roadmap     | Market objectives and long-term strategy.        |
 | **Architecture** | System Design, ADRs | Technical blueprint and architectural decisions. |
-| **API Spec** | RESTful Contracts | Shared data schemas and service interfaces. |
-| **Engineering** | Standards, Workflow | Coding guidelines and developer productivity. |
-| **Guides** | Onboarding, Ops | Step-by-step manuals for users and devs. |
+| **API Spec**     | RESTful Contracts   | Shared data schemas and service interfaces.      |
+| **Engineering**  | Standards, Workflow | Coding guidelines and developer productivity.    |
+| **Guides**       | Onboarding, Ops     | Step-by-step manuals for users and devs.         |
 
 ---
 
@@ -38,19 +36,19 @@ Explore our comprehensive, domain-driven documentation. Each section is designed
 
 ## Technology Stack
 
--   **Backend**: Node.js (Express) with **Drizzle ORM**.
--   **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
--   **Mobile**: React Native (Expo) with **MapLibre GL** for 60fps mapping.
--   **Admin**: Next.js 14 with high-density operational dashboards.
--   **Auth**: Custom JWT authentication with bcrypt password hashing.
--   **Tooling**: Turborepo, Docker, and Vitest.
+- **Backend**: Node.js (Express) with **Drizzle ORM**.
+- **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
+- **Mobile**: React Native (Expo) with **MapLibre GL** for 60fps mapping.
+- **Admin**: Next.js 14 with high-density operational dashboards.
+- **Auth**: Custom JWT authentication with bcrypt password hashing.
+- **Tooling**: Turborepo, Docker, and Vitest.
 
 ## Shared Packages
 
--   `@app/db`: SSOT for schema and migrations.
--   `@app/types-schema`: Universal TypeScript definitions.
--   `@app/core`: Shared utilities and middleware.
--   `@app/theme`: Visual DNA for all platforms.
+- `@app/db`: SSOT for schema and migrations.
+- `@app/types-schema`: Universal TypeScript definitions.
+- `@app/core`: Shared utilities and middleware.
+- `@app/theme`: Visual DNA for all platforms.
 
 ---
 

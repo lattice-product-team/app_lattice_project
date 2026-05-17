@@ -1,6 +1,26 @@
 # Technology Stack
 
 Lattice is built with a modern, type-safe, and high-performance technology stack designed to handle real-time geospatial data and complex event management.
+ 
+## 📊 Technology Stack Overview
+ 
+| Technology | Category | Primary Purpose | Key Features |
+| :--- | :--- | :--- | :--- |
+| <img src="https://cdn.simpleicons.org/typescript/3178C6" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **TypeScript** | Core Language | End-to-end static type safety | Strong compilation boundaries, shared Drizzle models |
+| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Node.js** | Core Runtime | Scalable server runtime environment | Event-driven architecture, high IO throughput |
+| <img src="https://cdn.simpleicons.org/react/61DAFB" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **React / Next.js** | Frontend | Web management & operations dashboard | Nextra documentation engine, fast Server Actions |
+| <img src="https://cdn.simpleicons.org/expo/000020" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Expo & React Native** | Mobile | Native iOS & Android client application | Cross-platform performance, hardware GPS/AR bindings |
+| <img src="https://cdn.simpleicons.org/express/000000" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Express.js** | Backend API | Lightweight REST API gateway | Middleware-driven routing, clean MVC controllers |
+| <img src="https://cdn.simpleicons.org/socketdotio/010101" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Socket.IO** | Telemetry | Real-time bi-directional messaging | Low-latency crowd coordinates, live room sync |
+| <img src="https://cdn.simpleicons.org/postgresql/4169E1" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **PostgreSQL (PostGIS)**| Data | Relational storage & geospatial mapping | Native PostGIS spatial grids, polygons, proximity pings |
+| <img src="https://cdn.simpleicons.org/drizzle/C5F74F" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Drizzle ORM** | Data | High-performance, type-safe database access | Zero overhead compilation, instant schema sync |
+| <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **TailwindCSS** | Styling | Rapid utility-first UI development | Sleek administrative dashboard, curated dark mode |
+| <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Turborepo** | DevOps | Monorepo pipeline & task orchestration | Global remote compilation cache, parallelized tests |
+| <img src="https://cdn.simpleicons.org/docker/2496ED" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Docker** | Infrastructure | Containerized local environment | Consistent Postgres/Redis/Valhalla image orchestration|
+| <img src="https://cdn.simpleicons.org/git/F05032" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Git** | VCS | Structured version control | Safe peer code reviews, continuous integration |
+ 
+---
+
 
 ## Core Language & Runtime
 
@@ -17,61 +37,57 @@ Our backend services run on **Node.js**, providing a fast and scalable environme
 ---
 
 ## Frontend Frameworks
-
+ 
 ### React (Web Dashboard)
-<img src="/img/React_light_dark/React_dark.svg" alt="React" width="64" height="64" className="dark:block hidden" />
-<img src="/img/React_light_dark/React_light.svg" alt="React" width="64" height="64" className="block dark:hidden" />
-
+<img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" width="64" height="64" />
+ 
 The administrative dashboard is built with **React**, leveraging **Next.js** for routing and **Nextra** for documentation. It provides a rich, interactive interface for managing events, POIs, and telemetry.
-
+ 
 ### Expo & React Native (Mobile)
 <img src="/img/expo.svg" alt="Expo" width="64" height="64" />
-
+ 
 The mobile application is built using **React Native** and **Expo**. This allows us to share code between platforms while maintaining native performance and access to device features like GPS and AR.
-
+ 
 ---
-
+ 
 ## Backend & Infrastructure
-
+ 
 ### Express.js
-<img src="/img/Express.js_light_dark/Express.js_dark.svg" alt="Express.js" width="64" height="64" className="dark:block hidden" />
-<img src="/img/Express.js_light_dark/Express.js_light.svg" alt="Express.js" width="64" height="64" className="block dark:hidden" />
-
+<img src="https://cdn.simpleicons.org/express/000000" alt="Express.js" width="64" height="64" />
+ 
 Our RESTful API is powered by **Express.js**, providing a lightweight and flexible foundation for our business logic and data orchestration.
-
+ 
 ### Socket.IO
-<img src="/img/Socket.IO_light_dark/Socket.IO_dark.svg" alt="Socket.IO" width="64" height="64" className="dark:block hidden" />
-<img src="/img/Socket.IO_light_dark/Socket.IO_light.svg" alt="Socket.IO" width="64" height="64" className="block dark:hidden" />
-
+<img src="https://cdn.simpleicons.org/socketdotio/010101" alt="Socket.IO" width="64" height="64" />
+ 
 For real-time telemetry and live updates, we use **Socket.IO**. This enables instant synchronization between mobile devices and the administrative dashboard.
-
+ 
 ---
-
+ 
 ## Data Management
-
+ 
 ### PostgreSQL
 <img src="/img/postgresql.svg" alt="PostgreSQL" width="64" height="64" />
-
+ 
 **PostgreSQL** is our primary relational database, chosen for its reliability, performance, and strong support for geospatial data via PostGIS.
-
+ 
 ### Drizzle ORM
-<img src="/img/Drizzle ORM_light_dark/Drizzle ORM_dark.svg" alt="Drizzle ORM" width="128" height="64" className="dark:block hidden" />
-<img src="/img/Drizzle ORM_light_dark/Drizzle ORM_light.svg" alt="Drizzle ORM" width="128" height="64" className="block dark:hidden" />
-
+<img src="https://cdn.simpleicons.org/drizzle/C5F74F" alt="Drizzle ORM" width="64" height="64" />
+ 
 We use **Drizzle ORM** as our type-safe companion for PostgreSQL. It provides a thin, high-performance layer that ensures our database queries are as safe as our application code.
-
+ 
 ---
-
+ 
 ## Styling & Utilities
-
+ 
 ### TailwindCSS
 <img src="/img/tailwindcss.svg" alt="TailwindCSS" width="64" height="64" />
-
+ 
 We use **TailwindCSS** for rapid and consistent UI development across our web applications, ensuring a modern and responsive design.
-
+ 
 ### Turborepo
-<img src="/img/Turborepo_light_dark/Turborepo_dark.svg" alt="Turborepo" width="64" height="64" className="dark:block hidden" />
-<img src="/img/Turborepo_light_dark/Turborepo_light.svg" alt="Turborepo" width="64" height="64" className="block dark:hidden" />
+<img src="https://cdn.simpleicons.org/turborepo/EF4444" alt="Turborepo" width="64" height="64" />
+
 
 Our monorepo is managed by **Turborepo**, which optimizes our build pipeline and ensures efficient caching and task execution across all packages.
 
