@@ -4,5 +4,4 @@ export default {
   'api-spec': 'API Reference',
   engineering: 'Engineering',
   guides: 'Guides',
-  product: 'Product',
 };
