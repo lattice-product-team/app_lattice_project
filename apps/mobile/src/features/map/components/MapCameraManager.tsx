@@ -10,6 +10,21 @@ export interface MapCameraHandle {
   setCamera: (config: any) => void;
 }
 
+const DEFAULT_CAMERA_SETTINGS = {
+  centerCoordinate: MAP_CENTER,
+  zoomLevel: 14,
+};
+
+const FLY_TO_PADDING = { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 };
+const ROUTE_OVERVIEW_PADDING = {
+  ne: [0, 0], // Placeholder, calculated dynamically
+  sw: [0, 0],
+  paddingLeft: 60,
+  paddingRight: 60,
+  paddingTop: 140,
+  paddingBottom: 400,
+};
+
 /**
  * MapCameraManager: Professional-grade orchestrator for the MapLibre Camera.
  */
@@ -60,7 +75,7 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
         ...(pitch !== undefined && { pitch: pitch }),
         animationDuration: duration,
         animationMode: 'flyTo',
-        padding: { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+        padding: FLY_TO_PADDING,
       });
 
       // Safety release of programmatic lock
@@ -76,6 +91,18 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     handleRegionChangeComplete: (_center: number[], _zoom: number) => {},
     setCamera: (config: any) => cameraRef.current?.setCamera(config),
   }));
+
+  // NATIVE TRACKING SYNC: Listen to when the native engine breaks follow mode
+  const handleUserTrackingModeChange = useCallback(
+    (e: any) => {
+      const { followUserLocation } = e.nativeEvent.payload;
+      if (!followUserLocation && cameraMode !== MapCameraMode.FREE && !isProgrammaticMove) {
+        console.log('[MapCameraManager] 🚨 Native tracking broken by gesture, syncing state');
+        setCameraMode(MapCameraMode.FREE);
+      }
+    },
+    [cameraMode, isProgrammaticMove, setCameraMode]
+  );
 
   const lastProcessedRecenter = useRef(recenterCount);
   const lastProcessedForceCenter = useRef(forceCenterCount);
@@ -157,10 +184,10 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
         bounds: {
           ne: [maxX, maxY],
           sw: [minX, minY],
-          paddingLeft: 60,
-          paddingRight: 60,
-          paddingTop: 140,
-          paddingBottom: 400,
+          paddingLeft: ROUTE_OVERVIEW_PADDING.paddingLeft,
+          paddingRight: ROUTE_OVERVIEW_PADDING.paddingRight,
+          paddingTop: ROUTE_OVERVIEW_PADDING.paddingTop,
+          paddingBottom: ROUTE_OVERVIEW_PADDING.paddingBottom,
         },
         pitch: 0, // Reset tilt for route overview
         animationDuration: 1200,
@@ -199,10 +226,8 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
       followUserMode={getFollowMode()}
       followPitch={45}
       animationDuration={0}
-      defaultSettings={{
-        centerCoordinate: MAP_CENTER,
-        zoomLevel: 14,
-      }}
+      defaultSettings={DEFAULT_CAMERA_SETTINGS}
+      onUserTrackingModeChange={handleUserTrackingModeChange}
     />
   );
 });

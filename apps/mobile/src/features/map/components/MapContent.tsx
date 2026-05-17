@@ -527,6 +527,18 @@ export const MapContent = function MapContent({
         scrollEnabled={true}
         zoomEnabled={true}
         onPress={handleMapPress}
+        onRegionWillChange={(e) => {
+          // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
+          // This is the only way to reliably detect the START of a user gesture on Android.
+          const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+          if (!currentIsProgrammatic) {
+            const currentMode = useMapUIStore.getState().cameraMode;
+            if (currentMode !== MapCameraMode.FREE) {
+              console.log('[MapContent] 🚨 Manual gesture detected (onRegionWillChange), breaking camera lock');
+              setCameraMode(MapCameraMode.FREE);
+            }
+          }
+        }}
         onRegionIsChanging={(e) => handleCameraChange(e, true)}
         onRegionDidChange={async (e) => {
           handleCameraChange(e, false);
