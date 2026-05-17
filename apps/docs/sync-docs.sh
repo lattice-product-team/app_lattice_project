@@ -15,21 +15,36 @@ cp ../../README.md "$PAGES_DIR/index.md"
 
 # --- Normalization ---
 
+# Determine OS-specific sed in-place parameter
+if [ "$(uname)" = "Darwin" ]; then
+  SED_I=(sed -i '')
+else
+  SED_I=(sed -i)
+fi
+
 # 1. Convert GitHub alerts to Nextra Callouts
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!IMPORTANT\]/<Callout type="error">/g' {} +
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!WARNING\]/<Callout type="warning">/g' {} +
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!NOTE\]/<Callout type="info">/g' {} +
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/> \[!TIP\]/<Callout type="info">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/> \[!IMPORTANT\]/<Callout type="error">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/> \[!WARNING\]/<Callout type="warning">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/> \[!NOTE\]/<Callout type="info">/g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/> \[!TIP\]/<Callout type="info">/g' {} +
 
 # 2. Add Callout import if needed
-find "$PAGES_DIR" -name "*.md" -exec bash -c 'if grep -q "<Callout" "$1"; then sed -i "" "1i\\
-import { Callout } from \"nextra/components\"\\
-" "$1"; fi' _ {} \;
+find "$PAGES_DIR" -name "*.md" -exec bash -c '
+  if [ "$(uname)" = "Darwin" ]; then
+    SED_I=(sed -i "")
+  else
+    SED_I=(sed -i)
+  fi
+  if grep -q "<Callout" "$1"; then
+    "${SED_I[@]}" "1i\
+import { Callout } from \"nextra/components\"\
+" "$1"
+  fi' _ {} \;
 
 # 3. Remove common emojis
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/🚀//g' {} +
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/🌐//g' {} +
-find "$PAGES_DIR" -name "*.md" -exec sed -i '' 's/📦//g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/🚀//g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/🌐//g' {} +
+find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/📦//g' {} +
 
 # 4. Convert all .md to .mdx
 find "$PAGES_DIR" -name "*.md" -exec bash -c 'mv "$1" "${1%.md}.mdx"' _ {} \;
