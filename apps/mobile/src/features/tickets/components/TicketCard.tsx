@@ -24,7 +24,7 @@ interface TicketCardProps {
   isSelected?: boolean;
 }
 
-export const TicketCard: React.FC<TicketCardProps> = ({ 
+export const TicketCard: React.FC<TicketCardProps> = React.memo(({ 
   ticket, 
   index = 0, 
   onCardPress,
@@ -34,9 +34,10 @@ export const TicketCard: React.FC<TicketCardProps> = ({
   const router = useRouter();
   const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
   
-  // Stores
-  const { selectPoi, setSelectedEvent } = usePOIStore();
-  const { setPlanning } = useNavigationStore();
+  // Optimized Store Selectors
+  const selectPoi = usePOIStore((s) => s.selectPoi);
+  const setSelectedEvent = usePOIStore((s) => s.setSelectedEvent);
+  const setPlanning = useNavigationStore((s) => s.setPlanning);
   
   const isVip = ticket.zoneName?.toLowerCase().includes('vip');
   const isTribuna = ticket.zoneName?.toLowerCase().includes('tribuna') || ticket.zoneName?.toLowerCase().includes('grandstand');
@@ -180,7 +181,9 @@ export const TicketCard: React.FC<TicketCardProps> = ({
       </TouchableOpacity>
     </Animated.View>
   );
-};
+});
+
+TicketCard.displayName = 'TicketCard';
 
 const styles = StyleSheet.create({
   cardContainer: {

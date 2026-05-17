@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, RefreshControl, View, Text, InteractionManager } from 'react-native';
+import { FlatList, RefreshControl, View, Text, InteractionManager } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiscovery } from '../../../hooks/useDiscovery';
 import { FeaturedCarousel } from './FeaturedCarousel';
@@ -88,6 +88,41 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
     setIsReady(true);
   }, []);
 
+  const renderSection = React.useCallback(({ item: section, index }: { item: any; index: number }) => {
+    if (!section || !section.items || section.items.length === 0) return null;
+
+    switch (section.type) {
+      case 'featured':
+        return (
+          <FeaturedCarousel
+            key={`featured-${index}`}
+            events={section.items}
+            onPress={onItemPress}
+          />
+        );
+      case 'trending':
+        return (
+          <BentoGrid
+            key={`trending-${index}`}
+            title={section.title || 'Trending'}
+            items={section.items}
+            onPress={onItemPress}
+          />
+        );
+      case 'nearby':
+        return (
+          <NearbyList
+            key={`nearby-${index}`}
+            title={section.title || 'Nearby'}
+            items={section.items}
+            onPress={onItemPress}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [onItemPress]);
+
   if ((isLoading && !feed) || !isReady) {
     const skeletonColor = theme?.colors?.glass?.background || 'rgba(255,255,255,0.1)';
     return (
@@ -113,7 +148,10 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
   }
 
   return (
-    <ScrollView
+    <FlatList
+      data={mainSections}
+      renderItem={renderSection}
+      keyExtractor={(item, index) => `${item.type}-${index}`}
       contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -123,67 +161,34 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
           tintColor={theme?.colors?.text?.primary || '#fff'}
         />
       }
-    >
-      {/* 1. Header Greeting (Apple Style Large Title) */}
-      <View style={{ paddingHorizontal: 20, marginBottom: 28 }}>
-        <Text style={{ 
-          fontFamily: typography.sans.bold, 
-          fontSize: 34, 
-          color: theme?.colors?.text?.primary || '#fff',
-          letterSpacing: -1.2,
-          lineHeight: 40,
-        }}>
-          {greeting}
-        </Text>
-      </View>
+      ListHeaderComponent={
+        <>
+          {/* 1. Header Greeting (Apple Style Large Title) */}
+          <View style={{ paddingHorizontal: 20, marginBottom: 28 }}>
+            <Text style={{ 
+              fontFamily: typography.sans.bold, 
+              fontSize: 34, 
+              color: theme?.colors?.text?.primary || '#fff',
+              letterSpacing: -1.2,
+              lineHeight: 40,
+            }}>
+              {greeting}
+            </Text>
+          </View>
 
-      {/* 2. Top Filters (Categories) */}
-      {categoriesSection && (
-        <View style={{ marginBottom: 28 }}>
-          <CategoryChips
-            categories={categoriesSection.items}
-            activeCategory={activeCategory}
-            onSelect={handleSelectCategory}
-          />
-        </View>
-      )}
-
-      {/* 3. Main Sections */}
-      {mainSections.map((section, index) => {
-        if (section.items.length === 0) return null;
-
-        switch (section.type) {
-          case 'featured':
-            return (
-              <FeaturedCarousel
-                key={index}
-                events={section.items}
-                onPress={onItemPress}
+          {/* 2. Top Filters (Categories) */}
+          {categoriesSection && (
+            <View style={{ marginBottom: 28 }}>
+              <CategoryChips
+                categories={categoriesSection.items}
+                activeCategory={activeCategory}
+                onSelect={handleSelectCategory}
               />
-            );
-          case 'trending':
-            return (
-              <BentoGrid
-                key={index}
-                title={section.title || 'Trending'}
-                items={section.items}
-                onPress={onItemPress}
-              />
-            );
-          case 'nearby':
-            return (
-              <NearbyList
-                key={index}
-                title={section.title || 'Nearby'}
-                items={section.items}
-                onPress={onItemPress}
-              />
-            );
-          default:
-            return null;
-        }
-      })}
-    </ScrollView>
+            </View>
+          )}
+        </>
+      }
+    />
   );
 }
 

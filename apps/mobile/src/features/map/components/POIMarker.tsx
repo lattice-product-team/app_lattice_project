@@ -40,21 +40,10 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const metadata = getCategoryMetadata(categoryKey);
     const color = metadata.color || theme.colors.brand.primary;
     const IconComponent = metadata.icon;
-    const [isPointerEnabled, setIsPointerEnabled] = useState(
-      isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0
-    );
+    const isPointerEnabled = isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0;
+
     const mountScale = useSharedValue(0);
     const mountOpacity = useSharedValue(0);
-
-    useAnimatedReaction(
-      () => zoomSharedValue.value >= 14.0,
-      (enabled) => {
-        if (enabled !== isPointerEnabled && !isSelected && !isLinkedToSelectedEvent) {
-          runOnJS(setIsPointerEnabled)(enabled);
-        }
-      },
-      [isPointerEnabled, isSelected, isLinkedToSelectedEvent]
-    );
 
     React.useEffect(() => {
       mountScale.value = withTiming(1, { duration: 200 });

@@ -217,11 +217,59 @@ export const MapLayers = React.memo(({
 
   return (
     <>
-      {/* 1. Background Sources (Empty, logic moved to POIMarkers) */}
+      {/* 1. Background Sources */}
       <MapLibreGL.ShapeSource 
         id="poiSource" 
         shape={backgroundPois}
-      />
+        onPress={handleShapePress}
+      >
+        <MapLibreGL.CircleLayer
+          id="backgroundPoiDots"
+          minZoomLevel={10}
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              12, 2,
+              14, 4,
+              16, 0 // Hide dots when we show real markers
+            ],
+            circleColor: ['get', 'color'],
+            circleStrokeWidth: 1,
+            circleStrokeColor: '#FFFFFF',
+            circleOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              11, 0,
+              12, 1,
+              15.5, 1,
+              16, 0
+            ],
+          }}
+        />
+        <MapLibreGL.SymbolLayer
+          id="poiLabelLayer"
+          minZoomLevel={15}
+          style={{
+            textField: ['get', 'name'],
+            textSize: 12,
+            textColor: ['get', 'color'],
+            textHaloColor: '#FFFFFF',
+            textHaloWidth: 2,
+            textAnchor: 'top',
+            textOffset: [0, 1.2],
+            textOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15, 0,
+              16, 1
+            ],
+          }}
+        />
+      </MapLibreGL.ShapeSource>
 
       <MapLibreGL.ShapeSource 
         id="eventsBackgroundSource" 
@@ -277,6 +325,7 @@ export const MapLayers = React.memo(({
         theme={theme}
         zoomSharedValue={zoomSharedValue}
         visibleBounds={visibleBounds}
+        zoomLevel={zoomLevel}
       />
 
       {/* 3. LABELS (Empty, logic moved to POIMarkers) */}
