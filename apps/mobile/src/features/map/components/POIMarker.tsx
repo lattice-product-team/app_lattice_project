@@ -40,8 +40,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const metadata = getCategoryMetadata(categoryKey);
     const color = metadata.color || theme.colors.brand.primary;
     const IconComponent = metadata.icon;
-    const isPointerEnabled = isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0;
-
+    // NO .value access in the component body!
     const mountScale = useSharedValue(0);
     const mountOpacity = useSharedValue(0);
 
@@ -51,42 +50,42 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
+      const zoom = zoomSharedValue.value;
       const baseScale = interpolate(
-        zoomSharedValue.value,
+        zoom,
         [14, 16, 18],
-        [0.8, 1, 1.3], // Enlarged scales
+        [0.8, 1, 1.3],
         Extrapolation.CLAMP
       );
 
       // Selected markers are even larger
       const scale = isSelected ? 1.3 : baseScale;
 
-      const opacity = interpolate(zoomSharedValue.value, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
+      const opacity = interpolate(zoom, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
 
       return {
         transform: [
-          { scale: scale * mountScale.value }, // Multiply by mount animation
+          { scale: scale * mountScale.value },
         ],
         opacity: (isSelected || isLinkedToSelectedEvent ? 1 : opacity) * mountOpacity.value,
       };
     });
 
-    const pointerEvents = isSelected || isLinkedToSelectedEvent || isPointerEnabled ? 'auto' : 'none';
+    const labelStyle = useAnimatedStyle(() => {
+      const zoom = zoomSharedValue.value;
+      const opacity = interpolate(zoom, [16.5, 17.5], [0, 1], Extrapolation.CLAMP);
+      return {
+        opacity: isSelected || isLinkedToSelectedEvent ? 1 : opacity,
+      };
+    });
 
     return (
       <Animated.View
         style={[mapPinStyles.markerWrapper, animatedStyle]}
-        pointerEvents={pointerEvents}
+        pointerEvents="auto"
       >
         <TouchableOpacity onPress={() => onPress(poi)} activeOpacity={0.9}>
-          <View
-            style={[
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-              },
-            ]}
-          >
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
             <MapPinFrame
               size="poi"
               borderColor="#FFFFFF"
@@ -107,14 +106,14 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
             </MapPinFrame>
 
             {properties.name && (
-              <View style={mapPinStyles.labelBadge}>
+              <Animated.View style={[mapPinStyles.labelBadge, labelStyle]}>
                 <Text 
                   style={[mapPinStyles.labelText, { color, textShadowRadius: 0 }]}
                   numberOfLines={1}
                 >
                   {properties.name}
                 </Text>
-              </View>
+              </Animated.View>
             )}
           </View>
         </TouchableOpacity>

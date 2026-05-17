@@ -360,6 +360,8 @@ export const MapContent = function MapContent({
 
   // Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
+    // Be more patient on Android with older hardware
+    const timeoutDuration = Platform.OS === 'android' ? 12000 : 8000;
     const timer = setTimeout(() => {
       if (!hasInitialRendered.current) {
         console.log('⚠️ [MapContent] Safety timeout triggered: forcing map ready');
@@ -367,7 +369,7 @@ export const MapContent = function MapContent({
         setInitialLoadComplete(true);
         setMapReady(true);
       }
-    }, 8000);
+    }, timeoutDuration);
     return () => clearTimeout(timer);
   }, [setInitialLoadComplete, setMapReady]);
 
@@ -384,6 +386,14 @@ export const MapContent = function MapContent({
         layer.id.includes('road_label') ||
         layer.id.includes('water_label') ||
         layer.id.includes('country_label');
+
+      // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
+      if (Platform.OS === 'android' && (layer.id.includes('building') || layer.type === 'fill-extrusion')) {
+        return {
+          ...layer,
+          layout: { ...(layer.layout || {}), visibility: 'none' },
+        };
+      }
 
       if (isSymbolLayer && !isEssentialLabel) {
         return {

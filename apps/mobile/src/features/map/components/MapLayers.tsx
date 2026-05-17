@@ -59,83 +59,62 @@ const RouteLayer = React.memo(({
 });
 
 /**
- * Sub-component for POI Markers to isolate re-renders.
+ * Sub-component for the Selected Feature (POI or Event)
+ * This is the ONLY React Native PointAnnotation rendered on the map,
+ * allowing for complex animations without killing performance.
  */
-const POIMarkers = React.memo(({ 
-  features, 
-  selectedPoiId, 
-  onPoiPress, 
-  theme, 
+const SelectedMarker = React.memo(({ 
+  poisGeoJSON,
+  eventsGeoJSON,
+  selectedPoiId,
+  selectedEventId,
+  onPoiPress,
+  theme,
   zoomSharedValue,
-  visibleBounds 
 }: { 
-  features: any[], 
-  selectedPoiId: any, 
-  onPoiPress: any, 
-  theme: any, 
+  poisGeoJSON: any,
+  eventsGeoJSON: any,
+  selectedPoiId: any,
+  selectedEventId: any,
+  onPoiPress: any,
+  theme: any,
   zoomSharedValue: any,
-  visibleBounds: number[][] | null
 }) => {
-  // Helper to check if a point is within visible bounds with a safety margin
-  const isPointInBounds = (coords: number[], bounds: number[][] | null) => {
-    if (!bounds || bounds.length < 2) return true; // Default to visible if no bounds
-    const [[neLng, neLat], [swLng, swLat]] = bounds;
-    const [lng, lat] = coords;
-    
-    // Add 10% padding to bounds to prevent flickering at edges
-    const lngPad = Math.abs(neLng - swLng) * 0.1;
-    const latPad = Math.abs(neLat - swLat) * 0.1;
-    
-    const minLng = Math.min(neLng, swLng) - lngPad;
-    const maxLng = Math.max(neLng, swLng) + lngPad;
-    const minLat = Math.min(neLat, swLat) - latPad;
-    const maxLat = Math.max(neLat, swLat) + latPad;
+  const selectedFeature = useMemo(() => {
+    if (selectedPoiId) {
+      return poisGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedPoiId));
+    }
+    if (selectedEventId) {
+      return eventsGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedEventId));
+    }
+    return null;
+  }, [selectedPoiId, selectedEventId, poisGeoJSON, eventsGeoJSON]);
 
-    return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
-  };
+  if (!selectedFeature) return null;
 
-  const visibleFeatures = useMemo(() => {
-    if (!visibleBounds) return features;
-    return features.filter(f => 
-      String(f.properties?.id) === String(selectedPoiId) || // Always keep selected
-      isPointInBounds(f.geometry.coordinates, visibleBounds)
-    );
-  }, [features, visibleBounds, selectedPoiId]);
-
-  // Render ONLY visible pois as PointAnnotations for performance.
-  // We use the ID to ensure stability across re-renders.
   return (
-    <>
-      {visibleFeatures.map((feature) => {
-        const id = String(feature.properties?.id);
-        const isSelected = id === String(selectedPoiId);
-        
-        return (
-          <MapLibreGL.PointAnnotation
-            key={`poi-${id}`}
-            id={`ann-${id}`}
-            coordinate={feature.geometry.coordinates}
-            style={{ zIndex: isSelected ? 100 : 1 }}
-          >
-            <View 
-              style={[
-                mapPinStyles.markerWrapper, 
-                { backgroundColor: 'transparent' }
-              ]}
-              collapsable={false}
-            >
-              <POIMarker
-                poi={feature}
-                theme={theme}
-                isSelected={isSelected}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            </View>
-          </MapLibreGL.PointAnnotation>
-        );
-      })}
-    </>
+    <MapLibreGL.PointAnnotation
+      key={`selected-${selectedPoiId || selectedEventId}`}
+      id="selected-annotation"
+      coordinate={selectedFeature.geometry.coordinates}
+      style={{ zIndex: 1000 }}
+    >
+      <View 
+        style={[
+          mapPinStyles.markerWrapper, 
+          { backgroundColor: 'transparent' }
+        ]}
+        collapsable={false}
+      >
+        <POIMarker
+          poi={selectedFeature}
+          theme={theme}
+          isSelected={true}
+          onPress={onPoiPress}
+          zoomSharedValue={zoomSharedValue}
+        />
+      </View>
+    </MapLibreGL.PointAnnotation>
   );
 });
 
@@ -222,40 +201,97 @@ export const MapLayers = React.memo(({
         id="poiSource" 
         shape={backgroundPois}
         onPress={handleShapePress}
+        cluster={true}
+        clusterRadius={50}
+        clusterMaxZoomLevel={14}
       >
+        {/* Cluster Representation */}
+        <MapLibreGL.CircleLayer
+          id="poiClusters"
+          aboveLayerID="backgroundPoiDots"
+          filter={['has', 'point_count']}
+          style={{
+            circleColor: theme.colors.brand.primary,
+            circleRadius: [
+              'step',
+              ['get', 'point_count'],
+              20,
+              10, 25,
+              50, 30
+            ],
+            circleOpacity: 0.8,
+            circleStrokeWidth: 2,
+            circleStrokeColor: '#FFFFFF',
+          }}
+        />
+
+        <MapLibreGL.SymbolLayer
+          id="poiClusterCount"
+          filter={['has', 'point_count']}
+          style={{
+            textField: '{point_count}',
+            textSize: 12,
+            textColor: '#FFFFFF',
+            textIgnorePlacement: true,
+            textAllowOverlap: true,
+          }}
+        />
+
         <MapLibreGL.CircleLayer
           id="backgroundPoiDots"
+          filter={['all', ['!', ['has', 'point_count']], ['!=', ['get', 'id'], selectedPoiId || '']]}
           minZoomLevel={10}
           style={{
             circleRadius: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              12, 2,
-              14, 4,
-              16, 0 // Hide dots when we show real markers
+              10, 1.5,
+              14, 3,
+              16, 0 // Hide dots when we show real icons
             ],
-            circleColor: ['get', 'color'],
+            circleColor: ['get', 'color_hex'],
             circleStrokeWidth: 1,
             circleStrokeColor: '#FFFFFF',
             circleOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              11, 0,
-              12, 1,
+              10, 0,
+              11, 1,
               15.5, 1,
               16, 0
             ],
           }}
         />
         <MapLibreGL.SymbolLayer
-          id="poiLabelLayer"
-          minZoomLevel={15}
+          id="poiIconsLayer"
+          filter={['all', ['!', ['has', 'point_count']], ['!=', ['get', 'id'], selectedPoiId || '']]}
+          minZoomLevel={14}
           style={{
-            textField: ['get', 'name'],
+            iconImage: ['get', 'icon_name'],
+            iconColor: ['get', 'color_hex'],
+            iconSize: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              14, 0.5,
+              16, 0.8,
+              18, 1.1
+            ],
+            iconAllowOverlap: true,
+            iconPadding: 0,
+            iconOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              13.5, 0,
+              14.5, 1
+            ],
+            // Use halo for text labels too
+            textField: ['get', 'display_name'],
             textSize: 12,
-            textColor: ['get', 'color'],
+            textColor: ['get', 'color_hex'],
             textHaloColor: '#FFFFFF',
             textHaloWidth: 2,
             textAnchor: 'top',
@@ -264,8 +300,8 @@ export const MapLayers = React.memo(({
               'interpolate',
               ['linear'],
               ['zoom'],
-              15, 0,
-              16, 1
+              15.5, 0,
+              16.5, 1
             ],
           }}
         />
@@ -277,22 +313,60 @@ export const MapLayers = React.memo(({
         hitbox={{ width: 44, height: 44 }}
         onPress={handleShapePress}
       >
+        <MapLibreGL.CircleLayer
+          id="eventBgBackground"
+          filter={['!=', ['get', 'id'], selectedEventId || '']}
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 4,
+              14, 8,
+              16, 0
+            ],
+            circleColor: '#FFFFFF',
+            circleStrokeWidth: 2,
+            circleStrokeColor: ['get', 'color_hex'],
+            circleOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              9, 0,
+              10, 1,
+              15.5, 1,
+              16, 0
+            ],
+          }}
+        />
         <MapLibreGL.SymbolLayer
           id="eventLabelsBackground"
+          filter={['!=', ['get', 'id'], selectedEventId || '']}
           style={{
-            textField: ['get', 'name'],
-            textSize: 16,
-            textColor: ['get', 'color'],
+            textField: ['get', 'display_name'],
+            textSize: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 10,
+              14, 14
+            ],
+            textColor: ['get', 'color_hex'],
             textHaloColor: '#FFFFFF',
-            textHaloWidth: 3,
-            textAnchor: 'center',
+            textHaloWidth: 2.5,
+            textAnchor: 'top',
+            textOffset: [0, 0.8],
             textOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              13.5, 1,
-              14.5, 0
+              10, 0,
+              11, 1,
+              15.5, 1,
+              16, 0
             ],
+            textTransform: 'uppercase',
+            textLetterSpacing: 0.1,
           }}
         />
       </MapLibreGL.ShapeSource>
@@ -302,39 +376,44 @@ export const MapLayers = React.memo(({
         shape={selectedEventFeature as any}
         onPress={handleShapePress}
       >
+        <MapLibreGL.CircleLayer
+          id="eventBgSelected"
+          style={{
+            circleRadius: 10,
+            circleColor: '#FFFFFF',
+            circleStrokeWidth: 3,
+            circleStrokeColor: ['get', 'color_hex'],
+          }}
+        />
         <MapLibreGL.SymbolLayer
           id="eventLabelSelected"
           style={{
-            textField: ['get', 'name'],
-            textSize: 18,
-            textColor: ['get', 'color'],
+            textField: ['get', 'display_name'],
+            textSize: 16,
+            textColor: ['get', 'color_hex'],
             textHaloColor: '#FFFFFF',
-            textHaloWidth: 4,
-            textAnchor: 'center',
+            textHaloWidth: 3,
+            textAnchor: 'top',
+            textOffset: [0, 1.0],
             textOpacity: 1,
             textTransform: 'uppercase',
+            textLetterSpacing: 0.2,
           }}
         />
       </MapLibreGL.ShapeSource>
 
-      {/* 2. POI MARKERS - Isolated from Route re-renders */}
-      <POIMarkers 
-        features={backgroundPois.features}
+      {/* 2. HYBRID SELECTION - Single React Component for the focus */}
+      <SelectedMarker 
+        poisGeoJSON={poisGeoJSON}
+        eventsGeoJSON={eventsGeoJSON}
         selectedPoiId={selectedPoiId}
+        selectedEventId={selectedEventId}
         onPoiPress={onPoiPress}
         theme={theme}
         zoomSharedValue={zoomSharedValue}
-        visibleBounds={visibleBounds}
-        zoomLevel={zoomLevel}
       />
 
-      {/* 3. LABELS (Empty, logic moved to POIMarkers) */}
-      <MapLibreGL.ShapeSource 
-        id="labelsSource" 
-        shape={EMPTY_GEOJSON}
-      />
-
-      {/* 4. ROUTE - Isolated from POI re-renders */}
+      {/* 3. ROUTE - Isolated from POI re-renders */}
       <RouteLayer 
         uiState={uiState}
         currentRoute={currentRoute}

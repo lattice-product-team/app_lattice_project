@@ -11,28 +11,16 @@ interface MapImageManagerProps {
  */
 export const MapImageManager = ({ events }: MapImageManagerProps) => {
   const categoryIcons = {
-    /*
-    coffee: require('../../../../assets/icons/coffee.png'),
-    restaurant: require('../../../../assets/icons/restaurant.png'),
-    parking: require('../../../../assets/icons/parking.png'),
-    wc: require('../../../../assets/icons/wc.png'),
-    medical: require('../../../../assets/icons/medical.png'),
-    info: require('../../../../assets/icons/info.png'),
-    shop: require('../../../../assets/icons/shop.png'),
-    gate: require('../../../../assets/icons/gate.png'),
-    museum: require('../../../../assets/icons/museum.png'),
-    park: require('../../../../assets/icons/park.png'),
-    hotel: require('../../../../assets/icons/hotel.png'),
-    pharmacy: require('../../../../assets/icons/pharmacy.png'),
-    gym: require('../../../../assets/icons/gym.png'),
-    bank: require('../../../../assets/icons/bank.png'),
-    default: require('../../../../assets/icons/marker.png'),
-    */
+    restaurant: { source: require('../../../../assets/icons/restaurant.svg'), sdf: true },
+    parking: { source: require('../../../../assets/icons/parking.svg'), sdf: true },
+    wc: { source: require('../../../../assets/icons/wc.svg'), sdf: true },
+    medical: { source: require('../../../../assets/icons/medical.svg'), sdf: true },
+    info: { source: require('../../../../assets/icons/info.svg'), sdf: true },
+    gate: { source: require('../../../../assets/icons/gate.svg'), sdf: true },
   };
 
-
   const imageMap = useMemo(() => {
-    const images: Record<string, any> = {};
+    const images: Record<string, any> = { ...categoryIcons };
 
     // Register Event Images
     events?.forEach((event) => {
