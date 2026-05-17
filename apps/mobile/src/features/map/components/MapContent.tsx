@@ -1,8 +1,13 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Dimensions, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+
+/**
+ * MapContent: Orchestrator for the main Map experience.
+ */
+// ... (rest of imports)
 
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
@@ -50,7 +55,6 @@ export const MapContent = function MapContent({
   const mapRef = useRef<any>(null);
   const theme = useLatticeTheme();
   const hasInitialRendered = React.useRef(false);
-  const [userHeading, setUserHeading] = React.useState(0);
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
