@@ -2,6 +2,11 @@
 
 Welcome to the **Lattice** engineering team! We're excited to have you helping us build the best event discovery platform for Barcelona.
 
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/welcome-3.png" alt="Onboarding Welcome Screen" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/tickets-1.png" alt="Ticket Synchronization Screen" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 ## Getting Started
 
 Follow these steps to set up your development environment:

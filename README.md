@@ -5,6 +5,12 @@
   **The definitive ecosystem for urban discovery and festival management in Barcelona.**
   
   *Built with a high-performance Modular Monolith architecture within a Turborepo.*
+
+  <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '16px 0', justifyContent: 'center' }}>
+    <img src="/assets/mockups/map-2.png" alt="Dynamic Map Interface" style={{ height: '380px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.1)' }} />
+    <img src="/assets/mockups/explore-1.png" alt="Fuzzy Search & Explore View" style={{ height: '380px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.1)' }} />
+    <img src="/assets/mockups/details-pois-1.png" alt="POI Details Overview" style={{ height: '380px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.1)' }} />
+  </div>
 </div>
 
 ## Documentation Portal

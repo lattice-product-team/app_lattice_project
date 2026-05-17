@@ -4,6 +4,11 @@ import { Callout } from 'nextra/components'
 
 This manual details the step-by-step installation and local setup of the entire Lattice ecosystem. It is intended for software engineers, database administrators, and QA teams who need to set up a fully functional local instance of the platform.
 
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/map-black-1.png" alt="Relational Spatial Maps (Dark Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/map-white-1.png" alt="Relational Spatial Maps (Light Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 ---
 
 ## 1. System Prerequisites
