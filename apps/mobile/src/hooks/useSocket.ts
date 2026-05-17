@@ -3,6 +3,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import Constants from 'expo-constants';
 import { useAuthStore } from '../store/useAuthStore';
+import { useSocketStore } from '../store/useSocketStore';
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl as string;
 const SOCKET_URL = (API_URL?.replace('/api/v1', '').replace('/v1', '') || '').replace(/\/$/, '');
@@ -14,7 +15,10 @@ let connectionPromise: Promise<Socket> | null = null;
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
   const isGuest = useAuthStore((state) => state.isGuest);
-  const [isConnected, setIsConnected] = useState(globalSocket?.connected || false);
+  
+  // Use centralized store for connection state
+  const isConnected = useSocketStore((state) => state.isConnected);
+  const setIsConnected = useSocketStore((state) => state.setIsConnected);
 
   const disconnect = useCallback(() => {
     if (globalSocket) {
@@ -24,7 +28,7 @@ export const useSocket = () => {
       connectionPromise = null;
       setIsConnected(false);
     }
-  }, []);
+  }, [setIsConnected]);
 
   const connect = useCallback(async () => {
     // Don't connect for guests or unauthenticated users
@@ -48,13 +52,14 @@ export const useSocket = () => {
     connectionPromise = new Promise((resolve) => {
       const socketInstance = io(connectionUrl, {
         auth: { token },
-        transports: ['polling', 'websocket'],
+        transports: ['polling', 'websocket'], // Restore polling as fallback for better compatibility
         path: socketPath,
         secure: true,
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 5000,
         forceNew: false,
+        timeout: 10000,
       });
 
       globalSocket = socketInstance;
@@ -76,12 +81,13 @@ export const useSocket = () => {
           disconnect();
         } else {
           console.error('[Socket] Connection error:', err.message);
+          // Don't disconnect on general errors to allow auto-reconnection
         }
       });
     });
 
     return connectionPromise;
-  }, [token, isGuest, disconnect]);
+  }, [token, isGuest, disconnect, setIsConnected]);
 
   // Handle connection/disconnection based on token and guest mode
   useEffect(() => {
@@ -96,16 +102,16 @@ export const useSocket = () => {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (AppState.currentState.match(/inactive|background/) && nextAppState === 'active') {
-        connect();
-      } else if (nextAppState.match(/inactive|background/)) {
-        // Optional: keep alive or disconnect. For battery optimization, we disconnect.
-        // disconnect(); 
+        // Only reconnect if we were supposed to be connected
+        if (token && !isGuest) {
+          connect();
+        }
       }
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
-  }, [connect, disconnect]);
+  }, [connect, token, isGuest]);
 
   const subscribe = useCallback((event: string, callback: (data: any) => void) => {
     if (globalSocket) {
@@ -114,6 +120,8 @@ export const useSocket = () => {
         globalSocket?.off(event, callback);
       };
     }
+    // If socket isn't ready yet, this subscription will fail.
+    // However, providers usually wait for isConnected before calling subscribe.
     return () => {};
   }, []);
 
