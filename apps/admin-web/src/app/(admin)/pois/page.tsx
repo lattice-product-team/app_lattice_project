@@ -50,7 +50,6 @@ const POI_TYPES = [
 
 export default function POIsPage() {
   const router = useRouter();
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const { pois, loading, refetch } = usePOIs();
   const { events } = useEvents();
   const { subscribe, isConnected } = useSocket();

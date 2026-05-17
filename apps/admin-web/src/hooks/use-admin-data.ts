@@ -7,7 +7,17 @@ const getApiBase = () => {
     // Dynamically use the current hostname to avoid localhost issues in tunnels or LAN
     const host = window.location.hostname;
     const protocol = window.location.protocol;
-    return process.env.NEXT_PUBLIC_API_URL || `${protocol}//${host}:3000`;
+    
+    if (process.env.NEXT_PUBLIC_API_URL) {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    
+    // In production routing with Cloudflare Tunnels (subpath routing)
+    if (host === 'projects.kore29.com') {
+      return `${protocol}//${host}/lattice/api`;
+    }
+    
+    return `${protocol}//${host}:3000`;
   }
   // When running on the server (SSR), use the internal Docker service name
   return process.env.INTERNAL_API_URL || 'http://api:3000';
