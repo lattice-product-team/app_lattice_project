@@ -100,7 +100,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'lattice-app',
   owner: 'lattice-organization',
   version: '1.0.0',
-  orientation: 'default',
+  orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'lattice',
   userInterfaceStyle: 'automatic',

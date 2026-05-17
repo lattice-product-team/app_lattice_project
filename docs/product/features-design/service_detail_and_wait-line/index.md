@@ -2,9 +2,14 @@
 
 The **Service Detail & Wait-line** screen provides users with immediate, granular information regarding points of interest (POIs) such as food courts, merch stands, and amenities. It includes real-time telemetry inputs regarding crowd density and estimated wait times to help clients optimize their schedules.
 
-## Screen Mockup
+## Screen Mockups
 
-![Service Detail & Wait-line Screen](./screen.png)
+````carousel
+![POI Details Overview](../../assets/mockups/details-pois-1.png)
+<!-- slide -->
+![Expanded Business Detail & Menu](../../assets/mockups/details-pois-2.png)
+````
+
 
 ## Interactive Design Details
 

@@ -2,9 +2,14 @@
 
 The **Login & Ticket Sync** screen acts as the gateway to the Lattice platform. It is designed to handle secure authentication and link admission tickets, updating user permissions in the system database.
 
-## Screen Mockup
+## Screen Mockups
 
-![Login & Ticket Sync Screen](./screen.png)
+````carousel
+![Welcome Onboarding Flow](../../assets/mockups/welcome-3.png)
+<!-- slide -->
+![Ticket Synchronization Panel](../../assets/mockups/tickets-1.png)
+````
+
 
 ## Interactive Design Details
 

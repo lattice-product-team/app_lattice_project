@@ -8,3 +8,5 @@ This section contains the UX design and interactive previews of the app features
 - [Login & Ticket Sync](./login_and_ticket_sync)
 - [Profile & Accessibility](./profile_and_accessibility)
 - [Service Detail & Wait-line](./service_detail_and_wait-line)
+- [Sliding Sheets & HUD Specification](./sliding-sheets-spec.md)
+

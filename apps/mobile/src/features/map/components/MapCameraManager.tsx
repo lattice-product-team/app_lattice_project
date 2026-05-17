@@ -23,14 +23,14 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     forceCenterCount,
     triggerSource,
     isPlanning,
-    currentRoute
+    currentRoute,
   } = props;
 
   const cameraRef = useRef<MapLibreGL.Camera>(null);
   const isProgrammaticMove = useMapUIStore((s) => s.isProgrammaticMove);
   const setIsProgrammaticMove = useMapUIStore((s) => s.setIsProgrammaticMove);
   const setCameraMode = useMapUIStore((s) => s.setCameraMode);
-  
+
   const hasInitialized = useRef(false);
   const lastIsNavigating = useRef(isNavigating);
   const lastProcessedRouteId = useRef<string | null>(null);
@@ -48,23 +48,26 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   }, []);
 
   // FLYTO LOGIC: Smooth cinematic transition
-  const flyTo = useCallback((coords: [number, number], zoom?: number, pitch?: number, duration: number = 1500) => {
-    if (!cameraRef.current) return;
+  const flyTo = useCallback(
+    (coords: [number, number], zoom?: number, pitch?: number, duration: number = 1500) => {
+      if (!cameraRef.current) return;
 
-    console.log('[MapCameraManager] ✈️ Flying to:', coords);
-    setIsProgrammaticMove(true);
-    cameraRef.current.setCamera({
-      centerCoordinate: coords,
-      ...(zoom !== undefined && { zoomLevel: zoom }),
-      ...(pitch !== undefined && { pitch: pitch }),
-      animationDuration: duration,
-      animationMode: 'flyTo',
-      padding: { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
-    });
-    
-    // Safety release of programmatic lock
-    setTimeout(() => setIsProgrammaticMove(false), duration + 50);
-  }, [setIsProgrammaticMove]);
+      console.log('[MapCameraManager] ✈️ Flying to:', coords);
+      setIsProgrammaticMove(true);
+      cameraRef.current.setCamera({
+        centerCoordinate: coords,
+        ...(zoom !== undefined && { zoomLevel: zoom }),
+        ...(pitch !== undefined && { pitch: pitch }),
+        animationDuration: duration,
+        animationMode: 'flyTo',
+        padding: { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+      });
+
+      // Safety release of programmatic lock
+      setTimeout(() => setIsProgrammaticMove(false), duration + 50);
+    },
+    [setIsProgrammaticMove]
+  );
 
   // EXPOSE INTERFACE
   useImperativeHandle(ref, () => ({
@@ -89,7 +92,7 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   useEffect(() => {
     if (isNavigating && !lastIsNavigating.current && userCoords) {
       console.log('[MapCameraManager] 🧭 Navigation START: Close-up FlyTo');
-      flyTo([userCoords[0], userCoords[1]], 18.5, 45, 1200);
+      flyTo([userCoords[0], userCoords[1]], 19.5, 45, 1200);
       setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
     }
     lastIsNavigating.current = isNavigating;
@@ -102,10 +105,11 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
       if (isNavigating || isPlanning) {
         setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
       } else {
-        flyTo([userCoords[0], userCoords[1]], 16);
+        flyTo([userCoords[0], userCoords[1]], 20.0);
       }
     }
   }, [recenterCount, userCoords, isNavigating, isPlanning, setCameraMode, flyTo]);
+
 
   // IMPERATIVE POI FOCUS TRIGGER
   useEffect(() => {
@@ -123,7 +127,7 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   // ROUTE OVERVIEW: Fit bounds only when route ID changes OR when navigation ends
   useEffect(() => {
     const routeId = currentRoute?.properties?.id || currentRoute?.geometry?.coordinates?.length;
-    
+
     // We trigger the overview if:
     // 1. We are in planning mode but NOT navigating
     // 2. AND (the route is new OR we just stopped navigating)
@@ -136,19 +140,27 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
 
       console.log('[MapCameraManager] 🗺️ Route Overview: Fitting bounds (StopNav or NewRoute)');
       lastProcessedRouteId.current = String(routeId);
-      
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
       for (const [x, y] of coords) {
-        if (x < minX) minX = x; if (y < minY) minY = y;
-        if (x > maxX) maxX = x; if (y > maxY) maxY = y;
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
       }
 
       setIsProgrammaticMove(true);
       cameraRef.current?.setCamera({
         bounds: {
-          ne: [maxX, maxY], sw: [minX, minY],
-          paddingLeft: 60, paddingRight: 60, 
-          paddingTop: 140, paddingBottom: 400, 
+          ne: [maxX, maxY],
+          sw: [minX, minY],
+          paddingLeft: 60,
+          paddingRight: 60,
+          paddingTop: 140,
+          paddingBottom: 400,
         },
         pitch: 0, // Reset tilt for route overview
         animationDuration: 1200,
@@ -156,12 +168,12 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
       });
       setTimeout(() => setIsProgrammaticMove(false), 1300);
     }
-    
+
     // Cleanup when stopping all planning
     if (!isPlanning) {
       lastProcessedRouteId.current = null;
     }
-    
+
     // Keep track of navigation state to detect when it ends
     lastIsNavigating.current = isNavigating;
   }, [isPlanning, isNavigating, currentRoute, setIsProgrammaticMove]);
@@ -169,10 +181,14 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   // DYNAMIC FOLLOW MODE
   const getFollowMode = () => {
     switch (cameraMode) {
-      case MapCameraMode.FOLLOW: return MapLibreGL.UserTrackingMode.Follow;
-      case MapCameraMode.FOLLOW_WITH_HEADING: return MapLibreGL.UserTrackingMode.FollowWithHeading;
-      case MapCameraMode.FOLLOW_WITH_COURSE: return MapLibreGL.UserTrackingMode.FollowWithCourse;
-      default: return MapLibreGL.UserTrackingMode.None;
+      case MapCameraMode.FOLLOW:
+        return MapLibreGL.UserTrackingMode.Follow;
+      case MapCameraMode.FOLLOW_WITH_HEADING:
+        return MapLibreGL.UserTrackingMode.FollowWithHeading;
+      case MapCameraMode.FOLLOW_WITH_COURSE:
+        return MapLibreGL.UserTrackingMode.FollowWithCourse;
+      default:
+        return MapLibreGL.UserTrackingMode.None;
     }
   };
 
@@ -181,8 +197,8 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
       ref={cameraRef}
       followUserLocation={cameraMode !== MapCameraMode.FREE}
       followUserMode={getFollowMode()}
-      followPitch={45} 
-      animationDuration={0} 
+      followPitch={45}
+      animationDuration={0}
       defaultSettings={{
         centerCoordinate: MAP_CENTER,
         zoomLevel: 14,

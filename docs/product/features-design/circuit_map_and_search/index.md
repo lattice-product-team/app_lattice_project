@@ -2,9 +2,18 @@
 
 The **Circuit Map & Search** is the central geographical navigation hub for end-users, built to cleanly render large-scale track maps and provide rapid fuzzy searching for venue Points of Interest (POIs).
 
-## Screen Mockup
+## Screen Mockups
 
-![Circuit Map & Search Screen](./screen.png)
+````carousel
+![Dynamic Map Interface](../../assets/mockups/map-2.png)
+<!-- slide -->
+![Fuzzy Search & Explore View](../../assets/mockups/explore-1.png)
+<!-- slide -->
+![Map Dark Mode Showcase](../../assets/mockups/map-black-1.png)
+<!-- slide -->
+![Map Light Mode Showcase](../../assets/mockups/map-white-1.png)
+````
+
 
 ## Interactive Design Details
 

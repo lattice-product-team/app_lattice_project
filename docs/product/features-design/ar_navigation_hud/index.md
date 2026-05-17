@@ -2,9 +2,12 @@
 
 The **AR Navigation HUD** (Heads-Up Display) is the centerpiece of the immersive mobile client navigation experience. It merges real-time GPS telemetry with the physical environment to provide absolute clarity to users moving through dense festival venues or racing tracks.
 
-## Screen Mockup
+## Screen Mockups
 
-![AR Navigation HUD Screen](./screen.png)
+````carousel
+![Active Navigation HUD](../../assets/mockups/navigation-2.png)
+````
+
 
 ## Interactive Design Details
 
