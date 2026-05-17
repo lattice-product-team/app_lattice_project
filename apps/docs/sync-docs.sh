@@ -9,7 +9,6 @@ find "$PAGES_DIR" -mindepth 1 -maxdepth 1 -not -name "_app.tsx" -not -name "_doc
 
 # Since the root /docs already follows the professional structure:
 cp -r ../../docs/* "$PAGES_DIR/"
-rm -rf "$PAGES_DIR/product"
 
 # Copy assets to public directory for Next.js static serving
 mkdir -p public/assets
