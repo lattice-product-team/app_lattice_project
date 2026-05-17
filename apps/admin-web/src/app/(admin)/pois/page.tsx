@@ -439,7 +439,17 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                   />
                   {bannerUrl && (
                     <div className="mt-2 h-32 w-full rounded-2xl overflow-hidden border border-border">
-                      <img src={bannerUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                      <img 
+                        src={(bannerUrl.startsWith('PLACEHOLDER_') || bannerUrl === 'null' || bannerUrl === '')
+                          ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`
+                          : bannerUrl
+                        } 
+                        alt="Banner Preview" 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`;
+                        }}
+                      />
                     </div>
                   )}
                 </div>
@@ -695,7 +705,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
               <tr className="border-b border-border bg-elevated/20">
                 <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
                 <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Asset Details</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Social Proof</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Rating</th>
                 <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location / Address</th>
                 <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Occupancy (Live)</th>
                 <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Accessibility</th>
@@ -720,13 +730,16 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-elevated border border-border overflow-hidden shrink-0 shadow-sm">
-                            {poi.bannerUrl ? (
-                              <img src={poi.bannerUrl} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gravel/20 bg-elevated/40">
-                                <Icons.Image className="w-5 h-5" />
-                              </div>
-                            )}
+                            <img 
+                              src={(!poi.bannerUrl || poi.bannerUrl === 'null' || (typeof poi.bannerUrl === 'string' && (poi.bannerUrl.startsWith('PLACEHOLDER_') || poi.bannerUrl === ''))) 
+                                ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>` 
+                                : poi.bannerUrl} 
+                              alt="" 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`;
+                              }}
+                            />
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-foreground text-admin-base uppercase tracking-tight truncate">{poi.name}</span>
@@ -735,45 +748,24 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <div className="flex justify-center">
-                          <button 
-                            onClick={() => !social && !syncingIds.has(poi.id) && syncSocial(poi.id)}
-                            disabled={syncingIds.has(poi.id)}
-                            className={`flex flex-col items-center gap-1.5 transition-all ${!social && !syncingIds.has(poi.id) ? 'hover:scale-110 cursor-pointer group/stars' : ''} ${syncingIds.has(poi.id) ? 'opacity-50 cursor-wait' : ''}`}
-                            title={social ? `${social.rating} / 5 (${social.reviews_count} reviews)` : syncingIds.has(poi.id) ? 'Syncing...' : 'Click to sync social proof'}
+                        {social ? (
+                          <div className="flex items-center gap-2">
+                            <Icons.Star className="w-3 h-3 text-amber fill-amber" />
+                            <span className="text-admin-sm font-black text-foreground">
+                              {social.rating}
+                            </span>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-3 text-[9px] font-black uppercase tracking-widest"
+                            onClick={() => syncSocial(poi.id)}
+                            isLoading={syncingIds.has(poi.id)}
                           >
-                            <div className="flex items-center gap-0.5">
-                              {syncingIds.has(poi.id) ? (
-                                <Icons.RefreshCw className="w-4 h-4 text-amber animate-spin" />
-                              ) : (
-                                [1, 2, 3, 4, 5].map((star) => {
-                                  const rating = social?.rating || 0;
-                                  const isFilled = star <= Math.round(rating);
-                                  return (
-                                    <Icons.Star 
-                                      key={star} 
-                                      className={`w-3.5 h-3.5 ${
-                                        isFilled 
-                                          ? 'text-amber fill-amber' 
-                                          : 'text-gravel/20 group-hover/stars:text-gravel/40'
-                                      } transition-colors`} 
-                                    />
-                                  );
-                                })
-                              )}
-                            </div>
-                            {social && !syncingIds.has(poi.id) && (
-                              <span className="text-[9px] font-bold text-gravel opacity-40 uppercase tracking-widest">
-                                {social.rating} ({social.reviews_count})
-                              </span>
-                            )}
-                            {!social && (
-                              <span className="text-[8px] font-bold text-gravel opacity-20 uppercase tracking-widest group-hover/stars:opacity-50">
-                                {syncingIds.has(poi.id) ? 'Syncing...' : 'No Data · Sync'}
-                              </span>
-                            )}
-                          </button>
-                        </div>
+                            Sync
+                          </Button>
+                        )}
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex flex-col items-start justify-center max-w-[300px]">
