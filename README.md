@@ -29,12 +29,25 @@ Explore our comprehensive, domain-driven documentation. Each section is designed
 
 ## Quick Start
 
-**IMPORTANT**: Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
+**IMPORTANT**: Ensure you have **Docker**, **Node.js (v20+)**, and **pnpm (v10+)** installed.
 
-1.  **Dependencies**: `pnpm install`
-2.  **Infrastructure**: `docker compose up -d`
-3.  **Database**: `pnpm db:migrate && pnpm db:seed`
-4.  **Launch**: `pnpm dev` (Starts API, Admin Web, and Mobile)
+The fastest way to set up your environment is using our automated onboarding script:
+
+```bash
+pnpm install
+pnpm onboard
+```
+
+This command will:
+1. Verify your environment (Docker, pnpm, Node).
+2. Initialize your `.env` file.
+3. Start the infrastructure (PostgreSQL, Redis, Valhalla).
+4. Run migrations and seed the database.
+
+Once complete, start the project with:
+```bash
+pnpm dev
+```
 
 ---
 

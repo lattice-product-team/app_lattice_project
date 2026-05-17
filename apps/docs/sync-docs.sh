@@ -54,7 +54,15 @@ find "$PAGES_DIR" -name "*.md" -exec "${SED_I[@]}" 's/📦//g' {} +
 # 4. Convert all .md to .mdx
 find "$PAGES_DIR" -name "*.md" -exec bash -c 'mv "$1" "${1%.md}.mdx"' _ {} \;
 
-# 5. Security Cleanup: Remove non-documentation files (but preserve _meta and Next.js essentials)
+# 5. Production Assets Path Rewrite (GitHub Pages subpath support)
+if [ "$NODE_ENV" = "production" ]; then
+  echo "📦 [Sync] Rewriting absolute assets paths with /app_lattice_project prefix for GitHub Pages production..."
+  find "$PAGES_DIR" -name "*.mdx" -exec "${SED_I[@]}" 's|src="/assets/|src="/app_lattice_project/assets/|g' {} +
+  find "$PAGES_DIR" -name "*.mdx" -exec "${SED_I[@]}" 's|href="/assets/|href="/app_lattice_project/assets/|g' {} +
+  find "$PAGES_DIR" -name "*.mdx" -exec "${SED_I[@]}" 's|(/assets/|(/app_lattice_project/assets/|g' {} +
+fi
+
+# 6. Security Cleanup: Remove non-documentation files (but preserve _meta and Next.js essentials)
 find "$PAGES_DIR" -type f \( -name "*.html" -o -name "*.py" -o -name "*.sh" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" \) ! -name "_meta.*" ! -name "_app.*" ! -name "_document.*" -delete
 
 echo "🚀 Documentation synced successfully from the professionalized source!"
