@@ -465,11 +465,11 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="global-boundaries-labels"
               type="symbol"
-              minzoom={6}
+              minzoom={11}
               layout={{
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold'],
-                'text-size': ['interpolate', ['linear'], ['zoom'], 6, 8, 14, 12, 18, 14],
+                'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 14],
                 'text-letter-spacing': 0.1,
                 'text-transform': 'uppercase',
                 'text-anchor': 'center',
