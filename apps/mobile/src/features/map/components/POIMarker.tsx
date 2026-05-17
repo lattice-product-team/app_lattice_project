@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
@@ -39,7 +39,25 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const categoryKey = properties.category?.toLowerCase() || 'generic';
     const metadata = getCategoryMetadata(categoryKey);
     const color = metadata.color || theme.colors.brand.primary;
-    const IconComponent = metadata.icon;
+    
+    // PNG Asset Mapper for visual consistency
+    const pngIcon = useMemo(() => {
+      const category = categoryKey;
+      if (category.includes('restaurant') || category.includes('food') || category.includes('coffee')) return require('../../../../assets/icons/restaurant.png');
+      if (category.includes('parking')) return require('../../../../assets/icons/parking.png');
+      if (category.includes('wc') || category.includes('toilet') || category.includes('restroom')) return require('../../../../assets/icons/toilet.png');
+      if (category.includes('medical') || category.includes('hospital')) return require('../../../../assets/icons/hospital.png');
+      if (category.includes('info') || category.includes('library')) return require('../../../../assets/icons/library-big.png');
+      if (category.includes('gate') || category.includes('login') || category.includes('entrance') || category.includes('log-out')) return require('../../../../assets/icons/log-out.png');
+      if (category.includes('bar') || category.includes('beer')) return require('../../../../assets/icons/beer.png');
+      if (category.includes('vip') || category.includes('crown')) return require('../../../../assets/icons/crown.png');
+      if (category.includes('security') || category.includes('shield')) return require('../../../../assets/icons/shield.png');
+      if (category.includes('shop') || category.includes('store') || category.includes('shopping')) return require('../../../../assets/icons/store.png');
+      if (category.includes('stage') || category.includes('theater') || category.includes('music')) return require('../../../../assets/icons/theater.png');
+      if (category.includes('meetup') || category.includes('users')) return require('../../../../assets/icons/users.png');
+      return require('../../../../assets/icons/library-big.png'); // Fallback
+    }, [categoryKey]);
+
     // NO .value access in the component body!
     const mountScale = useSharedValue(0);
     const mountOpacity = useSharedValue(0);
@@ -93,15 +111,11 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               isSelected={isSelected || isLinkedToSelectedEvent}
             >
               <View style={[mapPinStyles.placeholder, { backgroundColor: color }]}>
-                {IconComponent ? (
-                  <IconComponent
-                    size={16}
-                    color="#FFFFFF"
-                    strokeWidth={metadata.strokeWidth || 2.5}
-                  />
-                ) : (
-                  <View style={{ width: 16, height: 16 }} />
-                )}
+                <Image
+                  source={pngIcon}
+                  style={{ width: 18, height: 18, tintColor: '#FFFFFF' }}
+                  resizeMode="contain"
+                />
               </View>
             </MapPinFrame>
 

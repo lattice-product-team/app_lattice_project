@@ -181,6 +181,34 @@ export const MapContent = function MapContent({
     return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
+  const getNativeIconName = (categoryIcon: any) => {
+    const icon = String(categoryIcon || '').toLowerCase();
+    
+    // Food & Drink
+    if (icon.includes('restaurant') || icon.includes('food') || icon.includes('utensils') || icon.includes('coffee')) return 'restaurant';
+    if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
+    
+    // Infrastructure
+    if (icon.includes('parking')) return 'parking';
+    if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom')) return 'toilet';
+    if (icon.includes('gate') || icon.includes('login') || icon.includes('entrance') || icon.includes('log-out')) return 'log-out';
+    
+    // Health & Safety
+    if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital')) return 'hospital';
+    if (icon.includes('security') || icon.includes('shield')) return 'shield';
+    
+    // Info & Points
+    if (icon.includes('info') || icon.includes('library')) return 'library-big';
+    if (icon.includes('meetup') || icon.includes('users')) return 'users';
+    
+    // Venues & Shopping
+    if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping')) return 'store';
+    if (icon.includes('stage') || icon.includes('theater') || icon.includes('grandstand') || icon.includes('music')) return 'theater';
+    if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive')) return 'crown';
+    
+    return 'library-big'; // Fallback to info-style
+  };
+
   // Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
     const filteredList = getFilteredPOIs(allUIPois, discreteZoom);
@@ -208,12 +236,15 @@ export const MapContent = function MapContent({
         properties: {
           id: poi.id,
           name: poi.displayName,
+          display_name: poi.displayName,
           icon: poi.categoryIcon,
+          icon_name: getNativeIconName(poi.category), // USAR CATEGORY (String) EN VEZ DE ICON (Component)
           category: poi.category,
           color: poi.mainColor,
+          color_hex: poi.mainColor,
           parentId: poi.parentId,
           rating: poi.rating,
-          raw: JSON.stringify(poi), // Store as string
+          raw: JSON.stringify(poi),
         },
       })),
     };
@@ -249,8 +280,11 @@ export const MapContent = function MapContent({
           properties: {
             id: poi.id,
             name: poi.displayName,
+            display_name: poi.displayName, // PROPIEDAD PARA NATIVO
             category: poi.category,
             color: poi.mainColor,
+            color_hex: poi.mainColor, // PROPIEDAD PARA NATIVO
+            icon_name: 'event', // PROPIEDAD PARA NATIVO
             imageKey: poi.imageKey,
             imageUrl: poi.images?.[0],
             raw: JSON.stringify(poi.raw), // Store as string so queryRenderedFeatures handles it safely

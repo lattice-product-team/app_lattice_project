@@ -80,21 +80,21 @@ const SelectedMarker = React.memo(({
   theme: any,
   zoomSharedValue: any,
 }) => {
+  // STRICT GUARD: If we have an event selected, we NEVER show the React pin.
+  if (selectedEventId && String(selectedEventId).length > 0) return null;
+
   const selectedFeature = useMemo(() => {
     if (selectedPoiId) {
       return poisGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedPoiId));
     }
-    if (selectedEventId) {
-      return eventsGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedEventId));
-    }
     return null;
-  }, [selectedPoiId, selectedEventId, poisGeoJSON, eventsGeoJSON]);
+  }, [selectedPoiId, poisGeoJSON]);
 
   if (!selectedFeature) return null;
 
   return (
     <MapLibreGL.PointAnnotation
-      key={`selected-${selectedPoiId || selectedEventId}`}
+      key={`selected-${selectedPoiId}`}
       id="selected-annotation"
       coordinate={selectedFeature.geometry.coordinates}
       style={{ zIndex: 1000 }}
@@ -156,16 +156,6 @@ export const MapLayers = React.memo(({
     return { type: 'FeatureCollection', features: markers };
   }, [eventsGeoJSON]);
 
-  const selectedFeature = useMemo(() => {
-    if (selectedPoiId) {
-      return poisGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedPoiId));
-    }
-    if (selectedEventId) {
-      return eventMarkers.features.find((f: any) => String(f.properties?.id) === String(selectedEventId));
-    }
-    return null;
-  }, [selectedPoiId, selectedEventId, poisGeoJSON, eventMarkers]);
-
   const backgroundPois = useMemo(() => ({
     type: 'FeatureCollection',
     features: poisGeoJSON?.features || []
@@ -203,63 +193,99 @@ export const MapLayers = React.memo(({
         onPress={handleShapePress}
         cluster={false}
       >
+        {/* SHADOW: Sincronizada con el círculo */}
         <MapLibreGL.CircleLayer
-          id="backgroundPoiDots"
+          id="poiShadows"
           filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
-          minZoomLevel={10}
+          minZoomLevel={12}
           style={{
             circleRadius: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 3,
-              14, 6,
-              16, 0 
+              12, 6,
+              15, 18,
+              18, 24
+            ],
+            circleColor: '#000000',
+            circleOpacity: 0.15,
+            circleBlur: 0.8,
+            circleTranslate: [0, 2],
+          }}
+        />
+
+        {/* PLATE: Círculo base coloreado */}
+        <MapLibreGL.CircleLayer
+          id="backgroundPoiDots"
+          aboveLayerID="poiShadows"
+          filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
+          minZoomLevel={12}
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              12, 5,
+              15, 16, // Más generoso para que el icono tenga mucho aire
+              18, 22
             ],
             circleColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
-            circleStrokeWidth: 1.5,
+            circleStrokeWidth: 2,
             circleStrokeColor: '#FFFFFF',
             circleOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              11, 0,
+              11.5, 0,
               12, 1,
-              15.5, 1,
-              16, 0
+              22, 1
             ],
           }}
         />
+
+        {/* GLYPH: Icono blanco - Sincronizado milimétricamente con el círculo */}
         <MapLibreGL.SymbolLayer
           id="poiIconsLayer"
           filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
-          minZoomLevel={14.5}
+          minZoomLevel={12} // Aparece igual que el círculo
           style={{
             iconImage: ['get', 'icon_name'],
-            iconColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
+            iconColor: '#FFFFFF',
+            iconAnchor: 'center',
             iconSize: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              14.5, 0.6,
-              16, 0.9,
-              18, 1.2
+              12, 0.1,
+              15, 0.35,
+              18, 0.5
             ],
             iconAllowOverlap: true,
+            iconIgnorePlacement: true,
+            iconOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              11.5, 0,
+              12, 1,
+              22, 1
+            ],
+            // Texto con halo
             textField: ['get', 'display_name'],
             textSize: 11,
             textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
             textHaloColor: '#FFFFFF',
             textHaloWidth: 2,
             textAnchor: 'top',
-            textOffset: [0, 1.1],
+            textOffset: [0, 1.6],
             textOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
               16.5, 0,
-              17.5, 1
+              17, 1
             ],
+            textAllowOverlap: true,
           }}
         />
       </MapLibreGL.ShapeSource>
@@ -279,8 +305,8 @@ export const MapLayers = React.memo(({
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 14,
-              14, 18
+              10, 16,
+              14, 22
             ],
             textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
             textHaloColor: '#FFFFFF',
@@ -297,6 +323,8 @@ export const MapLayers = React.memo(({
             ],
             textTransform: 'uppercase',
             textLetterSpacing: 0.1,
+            textAllowOverlap: true,
+            textIgnorePlacement: true,
           }}
         />
       </MapLibreGL.ShapeSource>
