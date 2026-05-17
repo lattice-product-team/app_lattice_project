@@ -38,7 +38,9 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const { properties } = poi;
     const categoryKey = properties.category?.toLowerCase() || 'generic';
     const metadata = getCategoryMetadata(categoryKey);
-    const color = metadata.color || theme.colors.brand.primary;
+    
+    // USAR COLOR DIRECTO DEL GEOJSON (Sincronizado con nativo)
+    const color = properties.color_hex || properties.color || metadata.color || theme.colors.brand.primary;
     
     // PNG Asset Mapper for visual consistency
     const pngIcon = useMemo(() => {

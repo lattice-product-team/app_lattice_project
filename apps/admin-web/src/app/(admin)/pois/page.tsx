@@ -34,15 +34,18 @@ const AdminMap = dynamic(() => import('@/components/map/admin-map').then((mod) =
 });
 
 const POI_TYPES = [
-  { value: 'wc', label: 'Toilets', icon: Icons.Baby },
-  { value: 'restaurant', label: 'Restaurant', icon: Icons.Utensils },
-  { value: 'bar', label: 'Bar', icon: Icons.Wine },
-  { value: 'medical', label: 'Medical', icon: Icons.Hospital },
-  { value: 'gate', label: 'Entrance/Gate', icon: Icons.LogIn },
-  { value: 'information', label: 'Info', icon: Icons.Info },
-  { value: 'emergency', label: 'Emergency', icon: Icons.AlertTriangle },
+  { value: 'restaurant', label: 'Restaurant/Food', icon: Icons.Utensils },
+  { value: 'bar', label: 'Bar/Drinks', icon: Icons.Beer },
+  { value: 'coffee', label: 'Coffee/Snacks', icon: Icons.Coffee },
+  { value: 'shop', label: 'Official Shop', icon: Icons.Store },
+  { value: 'stage', label: 'Stage/Theater', icon: Icons.Theater },
+  { value: 'vip', label: 'VIP Zone', icon: Icons.Crown },
   { value: 'parking', label: 'Parking', icon: Icons.MapPin },
-  { value: 'shop', label: 'Shop', icon: Icons.ShoppingBag },
+  { value: 'toilet', label: 'Restrooms', icon: Icons.User },
+  { value: 'hospital', label: 'Medical/Health', icon: Icons.Hospital },
+  { value: 'security', label: 'Security/Shield', icon: Icons.Shield },
+  { value: 'information', label: 'Info/Library', icon: Icons.LibraryBig },
+  { value: 'gate', label: 'Entrance/Exit', icon: Icons.LogOut },
 ];
 
 export default function POIsPage() {

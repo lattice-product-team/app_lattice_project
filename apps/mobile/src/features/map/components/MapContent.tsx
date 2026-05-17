@@ -417,16 +417,23 @@ export const MapContent = function MapContent({
     // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
     // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
     const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
+      const lid = (layer.id || '').toLowerCase();
+      
       // Robust approach: Hide most symbol/label layers except essential geographical names
       const isSymbolLayer = layer.type === 'symbol';
       const isEssentialLabel =
-        layer.id.includes('place_label') ||
-        layer.id.includes('road_label') ||
-        layer.id.includes('water_label') ||
-        layer.id.includes('country_label');
+        lid.includes('place') ||
+        lid.includes('city') ||
+        lid.includes('town') ||
+        lid.includes('village') ||
+        lid.includes('country') ||
+        lid.includes('state') ||
+        lid.includes('continent') ||
+        lid.includes('road') ||
+        lid.includes('water');
 
       // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
-      if (Platform.OS === 'android' && (layer.id.includes('building') || layer.type === 'fill-extrusion')) {
+      if (Platform.OS === 'android' && (lid.includes('building') || layer.type === 'fill-extrusion')) {
         return {
           ...layer,
           layout: { ...(layer.layout || {}), visibility: 'none' },
