@@ -36,7 +36,7 @@ find "$PAGES_DIR" -name "*.md" -exec bash -c '
   else
     SED_I=(sed -i)
   fi
-  if grep -q "<Callout" "$1"; then
+  if grep -q "<Callout" "$1" && ! grep -q "import.*Callout" "$1"; then
     "${SED_I[@]}" "1i\
 import { Callout } from \"nextra/components\"\
 " "$1"
