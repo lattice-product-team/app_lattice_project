@@ -9,6 +9,7 @@ find "$PAGES_DIR" -mindepth 1 -maxdepth 1 -not -name "_app.tsx" -not -name "_doc
 
 # Since the root /docs already follows the professional structure:
 cp -r ../../docs/* "$PAGES_DIR/"
+rm -rf "$PAGES_DIR/product"
 
 # Use the root README.md as the main landing page
 cp ../../README.md "$PAGES_DIR/index.md"
