@@ -1,115 +1,115 @@
-# App Mobil - Flux de Pantalles
+# Mobile App - Screen Flow
 
-Aquest apartat mostra el disseny i el flux de l'aplicació mòbil mitjançant mockups i wireframes.
+This section showcases the design and flow of the mobile application through mockups and wireframes.
 
-## Onboarding i Accés
+## Onboarding and Access
 
-El flux comença amb una pantalla de benvinguda i les opcions d'inici de sessió.
+The flow begins with a welcome screen and login options.
 
 <div className="flex flex-col gap-4 mt-6">
   <div className="flex flex-col items-center">
-    <h3>Benvinguda</h3>
+    <h3>Welcome</h3>
     <img src="/assets/screenshots/welcome.jpeg" alt="Welcome" width="300" />
   </div>
   
   <div className="flex flex-wrap gap-4 justify-center">
     <div className="flex flex-col items-center">
-      <h3>Login Email</h3>
+      <h3>Email Login</h3>
       <img src="/assets/screenshots/login-email.jpeg" alt="Login Email" width="300" />
     </div>
     <div className="flex flex-col items-center">
-      <h3>Login Google</h3>
+      <h3>Google Login</h3>
       <img src="/assets/screenshots/login-google.jpeg" alt="Login Google" width="300" />
     </div>
   </div>
 </div>
 
-## Exploració i Mapa
+## Exploration and Map
 
-Un cop dins, l'usuari pot interactuar amb el mapa i explorar esdeveniments.
+Once inside, the user can interact with the map and explore events.
 
 <div className="flex flex-wrap gap-4 mt-6 justify-center">
   <div className="flex flex-col items-center">
-    <h3>Mapa Principal</h3>
+    <h3>Main Map</h3>
     <img src="/assets/screenshots/map.jpeg" alt="Map" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Pàgina d'Exploració</h3>
+    <h3>Exploration Page</h3>
     <img src="/assets/screenshots/explore-page.jpeg" alt="Explore" width="300" />
   </div>
 </div>
 
-## Detalls d'Esdeveniments
+## Event Details
 
-Detalls dels esdeveniments en diferents nivells de profunditat.
+Details of events at different levels of depth.
 
 <div className="flex flex-wrap gap-4 mt-6 justify-center">
   <div className="flex flex-col items-center">
-    <h3>Esdeveniment (Nivell 1)</h3>
+    <h3>Event (Level 1)</h3>
     <img src="/assets/screenshots/event-lvl1.jpeg" alt="Event Level 1" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Esdeveniment (Nivell 2)</h3>
+    <h3>Event (Level 2)</h3>
     <img src="/assets/screenshots/event-lvl2.jpeg" alt="Event Level 2" width="300" />
   </div>
 </div>
 
-## Cerca
+## Search
 
-Interfície de cerca millorada amb filtres i suggeriments.
+Enhanced search interface with filters and suggestions.
 
 <div className="flex flex-wrap gap-4 mt-6 justify-center">
   <div className="flex flex-col items-center">
-    <h3>Cerca (Nivell 2)</h3>
+    <h3>Search (Level 2)</h3>
     <img src="/assets/screenshots/search-bar-lvl2.jpeg" alt="Search Level 2" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Cerca (Nivell 3)</h3>
+    <h3>Search (Level 3)</h3>
     <img src="/assets/screenshots/search-bar-lvl3.jpeg" alt="Search Level 3" width="300" />
   </div>
 </div>
 
-## Entrades i Wallet
+## Tickets and Wallet
 
-Gestió d'entrades i accés al wallet personal.
+Ticket management and access to the personal wallet.
 
 <div className="flex flex-wrap gap-4 mt-6 justify-center">
   <div className="flex flex-col items-center">
-    <h3>Wallet d'Entrades</h3>
+    <h3>Ticket Wallet</h3>
     <img src="/assets/screenshots/ticket-wallet.jpeg" alt="Ticket Wallet" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Detall d'Entrada</h3>
+    <h3>Ticket Detail</h3>
     <img src="/assets/screenshots/ticket.jpeg" alt="Ticket" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Escaneig d'Entrada</h3>
+    <h3>Ticket Scanning</h3>
     <img src="/assets/screenshots/ticket-scan.jpeg" alt="Ticket Scan" width="300" />
   </div>
 </div>
 
-## Navegació i Realitat Augmentada
+## Navigation and Augmented Reality
 
-Funcionalitats de navegació per arribar als esdeveniments.
+Navigation features to reach events.
 
 <div className="flex flex-wrap gap-4 mt-6 justify-center">
   <div className="flex flex-col items-center">
-    <h3>Mode Navegació</h3>
+    <h3>Navigation Mode</h3>
     <img src="/assets/screenshots/navigation-mode.jpeg" alt="Navigation Mode" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Ruta de Navegació</h3>
+    <h3>Navigation Route</h3>
     <img src="/assets/screenshots/navigation-route.jpeg" alt="Navigation Route" width="300" />
   </div>
   <div className="flex flex-col items-center">
-    <h3>Mode RA (Realitat Augmentada)</h3>
+    <h3>AR Mode (Augmented Reality)</h3>
     <img src="/assets/screenshots/ra-mode.jpeg" alt="AR Mode" width="300" />
   </div>
 </div>
 
-## Perfil d'Usuari
+## User Profile
 
-Gestió del perfil i preferències.
+Profile management and preferences.
 
 <div className="flex flex-col items-center mt-6">
   <img src="/assets/screenshots/user-profile.jpeg" alt="User Profile" width="300" />

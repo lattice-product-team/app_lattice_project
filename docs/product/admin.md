@@ -1,5 +1,5 @@
-# Web Admin - Flux de Pantalles
+# Web Admin - Screen Flow
 
-Aquest apartat mostrarà el disseny i el flux del panell d'administració web.
+This section will showcase the design and flow of the web administration panel.
 
-*(Contingut pendent d'implementar)*
+*(Content pending implementation)*

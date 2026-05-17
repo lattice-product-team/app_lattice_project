@@ -1,5 +1,5 @@
 export default {
   index: 'Vision',
-  mobile: 'App Mobil',
+  mobile: 'Mobile App',
   admin: 'Web Admin',
 };
