@@ -1,12 +1,15 @@
+import { Callout } from 'nextra/components'
+
 # Car Finder Compass
 
 The **Car Finder Compass** is a dedicated high-utility tool designed to relieve the stress of losing a parked vehicle in massive parking lots (e.g., race tracks or festival grounds). It offers an ultra-focused, high-contrast directional guide that relies heavily on device magnetometer telemetry.
 
 ## Screen Mockups
 
-````carousel
-![Radar Compass Navigation](../../assets/mockups/navigation-2.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/navigation-2.png" alt="Radar Compass Navigation" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 
 
 ## Interactive Design Details
@@ -22,5 +25,7 @@ The **Car Finder Compass** is a dedicated high-utility tool designed to relieve 
 
 ---
 
-> [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+<Callout type="info">
+The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+</Callout>
+

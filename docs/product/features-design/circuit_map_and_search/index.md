@@ -1,18 +1,18 @@
+import { Callout } from 'nextra/components'
+
 # Circuit Map & Search
 
 The **Circuit Map & Search** is the central geographical navigation hub for end-users, built to cleanly render large-scale track maps and provide rapid fuzzy searching for venue Points of Interest (POIs).
 
 ## Screen Mockups
 
-````carousel
-![Dynamic Map Interface](../../assets/mockups/map-2.png)
-<!-- slide -->
-![Fuzzy Search & Explore View](../../assets/mockups/explore-1.png)
-<!-- slide -->
-![Map Dark Mode Showcase](../../assets/mockups/map-black-1.png)
-<!-- slide -->
-![Map Light Mode Showcase](../../assets/mockups/map-white-1.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/map-2.png" alt="Dynamic Map Interface" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/explore-1.png" alt="Fuzzy Search & Explore View" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/map-black-1.png" alt="Map Dark Mode Showcase" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/map-white-1.png" alt="Map Light Mode Showcase" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 
 
 ## Interactive Design Details
@@ -31,5 +31,7 @@ The **Circuit Map & Search** is the central geographical navigation hub for end-
 
 ---
 
-> [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+<Callout type="info">
+The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+</Callout>
+

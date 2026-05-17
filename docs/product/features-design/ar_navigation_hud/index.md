@@ -1,12 +1,15 @@
+import { Callout } from 'nextra/components'
+
 # AR Navigation HUD
 
 The **AR Navigation HUD** (Heads-Up Display) is the centerpiece of the immersive mobile client navigation experience. It merges real-time GPS telemetry with the physical environment to provide absolute clarity to users moving through dense festival venues or racing tracks.
 
 ## Screen Mockups
 
-````carousel
-![Active Navigation HUD](../../assets/mockups/navigation-2.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/navigation-2.png" alt="Active Navigation HUD" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 
 
 ## Interactive Design Details
@@ -22,5 +25,7 @@ The **AR Navigation HUD** (Heads-Up Display) is the centerpiece of the immersive
 
 ---
 
-> [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+<Callout type="info">
+The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+</Callout>
+

@@ -1,14 +1,16 @@
+import { Callout } from 'nextra/components'
+
 # Service Detail & Wait-line
 
 The **Service Detail & Wait-line** screen provides users with immediate, granular information regarding points of interest (POIs) such as food courts, merch stands, and amenities. It includes real-time telemetry inputs regarding crowd density and estimated wait times to help clients optimize their schedules.
 
 ## Screen Mockups
 
-````carousel
-![POI Details Overview](../../assets/mockups/details-pois-1.png)
-<!-- slide -->
-![Expanded Business Detail & Menu](../../assets/mockups/details-pois-2.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/details-pois-1.png" alt="POI Details Overview" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/details-pois-2.png" alt="Expanded Business Detail & Menu" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 
 
 ## Interactive Design Details
@@ -24,5 +26,7 @@ The **Service Detail & Wait-line** screen provides users with immediate, granula
 
 ---
 
-> [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+<Callout type="info">
+The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+</Callout>
+

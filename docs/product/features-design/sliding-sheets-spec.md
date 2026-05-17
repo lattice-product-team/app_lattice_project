@@ -1,3 +1,5 @@
+import { Callout } from 'nextra/components'
+
 # Sliding Sheets & HUD Layout Specification
 
 This specification defines the interactive behavior, hierarchy, visual states, and gesture logic of the sliding sheets (drawers) and floating HUD controls within the Lattice mobile application.
@@ -15,9 +17,11 @@ The Primary Drawer operates from the top of the viewport downward. It manages th
 - **Level 3: Full-Screen Search (NT - Non-Transparent)**  
   Expands to occupy the complete viewport for detailed search queries, history, and comprehensive result listing. Uses a solid, non-transparent background to ensure readability of dense text overlays.
 
-> [!IMPORTANT]
-> **Golden Rule of Layout Orchestration:**  
-> If any secondary bottom drawer (Event Detail, Profile, Registration Callout) is activated, the Primary top drawer MUST collapse automatically to **Level 1** to prevent overlap and UI clutter.
+<Callout type="error">
+**Golden Rule of Layout Orchestration:**  
+If any secondary bottom drawer (Event Detail, Profile, Registration Callout) is activated, the Primary top drawer MUST collapse automatically to **Level 1** to prevent overlap and UI clutter.
+</Callout>
+
 
 ---
 
@@ -90,11 +94,10 @@ During an active route navigation session, the layout alters dynamically to supp
 
 This section showcases the interactive mockups representing the visual transition levels (Level 1, 2, 3) for both top-down and bottom-up drawers, along with their active transparency transitions (ST vs. NT).
 
-````carousel
-![Top Search Drawer Expansion Phases](../../assets/mockups/explore-1.png)
-<!-- slide -->
-![Bottom Detail Drawer Overview (Level 1)](../../assets/mockups/details-pois-1.png)
-<!-- slide -->
-![Bottom Detail Drawer Fully Expanded (Level 2)](../../assets/mockups/details-pois-2.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/explore-1.png" alt="Top Search Drawer Expansion Phases" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/details-pois-1.png" alt="Bottom Detail Drawer Overview (Level 1)" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/details-pois-2.png" alt="Bottom Detail Drawer Fully Expanded (Level 2)" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 

@@ -1,12 +1,15 @@
+import { Callout } from 'nextra/components'
+
 # Profile & Accessibility
 
 The **Profile & Accessibility** page serves as the configuration control room for the client's spatial routing. It allows users to personalize their personal profile and declare mobility restrictions, which are dynamically evaluated by the backend pathfinder.
 
 ## Screen Mockups
 
-````carousel
-![Profile Registration & Onboarding](../../assets/mockups/welcome-3.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/welcome-3.png" alt="Profile Registration & Onboarding" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 
 
 ## Interactive Design Details
@@ -24,5 +27,7 @@ The **Profile & Accessibility** page serves as the configuration control room fo
 
 ---
 
-> [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+<Callout type="info">
+The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+</Callout>
+

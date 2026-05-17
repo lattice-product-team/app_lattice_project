@@ -1,14 +1,16 @@
+import { Callout } from 'nextra/components'
+
 # Login & Ticket Sync
 
 The **Login & Ticket Sync** screen acts as the gateway to the Lattice platform. It is designed to handle secure authentication and link admission tickets, updating user permissions in the system database.
 
 ## Screen Mockups
 
-````carousel
-![Welcome Onboarding Flow](../../assets/mockups/welcome-3.png)
-<!-- slide -->
-![Ticket Synchronization Panel](../../assets/mockups/tickets-1.png)
-````
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/welcome-3.png" alt="Welcome Onboarding Flow" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/tickets-1.png" alt="Ticket Synchronization Panel" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 
 
 ## Interactive Design Details
@@ -26,5 +28,7 @@ The **Login & Ticket Sync** screen acts as the gateway to the Lattice platform. 
 
 ---
 
-> [!TIP]
-> The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+<Callout type="info">
+The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
+</Callout>
+
