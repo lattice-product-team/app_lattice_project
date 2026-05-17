@@ -35,8 +35,25 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
   // Helper to filter out placeholder strings that aren't real URLs
   const isRealUrl = (url: string) => typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:'));
 
-  const rawImages = properties.images || raw?.images || properties.galleryUrls || raw?.galleryUrls || [];
-  const validImages = Array.isArray(rawImages) ? rawImages.filter(isRealUrl) : [];
+  // Robust image extraction: find any non-empty array of valid images
+  let validImages: string[] = [];
+  const sources = [
+    properties.galleryUrls,
+    raw?.galleryUrls,
+    properties.images,
+    raw?.images,
+    raw?.photos,
+  ];
+
+  for (const src of sources) {
+    if (Array.isArray(src) && src.length > 0) {
+      const filtered = src.filter(isRealUrl);
+      if (filtered.length > 0) {
+        validImages = filtered;
+        break;
+      }
+    }
+  }
   
   const bannerCandidate = properties.bannerUrl || raw?.bannerUrl || validImages[0];
   const bannerUrl = isRealUrl(bannerCandidate) ? bannerCandidate : validImages[0];

@@ -33,16 +33,19 @@ A fixed location or service within or near an event.
 ---
 
 ## 2. Enums & Constants
-
+ 
 ### POI Types
 Used to categorize locations for filtering and icons.
-- `restaurant`, `wc`, `gate`, `medical`, `shop`, `parking`, `info`, `stage`, `merch`, `security`.
-
+- `restaurant`, `wc`, `grandstand`, `gate`, `medical`, `shop`, `parking`, `meetup_point`, `bar`, `information`, `entrance`, `exit`, `emergency`, `stage`, `merch`, `security`.
+ 
 ### Mobility Modes
 Used for routing customization.
 - `standard`: Normal walking speed and pathing.
 - `wheelchair`: Avoids stairs and steep slopes.
+- `reduced_mobility`: Tailored for users with manual wheelchairs or walker devices.
+- `visual_impairment`: Prioritizes tactile paving and auditory guidance indicators.
 - `family_stroller`: Prioritizes ramps and wide paths.
+
 
 ---
 

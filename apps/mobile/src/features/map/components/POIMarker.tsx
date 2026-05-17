@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MapPinFrame } from './MapPinFrame';
 import { mapPinStyles } from '../../../styles/mapPinStyles';
 import { getCategoryMetadata } from '../../../utils/poiUtils';
@@ -38,23 +38,31 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const { properties } = poi;
     const categoryKey = properties.category?.toLowerCase() || 'generic';
     const metadata = getCategoryMetadata(categoryKey);
-    const color = metadata.color || theme.colors.brand.primary;
-    const IconComponent = metadata.icon;
-    const [isPointerEnabled, setIsPointerEnabled] = useState(
-      isSelected || isLinkedToSelectedEvent || zoomSharedValue.value >= 14.0
-    );
+    
+    // USAR COLOR DIRECTO DEL GEOJSON (Sincronizado con nativo)
+    const color = properties.color_hex || properties.color || metadata.color || theme.colors.brand.primary;
+    
+    // PNG Asset Mapper for visual consistency
+    const pngIcon = useMemo(() => {
+      const category = categoryKey;
+      if (category.includes('restaurant') || category.includes('food') || category.includes('coffee')) return require('../../../../assets/icons/restaurant.png');
+      if (category.includes('parking')) return require('../../../../assets/icons/parking.png');
+      if (category.includes('wc') || category.includes('toilet') || category.includes('restroom')) return require('../../../../assets/icons/toilet.png');
+      if (category.includes('medical') || category.includes('hospital')) return require('../../../../assets/icons/hospital.png');
+      if (category.includes('info') || category.includes('library')) return require('../../../../assets/icons/library-big.png');
+      if (category.includes('gate') || category.includes('login') || category.includes('entrance') || category.includes('log-out')) return require('../../../../assets/icons/log-out.png');
+      if (category.includes('bar') || category.includes('beer')) return require('../../../../assets/icons/beer.png');
+      if (category.includes('vip') || category.includes('crown')) return require('../../../../assets/icons/crown.png');
+      if (category.includes('security') || category.includes('shield')) return require('../../../../assets/icons/shield.png');
+      if (category.includes('shop') || category.includes('store') || category.includes('shopping')) return require('../../../../assets/icons/store.png');
+      if (category.includes('stage') || category.includes('theater') || category.includes('music')) return require('../../../../assets/icons/theater.png');
+      if (category.includes('meetup') || category.includes('users')) return require('../../../../assets/icons/users.png');
+      return require('../../../../assets/icons/library-big.png'); // Fallback
+    }, [categoryKey]);
+
+    // NO .value access in the component body!
     const mountScale = useSharedValue(0);
     const mountOpacity = useSharedValue(0);
-
-    useAnimatedReaction(
-      () => zoomSharedValue.value >= 14.0,
-      (enabled) => {
-        if (enabled !== isPointerEnabled && !isSelected && !isLinkedToSelectedEvent) {
-          runOnJS(setIsPointerEnabled)(enabled);
-        }
-      },
-      [isPointerEnabled, isSelected, isLinkedToSelectedEvent]
-    );
 
     React.useEffect(() => {
       mountScale.value = withTiming(1, { duration: 200 });
@@ -62,42 +70,42 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {
+      const zoom = zoomSharedValue.value;
       const baseScale = interpolate(
-        zoomSharedValue.value,
+        zoom,
         [14, 16, 18],
-        [0.8, 1, 1.3], // Enlarged scales
+        [0.8, 1, 1.3],
         Extrapolation.CLAMP
       );
 
       // Selected markers are even larger
       const scale = isSelected ? 1.3 : baseScale;
 
-      const opacity = interpolate(zoomSharedValue.value, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
+      const opacity = interpolate(zoom, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
 
       return {
         transform: [
-          { scale: scale * mountScale.value }, // Multiply by mount animation
+          { scale: scale * mountScale.value },
         ],
         opacity: (isSelected || isLinkedToSelectedEvent ? 1 : opacity) * mountOpacity.value,
       };
     });
 
-    const pointerEvents = isSelected || isLinkedToSelectedEvent || isPointerEnabled ? 'auto' : 'none';
+    const labelStyle = useAnimatedStyle(() => {
+      const zoom = zoomSharedValue.value;
+      const opacity = interpolate(zoom, [16.5, 17.5], [0, 1], Extrapolation.CLAMP);
+      return {
+        opacity: isSelected || isLinkedToSelectedEvent ? 1 : opacity,
+      };
+    });
 
     return (
       <Animated.View
         style={[mapPinStyles.markerWrapper, animatedStyle]}
-        pointerEvents={pointerEvents}
+        pointerEvents="auto"
       >
         <TouchableOpacity onPress={() => onPress(poi)} activeOpacity={0.9}>
-          <View
-            style={[
-              {
-                alignItems: 'center',
-                justifyContent: 'center',
-              },
-            ]}
-          >
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
             <MapPinFrame
               size="poi"
               borderColor="#FFFFFF"
@@ -105,27 +113,23 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
               isSelected={isSelected || isLinkedToSelectedEvent}
             >
               <View style={[mapPinStyles.placeholder, { backgroundColor: color }]}>
-                {IconComponent ? (
-                  <IconComponent
-                    size={16}
-                    color="#FFFFFF"
-                    strokeWidth={metadata.strokeWidth || 2.5}
-                  />
-                ) : (
-                  <View style={{ width: 16, height: 16 }} />
-                )}
+                <Image
+                  source={pngIcon}
+                  style={{ width: 18, height: 18, tintColor: '#FFFFFF' }}
+                  resizeMode="contain"
+                />
               </View>
             </MapPinFrame>
 
             {properties.name && (
-              <View style={mapPinStyles.labelBadge}>
+              <Animated.View style={[mapPinStyles.labelBadge, labelStyle]}>
                 <Text 
                   style={[mapPinStyles.labelText, { color, textShadowRadius: 0 }]}
                   numberOfLines={1}
                 >
                   {properties.name}
                 </Text>
-              </View>
+              </Animated.View>
             )}
           </View>
         </TouchableOpacity>

@@ -4,6 +4,12 @@ import { Callout } from 'nextra/components'
 
 This guide provides the essential steps to get the Lattice ecosystem running on your local machine for development.
 
+<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
+  <img src="/assets/mockups/map-2.png" alt="Mobile Live Map View" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/navigation-2.png" alt="AR Navigation HUD View" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/details-pois-2.png" alt="Service Detail View" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+</div>
+
 ## 1. Prerequisites
 
 Ensure you have the following installed:
@@ -13,49 +19,68 @@ Ensure you have the following installed:
 - **iOS Simulator / Android Emulator**: For the mobile app.
 
 ## 2. Environment Setup
+ 
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/lattice-product-team/app_lattice_project.git
+   cd app_lattice_project
+   ```
+2. **Copy Configuration**: Copy the template to create your root `.env` file:
+   ```bash
+   cp .env.example .env
+   ```
+3. **Configure Parameters**: Ensure `DATABASE_URL` (default: `postgres://postgres:password@localhost:5433/lattice_db`), `JWT_SECRET`, and `LAN_IP` are correctly configured (detailed in the [Installation Manual](./installation.md)).
 
-Lattice uses a decentralized `.env` strategy.
-
-1.  **Root**: Copy `.env.example` to `.env`.
-2.  **Server**: Ensure `DATABASE_URL` and `JWT_SECRET` are correctly set in the root `.env`.
-3.  **Admin Web**: Ensure `NEXT_PUBLIC_API_URL` points to your local server.
 
 ## 3. Launch Sequence
-
+ 
 Follow this order to ensure all services are linked correctly:
-
+ 
 ### Step 1: Infrastructure
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
-*This starts PostgreSQL and the core API service.*
-
+*This starts PostgreSQL (on port `5433`), Redis, and Valhalla in the background.*
+ 
 ### Step 2: Dependencies
 ```bash
 pnpm install
 ```
-
+ 
 ### Step 3: Database Initialization
 ```bash
-pnpm --filter @app/db db:migrate
-pnpm --filter @app/db db:seed
+pnpm db:migrate
+pnpm db:seed
 ```
-
+*This compiles the SQL migrations and populates the database with default spatial events, POIs, and nodes.*
+ 
 ### Step 4: Start Applications
-Open three terminals or use a terminal multiplexer:
-
-- **Server**: `pnpm --filter server dev`
-- **Admin Web**: `pnpm --filter admin-web dev`
-- **Mobile**: `pnpm --filter mobile start`
+Open three separate terminals to start the core services:
+ 
+*   **Server (API)**: 
+    ```bash
+    pnpm dev:api
+    ```
+*   **Admin Web Dashboard**: 
+    ```bash
+    pnpm dev:web
+    ```
+*   **Mobile (Expo Dev Client)**: 
+    For local development with physical devices on the same Wi-Fi network (highly recommended):
+    ```bash
+    pnpm dev:mobile:lan
+    ```
+    *Alternatively, use `pnpm dev:mobile` for simulators, `pnpm dev:mobile:lan:prod` for production env testing, or `pnpm dev:mobile:tunnel` if on separate networks.*
 
 ## 4. Verification
-
+ 
 - **API Health**: Visit `http://localhost:3001/status`.
 - **Admin Dashboard**: Visit `http://localhost:3000`.
-- **Mobile**: Scan the QR code with the Expo Go app or press `i` for iOS simulator.
-
+- **Mobile Expo Console**: Scan the QR code displayed in the terminal with the Expo Go app (or Expo dev client) or press `i` (iOS simulator) or `a` (Android emulator).
+ 
 ---
-
+ 
 <Callout type="info">
-  If you encounter issues with the database connection, check the [Troubleshooting](./troubleshooting.md) guide.
+  If you encounter database connection issues or need details on configuring specific ports, check the [Troubleshooting](./troubleshooting.md) guide.
 </Callout>
+

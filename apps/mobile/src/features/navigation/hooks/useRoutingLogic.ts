@@ -133,13 +133,34 @@ export const useRoutingLogic = () => {
         let bicycle = null;
 
         if (isPlanning || isInitialFetch) {
-          // Fetch everything once
-          driving = await navigationService.getRoute({ origin, destination, mode: 'driving' }).catch(() => null);
+          // CONCURRENT FETCHING: Request all modes in parallel for maximum speed
+          console.log('[Logic] ⚡️ Initial Planning: Fetching all modes concurrently');
+          
+          const requests = [
+            navigationService.getRoute({ origin, destination, mode: 'driving' }).catch(err => {
+              console.warn('[Logic] Driving route failed:', err);
+              return null;
+            })
+          ];
+
           if (!isRemote) {
-            [walking, bicycle] = await Promise.all([
-              navigationService.getRoute({ origin, destination, mode: 'walking' }).catch(() => null),
-              navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch(() => null),
-            ]);
+            requests.push(
+              navigationService.getRoute({ origin, destination, mode: 'walking' }).catch(err => {
+                console.warn('[Logic] Walking route failed:', err);
+                return null;
+              }),
+              navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch(err => {
+                console.warn('[Logic] Bicycle route failed:', err);
+                return null;
+              })
+            );
+          }
+
+          const results = await Promise.all(requests);
+          driving = results[0];
+          if (!isRemote) {
+            walking = results[1];
+            bicycle = results[2];
           }
         } else {
           // Re-routing during navigation: ONLY fetch the active mode

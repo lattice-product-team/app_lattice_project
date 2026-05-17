@@ -3,9 +3,49 @@ import 'dotenv/config';
 import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
 import { findRoute } from '../services/navigation.service.js';
+import { valhallaService } from '../services/valhalla.service.js';
 import { socialService } from '../services/social.service.js';
 import { discoveryService } from '../services/discovery.service.js';
 import { notifyAdmin, notifyAll, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
+
+/**
+ * Professional GPU Marker Metadata Mapping
+ * Ensures consistency between server-provided GeoJSON and mobile SymbolLayers.
+ */
+const getMarkerMeta = (type: string, name: string) => {
+  const t = type?.toLowerCase() || '';
+  const meta = {
+    icon_name: 'info',
+    color_hex: '#5856D6', // Default brand purple
+    display_name: name || 'Point of Interest',
+  };
+
+  // 1. Icon Mapping (Matches apps/mobile/assets/icons/*.svg)
+  if (t.includes('restaurant') || t.includes('food') || t.includes('drink') || t.includes('coffee')) {
+    meta.icon_name = 'restaurant';
+    meta.color_hex = '#FF9500'; // Gastronomy Orange
+  } else if (t.includes('parking')) {
+    meta.icon_name = 'parking';
+    meta.color_hex = '#007AFF'; // Infrastructure Blue
+  } else if (t.includes('wc') || t.includes('toilet') || t.includes('restroom')) {
+    meta.icon_name = 'wc';
+    meta.color_hex = '#007AFF';
+  } else if (t.includes('medical') || t.includes('hospital') || t.includes('emergency')) {
+    meta.icon_name = 'medical';
+    meta.color_hex = '#FF3B30'; // Safety Red
+  } else if (t.includes('gate') || t.includes('entrance') || t.includes('access')) {
+    meta.icon_name = 'gate';
+    meta.color_hex = '#5856D6';
+  } else if (t.includes('info')) {
+    meta.icon_name = 'info';
+    meta.color_hex = '#5AC8FA'; // Cyan Info
+  } else if (t.includes('shop') || t.includes('store')) {
+    meta.icon_name = 'info'; // Fallback
+    meta.color_hex = '#AF52DE'; // Tech Purple
+  }
+
+  return meta;
+};
 
 /**
  * Resolves coordinates to a human-readable address using Nominatim.
@@ -124,6 +164,7 @@ export const getEventSpatial = async (req: Request, res: Response) => {
     }
 
     poisResults.forEach((poi: any) => {
+      const meta = getMarkerMeta(poi.type, poi.name);
       features.push({
         type: 'Feature',
         geometry: JSON.parse(poi.geometry),
@@ -133,6 +174,10 @@ export const getEventSpatial = async (req: Request, res: Response) => {
           name: poi.name,
           bannerUrl: poi.bannerUrl,
           galleryUrls: poi.galleryUrls,
+          // New GPU Optimization Properties
+          icon_name: meta.icon_name,
+          color_hex: meta.color_hex,
+          display_name: meta.display_name,
         },
       });
     });
@@ -339,30 +384,37 @@ export const getPois = async (req: Request, res: Response) => {
 
     const results = await query;
 
-    const features = results.map((poi: any) => ({
-      type: 'Feature',
-      geometry: JSON.parse(poi.geometry as string),
-      properties: {
-        id: poi.id,
-        name: poi.name,
-        category: poi.type,
-        description: poi.description,
-        crowdLevel: poi.crowdLevel,
-        isWheelchairAccessible: poi.isWheelchairAccessible,
-        hasPriorityLane: poi.hasPriorityLane,
-        locationName: poi.locationName,
-        address: poi.address,
-        capacity: poi.capacity,
-        currentOccupancy: poi.currentOccupancy,
-        status: poi.status,
-        metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
-        bannerUrl: poi.bannerUrl,
-        galleryUrls: poi.galleryUrls,
-        eventId: poi.eventId,
-        eventName: poi.eventName,
-        eventColor: poi.eventPrimaryColor,
-      },
-    }));
+    const features = results.map((poi: any) => {
+      const meta = getMarkerMeta(poi.type, poi.name);
+      return {
+        type: 'Feature',
+        geometry: JSON.parse(poi.geometry as string),
+        properties: {
+          id: poi.id,
+          name: poi.name,
+          category: poi.type,
+          description: poi.description,
+          crowdLevel: poi.crowdLevel,
+          isWheelchairAccessible: poi.isWheelchairAccessible,
+          hasPriorityLane: poi.hasPriorityLane,
+          locationName: poi.locationName,
+          address: poi.address,
+          capacity: poi.capacity,
+          currentOccupancy: poi.currentOccupancy,
+          status: poi.status,
+          metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
+          bannerUrl: poi.bannerUrl,
+          galleryUrls: poi.galleryUrls,
+          eventId: poi.eventId,
+          eventName: poi.eventName,
+          eventColor: poi.eventPrimaryColor,
+          // New GPU Optimization Properties
+          icon_name: meta.icon_name,
+          color_hex: meta.color_hex,
+          display_name: meta.display_name,
+        },
+      };
+    });
 
     const responseData = {
       type: 'FeatureCollection',
@@ -450,6 +502,31 @@ export const getRoute = async (req: Request, res: Response) => {
   }
 };
 
+export const getValhallaProxyRoute = async (req: Request, res: Response) => {
+  try {
+    const { origin, destination, mode, avoidStairs } = req.body;
+
+    if (!origin || !destination) {
+      return res.status(400).json({ error: 'Origin and destination are required' });
+    }
+
+    const route = await valhallaService.getRoute({
+      origin,
+      destination,
+      mode: mode || 'walking',
+      avoidStairs: !!avoidStairs,
+    });
+    
+    res.json(route);
+  } catch (error) {
+    console.error('[GeoController] Valhalla Proxy Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch external route', 
+      details: String(error) 
+    });
+  }
+};
+
 export const getPoi = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -487,6 +564,7 @@ export const getPoi = async (req: Request, res: Response) => {
     }
 
     const poi = result[0];
+    const meta = getMarkerMeta(poi.type, poi.name);
 
     // Background sync if social data is missing
     const metadata = poi.metadata ? JSON.parse(poi.metadata as string) : {};
@@ -515,6 +593,10 @@ export const getPoi = async (req: Request, res: Response) => {
         bannerUrl: poi.bannerUrl,
         galleryUrls: poi.galleryUrls,
         metadata: poi.metadata ? JSON.parse(poi.metadata as string) : null,
+        // New GPU Optimization Properties
+        icon_name: meta.icon_name,
+        color_hex: meta.color_hex,
+        display_name: meta.display_name,
       },
     });
   } catch (error) {
@@ -592,6 +674,10 @@ export const getEvents = async (req: Request, res: Response) => {
       center: event.center ? JSON.parse(event.center) : null,
       boundary: event.boundary ? JSON.parse(event.boundary) : null,
       metadata: event.metadata ? JSON.parse(event.metadata) : null,
+      // GPU Optimization Properties
+      icon_name: 'event', // Standard event icon
+      color_hex: event.primaryColor || '#5856D6',
+      display_name: event.name,
     }));
 
     res.json(formattedEvents);
@@ -800,6 +886,10 @@ export const getEvent = async (req: Request, res: Response) => {
       center: event.center ? JSON.parse(event.center) : null,
       boundary: event.boundary ? JSON.parse(event.boundary) : null,
       metadata: event.metadata ? JSON.parse(event.metadata) : null,
+      // GPU Optimization Properties
+      icon_name: 'event',
+      color_hex: event.primaryColor || '#5856D6',
+      display_name: event.name,
     });
   } catch (error) {
     console.error('Error fetching event:', error);

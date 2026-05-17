@@ -96,9 +96,9 @@ export const useMapUIStore = create<MapUIStore>()(
             usePOIStore.getState().deselect(false);
             useNavigationStore.getState().clearNavigation();
           } else if (uiState === MapUIState.NAVIGATING) {
-            usePOIStore.getState().deselect(false);
+            // We no longer deselect here. We want to keep the destination info.
           } else if (uiState === MapUIState.POI_DETAIL) {
-            useNavigationStore.getState().clearNavigation();
+            // We no longer clear navigation here.
           }
         } catch (e) {
           console.warn('[MapUIStore] Cross-store cleanup failed:', e);
@@ -115,9 +115,6 @@ export const useMapUIStore = create<MapUIStore>()(
         set((state) => ({
           recenterCount: state.recenterCount + 1,
           triggerSource: source,
-          // We no longer toggle cameraMode here as the camera is now purely passive.
-          // The UI might still use cameraMode for icons, but the action is a one-time snap.
-          cameraMode: MapCameraMode.FOLLOW, 
         })),
 
       triggerForceCenter: (source = null) =>

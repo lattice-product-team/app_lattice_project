@@ -3,22 +3,23 @@
 Common issues and their solutions when developing for Lattice.
 
 ## 1. Database Connectivity
-
+ 
 ### Error: "Failed to connect to PostgreSQL"
-- **Cause**: Docker container is not running or the port `5432` is occupied.
-- **Fix**: Run `docker ps` to ensure the container is up. If port 5432 is busy, stop any local Postgres instances.
-
+- **Cause**: Docker container is not running or the port `5433` is occupied.
+- **Fix**: Run `docker ps` to ensure the container is up. If port `5433` is busy, stop any local Postgres instances or modify the host port binding in `docker-compose.yml`.
+ 
 ### Error: "Relation 'events' does not exist"
 - **Cause**: Migrations haven't been run.
-- **Fix**: Run `pnpm --filter @app/db db:migrate`.
-
+- **Fix**: Run `pnpm db:migrate` and `pnpm db:seed`.
+ 
 ---
-
+ 
 ## 2. Monorepo & Dependencies
-
+ 
 ### Error: "Cannot find module '@app/core'"
 - **Cause**: Turborepo hasn't built the shared package.
-- **Fix**: Run `pnpm build` from the root or `pnpm --filter @app/core build`.
+- **Fix**: Run `pnpm build` from the root.
+
 
 ### Issue: "pnpm install takes too long"
 - **Tip**: Ensure you are using the latest version of pnpm. You can also try clearing the cache: `pnpm store prune`.

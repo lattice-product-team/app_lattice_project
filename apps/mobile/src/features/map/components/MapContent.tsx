@@ -1,8 +1,13 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Dimensions, Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+
+/**
+ * MapContent: Orchestrator for the main Map experience.
+ */
+// ... (rest of imports)
 
 // Hooks & State
 import { usePOIStore } from '../../poi/store/usePOIStore';
@@ -50,7 +55,6 @@ export const MapContent = function MapContent({
   const mapRef = useRef<any>(null);
   const theme = useLatticeTheme();
   const hasInitialRendered = React.useRef(false);
-  const [userHeading, setUserHeading] = React.useState(0);
 
   const { selectPoi, setSelectedEvent, selectedPoiId, selectedCoords, selectedEventId } =
     usePOIStore();
@@ -181,6 +185,34 @@ export const MapContent = function MapContent({
     return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
+  const getNativeIconName = (categoryIcon: any) => {
+    const icon = String(categoryIcon || '').toLowerCase();
+    
+    // Food & Drink
+    if (icon.includes('restaurant') || icon.includes('food') || icon.includes('utensils') || icon.includes('coffee')) return 'restaurant';
+    if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
+    
+    // Infrastructure
+    if (icon.includes('parking')) return 'parking';
+    if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom')) return 'toilet';
+    if (icon.includes('gate') || icon.includes('login') || icon.includes('entrance') || icon.includes('log-out')) return 'log-out';
+    
+    // Health & Safety
+    if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital')) return 'hospital';
+    if (icon.includes('security') || icon.includes('shield')) return 'shield';
+    
+    // Info & Points
+    if (icon.includes('info') || icon.includes('library')) return 'library-big';
+    if (icon.includes('meetup') || icon.includes('users')) return 'users';
+    
+    // Venues & Shopping
+    if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping')) return 'store';
+    if (icon.includes('stage') || icon.includes('theater') || icon.includes('grandstand') || icon.includes('music')) return 'theater';
+    if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive')) return 'crown';
+    
+    return 'library-big'; // Fallback to info-style
+  };
+
   // Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
     const filteredList = getFilteredPOIs(allUIPois, discreteZoom);
@@ -208,12 +240,15 @@ export const MapContent = function MapContent({
         properties: {
           id: poi.id,
           name: poi.displayName,
+          display_name: poi.displayName,
           icon: poi.categoryIcon,
+          icon_name: getNativeIconName(poi.category), // USAR CATEGORY (String) EN VEZ DE ICON (Component)
           category: poi.category,
           color: poi.mainColor,
+          color_hex: poi.mainColor,
           parentId: poi.parentId,
           rating: poi.rating,
-          raw: JSON.stringify(poi), // Store as string
+          raw: JSON.stringify(poi),
         },
       })),
     };
@@ -249,8 +284,11 @@ export const MapContent = function MapContent({
           properties: {
             id: poi.id,
             name: poi.displayName,
+            display_name: poi.displayName, // PROPIEDAD PARA NATIVO
             category: poi.category,
             color: poi.mainColor,
+            color_hex: poi.mainColor, // PROPIEDAD PARA NATIVO
+            icon_name: 'event', // PROPIEDAD PARA NATIVO
             imageKey: poi.imageKey,
             imageUrl: poi.images?.[0],
             raw: JSON.stringify(poi.raw), // Store as string so queryRenderedFeatures handles it safely
@@ -318,7 +356,7 @@ export const MapContent = function MapContent({
         // Normal POI selection
         setSelectedEvent(null);
         setGlobalCurrentEvent(null);
-        selectPoi(normalizePOI(feature));
+        selectPoi(normalizePOI(rawData || feature));
       }
     },
     [
@@ -360,6 +398,8 @@ export const MapContent = function MapContent({
 
   // Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
+    // Be more patient on Android with older hardware
+    const timeoutDuration = Platform.OS === 'android' ? 12000 : 8000;
     const timer = setTimeout(() => {
       if (!hasInitialRendered.current) {
         console.log('⚠️ [MapContent] Safety timeout triggered: forcing map ready');
@@ -367,7 +407,7 @@ export const MapContent = function MapContent({
         setInitialLoadComplete(true);
         setMapReady(true);
       }
-    }, 8000);
+    }, timeoutDuration);
     return () => clearTimeout(timer);
   }, [setInitialLoadComplete, setMapReady]);
 
@@ -377,13 +417,28 @@ export const MapContent = function MapContent({
     // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
     // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
     const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
+      const lid = (layer.id || '').toLowerCase();
+      
       // Robust approach: Hide most symbol/label layers except essential geographical names
       const isSymbolLayer = layer.type === 'symbol';
       const isEssentialLabel =
-        layer.id.includes('place_label') ||
-        layer.id.includes('road_label') ||
-        layer.id.includes('water_label') ||
-        layer.id.includes('country_label');
+        lid.includes('place') ||
+        lid.includes('city') ||
+        lid.includes('town') ||
+        lid.includes('village') ||
+        lid.includes('country') ||
+        lid.includes('state') ||
+        lid.includes('continent') ||
+        lid.includes('road') ||
+        lid.includes('water');
+
+      // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
+      if (Platform.OS === 'android' && (lid.includes('building') || layer.type === 'fill-extrusion')) {
+        return {
+          ...layer,
+          layout: { ...(layer.layout || {}), visibility: 'none' },
+        };
+      }
 
       if (isSymbolLayer && !isEssentialLabel) {
         return {

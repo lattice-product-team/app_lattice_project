@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, Dimensions, Pressable, Text, Alert } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -33,9 +33,10 @@ interface WalletItemProps {
   expandProgress: SharedValue<number>;
   handleSelectTicket: (ticket: Ticket) => void;
   toggleExpand: () => void;
+  theme: any;
 }
 
-const WalletItem: React.FC<WalletItemProps> = ({
+const WalletItem: React.FC<WalletItemProps> = React.memo(({
   ticket,
   index,
   totalTickets,
@@ -44,19 +45,22 @@ const WalletItem: React.FC<WalletItemProps> = ({
   expandProgress,
   handleSelectTicket,
   toggleExpand,
+  theme,
 }) => {
   const isSelected = selectedTicketId === ticket.id;
   const isAnySelected = selectedTicketId !== null;
+
+  const springConfig = theme.motion.physics.snappy;
 
   const animatedStyle = useAnimatedStyle(() => {
     // 1. If this specific ticket is selected, it stays at the top
     if (isSelected) {
       return {
         transform: [
-          { translateY: withSpring(0) },
-          { scale: withSpring(1) }
+          { translateY: withSpring(0, springConfig) },
+          { scale: withSpring(1, springConfig) }
         ],
-        opacity: withSpring(1),
+        opacity: withSpring(1, springConfig),
         zIndex: 100,
       };
     }
@@ -65,10 +69,10 @@ const WalletItem: React.FC<WalletItemProps> = ({
     if (isAnySelected) {
       return {
         transform: [
-          { translateY: withSpring(SCREEN_HEIGHT) },
-          { scale: withSpring(0.9) }
+          { translateY: withSpring(SCREEN_HEIGHT, springConfig) },
+          { scale: withSpring(0.9, springConfig) }
         ],
-        opacity: withSpring(0),
+        opacity: withSpring(0, springConfig),
         zIndex: 0,
       };
     }
@@ -90,10 +94,10 @@ const WalletItem: React.FC<WalletItemProps> = ({
 
     return {
       transform: [
-        { translateY: withSpring(translateY) },
-        { scale: withSpring(scale) }
+        { translateY: withSpring(translateY, springConfig) },
+        { scale: withSpring(scale, springConfig) }
       ],
-      opacity: withSpring(1),
+      opacity: withSpring(1, springConfig),
       zIndex: index,
     };
   });
@@ -110,29 +114,27 @@ const WalletItem: React.FC<WalletItemProps> = ({
       </Animated.View>
     </View>
   );
-};
+});
 
-export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
+WalletItem.displayName = 'WalletItem';
+
+export const WalletStack: React.FC<WalletStackProps> = React.memo(({ tickets }) => {
   const theme = useLatticeTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(null);
   const expandProgress = useSharedValue(0);
   const isAnySelected = selectedTicketId !== null;
 
-  const toggleExpand = () => {
+  const toggleExpand = useCallback(() => {
     if (selectedTicketId) return; 
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
     expandProgress.value = withSpring(newExpanded ? 1 : 0, theme.motion.physics.snappy);
-  };
+  }, [isExpanded, selectedTicketId, theme, expandProgress]);
 
-  const handleSelectTicket = (ticket: Ticket) => {
-    if (selectedTicketId === ticket.id) {
-      setSelectedTicketId(null);
-    } else {
-      setSelectedTicketId(ticket.id);
-    }
-  };
+  const handleSelectTicket = useCallback((ticket: Ticket) => {
+    setSelectedTicketId(prev => prev === ticket.id ? null : ticket.id);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -148,6 +150,7 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
             expandProgress={expandProgress}
             handleSelectTicket={handleSelectTicket}
             toggleExpand={toggleExpand}
+            theme={theme}
           />
         ))}
       </View>
@@ -164,7 +167,9 @@ export const WalletStack: React.FC<WalletStackProps> = ({ tickets }) => {
       )}
     </View>
   );
-};
+});
+
+WalletStack.displayName = 'WalletStack';
 
 const styles = StyleSheet.create({
   container: {

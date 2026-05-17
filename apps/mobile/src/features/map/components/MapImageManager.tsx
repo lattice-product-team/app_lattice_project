@@ -10,31 +10,25 @@ interface MapImageManagerProps {
  * Manages the registration of remote event images into MapLibre's texture atlas.
  */
 export const MapImageManager = ({ events }: MapImageManagerProps) => {
-  const categoryIcons = {
-    /*
-    coffee: require('../../../../assets/icons/coffee.png'),
-    restaurant: require('../../../../assets/icons/restaurant.png'),
-    parking: require('../../../../assets/icons/parking.png'),
-    wc: require('../../../../assets/icons/wc.png'),
-    medical: require('../../../../assets/icons/medical.png'),
-    info: require('../../../../assets/icons/info.png'),
-    shop: require('../../../../assets/icons/shop.png'),
-    gate: require('../../../../assets/icons/gate.png'),
-    museum: require('../../../../assets/icons/museum.png'),
-    park: require('../../../../assets/icons/park.png'),
-    hotel: require('../../../../assets/icons/hotel.png'),
-    pharmacy: require('../../../../assets/icons/pharmacy.png'),
-    gym: require('../../../../assets/icons/gym.png'),
-    bank: require('../../../../assets/icons/bank.png'),
-    default: require('../../../../assets/icons/marker.png'),
-    */
-  };
-
+  const categoryIcons = useMemo(() => ({
+    restaurant: { source: require('../../../../assets/icons/restaurant.png'), sdf: true },
+    parking: { source: require('../../../../assets/icons/parking.png'), sdf: true },
+    toilet: { source: require('../../../../assets/icons/toilet.png'), sdf: true },
+    hospital: { source: require('../../../../assets/icons/hospital.png'), sdf: true },
+    'library-big': { source: require('../../../../assets/icons/library-big.png'), sdf: true },
+    'log-out': { source: require('../../../../assets/icons/log-out.png'), sdf: true },
+    beer: { source: require('../../../../assets/icons/beer.png'), sdf: true },
+    crown: { source: require('../../../../assets/icons/crown.png'), sdf: true },
+    shield: { source: require('../../../../assets/icons/shield.png'), sdf: true },
+    store: { source: require('../../../../assets/icons/store.png'), sdf: true },
+    theater: { source: require('../../../../assets/icons/theater.png'), sdf: true },
+    users: { source: require('../../../../assets/icons/users.png'), sdf: true },
+  }), []);
 
   const imageMap = useMemo(() => {
-    const images: Record<string, any> = {};
+    const images: Record<string, any> = { ...categoryIcons };
 
-    // Register Event Images
+    // Register Event Images (Remote)
     events?.forEach((event) => {
       if (event.imageKey && event.images?.[0] && event.imageKey !== 'placeholder-event') {
         images[event.imageKey] = { uri: event.images[0] };
@@ -42,7 +36,7 @@ export const MapImageManager = ({ events }: MapImageManagerProps) => {
     });
 
     return images;
-  }, [events]);
+  }, [events, categoryIcons]);
 
 
   return <MapLibreGL.Images images={imageMap} />;

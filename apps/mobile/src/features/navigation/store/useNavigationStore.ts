@@ -146,9 +146,7 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
         islandState.value = withSpring(0, theme.motion.physics.magnetic);
       }
 
-      // 5. Clear selections LAST to prevent camera "theft" during transition
-      usePOIStore.getState().selectPoi(null);
-      useEventStore.getState().clearEvent();
+      // 5. REMOVED: Do NOT clear selections. We want to return to them later.
       
     } catch (e) {
       console.warn('[NavigationStore] startNavigation failed:', e);
@@ -180,7 +178,12 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
   clearNavigation: () => {
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
-      useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
+      const { usePOIStore } = require('../../poi/store/usePOIStore');
+      const { useEventStore } = require('../../event/store/useEventStore');
+      
+      const hasSelection = usePOIStore.getState().selectedPoi || useEventStore.getState().selectedEvent;
+      
+      useMapUIStore.getState().setUIState(hasSelection ? MapUIState.POI_DETAIL : MapUIState.EXPLORING);
     } catch (e) {}
     set({
       currentRoute: null,

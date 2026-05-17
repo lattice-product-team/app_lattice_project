@@ -47,16 +47,34 @@ interface AdminMapProps {
 }
 
 const POI_METADATA: Record<string, { icon: any; color: string }> = {
-  wc: { icon: Icons.Baby, color: '#54A6FF' },
-  restaurant: { icon: Icons.Utensils, color: '#F2A03D' },
-  bar: { icon: Icons.Wine, color: '#F2A03D' },
-  medical: { icon: Icons.Hospital, color: '#E5484D' },
-  gate: { icon: Icons.LogIn, color: '#F8D548' },
-  information: { icon: Icons.Info, color: '#D9B735' },
-  emergency: { icon: Icons.AlertTriangle, color: '#E5484D' },
-  parking: { icon: Icons.MapPin, color: '#54A6FF' },
-  shop: { icon: Icons.ShoppingBag, color: '#4F46E5' },
-  default: { icon: Icons.MapPin, color: '#F8D548' },
+  restaurant: { icon: Icons.Utensils, color: '#FF9500' },
+  food: { icon: Icons.Utensils, color: '#FF9500' },
+  coffee: { icon: Icons.Coffee, color: '#FF9500' },
+  bar: { icon: Icons.Beer, color: '#FF9500' },
+  beer: { icon: Icons.Beer, color: '#FF9500' },
+  parking: { icon: Icons.MapPin, color: '#007AFF' },
+  wc: { icon: Icons.User, color: '#007AFF' },
+  toilet: { icon: Icons.User, color: '#007AFF' },
+  restroom: { icon: Icons.User, color: '#007AFF' },
+  medical: { icon: Icons.Hospital, color: '#FF3B30' },
+  hospital: { icon: Icons.Hospital, color: '#FF3B30' },
+  emergency: { icon: Icons.Hospital, color: '#FF3B30' },
+  security: { icon: Icons.Shield, color: '#FF3B30' },
+  gate: { icon: Icons.LogOut, color: '#5856D6' },
+  entrance: { icon: Icons.LogOut, color: '#5856D6' },
+  information: { icon: Icons.LibraryBig, color: '#5AC8FA' },
+  info: { icon: Icons.LibraryBig, color: '#5AC8FA' },
+  'library-big': { icon: Icons.LibraryBig, color: '#5AC8FA' },
+  shop: { icon: Icons.Store, color: '#AF52DE' },
+  store: { icon: Icons.Store, color: '#AF52DE' },
+  shopping: { icon: Icons.Store, color: '#AF52DE' },
+  stage: { icon: Icons.Theater, color: '#34C759' },
+  theater: { icon: Icons.Theater, color: '#34C759' },
+  vip: { icon: Icons.Crown, color: '#FFCC00' },
+  crown: { icon: Icons.Crown, color: '#FFCC00' },
+  meetup: { icon: Icons.Users, color: '#5856D6' },
+  users: { icon: Icons.Users, color: '#5856D6' },
+  default: { icon: Icons.MapPin, color: '#5856D6' },
 };
 
 const getBBox = (coords: any): [number, number, number, number] => {
@@ -355,16 +373,30 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     if (!style || !style.layers) return;
 
     style.layers.forEach((layer: any) => {
-      // Robust approach: Hide most symbol/label layers except essential geographical names
       const isSymbolLayer = layer.type === 'symbol';
-      const isEssentialLabel = 
-        layer.id.includes('place_label') || 
-        layer.id.includes('road_label') || 
-        layer.id.includes('water_label') ||
-        layer.id.includes('country_label');
+      if (!isSymbolLayer) return;
 
-      if (isSymbolLayer && !isEssentialLabel) {
-        map.setLayoutProperty(layer.id, 'visibility', 'none');
+      const isOurLayer = layer.id.startsWith('global-');
+      // More comprehensive list of native labels to keep visible
+      const isEssentialLabel = 
+        layer.id.includes('place') || 
+        layer.id.includes('road') || 
+        layer.id.includes('street') || 
+        layer.id.includes('highway') ||
+        layer.id.includes('water') ||
+        layer.id.includes('poi') ||
+        layer.id.includes('transit') ||
+        layer.id.includes('airport') ||
+        layer.id.includes('country') ||
+        layer.id.includes('state') ||
+        layer.id.includes('city');
+
+      if (isOurLayer || isEssentialLabel) {
+        map.setLayoutProperty(layer.id, 'visibility', 'visible');
+      } else {
+        // Only hide labels that are truly non-essential (e.g. some obscure MapTiler specific layers)
+        // or if you want a very clean map. To be safe, we'll keep almost everything now.
+        map.setLayoutProperty(layer.id, 'visibility', 'visible');
       }
     });
   }, []);
@@ -433,21 +465,23 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="global-boundaries-labels"
               type="symbol"
-              minzoom={8}
+              minzoom={11}
               layout={{
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold'],
-                'text-size': ['interpolate', ['linear'], ['zoom'], 8, 9, 14, 11],
-                'text-letter-spacing': 0.2,
+                'text-size': ['interpolate', ['linear'], ['zoom'], 11, 10, 16, 14],
+                'text-letter-spacing': 0.1,
                 'text-transform': 'uppercase',
                 'text-anchor': 'center',
-                'text-max-width': 8,
-                'text-allow-overlap': false,
+                'text-max-width': 10,
+                'text-allow-overlap': true,
+                'text-ignore-placement': true,
               }}
               paint={{
                 'text-color': ['get', 'color'],
-                'text-halo-color': theme === 'dark' ? '#000' : '#fff',
+                'text-halo-color': theme === 'dark' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)',
                 'text-halo-width': 2,
+                'text-halo-blur': 1,
               }}
             />
           </Source>

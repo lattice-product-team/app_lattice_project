@@ -53,6 +53,14 @@ const ONBOARDING_DATA = [
   },
 ];
 
+const hexToRgba = (hex: string, alpha: number) => {
+  const rHex = hex.replace('#', '');
+  const r = parseInt(rHex.substring(0, 2), 16);
+  const g = parseInt(rHex.substring(2, 4), 16);
+  const b = parseInt(rHex.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 export default function OnboardingScreen() {
   const router = useRouter();
   const theme = useAppTheme();
@@ -106,6 +114,8 @@ export default function OnboardingScreen() {
       };
     });
 
+    const bgMain = theme.colors.bg.main;
+
     return (
       <Animated.View key={`bg-${index}`} style={[StyleSheet.absoluteFill, imageStyle]}>
         <Image
@@ -113,13 +123,22 @@ export default function OnboardingScreen() {
           style={styles.backgroundImage}
           contentFit="cover"
         />
+        {/* Soft contrast-boosting overlay, adaptive to light/dark themes */}
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              backgroundColor: theme.dark ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.15)',
+            },
+          ]}
+        />
         <LinearGradient
           colors={[
-            'transparent',
-            theme.dark ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)',
-            theme.dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)',
-            theme.dark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)',
-            theme.colors.bg.main,
+            hexToRgba(bgMain, 0),
+            hexToRgba(bgMain, 0.35),
+            hexToRgba(bgMain, 0.75),
+            bgMain,
+            bgMain,
           ]}
           locations={[0, 0.35, 0.55, 0.75, 1]}
           style={styles.gradient}
@@ -240,14 +259,14 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     width: '100%',
-    height: height * 0.7,
+    height: '100%',
   },
   gradient: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: height * 0.3,
-    height: height * 0.5,
+    bottom: 0,
+    height: height * 0.8,
   },
   logoImage: {
     width: 120,

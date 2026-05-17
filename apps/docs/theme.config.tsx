@@ -5,7 +5,7 @@ const config: DocsThemeConfig = {
   logo: (
     <div className="flex items-center gap-2 font-bold text-xl">
       <img
-        src="/app_lattice_project/icon.png"
+        src="/icon.png"
         height="32"
         width="32"
         style={{ borderRadius: '6px' }}

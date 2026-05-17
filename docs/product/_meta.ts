@@ -1,4 +1,5 @@
 export default {
-  index: 'Product Vision',
-  'features-design': 'Features & UX Design',
+  index: 'Vision',
+  mobile: 'Mobile App',
+  admin: 'Web Admin',
 };

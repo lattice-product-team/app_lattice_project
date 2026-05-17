@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import { SharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 import { EMPTY_GEOJSON } from '../../../constants/mapConstants';
 import { mapLayerStyles } from '../../../styles/mapLayerStyles';
@@ -59,83 +59,62 @@ const RouteLayer = React.memo(({
 });
 
 /**
- * Sub-component for POI Markers to isolate re-renders.
+ * Sub-component for the Selected Feature (POI or Event)
+ * This is the ONLY React Native PointAnnotation rendered on the map,
+ * allowing for complex animations without killing performance.
  */
-const POIMarkers = React.memo(({ 
-  features, 
-  selectedPoiId, 
-  onPoiPress, 
-  theme, 
+const SelectedMarker = React.memo(({ 
+  poisGeoJSON,
+  eventsGeoJSON,
+  selectedPoiId,
+  selectedEventId,
+  onPoiPress,
+  theme,
   zoomSharedValue,
-  visibleBounds 
 }: { 
-  features: any[], 
-  selectedPoiId: any, 
-  onPoiPress: any, 
-  theme: any, 
+  poisGeoJSON: any,
+  eventsGeoJSON: any,
+  selectedPoiId: any,
+  selectedEventId: any,
+  onPoiPress: any,
+  theme: any,
   zoomSharedValue: any,
-  visibleBounds: number[][] | null
 }) => {
-  // Helper to check if a point is within visible bounds with a safety margin
-  const isPointInBounds = (coords: number[], bounds: number[][] | null) => {
-    if (!bounds || bounds.length < 2) return true; // Default to visible if no bounds
-    const [[neLng, neLat], [swLng, swLat]] = bounds;
-    const [lng, lat] = coords;
-    
-    // Add 10% padding to bounds to prevent flickering at edges
-    const lngPad = Math.abs(neLng - swLng) * 0.1;
-    const latPad = Math.abs(neLat - swLat) * 0.1;
-    
-    const minLng = Math.min(neLng, swLng) - lngPad;
-    const maxLng = Math.max(neLng, swLng) + lngPad;
-    const minLat = Math.min(neLat, swLat) - latPad;
-    const maxLat = Math.max(neLat, swLat) + latPad;
+  // STRICT GUARD: If we have an event selected, we NEVER show the React pin.
+  if (selectedEventId && String(selectedEventId).length > 0) return null;
 
-    return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
-  };
+  const selectedFeature = useMemo(() => {
+    if (selectedPoiId) {
+      return poisGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedPoiId));
+    }
+    return null;
+  }, [selectedPoiId, poisGeoJSON]);
 
-  const visibleFeatures = useMemo(() => {
-    if (!visibleBounds) return features;
-    return features.filter(f => 
-      String(f.properties?.id) === String(selectedPoiId) || // Always keep selected
-      isPointInBounds(f.geometry.coordinates, visibleBounds)
-    );
-  }, [features, visibleBounds, selectedPoiId]);
+  if (!selectedFeature) return null;
 
-  // Render ONLY visible pois as PointAnnotations for performance.
-  // We use the ID to ensure stability across re-renders.
   return (
-    <>
-      {visibleFeatures.map((feature) => {
-        const id = String(feature.properties?.id);
-        const isSelected = id === String(selectedPoiId);
-        
-        return (
-          <MapLibreGL.PointAnnotation
-            key={`poi-${id}`}
-            id={`ann-${id}`}
-            coordinate={feature.geometry.coordinates}
-            style={{ zIndex: isSelected ? 100 : 1 }}
-          >
-            <View 
-              style={[
-                mapPinStyles.markerWrapper, 
-                { backgroundColor: 'transparent' }
-              ]}
-              collapsable={false}
-            >
-              <POIMarker
-                poi={feature}
-                theme={theme}
-                isSelected={isSelected}
-                onPress={onPoiPress}
-                zoomSharedValue={zoomSharedValue}
-              />
-            </View>
-          </MapLibreGL.PointAnnotation>
-        );
-      })}
-    </>
+    <MapLibreGL.PointAnnotation
+      key={`selected-${selectedPoiId}`}
+      id="selected-annotation"
+      coordinate={selectedFeature.geometry.coordinates}
+      style={{ zIndex: 1000 }}
+    >
+      <View 
+        style={[
+          mapPinStyles.markerWrapper, 
+          { backgroundColor: 'transparent' }
+        ]}
+        collapsable={false}
+      >
+        <POIMarker
+          poi={selectedFeature}
+          theme={theme}
+          isSelected={true}
+          onPress={onPoiPress}
+          zoomSharedValue={zoomSharedValue}
+        />
+      </View>
+    </MapLibreGL.PointAnnotation>
   );
 });
 
@@ -177,31 +156,21 @@ export const MapLayers = React.memo(({
     return { type: 'FeatureCollection', features: markers };
   }, [eventsGeoJSON]);
 
-  const selectedFeature = useMemo(() => {
-    if (selectedPoiId) {
-      return poisGeoJSON?.features?.find((f: any) => String(f.properties?.id) === String(selectedPoiId));
-    }
-    if (selectedEventId) {
-      return eventMarkers.features.find((f: any) => String(f.properties?.id) === String(selectedEventId));
-    }
-    return null;
-  }, [selectedPoiId, selectedEventId, poisGeoJSON, eventMarkers]);
-
   const backgroundPois = useMemo(() => ({
     type: 'FeatureCollection',
     features: poisGeoJSON?.features || []
   }), [poisGeoJSON]);
 
-  const labelGeoJSON = useMemo(() => ({
-    type: 'FeatureCollection',
-    features: [
-      ...(selectedFeature ? [selectedFeature] : []),
-    ]
-  }), [selectedFeature]);
-
   const handleShapePress = (e: any) => {
-    if (e.features && e.features.length > 0) {
-      onPoiPress(e.features[0]);
+    const feature = e.features[0];
+    if (!feature) return;
+
+    // Ignore cluster taps
+    if (feature.properties?.point_count) return;
+
+    // Trigger press for valid POIs or Events
+    if (feature.properties?.id || feature.properties?.name) {
+      onPoiPress(feature);
     }
   };
 
@@ -217,11 +186,109 @@ export const MapLayers = React.memo(({
 
   return (
     <>
-      {/* 1. Background Sources (Empty, logic moved to POIMarkers) */}
+      {/* 1. Background Sources */}
       <MapLibreGL.ShapeSource 
         id="poiSource" 
         shape={backgroundPois}
-      />
+        onPress={handleShapePress}
+        cluster={false}
+      >
+        {/* SHADOW: Sincronizada con el círculo */}
+        <MapLibreGL.CircleLayer
+          id="poiShadows"
+          filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
+          minZoomLevel={12}
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              12, 6,
+              15, 18,
+              18, 24
+            ],
+            circleColor: '#000000',
+            circleOpacity: 0.15,
+            circleBlur: 0.8,
+            circleTranslate: [0, 2],
+          }}
+        />
+
+        {/* PLATE: Círculo base coloreado */}
+        <MapLibreGL.CircleLayer
+          id="backgroundPoiDots"
+          aboveLayerID="poiShadows"
+          filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
+          minZoomLevel={12}
+          style={{
+            circleRadius: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              12, 5,
+              15, 16, // Más generoso para que el icono tenga mucho aire
+              18, 22
+            ],
+            circleColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
+            circleStrokeWidth: 2,
+            circleStrokeColor: '#FFFFFF',
+            circleOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              11.5, 0,
+              12, 1,
+              22, 1
+            ],
+          }}
+        />
+
+        {/* GLYPH: Icono blanco - Sincronizado milimétricamente con el círculo */}
+        <MapLibreGL.SymbolLayer
+          id="poiIconsLayer"
+          filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
+          minZoomLevel={12} // Aparece igual que el círculo
+          style={{
+            iconImage: ['get', 'icon_name'],
+            iconColor: '#FFFFFF',
+            iconAnchor: 'center',
+            iconSize: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              12, 0.1,
+              15, 0.35,
+              18, 0.5
+            ],
+            iconAllowOverlap: true,
+            iconIgnorePlacement: true,
+            iconOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              11.5, 0,
+              12, 1,
+              22, 1
+            ],
+            // Texto con halo
+            textField: ['get', 'display_name'],
+            textSize: 11,
+            textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
+            textHaloColor: '#FFFFFF',
+            textHaloWidth: 2,
+            textAnchor: 'top',
+            textOffset: [0, 1.6],
+            textOpacity: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              16.5, 0,
+              17, 1
+            ],
+            textAllowOverlap: true,
+          }}
+        />
+      </MapLibreGL.ShapeSource>
 
       <MapLibreGL.ShapeSource 
         id="eventsBackgroundSource" 
@@ -231,20 +298,33 @@ export const MapLayers = React.memo(({
       >
         <MapLibreGL.SymbolLayer
           id="eventLabelsBackground"
+          filter={['!=', ['to-string', ['get', 'id']], String(selectedEventId || '')]}
           style={{
-            textField: ['get', 'name'],
-            textSize: 16,
-            textColor: ['get', 'color'],
+            textField: ['get', 'display_name'],
+            textSize: [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 16,
+              14, 22
+            ],
+            textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
             textHaloColor: '#FFFFFF',
-            textHaloWidth: 3,
+            textHaloWidth: 2.5,
             textAnchor: 'center',
             textOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              13.5, 1,
-              14.5, 0
+              9, 0,
+              10, 1,
+              16, 1,
+              17, 0 
             ],
+            textTransform: 'uppercase',
+            textLetterSpacing: 0.1,
+            textAllowOverlap: true,
+            textIgnorePlacement: true,
           }}
         />
       </MapLibreGL.ShapeSource>
@@ -257,35 +337,31 @@ export const MapLayers = React.memo(({
         <MapLibreGL.SymbolLayer
           id="eventLabelSelected"
           style={{
-            textField: ['get', 'name'],
-            textSize: 18,
-            textColor: ['get', 'color'],
+            textField: ['get', 'display_name'],
+            textSize: 20,
+            textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
             textHaloColor: '#FFFFFF',
-            textHaloWidth: 4,
+            textHaloWidth: 3,
             textAnchor: 'center',
             textOpacity: 1,
             textTransform: 'uppercase',
+            textLetterSpacing: 0.2,
           }}
         />
       </MapLibreGL.ShapeSource>
 
-      {/* 2. POI MARKERS - Isolated from Route re-renders */}
-      <POIMarkers 
-        features={backgroundPois.features}
+      {/* 2. HYBRID SELECTION - Single React Component for the focus */}
+      <SelectedMarker 
+        poisGeoJSON={poisGeoJSON}
+        eventsGeoJSON={eventsGeoJSON}
         selectedPoiId={selectedPoiId}
+        selectedEventId={selectedEventId}
         onPoiPress={onPoiPress}
         theme={theme}
         zoomSharedValue={zoomSharedValue}
-        visibleBounds={visibleBounds}
       />
 
-      {/* 3. LABELS (Empty, logic moved to POIMarkers) */}
-      <MapLibreGL.ShapeSource 
-        id="labelsSource" 
-        shape={EMPTY_GEOJSON}
-      />
-
-      {/* 4. ROUTE - Isolated from POI re-renders */}
+      {/* 3. ROUTE - Isolated from POI re-renders */}
       <RouteLayer 
         uiState={uiState}
         currentRoute={currentRoute}

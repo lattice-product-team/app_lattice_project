@@ -43,7 +43,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
               key={cat.id}
               onPress={() => onSelect(cat.id)}
               className="items-center"
-              style={{ width: 72 }}
+              style={{ minWidth: 72, paddingHorizontal: 4 }}
             >
               <View
                 style={{

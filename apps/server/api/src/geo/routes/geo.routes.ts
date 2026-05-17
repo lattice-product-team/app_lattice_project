@@ -26,6 +26,7 @@ router.get('/locations', geoController.getLocations);
 router.get('/geo/locations', geoController.getLocations);
 router.get('/navigation/network', geoController.getPathNetwork);
 router.post('/navigation/route', geoController.getRoute);
+router.post('/navigation/valhalla-route', geoController.getValhallaProxyRoute);
 router.get('/resolve-address', geoController.resolveAddress);
 router.post('/social/sync', geoController.syncSocialData);
 
