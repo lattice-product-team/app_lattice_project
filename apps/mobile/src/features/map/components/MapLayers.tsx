@@ -246,26 +246,27 @@ export const MapLayers = React.memo(({
 
         <MapLibreGL.CircleLayer
           id="backgroundPoiDots"
-          filter={['all', ['!', ['has', 'point_count']], ['!=', ['get', 'id'], selectedPoiId || '']]}
+          filter={['all', ['!', ['has', 'point_count']], ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
           minZoomLevel={10}
           style={{
             circleRadius: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 1.5,
-              15, 3,
+              10, 2,
+              14, 4,
               16, 0 
             ],
-            circleColor: ['get', 'color_hex'],
+            // Fallback to brand primary if color_hex is missing
+            circleColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary],
             circleStrokeWidth: 1,
             circleStrokeColor: '#FFFFFF',
             circleOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              14, 0,
-              14.5, 1,
+              12, 0,
+              13, 1,
               15.5, 1,
               16, 0
             ],
@@ -273,24 +274,24 @@ export const MapLayers = React.memo(({
         />
         <MapLibreGL.SymbolLayer
           id="poiIconsLayer"
-          filter={['all', ['!', ['has', 'point_count']], ['!=', ['get', 'id'], selectedPoiId || '']]}
-          minZoomLevel={15.5} // No aparecen hasta que estás "dentro"
+          filter={['all', ['!', ['has', 'point_count']], ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
+          minZoomLevel={14.5} // Aparecen un poco antes
           style={{
             iconImage: ['get', 'icon_name'],
-            iconColor: ['get', 'color_hex'],
+            iconColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary],
             iconSize: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              15.5, 0.6,
-              17, 0.9,
-              19, 1.1
+              14.5, 0.5,
+              16, 0.8,
+              18, 1.1
             ],
             iconAllowOverlap: true,
             // Texto con halo
             textField: ['get', 'display_name'],
             textSize: 11,
-            textColor: ['get', 'color_hex'],
+            textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary],
             textHaloColor: '#FFFFFF',
             textHaloWidth: 2,
             textAnchor: 'top',
@@ -299,8 +300,8 @@ export const MapLayers = React.memo(({
               'interpolate',
               ['linear'],
               ['zoom'],
-              16.5, 0,
-              17.5, 1
+              16, 0,
+              17, 1
             ],
           }}
         />
@@ -312,74 +313,31 @@ export const MapLayers = React.memo(({
         hitbox={{ width: 44, height: 44 }}
         onPress={handleShapePress}
       >
-        <MapLibreGL.SymbolLayer
-          id="eventIconsBackground"
-          filter={['!=', ['get', 'id'], selectedEventId || '']}
-          style={{
-            iconImage: 'event',
-            iconColor: ['get', 'color_hex'],
-            iconSize: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 0.6,
-              14, 1.0,
-              16, 0
-            ],
-            sdf: true,
-          }}
-        />
-        <MapLibreGL.CircleLayer
-          id="eventBgBackground"
-          filter={['!=', ['get', 'id'], selectedEventId || '']}
-          style={{
-            circleRadius: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              10, 10,
-              14, 18,
-              16, 0
-            ],
-            circleColor: '#FFFFFF',
-            circleStrokeWidth: 2,
-            circleStrokeColor: ['get', 'color_hex'],
-            circleOpacity: [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              9, 0,
-              10, 1,
-              15.5, 1,
-              16, 0
-            ],
-          }}
-        />
+        {/* ONLY TEXT FOR EVENTS - No icons, no circles */}
         <MapLibreGL.SymbolLayer
           id="eventLabelsBackground"
-          filter={['!=', ['get', 'id'], selectedEventId || '']}
+          filter={['!=', ['to-string', ['get', 'id']], String(selectedEventId || '')]}
           style={{
             textField: ['get', 'display_name'],
             textSize: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 10,
-              14, 14
+              10, 12,
+              14, 16
             ],
-            textColor: ['get', 'color_hex'],
+            textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary],
             textHaloColor: '#FFFFFF',
             textHaloWidth: 2.5,
-            textAnchor: 'top',
-            textOffset: [0, 1.2],
+            textAnchor: 'center',
             textOpacity: [
               'interpolate',
               ['linear'],
               ['zoom'],
-              10, 0,
-              11, 1,
-              15.5, 1,
-              16, 0
+              9, 0,
+              10, 1,
+              16, 1,
+              17, 0 // Hide when very close to show POIs
             ],
             textTransform: 'uppercase',
             textLetterSpacing: 0.1,
@@ -393,33 +351,14 @@ export const MapLayers = React.memo(({
         onPress={handleShapePress}
       >
         <MapLibreGL.SymbolLayer
-          id="eventIconSelected"
-          style={{
-            iconImage: 'event',
-            iconColor: ['get', 'color_hex'],
-            iconSize: 1.2,
-            sdf: true,
-          }}
-        />
-        <MapLibreGL.CircleLayer
-          id="eventBgSelected"
-          style={{
-            circleRadius: 20,
-            circleColor: '#FFFFFF',
-            circleStrokeWidth: 3,
-            circleStrokeColor: ['get', 'color_hex'],
-          }}
-        />
-        <MapLibreGL.SymbolLayer
           id="eventLabelSelected"
           style={{
             textField: ['get', 'display_name'],
-            textSize: 16,
-            textColor: ['get', 'color_hex'],
+            textSize: 18,
+            textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary],
             textHaloColor: '#FFFFFF',
             textHaloWidth: 3,
-            textAnchor: 'top',
-            textOffset: [0, 1.4],
+            textAnchor: 'center',
             textOpacity: 1,
             textTransform: 'uppercase',
             textLetterSpacing: 0.2,
