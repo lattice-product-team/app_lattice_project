@@ -1,55 +1,109 @@
+import { Callout } from 'nextra/components'
+
 # Monorepo Workflow
 
-This guide describes how to develop efficiently within the Lattice monorepo. We use **pnpm** for package management and **Docker** for local environment orchestration.
+This guide describes how to develop efficiently within the Lattice monorepo once your local environment is active. We use **pnpm** and **Turborepo** for package orchestration, and **Docker** for containerized local services.
 
-## Prerequisites
+---
 
--   **Node.js**: >= 18.x
--   **pnpm**: >= 8.x
--   **Docker & Docker Compose**
+<Callout type="info">
+  **New to the project?** For first-time environment installation, requirements, and local setup scripts, refer directly to the [Getting Started Guide](../guides/getting-started.md). For a structural overview of shared libraries and apps, see the [Monorepo Structure Guide](../architecture/monorepo-structure.md).
+</Callout>
 
-## Local Setup
+---
 
-1.  **Install dependencies**:
-    ```bash
-    pnpm install
-    ```
-2.  **Environment Variables**:
-    Copy `.env.example` to `.env` in the root and in the respective app directories.
-3.  **Start Development Environment**:
-    We use Docker Compose to spin up the entire stack:
-    ```bash
-    docker-compose up
-    ```
+## 1. Monorepo Operations
 
-## Workspace Structure
+We use `pnpm` workspaces to manage dependencies across applications and shared packages without duplicate installs or package linking issues.
 
-Our monorepo is organized into several workspaces:
+### Workspace Directory Layout
+Our monorepo packages are structured to keep code sharing clean and type-safe. For complete mappings of internal `@app/db`, `@app/types-schema`, and `@app/theme` dependencies, refer directly to the [Monorepo Structure Architecture Guide](../architecture/monorepo-structure.md).
 
--   `apps/`: Contains the primary applications (Admin Web, Mobile).
--   `packages/`: Shared libraries and configurations used across the apps.
--   `openspec/`: Design documents, specifications, and change management.
+### Adding Dependencies to Workspaces
+To add an external npm dependency to a specific workspace (e.g., adding `lodash` only to the server API):
 
-## Common Commands
-
-### Adding a Dependency
-To add a package to a specific workspace:
 ```bash
-pnpm add <package-name> --filter <workspace-name>
+pnpm add lodash --filter server
 ```
 
-### Running Scripts
-To run a script in all workspaces:
+To add one of our internal shared packages as a dependency of another workspace (e.g., linking the shared DB package to the server):
+
 ```bash
-pnpm run <script-name> -r
+pnpm add @app/db --filter server
 ```
 
-## Docker Management
+### Running Workspace Scripts
+To run development scripts or tests in a specific package:
 
--   **Rebuild images**: `docker-compose build`
--   **View logs**: `docker-compose logs -f`
--   **Stop services**: `docker-compose down`
+```bash
+pnpm --filter server test
+```
 
-## Deployment
+To execute a script recursively across all packages and applications:
 
-Deployment is automated via CI/CD pipelines. Ensure all tests pass and the build is successful locally before pushing to the main branch.
+```bash
+pnpm run build -r
+```
+
+---
+
+## 2. Turborepo & Task Pipeline Caching
+
+Lattice uses **Turborepo** to orchestrate tasks in the monorepo. It reads the dependency graph of our packages and executes builds, lints, and tests in parallel, caching the results to avoid repeating work.
+
+### Core Pipelines defined in `turbo.json`
+- **`build`**: Compiles shared libraries (`@app/db`, `@app/core`) before compiling the applications (`server`, `mobile`, `admin-web`).
+- **`lint`**: Automatically runs ESLint across all projects in parallel.
+- **`test`**: Runs Jest/Vitest unit tests.
+
+To trigger the global pipeline:
+
+```bash
+pnpm build
+pnpm lint
+pnpm test
+```
+
+_If no code changes are detected in a workspace, Turborepo will return `>>> FULL TURBO` and retrieve the outputs from cache in milliseconds._
+
+---
+
+## 3. Docker Container Management
+
+During daily development, you may need to view logs, rebuild compiled images, or tear down local databases:
+
+- **View Active Logs**:
+  ```bash
+  docker compose logs -f
+  ```
+- **View Specific Service Logs** (e.g., Valhalla or PostGIS):
+  ```bash
+  docker compose logs db -f
+  ```
+- **Rebuild Containers from scratch**:
+  ```bash
+  docker compose build --no-cache
+  ```
+- **Stop and Remove Containers** (does not lose Postgres data volumes):
+  ```bash
+  docker compose down
+  ```
+
+---
+
+## 4. Pull Request & Deployment Pipeline
+
+Before pushing a branch to the remote repository, verify that your changes compile and pass code validation tests locally:
+
+1. **Format Code**: Run Prettier across the monorepo:
+   ```bash
+   pnpm format
+   ```
+2. **Lint Code**: Check for active type errors or styling violations:
+   ```bash
+   pnpm lint
+   ```
+3. **Build Packages**: Verify shared packages compile and bundle without errors:
+   ```bash
+   pnpm build
+   ```

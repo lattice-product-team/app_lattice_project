@@ -1,35 +1,36 @@
 # Technology Stack
 
 Lattice is built with a modern, type-safe, and high-performance technology stack designed to handle real-time geospatial data and complex event management.
- 
-## 📊 Technology Stack Overview
- 
-| Technology | Category | Primary Purpose | Key Features |
-| :--- | :--- | :--- | :--- |
-| <img src="https://cdn.simpleicons.org/typescript/3178C6" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **TypeScript** | Core Language | End-to-end static type safety | Strong compilation boundaries, shared Drizzle models |
-| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Node.js** | Core Runtime | Scalable server runtime environment | Event-driven architecture, high IO throughput |
-| <img src="https://cdn.simpleicons.org/react/61DAFB" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **React / Next.js** | Frontend | Web management & operations dashboard | Nextra documentation engine, fast Server Actions |
-| <img src="https://cdn.simpleicons.org/expo/000020" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Expo & React Native** | Mobile | Native iOS & Android client application | Cross-platform performance, hardware GPS/AR bindings |
-| <img src="https://cdn.simpleicons.org/express/000000" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Express.js** | Backend API | Lightweight REST API gateway | Middleware-driven routing, clean MVC controllers |
-| <img src="https://cdn.simpleicons.org/socketdotio/010101" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Socket.IO** | Telemetry | Real-time bi-directional messaging | Low-latency crowd coordinates, live room sync |
-| <img src="https://cdn.simpleicons.org/postgresql/4169E1" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **PostgreSQL (PostGIS)**| Data | Relational storage & geospatial mapping | Native PostGIS spatial grids, polygons, proximity pings |
-| <img src="https://cdn.simpleicons.org/drizzle/C5F74F" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Drizzle ORM** | Data | High-performance, type-safe database access | Zero overhead compilation, instant schema sync |
-| <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **TailwindCSS** | Styling | Rapid utility-first UI development | Sleek administrative dashboard, curated dark mode |
-| <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Turborepo** | DevOps | Monorepo pipeline & task orchestration | Global remote compilation cache, parallelized tests |
-| <img src="https://cdn.simpleicons.org/docker/2496ED" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Docker** | Infrastructure | Containerized local environment | Consistent Postgres/Redis/Valhalla image orchestration|
-| <img src="https://cdn.simpleicons.org/git/F05032" width="18" height="18" align="center" style="display:inline-block; margin-right:6px;" /> **Git** | VCS | Structured version control | Safe peer code reviews, continuous integration |
- 
----
 
+## Technology Stack Overview
+
+| Technology                                                                                                                 | Category       | Primary Purpose                             | Key Features                                            |
+| :------------------------------------------------------------------------------------------------------------------------- | :------------- | :------------------------------------------ | :------------------------------------------------------ |
+| <img src="https://cdn.simpleicons.org/typescript/3178C6" width="18" height="18" align="middle" /> **TypeScript**           | Core Language  | End-to-end static type safety               | Strong compilation boundaries, shared Drizzle models    |
+| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="18" height="18" align="middle" /> **Node.js**               | Core Runtime   | Scalable server runtime environment         | Event-driven architecture, high IO throughput           |
+| <img src="https://cdn.simpleicons.org/react/61DAFB" width="18" height="18" align="middle" /> **React / Next.js**           | Frontend       | Web management & operations dashboard       | Nextra documentation engine, fast Server Actions        |
+| <img src="https://cdn.simpleicons.org/expo/000020" width="18" height="18" align="middle" /> **Expo & React Native**        | Mobile         | Native iOS & Android client application     | Cross-platform performance, hardware GPS/AR bindings    |
+| <img src="https://cdn.simpleicons.org/express/000000" width="18" height="18" align="middle" /> **Express.js**              | Backend API    | Lightweight REST API gateway                | Middleware-driven routing, clean MVC controllers        |
+| <img src="https://cdn.simpleicons.org/socketdotio/010101" width="18" height="18" align="middle" /> **Socket.IO**           | Telemetry      | Real-time bi-directional messaging          | Low-latency crowd coordinates, live room sync           |
+| <img src="https://cdn.simpleicons.org/postgresql/4169E1" width="18" height="18" align="middle" /> **PostgreSQL (PostGIS)** | Data           | Relational storage & geospatial mapping     | Native PostGIS spatial grids, polygons, proximity pings |
+| <img src="https://cdn.simpleicons.org/drizzle/C5F74F" width="18" height="18" align="middle" /> **Drizzle ORM**             | Data           | High-performance, type-safe database access | Zero overhead compilation, instant schema sync          |
+| <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" width="18" height="18" align="middle" /> **TailwindCSS**         | Styling        | Rapid utility-first UI development          | Sleek administrative dashboard, curated dark mode       |
+| <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="18" height="18" align="middle" /> **Turborepo**             | DevOps         | Monorepo pipeline & task orchestration      | Global remote compilation cache, parallelized tests     |
+| <img src="https://cdn.simpleicons.org/docker/2496ED" width="18" height="18" align="middle" /> **Docker**                   | Infrastructure | Containerized local environment             | Consistent Postgres/Redis/Valhalla image orchestration  |
+| <img src="https://cdn.simpleicons.org/git/F05032" width="18" height="18" align="middle" /> **Git**                         | VCS            | Structured version control                  | Safe peer code reviews, continuous integration          |
+
+---
 
 ## Core Language & Runtime
 
 ### TypeScript
+
 <img src="/img/typescript.svg" alt="TypeScript" width="64" height="64" />
 
 The primary language for the entire monorepo. We use **TypeScript** for both frontend (React, React Native) and backend (Node.js) to ensure end-to-end type safety, reducing runtime errors and improving developer productivity.
 
 ### Node.js
+
 <img src="/img/nodejs.svg" alt="Node.js" width="64" height="64" />
 
 Our backend services run on **Node.js**, providing a fast and scalable environment for our API and real-time communication layers.
@@ -37,8 +38,9 @@ Our backend services run on **Node.js**, providing a fast and scalable environme
 ---
 
 ## Frontend Frameworks
- 
+
 ### React (Web Dashboard)
+
 <img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" width="64" height="64" />
  
 The administrative dashboard is built with **React**, leveraging **Next.js** for routing and **Nextra** for documentation. It provides a rich, interactive interface for managing events, POIs, and telemetry.
@@ -88,20 +90,22 @@ We use **TailwindCSS** for rapid and consistent UI development across our web ap
 ### Turborepo
 <img src="https://cdn.simpleicons.org/turborepo/EF4444" alt="Turborepo" width="64" height="64" />
 
-
 Our monorepo is managed by **Turborepo**, which optimizes our build pipeline and ensures efficient caching and task execution across all packages.
 
 ### Docker
+
 <img src="/img/docker.svg" alt="Docker" width="64" height="64" />
 
 We use **Docker** to containerize our services, ensuring consistent development environments and streamlined deployment processes.
 
 ### Git
+
 <img src="/img/git.svg" alt="Git" width="64" height="64" />
 
 **Git** is our version control system, following a structured workflow for collaboration and code quality.
 
 ### Antigravity
+
 <img src="/img/antigravity.svg" alt="Antigravity" width="64" height="64" />
 
 **Antigravity** is our powerful agentic AI coding assistant, helping us maintain and evolve the Lattice ecosystem with speed and precision.
