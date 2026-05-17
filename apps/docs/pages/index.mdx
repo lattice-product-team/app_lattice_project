@@ -5,12 +5,10 @@
   **The definitive ecosystem for urban discovery and festival management in Barcelona.**
   
   *Built with a high-performance Modular Monolith architecture within a Turborepo.*
+</div>
 
-  <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '16px 0', justifyContent: 'center' }}>
-    <img src="/assets/mockups/map-2.png" alt="Dynamic Map Interface" style={{ height: '380px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.1)' }} />
-    <img src="/assets/mockups/explore-1.png" alt="Fuzzy Search & Explore View" style={{ height: '380px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.1)' }} />
-    <img src="/assets/mockups/details-pois-1.png" alt="POI Details Overview" style={{ height: '380px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.1)' }} />
-  </div>
+<div align="center">
+  <img src="/assets/mockups/main-3.png" alt="Lattice Mobile Platform Showcase" style={{ width: '100%', maxWidth: '780px', borderRadius: '14px', boxShadow: '0 12px 40px rgba(0,0,0,0.15)', margin: '20px 0', border: '1px solid rgba(255,255,255,0.08)' }} />
 </div>
 
 ## Documentation Portal
@@ -34,8 +32,8 @@ Explore our comprehensive, domain-driven documentation. Each section is designed
 **IMPORTANT**: Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm (v8+)** installed.
 
 1.  **Dependencies**: `pnpm install`
-2.  **Infrastructure**: `docker-compose up -d`
-3.  **Database**: `pnpm --filter @app/db db:migrate && pnpm --filter @app/db db:seed`
+2.  **Infrastructure**: `docker compose up -d`
+3.  **Database**: `pnpm db:migrate && pnpm db:seed`
 4.  **Launch**: `pnpm dev` (Starts API, Admin Web, and Mobile)
 
 ---

@@ -17,7 +17,7 @@ Lattice is built with a modern, type-safe, and high-performance technology stack
 | <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" width="18" height="18" align="middle" /> **TailwindCSS** | Styling | Rapid utility-first UI development | Sleek administrative dashboard, curated dark mode |
 | <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="18" height="18" align="middle" /> **Turborepo** | DevOps | Monorepo pipeline & task orchestration | Global remote compilation cache, parallelized tests |
 | <img src="https://cdn.simpleicons.org/docker/2496ED" width="18" height="18" align="middle" /> **Docker** | Infrastructure | Containerized local environment | Consistent Postgres/Redis/Valhalla image orchestration|
-| <img src="https://cdn.simpleicons.org/git/F05032" width="18" height="18" align="middle" /> **Git** | VCS | Structured version control | Safe peer code reviews, continuous integration |n |
+| <img src="https://cdn.simpleicons.org/git/F05032" width="18" height="18" align="middle" /> **Git** | VCS | Structured version control | Safe peer code reviews, continuous integration |
  
 ---
 
@@ -105,3 +105,14 @@ We use **Docker** to containerize our services, ensuring consistent development 
 <img src="/img/antigravity.svg" alt="Antigravity" width="64" height="64" />
 
 **Antigravity** is our powerful agentic AI coding assistant, helping us maintain and evolve the Lattice ecosystem with speed and precision.
+
+---
+
+## Architectural Choices & Rationale
+
+We selected this specific combination of technologies to address the extreme performance requirements of high-density pedestrian navigation and ticketing operations:
+
+*   **Geospatial Processing Engine ([PostgreSQL](https://www.postgresql.org/) & [PostGIS](https://postgis.net/))**: Unlike generic Document or Key-Value databases, PostGIS provides native standard-conformant R-tree index operations. This lets us run real-time polygonal containment checks and spatial proximity queries directly on the database engine. This prevents overhead by ensuring that only coordinate nodes relevant to active festival boundaries are pulled into the routing engine.
+*   **Zero-Overhead Data Layer ([Drizzle ORM](https://orm.drizzle.team/))**: Traditional heavy ORMs introduce query construction overhead and poor support for customized PostGIS SQL syntax. Drizzle ORM acts as a zero-overhead compilation layer. It gives us strict end-to-end type safety, generates optimized SQL, and easily maps PostGIS geometry columns, allowing us to keep route processing sub-millisecond.
+*   **Persistent Real-Time Streaming ([Socket.IO](https://socket.io/))**: Monitoring crowd density across thousands of mobile GPS telemetry coordinates requires a low-latency persistent connection layer. By choosing Socket.IO, we gain instant connection restoration, automatic buffering, and standard client-room isolation, allowing the platform to broadcast density updates instantly.
+*   **Hardware-Native Performance ([React Native](https://reactnative.dev/) & [Expo](https://expo.dev/))**: Maintaining separate Swift and Kotlin teams for maps and navigation leads to high coordination costs and slower feature releases. Building with Expo provides native-level hardware integration (GPS, compass, camera) and maps 60fps tracking using MapLibre GL's GPU hardware bindings, while maintaining a single unified codebase.
