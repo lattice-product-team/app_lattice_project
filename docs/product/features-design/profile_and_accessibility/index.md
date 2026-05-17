@@ -2,9 +2,12 @@
 
 The **Profile & Accessibility** page serves as the configuration control room for the client's spatial routing. It allows users to personalize their personal profile and declare mobility restrictions, which are dynamically evaluated by the backend pathfinder.
 
-## Screen Mockup
+## Screen Mockups
 
-![Profile & Accessibility Screen](./screen.png)
+````carousel
+![Profile Registration & Onboarding](../../assets/mockups/welcome-3.png)
+````
+
 
 ## Interactive Design Details
 

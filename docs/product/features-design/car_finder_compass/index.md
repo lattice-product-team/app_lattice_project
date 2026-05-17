@@ -2,9 +2,12 @@
 
 The **Car Finder Compass** is a dedicated high-utility tool designed to relieve the stress of losing a parked vehicle in massive parking lots (e.g., race tracks or festival grounds). It offers an ultra-focused, high-contrast directional guide that relies heavily on device magnetometer telemetry.
 
-## Screen Mockup
+## Screen Mockups
 
-![Car Finder Compass Screen](./screen.png)
+````carousel
+![Radar Compass Navigation](../../assets/mockups/navigation-2.png)
+````
+
 
 ## Interactive Design Details
 

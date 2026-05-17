@@ -90,4 +90,11 @@ During an active route navigation session, the layout alters dynamically to supp
 
 This section showcases the interactive mockups representing the visual transition levels (Level 1, 2, 3) for both top-down and bottom-up drawers, along with their active transparency transitions (ST vs. NT).
 
-![Sliding Sheets Transition Phases Mockup](/app_lattice_project/assets/lattice_sliding_sheets_phases.png)
+````carousel
+![Top Search Drawer Expansion Phases](../../assets/mockups/explore-1.png)
+<!-- slide -->
+![Bottom Detail Drawer Overview (Level 1)](../../assets/mockups/details-pois-1.png)
+<!-- slide -->
+![Bottom Detail Drawer Fully Expanded (Level 2)](../../assets/mockups/details-pois-2.png)
+````
+
