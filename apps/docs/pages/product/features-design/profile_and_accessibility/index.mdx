@@ -7,7 +7,7 @@ The **Profile & Accessibility** page serves as the configuration control room fo
 ## Screen Mockups
 
 <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
-  <img src="../../../assets/mockups/welcome-3.png" alt="Profile Registration & Onboarding" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/welcome-3.png" alt="Profile Registration & Onboarding" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
 </div>
 
 

@@ -7,7 +7,7 @@ The **Car Finder Compass** is a dedicated high-utility tool designed to relieve 
 ## Screen Mockups
 
 <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
-  <img src="../../../assets/mockups/navigation-2.png" alt="Radar Compass Navigation" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/navigation-2.png" alt="Radar Compass Navigation" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
 </div>
 
 
