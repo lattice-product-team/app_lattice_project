@@ -83,6 +83,10 @@ const resolveValhallaUrl = () => {
 const API_URL = resolveApiUrl();
 const VALHALLA_URL = resolveValhallaUrl();
 
+const androidScheme = env.GOOGLE_ANDROID_CLIENT_ID
+  ? `com.googleusercontent.apps.${env.GOOGLE_ANDROID_CLIENT_ID.split('.apps.googleusercontent.com')[0]}`
+  : undefined;
+
 if (shouldLog) {
   console.log('------------------------------------');
   console.log(`🚀 [Config] Mode: ${process.env.NODE_ENV || 'development'}`);
@@ -141,6 +145,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.ACCESS_FINE_LOCATION',
     ],
+    intentFilters: androidScheme
+      ? [
+          {
+            action: 'VIEW',
+            category: ['BROWSABLE', 'DEFAULT'],
+            data: {
+              scheme: androidScheme,
+            },
+          },
+        ]
+      : [],
   },
   web: {
     favicon: './assets/images/favicon.png',

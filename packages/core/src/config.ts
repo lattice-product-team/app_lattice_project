@@ -33,6 +33,7 @@ const backendEnvSchema = z.object({
   // Services
   API_PORT: z.string().transform(Number).default(3000),
   API_BASE_PATH: z.string().default(''),
+  VALHALLA_URL: z.string().url().default('http://valhalla:8002'),
 
   // Security
   JWT_SECRET: z.string().default('development_secret_do_not_use_in_prod'),

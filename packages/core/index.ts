@@ -5,6 +5,7 @@
 export * from './src/config.js';
 export * from './src/redis.js';
 export * from './src/socket.js';
+export * from './src/geo.js';
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';

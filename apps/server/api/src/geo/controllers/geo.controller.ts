@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
 
 import { findRoute } from '../services/navigation.service.js';
+import { valhallaService } from '../services/valhalla.service.js';
 import { socialService } from '../services/social.service.js';
 import { discoveryService } from '../services/discovery.service.js';
 import { notifyAdmin, notifyAll, getCache, setCache, deleteCache, deleteByPrefix } from '@app/core';
@@ -447,6 +448,31 @@ export const getRoute = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error calculating route:', error);
     res.status(500).json({ error: 'Internal Server Error', details: String(error) });
+  }
+};
+
+export const getValhallaProxyRoute = async (req: Request, res: Response) => {
+  try {
+    const { origin, destination, mode, avoidStairs } = req.body;
+
+    if (!origin || !destination) {
+      return res.status(400).json({ error: 'Origin and destination are required' });
+    }
+
+    const route = await valhallaService.getRoute({
+      origin,
+      destination,
+      mode: mode || 'walking',
+      avoidStairs: !!avoidStairs,
+    });
+    
+    res.json(route);
+  } catch (error) {
+    console.error('[GeoController] Valhalla Proxy Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch external route', 
+      details: String(error) 
+    });
   }
 };
 
