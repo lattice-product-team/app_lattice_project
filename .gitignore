@@ -55,3 +55,14 @@ Thumbs.db
 .docker/valhalla/elevation_data/
 .docker/valhalla/valhalla.json
 .docker/valhalla/file_hashes.txt
+
+# Synced Nextra documentation pages (build artifacts synced from root /docs)
+/apps/docs/pages/api-spec/
+/apps/docs/pages/architecture/
+/apps/docs/pages/engineering/
+/apps/docs/pages/guides/
+/apps/docs/pages/product/
+/apps/docs/pages/_meta.ts
+/apps/docs/pages/index.mdx
+/apps/docs/public/assets/
+
