@@ -36,6 +36,7 @@
     "db:studio": "turbo run db:studio",
     "db:check": "npx tsx scripts/check-db.ts",
     "lint": "turbo lint",
+    "test": "turbo run test",
     "format": "prettier --write .",
     "onboard": "npx tsx scripts/onboard.ts",
     "clean": "rm -rf node_modules && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name '.turbo' -type d -prune -exec rm -rf '{}' + && find . -name 'build' -type d -prune -exec rm -rf '{}' + && pnpm install"

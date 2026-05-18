@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import { expand } from 'dotenv-expand';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 // Helper to get __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -53,13 +54,24 @@ export const loadConfig = (options?: { forceReload?: boolean }): BackendEnv => {
     return cachedConfig;
   }
 
-  // Find root .env by walking up from this package
-  // packages/core/src/config.ts -> packages/core/src -> packages/core -> packages -> root
-  const rootDir = path.resolve(__dirname, '../../../');
-  const envPath = path.join(rootDir, '.env');
+  // Find root .env by walking up from the current directory
+  let currentDir = __dirname;
+  let envLoaded = false;
 
-  const envOutput = dotenv.config({ path: envPath });
-  expand(envOutput);
+  while (currentDir !== path.parse(currentDir).root) {
+    const envPath = path.join(currentDir, '.env');
+    if (fs.existsSync(envPath)) {
+      const envOutput = dotenv.config({ path: envPath });
+      expand(envOutput);
+      envLoaded = true;
+      break;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  if (!envLoaded) {
+    console.warn('⚠️ Could not locate .env file in any parent directory');
+  }
 
   const parsed = backendEnvSchema.safeParse(process.env);
 
