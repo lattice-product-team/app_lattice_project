@@ -204,7 +204,7 @@ export const MapLayers = React.memo(
           onPress={handleShapePress}
           cluster={false}
         >
-          {/*SHADOW: Sincronizada con el círculo*/}
+          {/*SHADOW: Synchronized with the circle*/}
           <MapLibreGL.CircleLayer
             id="poiShadows"
             filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
@@ -218,7 +218,7 @@ export const MapLayers = React.memo(
             }}
           />
 
-          {/*PLATE: Círculo base coloreado*/}
+          {/*PLATE: Colored base circle*/}
           <MapLibreGL.CircleLayer
             id="backgroundPoiDots"
             aboveLayerID="poiShadows"
@@ -248,7 +248,7 @@ export const MapLayers = React.memo(
             }}
           />
 
-          {/*GLYPH: Icono blanco - Sincronizado milimétricamente con el círculo*/}
+          {/*GLYPH: White icon - Millimetrically synchronized with the circle*/}
           <MapLibreGL.SymbolLayer
             id="poiIconsLayer"
             filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}

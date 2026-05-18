@@ -68,7 +68,7 @@ export const register = async (req, res) => {
         error: {
           code: 'USER_EXISTS',
           message: 'User already exists',
-          user_friendly_message: 'Aquest correu ja està registrat.',
+          user_friendly_message: 'This email is already registered.',
           status: 400,
         },
       });
@@ -136,7 +136,7 @@ export const login = async (req, res) => {
         error: {
           code: 'INVALID_CREDENTIALS',
           message: 'Invalid email or password',
-          user_friendly_message: 'Correu o contrasenya incorrectes.',
+          user_friendly_message: 'Incorrect email or password.',
           status: 401,
         },
       });
@@ -171,7 +171,7 @@ export const claimTicket = async (req, res) => {
       error: {
         code: 'MISSING_QR',
         message: 'Ticket code is required',
-        user_friendly_message: 'Falta el codi QR del ticket.',
+        user_friendly_message: 'Missing ticket QR code.',
         status: 400,
       },
     });
@@ -195,7 +195,7 @@ export const claimTicket = async (req, res) => {
         error: {
           code: 'TICKET_NOT_FOUND',
           message: 'Ticket not found',
-          user_friendly_message: 'Aquesta entrada no existeix.',
+          user_friendly_message: 'This ticket does not exist.',
           status: 404,
         },
       });
@@ -220,7 +220,7 @@ export const claimTicket = async (req, res) => {
         error: {
           code: 'TICKET_ALREADY_CLAIMED',
           message: 'Ticket is already claimed by another user',
-          user_friendly_message: 'Aquesta entrada ja està associada a un altre usuari.',
+          user_friendly_message: 'This ticket is already associated with another user.',
           status: 400,
         },
       });
@@ -230,7 +230,7 @@ export const claimTicket = async (req, res) => {
         error: {
           code: 'TICKET_INACTIVE',
           message: 'Ticket is inactive',
-          user_friendly_message: 'Aquesta entrada no està activa.',
+          user_friendly_message: 'This ticket is not active.',
           status: 400,
         },
       });
@@ -246,7 +246,7 @@ export const claimTicket = async (req, res) => {
             error: {
               code: 'EMAIL_MISMATCH',
               message: 'This ticket belongs to another email address',
-              user_friendly_message: 'Aquesta entrada pertany a un altre correu electrònic.',
+              user_friendly_message: 'This ticket belongs to another email address.',
               status: 403,
             },
           });
@@ -266,7 +266,7 @@ export const claimTicket = async (req, res) => {
         error: {
           code: 'REQUIRES_ACCOUNT',
           message: 'You must be logged in to claim this ticket',
-          user_friendly_message: "Si us plau, inicia sessió o registra't per associar l'entrada.",
+          user_friendly_message: "Please log in or register to associate the ticket.",
           status: 400,
         },
       });
@@ -283,7 +283,7 @@ export const ticketSync = async (req, res) => {
       error: {
         code: 'MISSING_QR',
         message: 'QR code data is required',
-        user_friendly_message: 'Falta el codi QR.',
+        user_friendly_message: 'Missing QR code.',
         status: 400,
       },
     });
@@ -337,8 +337,8 @@ export const ticketSync = async (req, res) => {
       ticketInfo = existingTicket[0];
     } else {
       ticketInfo = {
-        gate: 'Porta 3',
-        zoneName: 'Tribuna G',
+        gate: 'Gate 3',
+        zoneName: 'Grandstand G',
         seatRow: '12',
         seatNumber: '4',
         seatLocation: [2.2645, 41.5701],
