@@ -1,29 +1,60 @@
+import { Callout } from 'nextra/components'
+
 # Developer Onboarding
 
-Welcome to the **Lattice** engineering team! We're excited to have you helping us build the best event discovery platform for Barcelona.
+Welcome to the **Lattice Engineering Team**! We are excited to have you join us in building the most advanced location-aware event discovery and navigation ecosystem. 
 
-## Getting Started
+This guide outlines your onboarding path, detailing your setup requirements, operational resources, and your first-week checklist.
 
-To get the Lattice ecosystem up and running on your local machine for the first time:
+---
 
-1. Refer to our [Getting Started Guide](./getting-started.md) to launch all services and application engines in under 5 minutes.
-2. For advanced native setups (such as configuring local host PostGIS instances or customized environment scopes), consult the [Installation Manual](./installation.md).
-3. Review our active developer playbooks and workspace command workflows in the [Monorepo Workflow](../engineering/monorepo-workflow.md).
-4. If you encounter any port collisions or cache-invalidation issues, consult the [Troubleshooting Guide](./troubleshooting.md).
+## 1. Initial Setup Checklist
 
-## Your First Week
+To get your local development workspace fully configured:
 
-- **Day 1**: Environment setup, local project verification, and repository exploration.
-- **Day 2**: Read the [System Overview](../architecture/system-overview.md) and [Product Vision](../product/vision.md) to understand our architectural layers.
-- **Day 3**: Configure your local IDE environment with ESLint and Prettier.
-- **Day 4**: Pick a lightweight "Good First Issue" from our development backlog.
-- **Day 5**: Open your very first Pull Request!
+1.  **Follow the Getting Started Guide**: Complete the environment and database setup outlined in the **[Getting Started & Installation Guide](./getting-started.md)** to launch all core services in under 5 minutes.
+2.  **IDE Standardization**: Configure your local editor (such as VS Code) with the project's **ESLint** and **Prettier** rules to maintain formatting consistency.
+3.  **Review the Engineering Standards**: Carefully review our **[Coding Standards](../engineering/coding-standards.md)** and **[Git & Collaboration Guidelines](../engineering/git-standards.md)**.
+4.  **Understand the Architecture**: Read the **[System Overview](../architecture/index.md)** and **[Monorepo Structure Architecture Guide](../architecture/monorepo-structure.md)** to learn how shared packages communicate with server and client applications.
 
-## Key Resources
+---
 
-- **Communication**: [marticastanorodriguez@gmail.com](mailto:marticastanorodriguez@gmail.com), [nildiazbel@inspedralbes.cat](mailto:nildiazbel@inspedralbes.cat)
-- **Task Management**: [Taiga Workspace](https://tree.taiga.io/login?unauthorized=true&next=%2Fproject%2Fkore29-dam_25_26_tr3g3_cdc%2Ftimeline)
+## 2. Your First Week Schedule
 
-## Need Help?
+Our onboarding process is structured to help you make your first production contribution by the end of your first week:
 
-Don't hesitate to ask questions in the `#engineering` Slack channel. We're here to help you succeed!
+### Day 1: Workspace and Initialization
+*   Clone the repository, configure your `.env` parameters, and launch the local stack using `pnpm onboard`.
+*   Verify API, Web Dashboard, and Mobile metro bundlers are fully operational.
+
+### Day 2: Architecture & Domain Review
+*   Read the **[System Architecture](../architecture/index.md)** and the **[API Reference Specifications](../api-spec/index.md)**.
+*   Explore the database schema layouts and PostGIS spatial queries.
+
+### Day 3: Codebase Walkthrough
+*   Inspect the Express server route configurations inside `apps/server/api/src`.
+*   Explore the custom React Native map wrappers and geolocation stores in `apps/mobile/src`.
+
+### Day 4: Select a Backlog Task
+*   Log into our task board and select a lightweight backlog issue or a documented feature hotfix.
+*   Discuss your proposed implementation approach in our collaboration channels.
+
+### Day 5: Open Your First Pull Request
+*   Open your development branch following conventional commit rules.
+*   Ensure all linting, formatting, and unit testing scripts pass locally.
+*   Open a Pull Request and request peer reviews from the core team.
+
+---
+
+## 3. Communication & Operational Channels
+
+Stay connected with our coordinators and track developmental tasks:
+
+*   **Engineering Lead Contacts**:
+    *   Martí Castano: `marticastanorodriguez@gmail.com`
+    *   Nil Díaz: `nildiazbel@inspedralbes.cat`
+*   **Active Backlog Management**: [Taiga Project Timeline Workspace](https://tree.taiga.io/login?unauthorized=true&next=%2Fproject%2Fkore29-dam_25_26_tr3g3_cdc%2Ftimeline)
+
+<Callout type="info">
+  **Engineering Support**: If you encounter environment setup issues, feel free to reach out directly to the coordinators or ask a question in the development channels. We are here to support your engineering journey!
+</Callout>

@@ -1,6 +1,6 @@
 import { Callout } from 'nextra/components'
 
-# Lattice Mobile Companion: Mobile User Guide
+# Companion App: Mobile User Guide
 
 Welcome to the **Lattice Mobile Companion User Guide**. The Lattice mobile application is designed to be your ultimate companion when attending major events, festivals, or navigating crowded urban spaces. 
 
@@ -21,8 +21,8 @@ Upon launching the application, you are greeted with the **Welcome Gateway** (Fi
 ### 1.2 Authentication Methods
 Lattice supports multiple secure authentication methods to fit your lifestyle:
 
-* **Email Login**: Register or sign in using a standard email and passcode.
-* **Google SSO**: Instant authentication linking your verified Google Account.
+*   **Email Login**: Register or sign in using a standard email and passcode.
+*   **Google SSO**: Instant authentication linking your verified Google Account.
 
 <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', margin: '1.5rem 0' }}>
   <div style={{ textAlign: 'center' }}>
@@ -54,9 +54,9 @@ After authentication, the central dashboard of the Lattice experience is the **I
 
 ### 2.1 Interactive Map Features
 The Map Explorer (Figure 2.1) provides a responsive geospatial overlay of active events and venue topologies:
-* **Active Fences**: See geofenced active event boundaries marked with clean colored polygons.
-* **Dynamic POIs**: View local Points of Interest (POIs) such as first aid stations, restrooms, transit hubs, and stages.
-* **My Location**: Real-time GPS pinning with dynamic direction orientation.
+*   **Active Fences**: See geofenced active event boundaries marked with clean colored polygons.
+*   **Dynamic POIs**: View local Points of Interest (POIs) such as first aid stations, restrooms, transit hubs, and stages.
+*   **My Location**: Real-time GPS pinning with dynamic direction orientation.
 
 ### 2.2 The Exploration Hub
 Swipe up or tap the explore handle to open the **Exploration Hub** (Figure 2.2). This menu indexes active surrounding events sorted by distance or crowd levels.
@@ -80,15 +80,15 @@ Selecting any active event card or map boundary opens the multi-layered **Event 
 
 ### 3.1 Level 1: Quick Inspect
 The first level card (Figure 3.1) slides from the bottom to provide immediate operational information:
-* Event title, dates, and hours of operation.
-* Estimated distance from your current position.
-* Immediate shortcut buttons to **Get Directions** or buy/view tickets.
+*   Event title, dates, and hours of operation.
+*   Estimated distance from your current position.
+*   Immediate shortcut buttons to **Get Directions** or buy/view tickets.
 
 ### 3.2 Level 2: Comprehensive Details
 Tapping on the card expands it into a fullscreen dashboard (Figure 3.2), showing:
-* **Live Density Indicator**: Shows crowd occupancy status (*Low*, *Moderate*, *High*).
-* **Schedule & Stages**: Complete timeline of active presentations or sub-events.
-* **Accessibility Summary**: Rapid indicators verifying route compliance for disabled attendees.
+*   **Live Density Indicator**: Shows crowd occupancy status (*Low*, *Moderate*, *High*).
+*   **Schedule & Stages**: Complete timeline of active presentations or sub-events.
+*   **Accessibility Summary**: Rapid indicators verifying route compliance for disabled attendees.
 
 ---
 
@@ -166,9 +166,9 @@ Lattice includes a specialized routing engine designed for pedestrian and event 
 ### 6.1 Route Planning
 When you select a destination POI, the routing engine outlines the optimal path on the map (Figure 6.1).
 
-* **Turn-by-Turn Instruction Card** (Figure 6.2): Displays clear headings (e.g., *"Turn left towards Main Stage in 50 meters"*).
-* **Smart Rerouting**: If an area becomes congested or blocked, the routing engine automatically updates your path.
-* **Accessibility Routing**: If you configure a mobility preference, the app routes you exclusively through paths marked with zero stairs and gentle ramps.
+*   **Turn-by-Turn Instruction Card** (Figure 6.2): Displays clear headings (e.g., *"Turn left towards Main Stage in 50 meters"*).
+*   **Smart Rerouting**: If an area becomes congested or blocked, the routing engine automatically updates your path.
+*   **Accessibility Routing**: If you configure a mobility preference, the app routes you exclusively through paths marked with zero stairs and gentle ramps.
 
 ### 6.2 Visual AR Navigation Mode
 When navigating dense venues where traditional GPS coordinates fluctuate, activate **AR Mode** (Figure 6.3). 
@@ -184,10 +184,10 @@ Customize your settings, safety parameters, and profile details under the **Prof
 <img src="/assets/screenshots/user-profile.jpeg" alt="User Profile Settings Card" width="260" style={{ display: 'block', margin: '1.5rem auto', borderRadius: '12px' }} />
 <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#666', marginTop: '-0.5rem', marginBottom: '2rem' }}>*Figure 7.1: User Profile Settings Card*</p>
 
-* **Personal Details**: Update your name, avatar, and contact options.
-* **Mobility Profiles**: Toggle specialized routing constraints, such as **Wheelchair Access Only**. This directs the navigation system to prioritize paved pathways, elevators, and ramps while avoiding dirt roads, steps, or steep inclines.
-* **Account Controls**: Manage active sessions, secure passcodes, or safely log out.
+*   **Personal Details**: Update your name, avatar, and contact options.
+*   **Mobility Profiles**: Toggle specialized routing constraints, such as **Wheelchair Access Only**. This directs the navigation system to prioritize paved pathways, elevators, and ramps while avoiding dirt roads, steps, or steep inclines.
+*   **Account Controls**: Manage active sessions, secure passcodes, or safely log out.
 
-<Callout type="info" emoji="♿">
+<Callout type="info">
   **Customize Your Path**: Enabling *Wheelchair Routing* in your profile settings configures the map interface to avoid stairs, steep gravel paths, or tight corridors.
 </Callout>

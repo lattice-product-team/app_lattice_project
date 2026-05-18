@@ -1,84 +1,154 @@
 import { Callout } from 'nextra/components'
 
-# Getting Started
+# Getting Started & Installation
 
-This guide provides the essential steps to get the Lattice ecosystem running on your local machine for development.
+This comprehensive handbook provides complete, step-by-step instructions to get the entire **Lattice** ecosystem up and running on your local development machine. 
 
-## 1. Prerequisites
+Whether you are utilizing our automated onboarding scripts or configuring custom native services (such as host PostGIS instances and custom Valhalla engines), this guide covers all required processes.
 
-Ensure you have the following installed:
+---
 
-- **Node.js**: v18.x or higher.
-- **pnpm**: v8.x or higher (`npm install -g pnpm`).
-- **Docker**: For running PostgreSQL and the API.
-- **iOS Simulator / Android Emulator**: For the mobile app.
+## 1. Local Prerequisites
 
-## 2. Environment Setup
+Before compiling the applications, ensure your workstation has the following tools installed:
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/lattice-product-team/app_lattice_project.git
-   cd app_lattice_project
-   ```
-2. **Copy Configuration**: Copy the template to create your root `.env` file:
-   ```bash
-   cp .env.example .env
-   ```
-3. **Configure Parameters**: Ensure `DATABASE_URL` (default: `postgres://postgres:password@localhost:5433/lattice_db`), `JWT_SECRET`, and `LAN_IP` are correctly configured (detailed in the [Installation Manual](./installation.md)).
+*   **Node.js**: Long-Term Support (LTS) release v18.x or higher.
+*   **pnpm**: Package Manager v8.x or higher (Install globally via `npm install -g pnpm`).
+*   **Docker**: Docker Desktop (or Compose CLI) to manage containerized databases, routing servers, and caching layers.
+*   **Mobile Simulators**: Android Studio (for Android Emulator) and/or Xcode (for iOS Simulator, macOS only) to test client applications.
+
+---
+
+## 2. Environment Variables Configuration
+
+Lattice utilizes shared workspace environment parameters declared in a root `.env` file. 
+
+### Step 1: Copy Configuration Template
+Run the following command at the root of your workspace:
+```bash
+cp .env.example .env
+```
+
+### Step 2: Core Parameter Glossary
+Open `.env` in your IDE and configure the following parameters:
+
+*   `NODE_ENV`: Set to `development` for local work.
+*   `JWT_SECRET`: A secure cryptographically random key used to sign session JSON Web Tokens.
+*   `LAN_IP`: The local IP address of your workstation (e.g., `192.168.1.45`). **Do not use `localhost` or `127.0.0.1` if you are testing on physical mobile devices over Wi-Fi.** The Expo client requires a valid LAN IP to establish socket connections to your local API monolith server.
+*   `DATABASE_URL`: Connection string for PostgreSQL + PostGIS.
+    *   *Docker Default*: `postgres://postgres:password@localhost:5433/lattice_db` (using port `5433` to prevent port collisions with any pre-existing PostgreSQL instance on your host system).
+*   `MAPTILER_KEY`: Your personal key obtained from [MapTiler](https://www.maptiler.com/) to render topographic and vector maps on the Admin dashboard and mobile client.
+*   `ADMIN_EMAIL` / `ADMIN_PASSWORD`: Default credentials assigned to the initial administrator account generated during database seeding.
+
+---
 
 ## 3. Launch Sequence
 
-We provide an automated script to handle the heavy lifting of environment setup.
+We provide two pathways to initialize the system: an automated script that handles the setup, or a step-by-step manual setup.
 
-### The Fast Track (Recommended)
+### Option A: The Fast Track (Recommended)
 
+Our automated script checks your system configurations, verifies Docker status, generates environment files, provisions container images, executes database migrations, and seeds the default dataset.
+
+To launch the onboarding wizard, run:
 ```bash
 pnpm install
 pnpm onboard
 ```
 
-The `onboard` script will automatically:
-
-- Check for required tools (Docker, pnpm).
-- Create your `.env` from the example template.
-- Start the Docker infrastructure (Postgres, Redis, Valhalla).
-- Wait for the database to be healthy.
-- Run migrations and seed the initial development data.
-
-### Manual Setup (Alternative)
-
-If you prefer to run steps individually:
-
-1. **Infrastructure**: `docker compose up -d`
-2. **Database Initialization**: `pnpm db:migrate && pnpm db:seed`
-
-### Step 4: Start Applications
-
-Open separate terminals to start the core services:
-
-- **Server (API)**:
-  ```bash
-  pnpm dev:api
-  ```
-- **Admin Web Dashboard**:
-  ```bash
-  pnpm dev:web
-  ```
-- **Mobile (Expo Dev Client)**:
-  For local development with physical devices on the same Wi-Fi network (highly recommended):
-  ```bash
-  pnpm dev:mobile:lan
-  ```
-  _Alternatively, use `pnpm dev:mobile` for simulators, `pnpm dev:mobile:lan:prod` for production env testing, or `pnpm dev:mobile:tunnel` if on separate networks._
-
-## 4. Verification
-
-- **API Health**: Visit `http://localhost:3000/status` (should return `{"status": "api_ok", ...}`).
-- **Admin Dashboard**: Visit `http://localhost:3004` (when running via Docker Compose) or `http://localhost:3001` (if running locally outside Docker where port 3000 is occupied by the API).
-- **Mobile Expo Console**: Scan the QR code displayed in the terminal with the Expo Go app (or Expo dev client) or press `i` (iOS simulator) or `a` (Android emulator).
+The script will automatically perform:
+1. Tool verification checks (Docker, pnpm).
+2. Root `.env` verification.
+3. Docker Compose orchestration (starts PostGIS, Redis, and Valhalla).
+4. Relational database migrations and default data seeding.
 
 ---
 
+### Option B: Manual Advanced Setup
+
+If you prefer to configure each infrastructure layer individually or are integrating native host databases:
+
+#### 1. Launching Containerized Services
+To spin up the supporting containers (PostgreSQL, Redis, Valhalla) in detached mode, run:
+```bash
+docker compose up -d
+```
+
+#### 2. Advanced: Configuring a Host PostgreSQL Database
+If you choose to bypass Docker and run a native PostgreSQL service installed directly on your machine:
+*   Ensure PostgreSQL is active.
+*   Log into your Postgres terminal and run:
+    ```sql
+    CREATE DATABASE lattice_db;
+    \c lattice_db;
+    CREATE EXTENSION postgis;
+    ```
+*   Update the `DATABASE_URL` in your `.env` to point to port `5432` (or your custom host port).
+
+#### 3. Database Migrations and Seeding
+With your database instance (Docker or Host) running, run the following commands to provision the database schema and seed default events, POIs, routing networks, and administrative accounts:
+```bash
+pnpm db:migrate
+pnpm db:seed
+```
+
+#### 4. Advanced: Configuring the Valhalla Routing Engine
+Lattice relies on Valhalla to perform accessible pedestrian routing.
+*   Ensure that the `.docker/valhalla` directory exists in the workspace.
+*   Valhalla requires a Spanish/Catalonia OSM (OpenStreetMap) regional extract to build routing graphs, which is located in `.docker/valhalla/cataluna-latest.osm.pbf`.
+*   Start the Valhalla container:
+    ```bash
+    docker compose up valhalla -d
+    ```
+*   On its initial launch, Valhalla will download tile data and compile the routing graph. This can take a few minutes. Once compiled, it will listen on `http://localhost:8002`.
+
+---
+
+## 4. Running the Applications
+
+With the database, routing, and caching containers active, open separate terminals to start the development servers:
+
+### 1. Express API Monolith Server
+```bash
+pnpm dev:api
+```
+*Launches the backend server at `http://localhost:3000` with hot-reloading enabled.*
+
+### 2. Admin Web Dashboard
+```bash
+pnpm dev:web
+```
+*Starts the Next.js Command Center. Accessible at `http://localhost:3001` or `http://localhost:3004` depending on active port allocations.*
+
+### 3. Mobile Client (React Native & Expo Metro)
+Depending on your testing environment, run one of the following commands:
+*   **Physical Device on Wi-Fi (Highly Recommended)**:
+    ```bash
+    pnpm dev:mobile:lan
+    ```
+    *Scan the generated QR code in your terminal using the Expo Go app or Expo developer client.*
+*   **Local Emulator/Simulator**:
+    ```bash
+    pnpm dev:mobile
+    ```
+    *Press `i` to launch on the iOS Simulator or `a` to launch on the Android Emulator.*
+*   **Separate Networks**:
+    ```bash
+    pnpm dev:mobile:tunnel
+    ```
+    *Establishes a secure tunneling connection if your workstation and mobile phone are on separate network zones.*
+
+---
+
+## 5. Verification Checklist
+
+To guarantee the entire Lattice ecosystem is fully operational:
+
+1.  **API Health Check**: Visit `http://localhost:3000/status` in your browser. It should return `{"status": "api_ok", ...}`.
+2.  **Admin Login**: Navigate to `http://localhost:3004` (or your active web port). Log in using the `ADMIN_EMAIL` and `ADMIN_PASSWORD` declared in `.env`.
+3.  **Map Styles Check**: Verify the map canvas on the Admin Dashboard loads vector overlays correctly (confirms the validity of `MAPTILER_KEY`).
+4.  **Route Calculations**: Open the mobile app, select an active event, and planning a route. If routes compile successfully with correct distance metrics, the Valhalla container is communicating correctly with the API.
+
 <Callout type="info">
-  If you encounter database connection issues or need details on configuring specific ports, check the [Troubleshooting](./troubleshooting.md) guide.
+  **Getting Help**: If you encounter connection timeouts or compile warnings, refer to the **[Troubleshooting Guide](./troubleshooting.md)**.
 </Callout>

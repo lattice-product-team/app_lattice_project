@@ -8,18 +8,28 @@ mkdir -p "$PAGES_DIR"
 find "$PAGES_DIR" -mindepth 1 -maxdepth 1 -not -name "_app.tsx" -not -name "_document.tsx" -not -name "globals.css" -exec rm -rf {} +
 
 # Since the root /docs already follows the professional structure:
-cp -r ../../docs/* "$PAGES_DIR/"
+# Copy documentation subdirectories (excluding assets) to pages
+for dir in ../../docs/*; do
+  if [ -d "$dir" ]; then
+    dir_name=$(basename "$dir")
+    if [ "$dir_name" != "assets" ]; then
+      cp -r "$dir" "$PAGES_DIR/"
+    fi
+  fi
+done
+cp ../../docs/_meta.ts "$PAGES_DIR/" 2>/dev/null
+
 
 # Clean up any editor temporary/swap/hidden files to avoid Next.js watcher crashes
 find "$PAGES_DIR" -type f \( -name ".*" -o -name "*~" -o -name "*.swp" -o -name "*_swp" \) -delete 2>/dev/null
 
 # Copy assets to public directory for Next.js static serving
 mkdir -p public/assets
-cp -r ../../docs/assets/* public/assets/
-rm -rf "$PAGES_DIR/assets"
+cp -r ../../docs/assets/* public/assets/ 2>/dev/null
 
 # Use the root README.md as the main landing page
 cp ../../README.md "$PAGES_DIR/index.md"
+
 
 # --- Normalization ---
 
