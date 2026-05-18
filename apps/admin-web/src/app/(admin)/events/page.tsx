@@ -201,7 +201,7 @@ export default function EventsPage() {
   };
 
   const handleCreateEvent = async () => {
-    if (!name || !startDate || !endDate || !locationName || !address) {
+    if (!name || !startDate || !endDate || !address) {
       setFormError('All operational fields are required.');
       return;
     }
@@ -227,7 +227,7 @@ export default function EventsPage() {
       const eventData = {
         name,
         description,
-        locationName,
+        locationName: address,
         address,
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
@@ -388,17 +388,7 @@ export default function EventsPage() {
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
-                    Venue Name
-                  </label>
-                  <input
-                    placeholder="e.g. Parc del Fòrum"
-                    value={locationName}
-                    onChange={(e) => setLocationName(e.target.value)}
-                    className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
-                  />
-                </div>
+                {/* Venue Name input removed as requested */}
 
                 <div className="space-y-3">
                   <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
@@ -903,7 +893,7 @@ export default function EventsPage() {
                         </div>
                       </td>
                       <td className="py-6 px-6 text-admin-xs text-gravel font-medium uppercase tracking-tight truncate max-w-[150px]">
-                        {event.locationName}
+                        {event.address || event.locationName}
                       </td>
                       <td className="py-6 px-6 font-mono text-admin-sm text-foreground font-bold">
                         {metadata?.capacity?.toLocaleString() || '—'}

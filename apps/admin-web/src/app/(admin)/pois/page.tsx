@@ -41,8 +41,8 @@ const POI_TYPES = [
   { value: 'stage', label: 'Stage/Theater', icon: Icons.Theater },
   { value: 'vip', label: 'VIP Zone', icon: Icons.Crown },
   { value: 'parking', label: 'Parking', icon: Icons.MapPin },
-  { value: 'toilet', label: 'Restrooms', icon: Icons.User },
-  { value: 'hospital', label: 'Medical/Health', icon: Icons.Hospital },
+  { value: 'wc', label: 'Restrooms', icon: Icons.User },
+  { value: 'medical', label: 'Medical/Health', icon: Icons.Hospital },
   { value: 'security', label: 'Security/Shield', icon: Icons.Shield },
   { value: 'information', label: 'Info/Library', icon: Icons.LibraryBig },
   { value: 'gate', label: 'Entrance/Exit', icon: Icons.LogOut },
@@ -140,7 +140,7 @@ export default function POIsPage() {
       const matchesSearch =
         poi.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         poi.locationName?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = !typeValue || typeValue === 'all' || poi.type === typeValue;
+      const matchesType = !typeValue || typeValue === 'all' || (poi.category || poi.type) === typeValue;
       const matchesEvent =
         !eventValue || eventValue === 'all' || poi.eventId?.toString() === eventValue;
       return matchesSearch && matchesType && matchesEvent;
@@ -172,7 +172,7 @@ export default function POIsPage() {
     setEditingPoiId(poi.id);
     setName(poi.name);
     setDescription(poi.description || '');
-    setType(poi.type);
+    setType(poi.category || poi.type);
     setCapacity(poi.capacity?.toString() || '');
     setIsWheelchairAccessible(poi.isWheelchairAccessible);
     setSelectedEventId(poi.eventId?.toString() || '');
@@ -189,7 +189,7 @@ export default function POIsPage() {
         name: poi.name,
         lng: coords[0],
         lat: coords[1],
-        category: poi.type,
+        category: poi.category || poi.type,
       });
     }
     setIsInterfaceOpen(true);
