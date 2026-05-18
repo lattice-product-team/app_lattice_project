@@ -13,10 +13,10 @@ export enum MapUIState {
 }
 
 export enum MapCameraMode {
-  FREE = 0, // UserTrackingMode.None
-  FOLLOW = 1, // UserTrackingMode.Follow
-  FOLLOW_WITH_HEADING = 2, // UserTrackingMode.FollowWithHeading
-  FOLLOW_WITH_COURSE = 3, // UserTrackingMode.FollowWithCourse
+  FREE = 0, //UserTrackingMode.None
+  FOLLOW = 1, //UserTrackingMode.Follow
+  FOLLOW_WITH_HEADING = 2, //UserTrackingMode.FollowWithHeading
+  FOLLOW_WITH_COURSE = 3, //UserTrackingMode.FollowWithCourse
 }
 
 export type MapCameraTriggerSource =
@@ -44,7 +44,7 @@ interface MapUIStore {
   lastScreenMode: number;
   visibleBounds: number[][] | null;
 
-  // Actions
+
   setUIState: (state: MapUIState) => void;
   setCameraMode: (mode: MapCameraMode) => void;
   setIsProgrammaticMove: (isMove: boolean) => void;
@@ -59,10 +59,10 @@ interface MapUIStore {
   setVisibleBounds: (bounds: number[][] | null) => void;
 }
 
-// Recursion guard for cross-store synchronization
+
 let isProcessingSetUIState = false;
 
-/**
+/***
  * Specialized store for managing the Map's HUD and sheet visibility states.
  */
 export const useMapUIStore = create<MapUIStore>()(
@@ -85,13 +85,13 @@ export const useMapUIStore = create<MapUIStore>()(
         const current = get();
         if (current.uiState === uiState) return;
 
-        // Force FREE camera when returning to exploration to stop any centering/locks
+        //Force FREE camera when returning to exploration to stop any centering/locks
         const nextCameraMode =
           uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : current.cameraMode;
 
         set({ uiState, cameraMode: nextCameraMode });
 
-        // Atomic cleanup using direct calls instead of nested logic
+        //Atomic cleanup using direct calls instead of nested logic
         try {
           const { usePOIStore } = require('../../poi/store/usePOIStore');
           const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
@@ -137,7 +137,7 @@ export const useMapUIStore = create<MapUIStore>()(
     {
       name: 'map-ui-storage',
       storage: createJSONStorage(() => mmkvStorage),
-      // Only persist relevant UI state, not volatile counts
+      //Only persist relevant UI state, not volatile counts
       partialize: (state) => ({
         lastScreenMode: state.lastScreenMode,
         lastCameraPosition: state.lastCameraPosition,

@@ -8,12 +8,12 @@ import { semanticColors } from './semanticColors';
 
 export const mapLayerStyles = {
   networkLines: {
-    lineColor: '#CBD5E1', // Soft slate for network
+    lineColor: '#CBD5E1', //Soft slate for network
     lineWidth: 2,
   } as LineLayerStyle,
 
   routeFill: {
-    lineColor: primitiveColors.brand.primary, // Solar Gold
+    lineColor: primitiveColors.brand.primary, //Solar Gold
     lineWidth: 6,
     lineJoin: 'round',
     lineCap: 'round',
@@ -28,10 +28,10 @@ export const mapLayerStyles = {
     lineOpacity: 0.3,
   } as LineLayerStyle,
 
-  // Composite Pin Layers (Selection)
+
   selectedPoiPinBody: {
     circleRadius: 18,
-    circleColor: primitiveColors.brand.primary, // Solar Gold
+    circleColor: primitiveColors.brand.primary, //Solar Gold
     circleStrokeWidth: 2,
     circleStrokeColor: 'white',
     circleTranslate: [0, -18],
@@ -49,7 +49,7 @@ export const mapLayerStyles = {
     textPitchAlignment: 'map',
   } as SymbolLayerStyle,
 
-  // Bulk POI Layers
+
   poiCircles: {
     circleRadius: 16,
     circleColor: [
@@ -93,7 +93,7 @@ export const mapLayerStyles = {
       semanticColors.categories.transport,
       'shuttle',
       semanticColors.categories.transport,
-      '#D1D1D6', // Default gray
+      '#D1D1D6', //Default gray
     ],
     circleStrokeWidth: 2,
     circleStrokeColor: 'white',
@@ -110,7 +110,7 @@ export const mapLayerStyles = {
   } as CircleLayerStyle,
 
   poiIcons: {
-    iconImage: ['get', 'icon'], // Dynamic icon from metadata
+    iconImage: ['get', 'icon'], //Dynamic icon from metadata
     iconSize: 0.6,
     iconAllowOverlap: true,
   } as SymbolLayerStyle,
@@ -118,18 +118,18 @@ export const mapLayerStyles = {
   poiLabels: {
     textField: ['get', 'name'],
     textSize: 12,
-    textColor: '#000000', // Dark text for Light Map
+    textColor: '#000000', //Dark text for Light Map
     textOffset: [0, 2.5],
-    textHaloColor: 'rgba(255, 255, 255, 0.9)', // White halo for clarity
+    textHaloColor: 'rgba(255, 255, 255, 0.9)', //White halo for clarity
     textHaloWidth: 2,
     textIgnorePlacement: false,
     textAllowOverlap: false,
     textOptional: true,
   } as SymbolLayerStyle,
 
-  // Clustering Styles
+
   clusterCircles: {
-    circleColor: primitiveColors.brand.primary, // Solar Gold for clusters
+    circleColor: primitiveColors.brand.primary, //Solar Gold for clusters
     circleRadius: ['step', ['get', 'point_count'], 20, 10, 25, 50, 30],
     circleStrokeWidth: 3,
     circleStrokeColor: 'rgba(255, 255, 255, 0.6)',
@@ -139,7 +139,7 @@ export const mapLayerStyles = {
   clusterLabels: {
     textField: ['get', 'point_count_abbreviated'],
     textSize: 12,
-    textColor: '#000000', // Dark text on light clusters
+    textColor: '#000000', //Dark text on light clusters
     textIgnorePlacement: true,
     textAllowOverlap: true,
   } as SymbolLayerStyle,

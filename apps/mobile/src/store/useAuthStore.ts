@@ -15,7 +15,7 @@ interface AuthState {
   intendedDestination: string | null;
   isAuthPromptOpen: boolean;
 
-  // Setters
+
   setAuth: (token: string, user: User, tickets?: Ticket[], isGuest?: boolean) => void;
   setGuestMode: (isGuest: boolean) => void;
   setTicket: (ticket: Ticket) => void;

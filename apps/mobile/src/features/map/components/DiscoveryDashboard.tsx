@@ -27,7 +27,7 @@ import { typography } from '../../../styles/typography';
 import { semanticColors } from '../../../styles/semanticColors';
 import { EventCarouselCard } from './EventCarouselCard';
 import { useSearchEvents } from '../hooks/useSearchEvents';
-// Stores & Hooks
+
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useMapUIStore } from '../store/useMapUIStore';
 import { LatticeEvent } from '../../../types';
@@ -83,8 +83,8 @@ export const DiscoveryDashboard = React.memo(
     }, [allEvents, activeCategoryFilters]);
 
     const rContainerStyle = useAnimatedStyle(() => {
-      // Opacidad sube de 0 a 0.5 (Nivel 1 -> 2)
-      // Opacidad baja de 0.5 a 0.6 (Nivel 2 -> 3)
+      //Opacity increases from 0 to 0.5 (Level 1 -> 2)
+      //Opacity drops from 0.5 to 0.6 (Level 2 -> 3)
       const opacity = interpolate(
         islandState.value,
         [0.05, 0.3, 0.5, 0.6],
@@ -100,7 +100,7 @@ export const DiscoveryDashboard = React.memo(
 
     return (
       <Animated.View style={[styles.container, rContainerStyle]}>
-        {/* 1. Categories Row (Carousel) */}
+        {/*1. Categories Row (Carousel)*/}
         <View style={styles.categoriesContainer}>
           <GestureDetector gesture={Gesture.Native()}>
             <ScrollView
@@ -178,7 +178,7 @@ export const DiscoveryDashboard = React.memo(
           </GestureDetector>
         </View>
 
-        {/* 2. Events Carousel */}
+        {/*2. Events Carousel*/}
         <View style={styles.carouselSection}>
           {eventsLoading ? (
             <View style={[styles.carouselScrollContainer, { justifyContent: 'center' }]}>
@@ -193,7 +193,7 @@ export const DiscoveryDashboard = React.memo(
                 showsHorizontalScrollIndicator={false}
                 style={styles.carouselScrollContainer}
                 contentContainerStyle={styles.carouselScroll}
-                snapToInterval={276} // 260 width + 16 gap
+                snapToInterval={276} //260 width + 16 gap
                 decelerationRate="fast"
                 disallowInterruption={true}
               >
@@ -271,6 +271,6 @@ const styles = StyleSheet.create({
   carouselScroll: {
     paddingHorizontal: 16,
     gap: 16,
-    paddingBottom: 25, // Ample room for shadows
+    paddingBottom: 25, //Ample room for shadows
   },
 });

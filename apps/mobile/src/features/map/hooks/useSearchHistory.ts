@@ -7,7 +7,7 @@ const MAX_HISTORY_ITEMS = 10;
 export const useSearchHistory = () => {
   const [history, setHistory] = useState<string[]>([]);
 
-  // Load history on mount
+
   useEffect(() => {
     const saved = storage.getString(SEARCH_HISTORY_KEY);
     if (saved) {
@@ -26,11 +26,11 @@ export const useSearchHistory = () => {
     const trimmed = query.trim();
 
     setHistory((prev) => {
-      // Remove if already exists to move it to the top
+      //Remove if already exists to move it to the top
       const filtered = prev.filter((item) => item.toLowerCase() !== trimmed.toLowerCase());
       const newHistory = [trimmed, ...filtered].slice(0, MAX_HISTORY_ITEMS);
 
-      // Persist
+      //Persist
       storage.set(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
       return newHistory;
     });

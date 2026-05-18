@@ -12,7 +12,7 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 
-// Hooks & State
+
 import { useNavigationStore } from '../store/useNavigationStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';
@@ -50,7 +50,7 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
 
   const internalState = useSharedValue(0);
 
-  // Sync internal animation state with external visibility and navigation status
+  //Sync internal animation state with external visibility and navigation status
   useEffect(() => {
     const shouldShow = isPlanning && !isNavigating;
     internalState.value = withSpring(shouldShow ? 1 : 0, theme.motion.physics.magnetic);
@@ -169,7 +169,7 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
             </Text>
           </View>
 
-          {/* Elevation / Slope Info for Active Modes */}
+          {/*Elevation / Slope Info for Active Modes*/}
           {(transportMode === 'walking' || transportMode === 'bicycle') && hasRoute && (
             <View
               style={[

@@ -2,10 +2,10 @@ import { jest } from '@jest/globals';
 import '@testing-library/jest-native/extend-expect';
 import { LocationCallback, LocationOptions } from 'expo-location';
 
-// General react-native mocks
-// Removed the problematic NativeAnimatedHelper mock since jest-expo handles most of this
 
-// Expo Location Mock
+//Removed the problematic NativeAnimatedHelper mock since jest-expo handles most of this
+
+
 jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn(() =>
     Promise.resolve({ status: 'granted', canAskAgain: true })
@@ -39,7 +39,7 @@ jest.mock('expo-location', () => ({
   Accuracy: { High: 4 },
 }));
 
-// Expo Haptics Mock
+
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   notificationAsync: jest.fn(),
@@ -47,7 +47,7 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
 }));
 
-// MapLibre Mock
+
 jest.mock('@maplibre/maplibre-react-native', () => ({
   MapView: ({ children }: { children: React.ReactNode }) => children,
   Camera: ({ children }: { children: React.ReactNode }) => children,
@@ -58,7 +58,7 @@ jest.mock('@maplibre/maplibre-react-native', () => ({
   UserTrackingMode: { FollowWithHeading: 'FollowWithHeading' },
 }));
 
-// Vector Icons Mock
+
 jest.mock('@expo/vector-icons', () => ({
   MaterialCommunityIcons: 'MaterialCommunityIcons',
   Feather: 'Feather',
@@ -67,5 +67,5 @@ jest.mock('@expo/vector-icons', () => ({
   AntDesign: 'AntDesign',
 }));
 
-// Global fetch mock
+
 global.fetch = jest.fn() as any;

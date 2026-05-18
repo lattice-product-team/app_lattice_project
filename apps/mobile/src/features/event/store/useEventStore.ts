@@ -5,12 +5,12 @@ interface EventStore {
   currentEventId: number | null;
   selectedEvent: LatticeEvent | null;
 
-  // Actions
+
   setCurrentEvent: (event: LatticeEvent | null) => void;
   clearEvent: () => void;
 }
 
-/**
+/***
  * Specialized store for managing the current event context.
  */
 export const useEventStore = create<EventStore>((set) => ({

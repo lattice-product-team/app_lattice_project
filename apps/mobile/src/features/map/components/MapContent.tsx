@@ -11,12 +11,12 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-/**
+/***
  * MapContent: Orchestrator for the main Map experience.
  */
-// ... (rest of imports)
+//... (rest of imports)
 
-// Hooks & State
+
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
@@ -26,7 +26,7 @@ import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 
-// Components
+
 import { MapLayers } from './MapLayers';
 import { MapImageManager } from './MapImageManager';
 
@@ -37,7 +37,7 @@ const DEFAULT_CAMERA_SETTINGS = {
 
 const FLY_TO_PADDING = { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 };
 const ROUTE_OVERVIEW_PADDING = {
-  ne: [0, 0], // Placeholder, calculated dynamically
+  ne: [0, 0], //Placeholder, calculated dynamically
   sw: [0, 0],
   paddingLeft: 60,
   paddingRight: 60,
@@ -45,7 +45,7 @@ const ROUTE_OVERVIEW_PADDING = {
   paddingBottom: 400,
 };
 
-// Constants & Utilities
+
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useStartupStore } from '../../../store/useStartupStore';
 import styleLight from '../../../../assets/map/style-light.json';
@@ -57,7 +57,7 @@ import {
 } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
 
-// --- Global Performance Cache: Pre-Filter Style Layers Outside Render Cycle ---
+//--- Global Performance Cache: Pre-Filter Style Layers Outside Render Cycle ---
 const filterMapStyle = (baseStyle: any) => {
   const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
     const lid = (layer.id || '').toLowerCase();
@@ -73,7 +73,7 @@ const filterMapStyle = (baseStyle: any) => {
       lid.includes('road') ||
       lid.includes('water');
 
-    // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
+    //Android Optimization: Disable building extrusion and complex terrain shaders if they exist
     if (
       Platform.OS === 'android' &&
       (lid.includes('building') || layer.type === 'fill-extrusion')
@@ -129,7 +129,7 @@ const getOptimizedStyle = (isDark: boolean) => {
 const getNativeIconName = (categoryIcon: any) => {
   const icon = String(categoryIcon || '').toLowerCase();
 
-  // Food & Drink
+  //Food & Drink
   if (
     icon.includes('restaurant') ||
     icon.includes('food') ||
@@ -139,7 +139,7 @@ const getNativeIconName = (categoryIcon: any) => {
     return 'restaurant';
   if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
 
-  // Infrastructure
+  //Infrastructure
   if (icon.includes('parking')) return 'parking';
   if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
     return 'toilet';
@@ -151,16 +151,16 @@ const getNativeIconName = (categoryIcon: any) => {
   )
     return 'log-out';
 
-  // Health & Safety
+  //Health & Safety
   if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital'))
     return 'hospital';
   if (icon.includes('security') || icon.includes('shield')) return 'shield';
 
-  // Info & Points
+  //Info & Points
   if (icon.includes('info') || icon.includes('library')) return 'library-big';
   if (icon.includes('meetup') || icon.includes('users')) return 'users';
 
-  // Venues & Shopping
+  //Venues & Shopping
   if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
     return 'store';
   if (
@@ -173,7 +173,7 @@ const getNativeIconName = (categoryIcon: any) => {
   if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
     return 'crown';
 
-  return 'library-big'; // Fallback to info-style
+  return 'library-big'; //Fallback to info-style
 };
 
 interface MapContentProps {
@@ -237,7 +237,7 @@ export const MapContent = function MapContent({
   const lastZoomUpdateRef = useRef(0);
   const ZOOM_THROTTLE_MS = 100;
 
-  // --- Camera Orchestration ---
+  //--- Camera Orchestration ---
   const hasInitialized = useRef(false);
   const lastIsNavigating = useRef(isNavigating);
   const lastProcessedRouteId = useRef<string | null>(null);
@@ -245,7 +245,7 @@ export const MapContent = function MapContent({
   const lastProcessedForceCenter = useRef(forceCenterCount);
   const programmaticMoveTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // CLEANUP PROGRAMMATIC TIMEOUT ON UNMOUNT
+
   useEffect(() => {
     return () => {
       if (programmaticMoveTimeoutRef.current) {
@@ -254,7 +254,7 @@ export const MapContent = function MapContent({
     };
   }, []);
 
-  // SNAP LOGIC: Instantly move the camera without animation
+  //SNAP LOGIC: Instantly move the camera without animation
   const snapToLocation = useCallback((coords: [number, number], zoom?: number, pitch?: number) => {
     if (!cameraRef.current) return;
     cameraRef.current.setCamera({
@@ -266,7 +266,7 @@ export const MapContent = function MapContent({
     });
   }, []);
 
-  // FLYTO LOGIC: Smooth cinematic transition
+  //FLYTO LOGIC: Smooth cinematic transition
   const flyTo = useCallback(
     (coords: [number, number], zoom?: number, pitch?: number, duration: number = 1500) => {
       if (!cameraRef.current) return;
@@ -285,7 +285,7 @@ export const MapContent = function MapContent({
         padding: FLY_TO_PADDING,
       });
 
-      // Safety release of programmatic lock
+      //Safety release of programmatic lock
       programmaticMoveTimeoutRef.current = setTimeout(() => {
         setIsProgrammaticMove(false);
       }, duration + 50);
@@ -293,7 +293,7 @@ export const MapContent = function MapContent({
     [setIsProgrammaticMove]
   );
 
-  // NATIVE TRACKING SYNC: Listen to when the native engine breaks follow mode
+  //NATIVE TRACKING SYNC: Listen to when the native engine breaks follow mode
   const handleUserTrackingModeChange = useCallback(
     (e: any) => {
       const { followUserLocation } = e.nativeEvent.payload;
@@ -318,7 +318,7 @@ export const MapContent = function MapContent({
     }
   };
 
-  // DEBUG EFFECT: Log camera state in real-time
+  //DEBUG EFFECT: Log camera state in real-time
   useEffect(() => {
     console.log(
       '[MapContent] 🔍 STATE DEBUG:',
@@ -329,17 +329,17 @@ export const MapContent = function MapContent({
     );
   }, [cameraMode, isProgrammaticMove, userCoords]);
 
-  // EFFECT 1: INITIAL POSITIONING: Snap to user location on startup
+  //EFFECT 1: INITIAL POSITIONING: Snap to user location on startup
   useEffect(() => {
     if (!hasInitialized.current && userCoords && cameraRef.current && isInitialLoadComplete) {
       console.log('[MapContent] 🚀 Initial Startup Snap to user:', userCoords);
       snapToLocation([userCoords[0], userCoords[1]], 14);
-      setCameraMode(MapCameraMode.FREE); // Ensure we start in FREE mode
+      setCameraMode(MapCameraMode.FREE); //Ensure we start in FREE mode
       hasInitialized.current = true;
     }
   }, [userCoords, snapToLocation, setCameraMode, isInitialLoadComplete]);
 
-  // EFFECT 2: NAVIGATION ENGAGEMENT: When navigation actually starts, fly close to user
+  //EFFECT 2: NAVIGATION ENGAGEMENT: When navigation actually starts, fly close to user
   useEffect(() => {
     if (isNavigating && !lastIsNavigating.current) {
       const latestCoords = useLocationStore.getState().coords;
@@ -352,7 +352,7 @@ export const MapContent = function MapContent({
     lastIsNavigating.current = isNavigating;
   }, [isNavigating, flyTo, setCameraMode]);
 
-  // EFFECT 3: IMPERATIVE CENTER TRIGGER (Recenter Button)
+  //EFFECT 3: IMPERATIVE CENTER TRIGGER (Recenter Button)
   useEffect(() => {
     if (recenterCount > lastProcessedRecenter.current) {
       lastProcessedRecenter.current = recenterCount;
@@ -363,14 +363,14 @@ export const MapContent = function MapContent({
           setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
         } else {
           console.log('[MapContent] 🎯 Recentering: FlyTo with FREE mode');
-          setCameraMode(MapCameraMode.FREE); // KILL ANY PREVIOUS LOCK
+          setCameraMode(MapCameraMode.FREE); //KILL ANY PREVIOUS LOCK
           flyTo([latestCoords[0], latestCoords[1]], 20.0);
         }
       }
     }
   }, [recenterCount, isNavigating, setCameraMode, flyTo]);
 
-  // EFFECT 4: IMPERATIVE POI FOCUS TRIGGER
+  //EFFECT 4: IMPERATIVE POI FOCUS TRIGGER
   useEffect(() => {
     if (forceCenterCount > lastProcessedForceCenter.current) {
       lastProcessedForceCenter.current = forceCenterCount;
@@ -384,13 +384,13 @@ export const MapContent = function MapContent({
     }
   }, [forceCenterCount, selectedCoords, selectedEvent, triggerSource, flyTo]);
 
-  // EFFECT 5: ROUTE OVERVIEW: Fit bounds only when route ID changes OR when navigation ends
+  //EFFECT 5: ROUTE OVERVIEW: Fit bounds only when route ID changes OR when navigation ends
   useEffect(() => {
     const routeId = currentRoute?.properties?.id || currentRoute?.geometry?.coordinates?.length;
 
-    // We trigger the overview if:
-    // 1. We are in planning mode but NOT navigating
-    // 2. AND (the route is new OR we just stopped navigating)
+    //We trigger the overview if:
+    //1. We are in planning mode but NOT navigating
+    //2. AND (the route is new OR we just stopped navigating)
     const justStoppedNavigating = lastIsNavigating.current && !isNavigating;
     const isNewRoute = routeId && routeId !== lastProcessedRouteId.current;
 
@@ -425,7 +425,7 @@ export const MapContent = function MapContent({
           paddingTop: ROUTE_OVERVIEW_PADDING.paddingTop,
           paddingBottom: ROUTE_OVERVIEW_PADDING.paddingBottom,
         },
-        pitch: 0, // Reset tilt for route overview
+        pitch: 0, //Reset tilt for route overview
         animationDuration: 1200,
         animationMode: 'flyTo',
       });
@@ -434,29 +434,29 @@ export const MapContent = function MapContent({
       }, 1300);
     }
 
-    // Cleanup when stopping all planning
+
     if (!isPlanning) {
       lastProcessedRouteId.current = null;
     }
 
-    // Keep track of navigation state to detect when it ends
+    //Keep track of navigation state to detect when it ends
     lastIsNavigating.current = isNavigating;
   }, [isPlanning, isNavigating, currentRoute, setIsProgrammaticMove]);
 
-  // EFFECT 6: MANUAL FOLLOWER FOR ANDROID:
-  // Instead of relying on native 'followUserLocation' (which is buggy),
-  // we manually move the camera when in a tracking mode.
+  //EFFECT 6: MANUAL FOLLOWER FOR ANDROID:
+  //Instead of relying on native 'followUserLocation' (which is buggy),
+  //we manually move the camera when in a tracking mode.
   useEffect(() => {
     if (Platform.OS !== 'android' || cameraMode === MapCameraMode.FREE || !userCoords) return;
 
-    // We only follow if we are not in a programmatic flyTo
+    //We only follow if we are not in a programmatic flyTo
     if (isProgrammaticMove) return;
 
-    // Use moveTo for smooth tracking without altitude changes
+    //Use moveTo for smooth tracking without altitude changes
     cameraRef.current?.moveTo([userCoords[0], userCoords[1]], 800);
   }, [userCoords, cameraMode, isProgrammaticMove]);
 
-  // --- Logic Extraction ---
+  //--- Logic Extraction ---
   useRoutingLogic();
   const { data: pathNetwork } = usePathNetwork(currentEventId);
 
@@ -470,7 +470,7 @@ export const MapContent = function MapContent({
       const now = Date.now();
       const isUserInteraction = e.properties?.isUserInteraction;
 
-      // Update real-time ref ALWAYS, even during animations
+      //Update real-time ref ALWAYS, even during animations
       if (geometry?.coordinates) {
         realtimeCameraRef.current = {
           center: geometry.coordinates,
@@ -490,14 +490,14 @@ export const MapContent = function MapContent({
         }, 150);
       }
 
-      // Discrete Zoom Management
+      //Discrete Zoom Management
       if (properties?.zoomLevel) {
         zoomSharedValue.value = properties.zoomLevel;
 
-        // CRITICAL FIX: Only update discrete zoom when the camera STOPS moving.
-        // Changing it during an active gesture causes PointAnnotations to unmount
-        // while MapLibre's C++ layout engine is busy, causing hard crashes.
-        // On Android, we are even stricter to prevent re-renders during active tracking.
+        //CRITICAL FIX: Only update discrete zoom when the camera STOPS moving.
+        //Changing it during an active gesture causes PointAnnotations to unmount
+        //while MapLibre's C++ layout engine is busy, causing hard crashes.
+        //On Android, we are even stricter to prevent re-renders during active tracking.
         const isStationary = !isChanging;
         const canUpdateZoom =
           Platform.OS === 'android'
@@ -513,9 +513,9 @@ export const MapContent = function MapContent({
         }
       }
 
-      // Update global store for other components ONLY when the camera STOPS moving.
-      // This prevents the huge index.tsx from re-rendering 10 times per second during a pan,
-      // which is the primary cause of "jerkiness" on Android.
+      //Update global store for other components ONLY when the camera STOPS moving.
+      //This prevents the huge index.tsx from re-rendering 10 times per second during a pan,
+      //which is the primary cause of "jerkiness" on Android.
       const center = geometry?.coordinates as [number, number];
       const zoom = properties?.zoomLevel;
       const pitch = properties?.pitch;
@@ -524,9 +524,9 @@ export const MapContent = function MapContent({
         setLastCameraPosition({ center, zoom, pitch });
       }
 
-      // IF USER TOUCHES THE MAP:
-      // We break tracking ONLY if the user is actually interacting with the map surface.
-      // If we are in a programmatic move, physical user interaction aborts it instantly.
+      //IF USER TOUCHES THE MAP:
+      //We break tracking ONLY if the user is actually interacting with the map surface.
+      //If we are in a programmatic move, physical user interaction aborts it instantly.
       if (isUserInteraction) {
         if (cameraMode !== MapCameraMode.FREE) {
           console.log('[MapContent] 🚨 User interaction detected: Breaking camera locks');
@@ -537,7 +537,7 @@ export const MapContent = function MapContent({
           console.log(
             '[MapContent] 🚨 User interaction detected during active flight: Aborting programmatic lock'
           );
-          // Android/Fabric Fix: Abort native active flight animation by overriding with 1ms timing
+          //Android/Fabric Fix: Abort native active flight animation by overriding with 1ms timing
           cameraRef.current?.setCamera({
             animationDuration: 1,
           });
@@ -560,14 +560,14 @@ export const MapContent = function MapContent({
     ]
   );
 
-  // Combined POIs logic
+  //Combined POIs logic
   const allUIPois = useMemo(() => {
     const eventPois = normalizeEventList(allEvents || []);
     const spatialPois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
     return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
-  // Hierarchical visibility logic for POIs
+  //Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
     const filteredList = getFilteredPOIs(allUIPois, discreteZoom);
     return {
@@ -596,7 +596,7 @@ export const MapContent = function MapContent({
           name: poi.displayName,
           display_name: poi.displayName,
           icon: poi.categoryIcon,
-          icon_name: getNativeIconName(poi.category), // USAR CATEGORY (String) EN VEZ DE ICON (Component)
+          icon_name: getNativeIconName(poi.category), //USE CATEGORY (String) INSTEAD OF ICON (Component)
           category: poi.category,
           color: poi.mainColor,
           color_hex: poi.mainColor,
@@ -630,7 +630,7 @@ export const MapContent = function MapContent({
       ).flatMap((poi) => {
         const features = [];
 
-        // 1. Add the Point Marker
+        //1. Add the Point Marker
         features.push({
           type: 'Feature',
           id: `ev-f-${poi.id}`,
@@ -638,18 +638,18 @@ export const MapContent = function MapContent({
           properties: {
             id: poi.id,
             name: poi.displayName,
-            display_name: poi.displayName, // PROPIEDAD PARA NATIVO
+            display_name: poi.displayName, //PROPERTY FOR NATIVE
             category: poi.category,
             color: poi.mainColor,
-            color_hex: poi.mainColor, // PROPIEDAD PARA NATIVO
-            icon_name: 'event', // PROPIEDAD PARA NATIVO
+            color_hex: poi.mainColor, //PROPERTY FOR NATIVE
+            icon_name: 'event', //PROPERTY FOR NATIVE
             imageKey: poi.imageKey,
             imageUrl: poi.images?.[0],
-            raw: JSON.stringify(poi.raw), // Store as string so queryRenderedFeatures handles it safely
+            raw: JSON.stringify(poi.raw), //Store as string so queryRenderedFeatures handles it safely
           },
         });
 
-        // 2. Add the Boundary Polygon if it exists
+        //2. Add the Boundary Polygon if it exists
         if (poi.raw?.boundary) {
           features.push({
             type: 'Feature',
@@ -680,7 +680,7 @@ export const MapContent = function MapContent({
 
       const { properties, geometry } = feature;
 
-      // Parse raw string if it came from queryRenderedFeatures
+      //Parse raw string if it came from queryRenderedFeatures
       let rawData = properties.raw;
       if (typeof rawData === 'string') {
         try {
@@ -696,7 +696,7 @@ export const MapContent = function MapContent({
         properties.category === 'event' || properties.type === 'event' || !!properties.imageKey;
 
       if (isEvent) {
-        // Handle event selection
+        //Handle event selection
         const eventData = rawData || feature;
         if (onSelectEvent) {
           onSelectEvent(eventData);
@@ -707,7 +707,7 @@ export const MapContent = function MapContent({
           islandState.value = withSpring(0, theme.motion.physics.snappy);
         }
       } else {
-        // Normal POI selection
+        //Normal POI selection
         setSelectedEvent(null);
         setGlobalCurrentEvent(null);
         selectPoi(normalizePOI(rawData || feature));
@@ -732,8 +732,8 @@ export const MapContent = function MapContent({
       triggerForceCenter();
       setSelectedEvent(poi.id);
       setGlobalCurrentEvent(poi.raw);
-      // selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
-      islandState.value = withSpring(0, theme.motion.physics.snappy); // Use the same spring config as index.tsx
+      //selectPoi(poi); // Removed to prevent conflict with Level 3 drawer and camera selection logic
+      islandState.value = withSpring(0, theme.motion.physics.snappy); //Use the same spring config as index.tsx
     },
     [setSelectedEvent, setGlobalCurrentEvent, islandState, triggerForceCenter]
   );
@@ -741,7 +741,7 @@ export const MapContent = function MapContent({
   const glPoisGeoJSON = useMemo(() => {
     if (!poisGeoJSON?.features) return poisGeoJSON;
 
-    // Filter out the currently selected POI from the GL layer to avoid duplication with MarkerView
+    //Filter out the currently selected POI from the GL layer to avoid duplication with MarkerView
     return {
       ...poisGeoJSON,
       features: poisGeoJSON.features.filter((f: any) => f.properties.id !== selectedPoiId),
@@ -750,9 +750,9 @@ export const MapContent = function MapContent({
 
   const setMapReady = useStartupStore((s) => s.setMapReady);
 
-  // Safety timeout to ensure overlay is hidden even if map event fails
+  //Safety timeout to ensure overlay is hidden even if map event fails
   useEffect(() => {
-    // Be more patient on Android with older hardware
+    //Be more patient on Android with older hardware
     const timeoutDuration = Platform.OS === 'android' ? 12000 : 8000;
     const timer = setTimeout(() => {
       if (!hasInitialRendered.current) {
@@ -780,13 +780,13 @@ export const MapContent = function MapContent({
         if (mapRef.current) {
           const features = await mapRef.current.queryRenderedFeaturesAtPoint(
             [screenPointX, screenPointY],
-            null, // filter
-            ['eventLabels', 'backgroundPoiDots', 'poiLabelLayer'] // Layer IDs to check
+            null, //filter
+            ['eventLabels', 'backgroundPoiDots', 'poiLabelLayer'] //Layer IDs to check
           );
 
           if (features?.features && features.features.length > 0) {
-            // FEATURE TAP: We are more lenient here.
-            // If we hit a specific label or pin, we assume it was an intentional click.
+            //FEATURE TAP: We are more lenient here.
+            //If we hit a specific label or pin, we assume it was an intentional click.
             const feature = features.features.find((f: any) => f?.properties?.id);
             if (feature) {
               handlePoiPress(feature);
@@ -798,7 +798,7 @@ export const MapContent = function MapContent({
         console.warn('[MapContent] Error querying map features:', err);
       }
 
-      // EMPTY MAP TAP: Apply stricter lockout to avoid accidental deselection while panning.
+      //EMPTY MAP TAP: Apply stricter lockout to avoid accidental deselection while panning.
       if (isRecentlyMoved) {
         console.log('[MapContent] Ignored background tap due to recent camera movement.');
         return;
@@ -806,7 +806,7 @@ export const MapContent = function MapContent({
 
       if (onDeselect) {
         console.log('[MapContent] Map background pressed: Triggering deselect');
-        setCameraMode(MapCameraMode.FREE); // KILL THE MAGNET
+        setCameraMode(MapCameraMode.FREE); //KILL THE MAGNET
         onDeselect();
       }
     },
@@ -829,17 +829,17 @@ export const MapContent = function MapContent({
         scrollEnabled={true}
         zoomEnabled={true}
         onPress={handleMapPress}
-        // Android Optimization: Use TextureView under Fabric to prevent blank screens/stutters
+        //Android Optimization: Use TextureView under Fabric to prevent blank screens/stutters
         androidView={Platform.OS === 'android' ? 'texture' : undefined}
         onRegionWillChange={(e) => {
-          // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
-          // If we detect a definitive user interaction, abort all locks preemptively.
+          //ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
+          //If we detect a definitive user interaction, abort all locks preemptively.
           const isUser = e.properties?.isUserInteraction;
           if (isUser) {
             console.log(
               '[MapContent] 🚨 User interaction detected in onRegionWillChange: Breaking all locks'
             );
-            // Android/Fabric Fix: Stop any active native camera flights instantly
+            //Android/Fabric Fix: Stop any active native camera flights instantly
             cameraRef.current?.setCamera({
               animationDuration: 1,
             });
@@ -850,7 +850,7 @@ export const MapContent = function MapContent({
               programmaticMoveTimeoutRef.current = undefined;
             }
           } else {
-            // Fallback for Android where isUserInteraction can be unreliable
+            //Fallback for Android where isUserInteraction can be unreliable
             const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
             if (!currentIsProgrammatic) {
               const currentMode = useMapUIStore.getState().cameraMode;
@@ -858,7 +858,7 @@ export const MapContent = function MapContent({
                 console.log(
                   '[MapContent] 🚨 Manual gesture fallback (onRegionWillChange), breaking camera lock'
                 );
-                // Android/Fabric Fix: Stop any active native camera flights instantly
+                //Android/Fabric Fix: Stop any active native camera flights instantly
                 cameraRef.current?.setCamera({
                   animationDuration: 1,
                 });
@@ -907,7 +907,7 @@ export const MapContent = function MapContent({
                 onUserTrackingModeChange: handleUserTrackingModeChange,
               }
             : {
-                // Android: ZERO declarative props — 100% imperative via cameraRef.setCamera()
+                //Android: ZERO declarative props — 100% imperative via cameraRef.setCamera()
                 followUserLocation: false,
                 onUserTrackingModeChange: handleUserTrackingModeChange,
               })}

@@ -38,7 +38,7 @@ interface NavigationState {
     bicycle: RouteMetadata | null;
   };
 
-  // Actions
+
   setRoutes: (
     routes: {
       driving: RouteGeoJSON | null;
@@ -60,7 +60,7 @@ interface NavigationState {
   clearNavigation: () => void;
 }
 
-/**
+/***
  * Specialized store for handling active navigation and route calculation states.
  */
 export const useNavigationStore = create<NavigationState>((set, get) => ({
@@ -136,25 +136,25 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
 
       const uiStore = useMapUIStore.getState();
 
-      // 1. Update state
+      //1. Update state
       set({
         isPlanning: false,
         isNavigating: true,
       });
 
-      // 2. Transition UI state
+      //2. Transition UI state
       uiStore.setUIState(MapUIState.NAVIGATING);
 
-      // 3. DO NOT force camera changes. Keep it static as per user requirement.
-      // Removed: uiStore.setIsProgrammaticMove(true);
-      // Removed: uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
+      //3. DO NOT force camera changes. Keep it static as per user requirement.
+      //Removed: uiStore.setIsProgrammaticMove(true);
+      //Removed: uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
 
-      // 4. Collapse the island drawer
+      //4. Collapse the island drawer
       if (islandState) {
         islandState.value = withSpring(0, theme.motion.physics.magnetic);
       }
 
-      // 5. REMOVED: Do NOT clear selections. We want to return to them later.
+      //5. REMOVED: Do NOT clear selections. We want to return to them later.
     } catch (e) {
       console.warn('[NavigationStore] startNavigation failed:', e);
     }
@@ -169,7 +169,7 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
       const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
       const uiStore = useMapUIStore.getState();
 
-      // Atomic update of all relevant states
+      //Atomic update of all relevant states
       uiStore.setUIState(MapUIState.PLANNING);
       uiStore.setCameraMode(MapCameraMode.FREE);
 

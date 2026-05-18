@@ -24,7 +24,7 @@ interface MapLayersProps {
   visibleBounds: number[][] | null;
 }
 
-/**
+/***
  * Sub-component for Route to isolate re-renders.
  */
 const RouteLayer = React.memo(
@@ -60,7 +60,7 @@ const RouteLayer = React.memo(
   }
 );
 
-/**
+/***
  * Sub-component for the Selected Feature (POI or Event)
  * This is the ONLY React Native PointAnnotation rendered on the map,
  * allowing for complex animations without killing performance.
@@ -83,7 +83,7 @@ const SelectedMarker = React.memo(
     theme: any;
     zoomSharedValue: any;
   }) => {
-    // STRICT GUARD: If we have an event selected, we NEVER show the React pin.
+    //STRICT GUARD: If we have an event selected, we NEVER show the React pin.
     if (selectedEventId && String(selectedEventId).length > 0) return null;
 
     const selectedFeature = useMemo(() => {
@@ -138,7 +138,7 @@ export const MapLayers = React.memo(
   }: MapLayersProps) => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    // High-performance drawer state sync
+    //High-performance drawer state sync
     useAnimatedReaction(
       () => {
         'worklet';
@@ -172,10 +172,10 @@ export const MapLayers = React.memo(
       const feature = e.features[0];
       if (!feature) return;
 
-      // Ignore cluster taps
+      //Ignore cluster taps
       if (feature.properties?.point_count) return;
 
-      // Trigger press for valid POIs or Events
+      //Trigger press for valid POIs or Events
       if (feature.properties?.id || feature.properties?.name) {
         onPoiPress(feature);
       }
@@ -197,14 +197,14 @@ export const MapLayers = React.memo(
 
     return (
       <>
-        {/* 1. Background Sources */}
+        {/*1. Background Sources*/}
         <MapLibreGL.ShapeSource
           id="poiSource"
           shape={backgroundPois}
           onPress={handleShapePress}
           cluster={false}
         >
-          {/* SHADOW: Sincronizada con el círculo */}
+          {/*SHADOW: Sincronizada con el círculo*/}
           <MapLibreGL.CircleLayer
             id="poiShadows"
             filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
@@ -218,7 +218,7 @@ export const MapLayers = React.memo(
             }}
           />
 
-          {/* PLATE: Círculo base coloreado */}
+          {/*PLATE: Círculo base coloreado*/}
           <MapLibreGL.CircleLayer
             id="backgroundPoiDots"
             aboveLayerID="poiShadows"
@@ -232,7 +232,7 @@ export const MapLayers = React.memo(
                 12,
                 5,
                 15,
-                16, // Más generoso para que el icono tenga mucho aire
+                16, //More generous to give the icon breathing room
                 18,
                 22,
               ],
@@ -248,11 +248,11 @@ export const MapLayers = React.memo(
             }}
           />
 
-          {/* GLYPH: Icono blanco - Sincronizado milimétricamente con el círculo */}
+          {/*GLYPH: Icono blanco - Sincronizado milimétricamente con el círculo*/}
           <MapLibreGL.SymbolLayer
             id="poiIconsLayer"
             filter={['all', ['!=', ['to-string', ['get', 'id']], String(selectedPoiId || '')]]}
-            minZoomLevel={12} // Aparece igual que el círculo
+            minZoomLevel={12} //Appears same as the circle
             style={{
               iconImage: ['get', 'icon_name'],
               iconColor: '#FFFFFF',
@@ -261,7 +261,7 @@ export const MapLayers = React.memo(
               iconAllowOverlap: true,
               iconIgnorePlacement: true,
               iconOpacity: ['interpolate', ['linear'], ['zoom'], 11.5, 0, 12, 1, 22, 1],
-              // Texto con halo
+              //Text with halo
               textField: ['get', 'display_name'],
               textSize: 11,
               textColor: ['coalesce', ['get', 'color_hex'], theme.colors.brand.primary, '#5856D6'],
@@ -321,7 +321,7 @@ export const MapLayers = React.memo(
           />
         </MapLibreGL.ShapeSource>
 
-        {/* 2. HYBRID SELECTION - Single React Component for the focus */}
+        {/*2. HYBRID SELECTION - Single React Component for the focus*/}
         <SelectedMarker
           poisGeoJSON={poisGeoJSON}
           eventsGeoJSON={eventsGeoJSON}
@@ -332,7 +332,7 @@ export const MapLayers = React.memo(
           zoomSharedValue={zoomSharedValue}
         />
 
-        {/* 3. ROUTE - Isolated from POI re-renders */}
+        {/*3. ROUTE - Isolated from POI re-renders*/}
         <RouteLayer uiState={uiState} currentRoute={currentRoute} isDrawerOpen={isDrawerOpen} />
       </>
     );

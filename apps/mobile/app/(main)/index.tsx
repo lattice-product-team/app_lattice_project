@@ -23,7 +23,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Compass, Map as MapIcon, Ticket as TicketIcon } from 'lucide-react-native';
 
-// Core Components
+
 import { MapContent } from '../../src/features/map/components/MapContent';
 import { AdaptiveControlOverlay } from '../../src/features/map/components/AdaptiveControlOverlay';
 import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
@@ -42,7 +42,7 @@ import { useUnifiedSearch } from '../../src/features/map/hooks/useUnifiedSearch'
 import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
 import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
 
-// Stores & Hooks
+
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
@@ -66,7 +66,7 @@ import { ProfileSheet } from '../../src/features/profile/components/ProfileSheet
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
 
-// UI Layer Constants
+
 enum UILayer {
   BASE = 0,
   PROFILE = 1,
@@ -88,12 +88,12 @@ export default function MapIndexPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // Core UI State (UI Thread)
+
   const uiLayer = useSharedValue(UILayer.BASE);
-  const islandState = useSharedValue(0); // 0: Level 1, 0.5: Level 2, 1: Level 3
+  const islandState = useSharedValue(0); //0: Level 1, 0.5: Level 2, 1: Level 3
   const startState = useSharedValue(0);
 
-  // Start location tracking
+  //Start location tracking
   useLocationService();
   const isGuest = useAuthStore((state) => state.isGuest);
   const user = useAuthStore((state) => state.user);
@@ -108,7 +108,7 @@ export default function MapIndexPage() {
 
   const { setProfile } = useProfileStore();
 
-  // Sync Auth User to Profile Store
+  //Sync Auth User to Profile Store
   useEffect(() => {
     if (user && !isGuest) {
       setProfile({
@@ -127,7 +127,7 @@ export default function MapIndexPage() {
     }
   }, [user, isGuest, setProfile]);
 
-  // Map & POI State
+  //Map & POI State
   const { selectedPoiId, selectedPoi, selectPoi, deselect, selectedEventId, setSelectedEvent } =
     usePOIStore();
 
@@ -144,9 +144,9 @@ export default function MapIndexPage() {
 
   const { allEvents } = useUnifiedSearch(searchQuery);
   const { spatialData: eventSpatial } = useEventSpatial(selectedEvent?.id);
-  const { data: globalPois } = usePOIs(); // Load global POIs
+  const { data: globalPois } = usePOIs(); //Load global POIs
 
-  // Merge global POIs with event-specific spatial data
+  //Merge global POIs with event-specific spatial data
   const mergedPois = useMemo(() => {
     const features = [...(globalPois?.features || [])];
     if (eventSpatial?.features) {
@@ -163,7 +163,7 @@ export default function MapIndexPage() {
       openAuthPrompt('/(main)/profile');
     } else {
       setIsProfileOpen(true);
-      // Collapse search island via UI thread
+      //Collapse search island via UI thread
       islandState.value = withSpring(0, theme.motion.physics.magnetic);
     }
   }, [isGuest, theme.motion.physics.magnetic, islandState, openAuthPrompt]);
@@ -208,7 +208,7 @@ export default function MapIndexPage() {
 
   const uiState = useMapUIStore((state) => state.uiState);
 
-  // Sync React/Store state to UI Thread Layers (Master Mode Orchestrator)
+  //Sync React/Store state to UI Thread Layers (Master Mode Orchestrator)
   useEffect(() => {
     switch (uiState) {
       case MapUIState.NAVIGATING:
@@ -225,7 +225,7 @@ export default function MapIndexPage() {
         break;
       case MapUIState.EXPLORING:
       default:
-        // Local overrides for states that aren't yet full modes
+        //Local overrides for states that aren't yet full modes
         if (isProfileOpen) {
           uiLayer.value = withTiming(UILayer.PROFILE, { duration: 250 });
         } else {
@@ -246,7 +246,7 @@ export default function MapIndexPage() {
 
   const screenMode = useSharedValue(lastScreenMode);
   const [activeMode, setActiveMode] = useState(lastScreenMode);
-  const toggleDrag = useSharedValue(lastScreenMode); // Independent visual state for the toggle
+  const toggleDrag = useSharedValue(lastScreenMode); //Independent visual state for the toggle
 
   const [hasMapLoaded, setHasMapLoaded] = useState(lastScreenMode === 1);
   const [isMapActive, setIsMapActive] = useState(lastScreenMode === 1);
@@ -267,7 +267,7 @@ export default function MapIndexPage() {
   const SNAP_POINTS = [0, 0.5, 1];
 
   const islandOpacity = useDerivedValue(() => {
-    // If we are navigating or planning, the island should be gone
+    //If we are navigating or planning, the island should be gone
     const isNavigatingLayer = uiLayer.value >= UILayer.NAVIGATING - 0.5;
     if (isNavigatingLayer || isARActive) {
       return withTiming(0, { duration: 250 });
@@ -275,7 +275,7 @@ export default function MapIndexPage() {
     return withTiming(1, { duration: 250 });
   }, [isARActive]);
 
-  // Derived Visibility for Overlays
+  //Derived Visibility for Overlays
   const profileVisibility = useDerivedValue(() => {
     return withTiming(uiLayer.value === UILayer.PROFILE ? 1 : 0);
   });
@@ -288,7 +288,7 @@ export default function MapIndexPage() {
     return withTiming(uiLayer.value === UILayer.PLANNING ? 1 : 0);
   });
 
-  // Automatically collapse Island to Level 1 when any overlay is active
+  //Automatically collapse Island to Level 1 when any overlay is active
   useAnimatedReaction(
     () => uiLayer.value !== UILayer.BASE || isARActive,
     (isOverlayActive) => {
@@ -324,25 +324,25 @@ export default function MapIndexPage() {
 
   const handleEventSelect = useCallback(
     (event: LatticeEvent) => {
-      // Save current level before collapsing
+      //Save current level before collapsing
       preSearchLevel.value = islandState.value;
 
       triggerForceCenter('exploration');
       setSelectedEvent(event.id);
       setCurrentEvent(event);
 
-      islandState.value = withSpring(0, theme.motion.physics.magnetic); // Collapse search island
+      islandState.value = withSpring(0, theme.motion.physics.magnetic); //Collapse search island
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     },
     [setSelectedEvent, setCurrentEvent, selectPoi, islandState, triggerForceCenter]
   );
 
   const handleCloseDetails = useCallback(() => {
-    // 1. Clear Data (This triggers the sheet to close via useEffect)
+    //1. Clear Data (This triggers the sheet to close via useEffect)
     setCurrentEvent(null);
     selectPoi(null);
 
-    // 2. Clear Navigation State
+    //2. Clear Navigation State
     useNavigationStore.getState().clearNavigation();
 
     if (setSelectedEvent as any) {
@@ -351,8 +351,8 @@ export default function MapIndexPage() {
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // 3. We don't animate eventSheetState here manually because the sheet's
-    // useEffect will react to model becoming null and animate itself to 0.
+    //3. We don't animate eventSheetState here manually because the sheet's
+    //useEffect will react to model becoming null and animate itself to 0.
   }, [setCurrentEvent, selectPoi, setSelectedEvent]);
 
   const dismissSearch = useCallback(() => {
@@ -360,15 +360,15 @@ export default function MapIndexPage() {
     Keyboard.dismiss();
   }, []);
 
-  // Cancel search only if island is MANUALLY dragged down
+  //Cancel search only if island is MANUALLY dragged down
   useAnimatedReaction(
     () => islandState.value,
     (val) => {
-      // Solo cancelamos si hay un gesto activo (panning), estamos buscando y bajamos del umbral
+      //Only cancel if there is an active gesture (panning), we are searching, and drop below the threshold
       if (val < 0.8 && isSearching && isPanning.value) {
         runOnJS(dismissSearch)();
       }
-      // Activamos búsqueda si subimos al Nivel 3
+      //Activate search if we go up to Level 3
       if (val > 0.8 && !isSearching && isPanning.value) {
         runOnJS(setIsSearching)(true);
       }
@@ -376,7 +376,7 @@ export default function MapIndexPage() {
     [isSearching, dismissSearch]
   );
 
-  // Automatically close event details if the top island is expanded to Level 2
+  //Automatically close event details if the top island is expanded to Level 2
   useAnimatedReaction(
     () => islandState.value,
     (curr, prev) => {
@@ -398,7 +398,7 @@ export default function MapIndexPage() {
   });
 
   const gesture = Gesture.Pan()
-    .enabled(!selectedEvent && !selectedPoi) // DISABLE search gesture when details are open
+    .enabled(!selectedEvent && !selectedPoi) //DISABLE search gesture when details are open
     .activeOffsetY([-10, 10])
     .failOffsetX(Platform.OS === 'android' ? [-10, 10] : [-20, 20])
     .onStart(() => {
@@ -406,12 +406,12 @@ export default function MapIndexPage() {
       startState.value = islandState.value;
     })
     .onUpdate((event) => {
-      // Allow dragging up (collapse) if at Level 3 and scroll is at top
+      //Allow dragging up (collapse) if at Level 3 and scroll is at top
       const isDraggingUp = event.translationY < 0;
       const canDragSheet = islandState.value < 0.99 || (isScrollAtTop.value && isDraggingUp);
 
       if (canDragSheet) {
-        // Dynamic divisor for 1:1 tracking
+        //Dynamic divisor for 1:1 tracking
         const fullTravel = SCREEN_HEIGHT - 65;
         const stateDelta = event.translationY / fullTravel;
         let newPos = startState.value + stateDelta;
@@ -424,13 +424,13 @@ export default function MapIndexPage() {
       const velocity = event.velocityY / fullTravel;
       let predictedPos = islandState.value + velocity * 0.12;
 
-      // ANTI-SKIP PROTECTION:
-      // If we start at Level 1 (0), don't allow snapping directly to Level 3 (1.0).
-      // This forces the user to pass through Level 2 (0.5) first as requested.
+      //ANTI-SKIP PROTECTION:
+      //If we start at Level 1 (0), don't allow snapping directly to Level 3 (1.0).
+      //This forces the user to pass through Level 2 (0.5) first as requested.
       if (startState.value === 0) {
         predictedPos = Math.min(predictedPos, 0.7);
       }
-      // If we start at Level 2 (0.5), we can go to 1 or 3, but not hide the sheet.
+      //If we start at Level 2 (0.5), we can go to 1 or 3, but not hide the sheet.
       if (startState.value === 0.5) {
         predictedPos = Math.max(0.2, Math.min(predictedPos, 1.2));
       }
@@ -539,7 +539,7 @@ export default function MapIndexPage() {
     const paddingTop = interpolate(
       islandState.value,
       [0.5, 1],
-      [11, insets.top + 5], // 11px to center in 58px height
+      [11, insets.top + 5], //11px to center in 58px height
       Extrapolation.CLAMP
     );
     return {
@@ -562,10 +562,10 @@ export default function MapIndexPage() {
   }));
 
   const controlsOpacityStyle = useAnimatedStyle(() => {
-    // We allow the toggle to be visible during EVENT layer (POI details)
+    //We allow the toggle to be visible during EVENT layer (POI details)
     const isLayerActive = uiLayer.value === UILayer.PROFILE || uiLayer.value === UILayer.PLANNING;
 
-    // Hide if: profile/planning active, if AR is active, OR if NAVIGATING
+    //Hide if: profile/planning active, if AR is active, OR if NAVIGATING
     const shouldHide = isLayerActive || isARActive || isNavigating;
 
     return {
@@ -618,10 +618,10 @@ export default function MapIndexPage() {
   const handleMapPress = useCallback(() => {
     Keyboard.dismiss();
 
-    // If we are in the middle of navigation or planning a route,
-    // we should NOT clear the route just by tapping the map.
+    //If we are in the middle of navigation or planning a route,
+    //we should NOT clear the route just by tapping the map.
     if (isNavigating || isPlanning) {
-      // If we were searching, we might want to collapse the search island though
+      //If we were searching, we might want to collapse the search island though
       if (islandState.value > 0.8) {
         islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
         setIsSearching(false);
@@ -632,10 +632,10 @@ export default function MapIndexPage() {
     handleCloseDetails();
     setIsSearching(false);
 
-    // Clear any active navigation/planning state when deselecting in normal mode
+    //Clear any active navigation/planning state when deselecting in normal mode
     useNavigationStore.getState().clearNavigation();
 
-    // Always snap island back to base level if not searching
+    //Always snap island back to base level if not searching
     islandState.value = withSpring(0, theme.motion.physics.magnetic);
   }, [handleCloseDetails, islandState, theme.motion.physics.magnetic, isNavigating, isPlanning]);
 
@@ -647,7 +647,7 @@ export default function MapIndexPage() {
     [toggleCategoryFilter]
   );
 
-  // Mode Toggle Drag Logic
+  //Mode Toggle Drag Logic
   const startMode = useSharedValue(0);
 
   const toggleGesture = Gesture.Pan()
@@ -655,7 +655,7 @@ export default function MapIndexPage() {
       startMode.value = toggleDrag.value;
     })
     .onUpdate((e) => {
-      // Move only the toggle indicator
+      //Move only the toggle indicator
       const delta = e.translationX / 96;
       toggleDrag.value = Math.max(0, Math.min(1, startMode.value + delta));
     })
@@ -663,17 +663,17 @@ export default function MapIndexPage() {
       const velocity = e.velocityX / 96;
       const target = toggleDrag.value + velocity * 0.15 > 0.5 ? 1 : 0;
 
-      // Lock discovery location if entering Explore, clear if returning to Map
+      //Lock discovery location if entering Explore, clear if returning to Map
       if (target === 0 && lastCameraPosition?.center) {
         runOnJS(setDiscoveryLocation)(lastCameraPosition.center);
       } else if (target === 1) {
         runOnJS(setDiscoveryLocation)(null);
       }
 
-      // 1. Snap the toggle indicator
+      //1. Snap the toggle indicator
       toggleDrag.value = withSpring(target, theme.motion.physics.magnetic);
 
-      // 2. Commit the screen transition only on release
+      //2. Commit the screen transition only on release
       screenMode.value = withSpring(target, theme.motion.physics.magnetic, (finished) => {
         if (finished) {
           runOnJS(setActiveMode)(target);
@@ -691,10 +691,10 @@ export default function MapIndexPage() {
 
   const handleDiscoveryItemPress = useCallback(
     (item: any) => {
-      // 1. Trigger camera animation flag
+      //1. Trigger camera animation flag
       triggerForceCenter('exploration');
 
-      // 2. Identify type: Use explicit discoveryType from server, or fallback to heuristics
+      //2. Identify type: Use explicit discoveryType from server, or fallback to heuristics
       const type = item.discoveryType || (item.startDate ? 'event' : 'poi');
       const isEvent = type === 'event';
 
@@ -703,13 +703,13 @@ export default function MapIndexPage() {
         handleEventSelect(item);
       } else {
         console.log('[Explore] Selecting POI:', item.name || item.displayName);
-        // Ensure we clear any previous event state so the POI detail takes over
+        //Ensure we clear any previous event state so the POI detail takes over
         setSelectedEvent(null);
         setCurrentEvent(null);
         selectPoi(normalizePOI(item));
       }
 
-      // 3. Auto-switch to Map mode with small delay to let state settle
+      //3. Auto-switch to Map mode with small delay to let state settle
       setTimeout(() => {
         const nextMode = 1;
         toggleDrag.value = withSpring(nextMode, theme.motion.physics.magnetic);
@@ -774,7 +774,7 @@ export default function MapIndexPage() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* 1. Unified Sliding Canvas (Z-Index: 0) */}
+      {/*1. Unified Sliding Canvas (Z-Index: 0)*/}
       <Animated.View style={[styles.canvas, canvasStyle]}>
         <View style={[styles.screen, { backgroundColor: theme.colors.bg.surface }]}>
           <DiscoveryFeed onItemPress={handleDiscoveryItemPress} theme={theme} />
@@ -797,7 +797,7 @@ export default function MapIndexPage() {
         </View>
       </Animated.View>
 
-      {/* 2. Persistent HUD & Navigation Info (Z-Index: 500) */}
+      {/*2. Persistent HUD & Navigation Info (Z-Index: 500)*/}
       <Animated.View
         style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 500 }]}
         pointerEvents="box-none"
@@ -806,7 +806,7 @@ export default function MapIndexPage() {
         <NavigationInfo />
       </Animated.View>
 
-      {/* 4. HUD Buttons & Controls (Z-Index: 1000) */}
+      {/*4. HUD Buttons & Controls (Z-Index: 1000)*/}
       <Animated.View style={[mapOverlayStyle, { zIndex: 1000 }]} pointerEvents="box-none">
         <AdaptiveControlOverlay
           uiLayer={uiLayer}
@@ -817,13 +817,13 @@ export default function MapIndexPage() {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             setManualAR(false);
 
-            // The store now handles the expanded cycle and navigation context
+            //The store now handles the expanded cycle and navigation context
             triggerRecenter();
           }}
           onToggle3D={() => {
-            // Functionality disabled as per requirement
+            //Functionality disabled as per requirement
           }}
-          is3DActive={false} // Force 2D
+          is3DActive={false} //Force 2D
           isConnected={isConnected}
         />
       </Animated.View>
@@ -886,7 +886,7 @@ export default function MapIndexPage() {
 
       <CenteringButton uiLayer={uiLayer} />
 
-      {/* 5. Bottom-up Sheets (Z-Index: 2000) */}
+      {/*5. Bottom-up Sheets (Z-Index: 2000)*/}
       <Animated.View
         style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 2000 }]}
         pointerEvents="box-none"
@@ -912,7 +912,7 @@ export default function MapIndexPage() {
         />
       </Animated.View>
 
-      {/* 6. Top Island / Search (Z-Index: 3000) */}
+      {/*6. Top Island / Search (Z-Index: 3000)*/}
       <Animated.View
         style={[StyleSheet.absoluteFill, mapOverlayStyle, { zIndex: 3000 }]}
         pointerEvents="box-none"
@@ -992,10 +992,10 @@ export default function MapIndexPage() {
         </Animated.View>
       </Animated.View>
 
-      {/* 7. AR Overlay Layer (Z-Index: 3500) */}
+      {/*7. AR Overlay Layer (Z-Index: 3500)*/}
       <AROverlay />
 
-      {/* 8. Loading Overlay (Z-Index: 4000) */}
+      {/*8. Loading Overlay (Z-Index: 4000)*/}
       <MapLoadingOverlay isVisible={!isInitialLoadComplete} />
     </View>
   );

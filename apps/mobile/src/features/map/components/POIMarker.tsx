@@ -39,11 +39,11 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const categoryKey = properties.category?.toLowerCase() || 'generic';
     const metadata = getCategoryMetadata(categoryKey);
 
-    // USAR COLOR DIRECTO DEL GEOJSON (Sincronizado con nativo)
+    //USE DIRECT GEOJSON COLOR (Synchronized with native)
     const color =
       properties.color_hex || properties.color || metadata.color || theme.colors.brand.primary;
 
-    // PNG Asset Mapper for visual consistency
+    //PNG Asset Mapper for visual consistency
     const pngIcon = useMemo(() => {
       const category = categoryKey;
       if (
@@ -78,10 +78,10 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
         return require('../../../../assets/icons/theater.png');
       if (category.includes('meetup') || category.includes('users'))
         return require('../../../../assets/icons/users.png');
-      return require('../../../../assets/icons/library-big.png'); // Fallback
+      return require('../../../../assets/icons/library-big.png'); //Fallback
     }, [categoryKey]);
 
-    // NO .value access in the component body!
+    //NO .value access in the component body!
     const mountScale = useSharedValue(0);
     const mountOpacity = useSharedValue(0);
 
@@ -94,7 +94,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
       const zoom = zoomSharedValue.value;
       const baseScale = interpolate(zoom, [14, 16, 18], [0.8, 1, 1.3], Extrapolation.CLAMP);
 
-      // Selected markers are even larger
+      //Selected markers are even larger
       const scale = isSelected ? 1.3 : baseScale;
 
       const opacity = interpolate(zoom, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);

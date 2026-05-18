@@ -2,28 +2,28 @@ import { POIGeoJSON } from '../../../types';
 import { StandardUIPOI } from '../../../types/models/poi';
 import { getCategoryMetadata, getStableColor } from '../../../utils/poiUtils';
 
-/**
+/***
  * Validates that coordinates are present and not [0,0].
  */
 export const isValidCoordinate = (coords?: number[] | null): boolean => {
   if (!coords || coords.length !== 2) return false;
   const [lng, lat] = coords;
-  // Basic [0,0] check and range check
+
   return (lng !== 0 || lat !== 0) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90;
 };
 
-/**
+/***
  * Adapter to normalize raw GeoJSON data or flat discovery objects into a consistent UI model.
  */
 export const normalizePOI = (raw: any): StandardUIPOI => {
-  // If it's already a StandardUIPOI, return it (idempotency)
+  //If it's already a StandardUIPOI, return it (idempotency)
   if (raw?.__normalized) return raw;
 
-  // Polymorphic extraction: Support GeoJSON (properties/geometry) or Flat objects
+  //Polymorphic extraction: Support GeoJSON (properties/geometry) or Flat objects
   const properties = raw?.properties || raw || {};
   const geometry = raw?.geometry || {};
 
-  // Coordinates can be in geometry.coordinates (GeoJSON) or directly in coords/coordinates (Flat)
+  //Coordinates can be in geometry.coordinates (GeoJSON) or directly in coords/coordinates (Flat)
   const rawCoords =
     geometry.coordinates ||
     raw?.coordinates ||
@@ -32,11 +32,11 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
 
   const coordinates: [number, number] = [rawCoords[0] || 0, rawCoords[1] || 0];
 
-  // Helper to filter out placeholder strings that aren't real URLs
+  //Helper to filter out placeholder strings that aren't real URLs
   const isRealUrl = (url: string) =>
     typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:'));
 
-  // Robust image extraction: find any non-empty array of valid images
+  //Robust image extraction: find any non-empty array of valid images
   let validImages: string[] = [];
   const sources = [
     properties.galleryUrls,
@@ -59,7 +59,7 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
   const bannerCandidate = properties.bannerUrl || raw?.bannerUrl || validImages[0];
   const bannerUrl = isRealUrl(bannerCandidate) ? bannerCandidate : validImages[0];
 
-  // Robust category detection
+  //Robust category detection
   const category = (properties.category || properties.type || 'generic').toLowerCase();
   const metadata = getCategoryMetadata(category);
 
@@ -80,11 +80,11 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
     rating: properties.metadata?.social?.rating || raw?.rating,
     reviewsCount: properties.metadata?.social?.reviews_count || raw?.reviewsCount,
     raw: properties,
-    __normalized: true, // Internal flag to avoid double normalization
+    __normalized: true, //Internal flag to avoid double normalization
   } as any;
 };
 
-/**
+/***
  * Adapter to normalize LatticeEvent into StandardUIPOI.
  */
 export const normalizeEvent = (event: any): StandardUIPOI => {
@@ -93,7 +93,7 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
   const id = String(event.id || '');
   const color = event.color || event.mainColor || getStableColor(id);
 
-  // Robust coordinate extraction for events (Flat or GeoJSON style)
+  //Robust coordinate extraction for events (Flat or GeoJSON style)
   const coords =
     event.center?.coordinates ||
     event.coordinates ||
@@ -118,14 +118,14 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
   } as any;
 };
 
-/**
+/***
  * Bulk normalization for lists of POIs.
  */
 export const normalizePOIList = (rawList: POIGeoJSON[]): StandardUIPOI[] => {
   return (rawList || []).map(normalizePOI).filter((poi) => isValidCoordinate(poi.coordinates));
 };
 
-/**
+/***
  * Bulk normalization for lists of Events.
  */
 export const normalizeEventList = (events: any[]): StandardUIPOI[] => {

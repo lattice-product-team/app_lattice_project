@@ -7,30 +7,30 @@ interface POIState {
   selectedCoords: number[] | null;
   isRemote: boolean;
 
-  // Hierarchical state
+
   selectedEventId: string | number | null;
   userInsideEventId: string | number | null;
   activeCategoryFilters: string[];
 
-  // Actions
+
   selectPoi: (poi: StandardUIPOI | null, shouldSyncUI?: boolean) => void;
   deselect: (shouldSyncUI?: boolean) => void;
   setRemote: (isRemote: boolean) => void;
 
-  // Hierarchy Actions
+
   setSelectedEvent: (eventId: string | number | null, shouldSyncUI?: boolean) => void;
   setUserInsideEvent: (eventId: string | number | null) => void;
   toggleCategoryFilter: (category: string) => void;
   clearFilters: () => void;
 
-  // Helpers
+
   getFilteredPOIs: (allPOIs: StandardUIPOI[], zoom?: number) => StandardUIPOI[];
 }
 
-// Recursion guard for cross-store synchronization
+
 let isProcessingPOIAction = false;
 
-/**
+/***
  * Specialized store for managing POI selection and interaction states.
  */
 export const usePOIStore = create<POIState>((set) => ({
@@ -45,7 +45,7 @@ export const usePOIStore = create<POIState>((set) => ({
   selectPoi: (poi, shouldSyncUI = true) => {
     if (isProcessingPOIAction) return;
 
-    // Update local state first
+    //Update local state first
     if (!poi) {
       set({ selectedPoiId: null, selectedPoi: null, selectedCoords: null });
     } else {
@@ -59,7 +59,7 @@ export const usePOIStore = create<POIState>((set) => ({
     if (!shouldSyncUI) return;
 
     isProcessingPOIAction = true;
-    // Then trigger cross-store effects
+    //Then trigger cross-store effects
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       if (poi) {
@@ -84,7 +84,7 @@ export const usePOIStore = create<POIState>((set) => ({
   deselect: (shouldSyncUI = true) => {
     if (isProcessingPOIAction) return;
 
-    // Update local state first
+    //Update local state first
     set({
       selectedPoi: null,
       selectedPoiId: null,
@@ -95,12 +95,12 @@ export const usePOIStore = create<POIState>((set) => ({
     if (!shouldSyncUI) return;
 
     isProcessingPOIAction = true;
-    // Then trigger cross-store effects
+    //Then trigger cross-store effects
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       const currentState = useMapUIStore.getState().uiState;
 
-      // Force return to EXPLORING if we are deselecting
+      //Force return to EXPLORING if we are deselecting
       if (currentState !== MapUIState.EXPLORING) {
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
       }
@@ -115,19 +115,19 @@ export const usePOIStore = create<POIState>((set) => ({
   setSelectedEvent: (selectedEventId, shouldSyncUI = true) => {
     if (isProcessingPOIAction) return;
 
-    // Update local state first
+    //Update local state first
     set({
       selectedEventId,
       selectedPoiId: null,
       selectedPoi: null,
       selectedCoords: null,
-      activeCategoryFilters: [], // Clear filters when switching events
+      activeCategoryFilters: [], //Clear filters when switching events
     });
 
     if (!shouldSyncUI) return;
 
     isProcessingPOIAction = true;
-    // Then trigger cross-store effects
+    //Then trigger cross-store effects
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       if (selectedEventId) {
@@ -156,32 +156,32 @@ export const usePOIStore = create<POIState>((set) => ({
     const { selectedEventId, userInsideEventId, activeCategoryFilters, selectedPoiId } =
       usePOIStore.getState();
 
-    // 0. Navigation Mode Override
+    //0. Navigation Mode Override
     try {
-      // Access navigation state directly to avoid circular dependency
+      //Access navigation state directly to avoid circular dependency
       const isNavigating =
         require('../../navigation/store/useNavigationStore').useNavigationStore.getState()
           .isNavigating;
       if (isNavigating) {
-        // Only show the destination POI if one is selected
+        //Only show the destination POI if one is selected
         return allPOIs.filter((p) => String(p.id) === String(selectedPoiId));
       }
     } catch (e) {
-      // Fallback silently if store is not accessible
+      //Fallback silently if store is not accessible
     }
 
-    // 1. Zoom-based visibility threshold (but always keep selected)
+    //1. Zoom-based visibility threshold (but always keep selected)
     if (zoom < 12.0 && !selectedPoiId) return [];
 
-    // Filter logic
+    //Filter logic
     const filtered = allPOIs.filter((p) => {
-      // ALWAYS keep the selected POI
+      //ALWAYS keep the selected POI
       if (selectedPoiId && String(p.id) === String(selectedPoiId)) return true;
 
-      // Zoom threshold for others
+      //Zoom threshold for others
       if (zoom < 12.0) return false;
 
-      // Category filters
+      //Category filters
       if (activeCategoryFilters.length > 0) {
         const categoryMap: Record<string, string[]> = {
           services: ['services', 'info', 'toilet', 'wc', 'utility'],
@@ -197,7 +197,7 @@ export const usePOIStore = create<POIState>((set) => ({
         });
       }
 
-      // Default: filter events
+      //Default: filter events
       return p.category !== 'event';
     });
 

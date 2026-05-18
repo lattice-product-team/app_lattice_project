@@ -12,17 +12,17 @@ interface ARState {
   filterMode: ARFilterMode;
   targetId: string | number | null;
 
-  // Contextual Awareness
+  //Contextual Awareness
   currentEventContext: LatticeEvent | null;
   isWithinBoundary: boolean;
 
-  // Actions
+
   openAR: (mode: ARFilterMode, id?: string | number) => void;
   closeAR: () => void;
   setContext: (event: LatticeEvent | null, withinBoundary: boolean) => void;
 }
 
-/**
+/***
  * Store to manage the global state of the Augmented Reality (AR) feature.
  * Controls visibility, filtering modes, and target subjects.
  */

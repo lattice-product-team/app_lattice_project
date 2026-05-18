@@ -13,7 +13,7 @@ interface LocationState {
   avoidSlopes: boolean;
   status: PermissionStatus;
 
-  // Actions
+
   setLocation: (coords: number[] | null) => void;
   setLogicalLocation: (coords: number[] | null) => void;
   setHeading: (heading: number | null) => void;
@@ -28,7 +28,7 @@ interface LocationState {
   ) => void;
 }
 
-// Pre-hydrate from MMKV to ensure first render has coordinates
+//Pre-hydrate from MMKV to ensure first render has coordinates
 const getPersistedLocation = () => {
   try {
     const json = storage.getString('location-storage');
@@ -37,7 +37,7 @@ const getPersistedLocation = () => {
       return {
         coords: parsed.state?.coords || null,
         logicalCoords: parsed.state?.logicalCoords || null,
-        heading: null, // Don't persist heading as it's transient
+        heading: null, //Don't persist heading as it's transient
       };
     }
   } catch (e) {
