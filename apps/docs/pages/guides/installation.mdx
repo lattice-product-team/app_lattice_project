@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components';
+import { Callout } from 'nextra/components'
 
 # Custom Infrastructure & Environment Manual
 
@@ -7,9 +7,7 @@ This manual provides instructions for advanced configurations, custom environmen
 ---
 
 <Callout type="info">
-  **Looking for the fast path?** If you are setting up your workspace for the first time using our
-  standard Docker Compose stack, refer to the [Getting Started Guide](./getting-started.md). You do
-  not need to install Postgres, PostGIS, or Redis natively on your host machine.
+  **Looking for the fast path?** If you are setting up your workspace for the first time using our standard Docker Compose stack, refer to the [Getting Started Guide](./getting-started.md). You do not need to install Postgres, PostGIS, or Redis natively on your host machine.
 </Callout>
 
 ---
@@ -74,8 +72,7 @@ pnpm db:seed
 ```
 
 <Callout type="warning">
-  If migrations or seeding fail, make sure the database is fully initialized and your `DATABASE_URL`
-  contains the correct password and port. You can run `pnpm db:check` to diagnose connection issues.
+  If migrations or seeding fail, make sure the database is fully initialized and your `DATABASE_URL` contains the correct password and port. You can run `pnpm db:check` to diagnose connection issues.
 </Callout>
 
 ---
