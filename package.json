@@ -20,6 +20,7 @@
     "dev:mobile:lan": "pnpm --filter @app/mobile dev:lan",
     "dev:mobile:lan:prod": "NODE_ENV=production pnpm --filter @app/mobile dev:lan",
     "dev:mobile:tunnel": "pnpm --filter @app/mobile dev:tunnel",
+    "dev:mobile:tunnel:prod": "NODE_ENV=production pnpm --filter @app/mobile dev:tunnel",
     "dev:android": "pnpm --filter @app/mobile android:device",
     "dev:android:prod": "NODE_ENV=production pnpm --filter @app/mobile android:device",
     "dev:ios": "pnpm --filter @app/mobile ios:device",
