@@ -1,11 +1,14 @@
 import React from 'react';
 import { DocsThemeConfig } from 'nextra-theme-docs';
 
+const isProd = process.env.NODE_ENV === 'production';
+const basePath = isProd ? '/app_lattice_project' : '';
+
 const config: DocsThemeConfig = {
   logo: (
     <div className="flex items-center gap-2 font-bold text-xl">
       <img
-        src="/icon.png"
+        src={`${basePath}/icon.png`}
         height="32"
         width="32"
         style={{ borderRadius: '6px' }}

@@ -4,11 +4,6 @@ import { Callout } from 'nextra/components'
 
 This manual provides instructions for advanced configurations, custom environment tuning, and native infrastructure setups.
 
-<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
-  <img src="/assets/mockups/map-black-1.png" alt="Relational Spatial Maps (Dark Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-  <img src="/assets/mockups/map-white-1.png" alt="Relational Spatial Maps (Light Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-</div>
-
 ---
 
 <Callout type="info">
