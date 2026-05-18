@@ -73,8 +73,8 @@ Open separate terminals to start the core services:
 
 ## 4. Verification
 
-- **API Health**: Visit `http://localhost:3001/status`.
-- **Admin Dashboard**: Visit `http://localhost:3000`.
+- **API Health**: Visit `http://localhost:3000/status` (should return `{"status": "api_ok", ...}`).
+- **Admin Dashboard**: Visit `http://localhost:3004` (when running via Docker Compose) or `http://localhost:3001` (if running locally outside Docker where port 3000 is occupied by the API).
 - **Mobile Expo Console**: Scan the QR code displayed in the terminal with the Expo Go app (or Expo dev client) or press `i` (iOS simulator) or `a` (Android emulator).
 
 ---

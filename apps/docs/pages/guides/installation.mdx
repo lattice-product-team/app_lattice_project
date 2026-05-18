@@ -113,7 +113,7 @@ Once these database, caching, and routing containers are active, please refer di
 
 To confirm everything is fully operational:
 
-1. **API Check**: Open `http://localhost:3001/status` in your browser. It should return `{"status": "ok"}`.
+1. **API Check**: Open `http://localhost:3000/status` in your browser. It should return `{"status": "api_ok", ...}`.
 2. **Admin Login**: Navigate to `http://localhost:3004`. Log in with your `ADMIN_EMAIL` and `ADMIN_PASSWORD` defined in `.env`.
 3. **Map Telemetry**: Ensure that the map on the Admin Dashboard loads correctly (verifies the `MAPTILER_KEY`).
 4. **Mobile Navigation**: Open the app in Expo Go, tap on an active event, and try planning a route. If routes compute successfully, the Valhalla container is communicating correctly with the API.

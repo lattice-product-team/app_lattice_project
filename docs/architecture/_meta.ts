@@ -4,5 +4,4 @@ export default {
   'database-schema': 'Database Schema',
   'class-diagram': 'Class Diagram',
   'activity-diagram': 'Activity Diagrams',
-  adr: 'Architectural Decisions',
 };
