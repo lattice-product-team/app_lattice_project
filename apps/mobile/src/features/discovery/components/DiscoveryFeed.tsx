@@ -16,7 +16,7 @@ interface Props {
   theme?: LatticeTheme;
 }
 
-export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
+export const DiscoveryFeed = React.memo(function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
   const { data: feed, isLoading, refetch, isRefetching } = useDiscovery();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isReady, setIsReady] = useState(false);
@@ -37,9 +37,9 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
   const user = useAuthStore((s) => s.user);
   const isGuest = useAuthStore((s) => s.isGuest);
 
-  const handleSelectCategory = (id: string) => {
+  const handleSelectCategory = React.useCallback((id: string) => {
     setActiveCategory((prev) => (prev === id ? 'all' : id));
-  };
+  }, []);
 
   const filteredSections = React.useMemo(() => {
     if (!feed?.sections || activeCategory === 'all') return feed?.sections || [];
@@ -218,4 +218,4 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
       }
     />
   );
-}
+});

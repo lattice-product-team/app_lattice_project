@@ -726,6 +726,39 @@ export default function MapIndexPage() {
     ]
   );
 
+  const handleSelectSearchResult = useCallback(
+    (q: string, coordinates?: [number, number], result?: any) => {
+      setSearchQuery('');
+      saveSearch(q);
+      setIsSearching(false);
+      Keyboard.dismiss();
+      islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
+
+      if (result?.type === 'poi') {
+        setSelectedEvent(null);
+        setCurrentEvent(null);
+        selectPoi(result.raw);
+      } else {
+        const match =
+          result?.raw ||
+          allEvents.find((e) => e.name.toLowerCase() === q.toLowerCase());
+        if (match) handleEventSelect(match);
+      }
+    },
+    [
+      setSearchQuery,
+      saveSearch,
+      setIsSearching,
+      islandState,
+      theme,
+      setSelectedEvent,
+      setCurrentEvent,
+      selectPoi,
+      allEvents,
+      handleEventSelect,
+    ]
+  );
+
   const [exploreColor, setExploreColor] = useState(theme.colors.text.primary);
   const [mapColor, setMapColor] = useState(theme.colors.text.muted);
 
@@ -962,24 +995,7 @@ export default function MapIndexPage() {
                 <Animated.View style={[StyleSheet.absoluteFill, level3ContentStyle, { top: 0 }]}>
                   <SearchExperience
                     query={searchQuery}
-                    onSelectResult={(q, coords, result) => {
-                      setSearchQuery('');
-                      saveSearch(q);
-                      setIsSearching(false);
-                      Keyboard.dismiss();
-                      islandState.value = withSpring(0.5, theme.motion.physics.magnetic);
-
-                      if (result?.type === 'poi') {
-                        setSelectedEvent(null);
-                        setCurrentEvent(null);
-                        selectPoi(result.raw);
-                      } else {
-                        const match =
-                          result?.raw ||
-                          allEvents.find((e) => e.name.toLowerCase() === q.toLowerCase());
-                        if (match) handleEventSelect(match);
-                      }
-                    }}
+                    onSelectResult={handleSelectSearchResult}
                   />
                 </Animated.View>
               </Animated.ScrollView>

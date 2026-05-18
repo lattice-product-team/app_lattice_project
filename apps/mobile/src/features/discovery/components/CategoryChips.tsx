@@ -28,7 +28,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
   const theme = useAppTheme();
 
   return (
-    <View className="mb-6">
+    <View style={{ marginBottom: 24 }}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -42,8 +42,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
             <Pressable
               key={cat.id}
               onPress={() => onSelect(cat.id)}
-              className="items-center"
-              style={{ minWidth: 72, paddingHorizontal: 4 }}
+              style={{ alignItems: 'center', minWidth: 72, paddingHorizontal: 4 }}
             >
               <View
                 style={{
