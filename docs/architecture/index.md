@@ -1,64 +1,93 @@
+import { Callout } from 'nextra/components'
+
 # System Overview
 
-Welcome to the **Lattice** architecture overview. This document describes the high-level structure of our monorepo and how the different components interact to provide the best event and festival discovery experience in Barcelona.
+Welcome to the **Lattice** architecture reference. This section provides an in-depth view of the system's structural blueprint, monorepo hierarchy, database patterns, and domain services. Lattice is engineered as a highly performant, location-aware platform designed to deliver real-time event discovery and pedestrian navigation within curated urban environments.
 
-## Project Vision
+---
 
-Lattice is designed to be the definitive guide for urban discovery. Our primary goal is to connect clients with the vibrant cultural scene of Barcelona, providing real-time information about festivals, events, and Points of Interest (POIs) through a highly performant and accessible interface.
+## Architectural Philosophy
+
+Lattice is built upon three core design priorities:
+1. **Type Consistency**: Eliminating the risk of API type drift across web, mobile, and backend nodes.
+2. **Geospatial Integrity**: Utilizing native, high-performance spatial queries with strict verification layers.
+3. **Scalable Modularization**: Structuring the backend as a modular monolith with decoupled service boundaries.
+
+---
 
 ## High-Level Architecture
 
-The project is structured as a **Turborepo monorepo**, ensuring maximum code reuse and consistency across our web, mobile, and backend services.
+The platform is organized as a Turborepo monorepo utilizing pnpm workspaces. This model consolidates multiple application runtimes alongside shareable packages, simplifying dependency management and optimizing compile pipelines.
 
 ```mermaid
 graph TD
-    subgraph "Clients"
-        MobileApp["Mobile App (React Native/Expo)"]
-        AdminWeb["Admin Dashboard (Next.js)"]
+    classDef client fill:#E1F5FE,stroke:#039BE5,stroke-width:2px;
+    classDef server fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px;
+    classDef infra fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px;
+
+    subgraph Clients ["Client Layer"]
+        MobileApp["Mobile Client <br/> (React Native / Expo)"]:::client
+        AdminWeb["Admin Dashboard <br/> (Next.js 14)"]:::client
     end
 
-    subgraph "Backend (Node.js Monolith)"
-        API["Express API Monolith"]
-        Core["@app/core (Shared Logic)"]
-        DBSchema["@app/db (Drizzle ORM)"]
+    subgraph Monolith ["Application Core"]
+        API["Express Monolith Server <br/> (apps/server)"]:::server
+        Core["Shared Core Logic <br/> (@app/core)"]:::server
+        DBSchema["Shared Database Access <br/> (@app/db via Drizzle)"]:::server
     end
 
-    subgraph "Infrastructure"
-        Postgres[("PostgreSQL DB")]
-        Redis[("Redis Cache")]
-        Storage["Cloud Storage / Assets"]
+    subgraph Infrastructure ["Infrastructure Layer"]
+        Postgres[("PostgreSQL DB <br/> (PostGIS Spatial Ext)")]:::infra
+        Redis[("Redis Cache <br/> (Spatial & Session Storage)")]:::infra
+        Storage["Cloud Storage <br/> (Asset Distribution)"]:::infra
     end
 
-    MobileApp --> API
-    AdminWeb --> API
+    MobileApp -->|HTTP / WebSocket| API
+    AdminWeb -->|HTTP / WebSocket| API
     API --> Core
     API --> DBSchema
     DBSchema --> Postgres
+    API --> Redis
     API --> Storage
 ```
 
-### Core Components
+---
 
-1.  **Mobile App (`apps/mobile`)**: The primary interface for end-users. Built with React Native and Expo, featuring MapLibre for high-performance mapping.
-2.  **Admin Web (`apps/admin-web`)**: A high-density dashboard for administrators to curate content and monitor system health.
-3.  **API Monolith (`apps/server`)**: A centralized service layer that handles business logic. It follows a **Service Layer pattern**, where controllers handle HTTP transport and delegate business logic and data orchestration to dedicated domain services (e.g., `PoiService`, `EventService`).
-4.  **Shared Packages (`packages/*`)**:
-    - `db`: Single source of truth for the database schema and migrations using Drizzle ORM.
-    - `types-schema`: Shared TypeScript interfaces ensuring type safety from the DB to the Mobile UI.
-    - `core`: Common utilities, logging, and middleware.
+## Key Core Components
 
-## Service Domains
+### 1. Mobile Client (`apps/mobile`)
+The primary interface for event attendees.
+*   **Engine**: React Native and Expo.
+*   **Geospatial Layer**: MapLibre GL for client-side vector map rendering.
+*   **Features**: Location-aware discovery feeds, real-time spatial navigation, off-screen target guidance, and gyro-responsive Augmented Reality viewfinders.
 
-- **Geospatial (Geo)**: Handles spatial searches, POI management, and custom routing logic.
-- **Identity (Auth)**: Manages user profiles and handles secure JWT-based authentication with bcrypt hashing.
-- **Social**: Orchestrates group discovery and real-time interaction between users.
+### 2. Admin Dashboard (`apps/admin-web`)
+The command center for administrators, editors, and security staff.
+*   **Engine**: Next.js 14 utilizing Server Actions and React Server Components.
+*   **Features**: Perimetral boundary drawing overlays, Point of Interest (POI) curation, reverse-geocoding resolution, and live crowd telemetry heatmap overlays.
 
-## Tech Stack
+### 3. API Monolith Server (`apps/server`)
+The centralized runtime that governs business operations.
+*   **Engine**: Node.js and Express.
+*   **Pattern**: Service Layer pattern. Controllers handle HTTP validation and serialization, then delegate operations to domain-specific Services (`PoiService`, `EventService`, `RoutingService`).
 
-- **Languages**: TypeScript (Strict mode enabled).
-- **Frontend**: Next.js 14, React, Vanilla CSS (CSS Modules).
-- **Mobile**: React Native, Expo, MapLibre GL.
-- **Backend**: Node.js, Express, Drizzle ORM.
-- **Database**: PostgreSQL (with PostGIS for geospatial queries).
-- **Identity**: Custom JWT Authentication.
-- **Tooling**: pnpm, Turborepo, Docker.
+### 4. Shared Packages (`packages/*`)
+Internal libraries imported directly by the applications:
+*   `db`: Declares the database schemas and manages migrations via Drizzle ORM.
+*   `types-schema`: Consolidates universal TypeScript types, inferred directly from database structures and request/response specifications.
+*   `core`: Provides reusable middlewares, logger utilities, and general configurations.
+
+---
+
+## Domain Boundaries
+
+The application logic is decoupled into distinct domain boundaries:
+
+*   **Geospatial (Geo)**: Governs spatial indexing, POI status updates, perimetral polygon evaluations, and forward/reverse address resolution.
+*   **Identity & Access (Auth)**: Handles credential cryptography (Bcrypt), secure JWT lifecycle management, and WebAuthn Passkey registration/login phases.
+*   **Pedestrian Navigation (Nav)**: Responsible for topological routing calculations, accessibility segment filtering, and Valhalla routing proxies.
+*   **Crowd Telemetry (Telemetry)**: Manages fast database insertions for device GPS coordinates and aggregates coordinate points into dynamic heatmap FeatureCollections.
+
+<Callout type="info">
+  This monorepo layout enables developers to compile, test, and package all elements in a single step using the Turborepo engine, guaranteeing total type-safety from database columns directly to mobile UI screens.
+</Callout>

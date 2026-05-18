@@ -1,12 +1,14 @@
+import { Callout } from 'nextra/components'
+
 # Activity Diagrams
 
-This section provides comprehensive, dynamic workflows and state transitions for both the **Lattice Mobile Application** and the **Lattice Administration Web Platform (Web-Admin)**, derived directly from the source code.
+This section details the operational workflows, state transitions, and interactive processes governing both the **Lattice Mobile Application** and the **Lattice Administration Web Platform (Web-Admin)**.
 
 ---
 
-## 📱 Mobile App Workflows
+## Mobile Client Workflows
 
-This diagram comprehensively describes the dynamic workflows and real state transitions of the **Lattice Mobile Application**, derived directly from the TypeScript source code. It models the launch sequence, dual-canvas sliding dashboard transitions, snap search island behavior, route planning, active navigation, and the adaptive AR viewfinder HUD.
+This diagram models the lifecycle and dynamic state transitions of the **Lattice Mobile Client** (React Native / Expo), tracing operations from initialization to active pedestrian guidance and gyroscope-responsive Augmented Reality views.
 
 ```mermaid
 flowchart TD
@@ -114,7 +116,7 @@ flowchart TD
 
     %% 7. Augmented Reality HUD Overlay
     subgraph ARHud ["Adaptive AR Navigation HUD"]
-        NavigationHUDs --> WatchMotion["Poll DeviceMotionbeta/gamma at 60fps"]
+        NavigationHUDs --> WatchMotion["Poll DeviceMotion beta/gamma at 60fps"]
         WatchMotion --> CheckTilt{"Phone beta tilt in range 45 - 135 degrees?"}
 
         CheckTilt -- No (Flat) --> KeepHidden["Keep AR Overlay hidden / Renders standard map"]
@@ -139,40 +141,28 @@ flowchart TD
     end
 ```
 
-### Functional Breakdown of Mobile App Workflows
+### Detailed Functional Walkthrough: Mobile Client
 
-1. **Strict Startup Lifecycle Synchronization**:
-   - `app/index.tsx` verifies `navigationState?.key` first to prevent runtime crashes before the Expo Router is fully mounted.
-   - Initiates asynchronous data pre-fetching (events and POIs) with a **5-second** safety timeout to guarantee a smooth user experience even under poor network conditions.
-
-2. **Interactive Sliding Welcome Screen (Onboarding)**:
-   - Integrated with smooth motion interpolations to enhance feedback and guide new users intuitively.
-   - Binary flow: Full authentication supporting SSO and email credentials, or guest access bypassing authentication.
-
-3. **Dynamic Dual Canvas Dashboard (Explore vs Map)**:
-   - Coordinated in `app/(main)/index.tsx` via a horizontally sliding viewport controlled by React Native Reanimated's `screenMode.value`.
-   - Smart transition hooks: Tapping any item in the discovery feed automatically shifts the canvas to Map mode and zooms to focus the selected element.
-
-4. **Triple-Height Expansive Top Search Drawer (Search Island)**:
-   - Floating panel snapping across three predefined height states based on finger gestures (`Gesture.Pan`): collapsed (`0.0`), intermediate dashboard (`0.5`), and full search query view (`1.0`).
-   - Implements an anti-skip swipe constraint to ensure the drawer flows naturally through state transitions.
-
-5. **Concurrent Multi-Profile Route Planning**:
-   - During the planning phase, the client fetches optimal routes for driving, walking, and bicycling in parallel.
-   - Automatically adapts calculated routes in real-time according to accessibility parameters selected in the user's profile (e.g., avoiding staircases).
-
-6. **Active Turn-by-Turn Guidance State**:
-   - Transitioning into navigation mode instantly isolates the interface: clears non-target markers from the map and displays active turn instructions on a high-contrast HUD banner.
-
-7. **Adaptive Hardware-Triggered AR Navigation HUD**:
-   - Smart activation via device motion: launches automatically only when the phone is held vertically (gyroscope angular tilt between 45° and 135°).
-   - Projects 2D screen overlays tracking true compass headings, showing guide arrows at the screen edges if the active navigation target is outside the camera's horizontal FOV.
+1.  **Strict Startup Lifecycle Synchronization**:
+    *   `app/index.tsx` checks `navigationState?.key` to verify that the router is fully mounted before loading downstream UI dependencies, avoiding race conditions.
+    *   Triggers parallel pre-fetching of events and search lists with a built-in **5-second** safety timeout to guarantee the app remains responsive even during server outages.
+2.  **Dynamic Dual Canvas Dashboard (Explore vs Map)**:
+    *   Coordinated inside `app/(main)/index.tsx` via a horizontally sliding drawer canvas managed by React Native Reanimated's `screenMode.value`.
+    *   Tapping an event in the discovery feed automatically updates this variable, shifts focus to the map view, and centers the camera on the selected item.
+3.  **Triple-Height Expansive Top Search Drawer (Search Island)**:
+    *   A floating search bar panel that snaps across three height configurations depending on panning gestures (`Gesture.Pan`): collapsed (`0.0`), intermediate category pills (`0.5`), and full search query view (`1.0`).
+    *   Implements an anti-skip swipe check to enforce natural transitions between states.
+4.  **Concurrent Multi-Profile Route Planning**:
+    *   When planning, the app queries driving, walking, and bicycling routes in parallel to display ETAs.
+    *   Calculated paths are dynamically recalculated in real-time if accessibility preferences (such as avoiding steps) are toggled in the user profile sheet.
+5.  **Augmented Reality (AR) Overlay Activation**:
+    *   Device gyroscopes are polled at 60fps. If the screen's angular tilt is vertical (between 45° and 135°), the app locks the screen to portrait, activates the camera, and projects spatial location labels.
 
 ---
 
-## 💻 Web-Admin Workflows
+## Web-Admin Workflows
 
-This diagram comprehensively describes the operational workflows of the **Lattice Administration Web Platform (Web-Admin)**. It graphically represents the initialization of the global command center dashboard, search filtration behavior, real-time map synchronization via WebSockets, real-time location telemetry processing (Crowd Radar), and the geographical creation/edition lifecycle of events and points of interest (POIs) extracted directly from the Next.js codebase.
+This diagram models the operational workflows of the **Lattice Administration Web Platform** (Web-Admin), charting access controls, perimetral polygon drawings, and live telemetry integrations.
 
 ```mermaid
 flowchart TD
@@ -306,29 +296,23 @@ flowchart TD
     end
 ```
 
-### Functional Breakdown of Web-Admin Workflows
+### Detailed Functional Walkthrough: Web-Admin
 
-1. **Security and Administrative Access (Access Control & `/login`)**:
-   - **Middleware Gatekeeper**: The system utilizes a Next.js middleware check; if no active encrypted session cookie (`session`) is detected, the user is instantly redirected to the secure login page (`/login`).
-   - **Secure Server Actions**: The credential form leverages React's `useActionState` hook bound to the `'use server'` function `login`. This function executes exclusively on the server side to validate the operational email and security key against the secret backend variables `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
-   - **Session Encryption & Cookies**: Upon successful validation, the server encrypts the user email and expiration timestamp (set to **24 hours**), writes the encrypted cookie (`session`) with high-security parameters (`httpOnly`, `sameSite=lax`), and redirects the administrator to the main command center `/`.
+1.  **Security Gates & Encrypted Cookies**:
+    *   Admin routes are protected via Next.js middleware checking for an encrypted `session` cookie. If missing, users are redirected to `/login`.
+    *   Form submissions leverage Next.js **Server Actions** running strictly on the server to validate credentials, generate a 24-hour encrypted session, set `httpOnly` secure cookies, and perform standard redirects.
+2.  **Command Center Launch & Parameter Tracking**:
+    *   Uses specialized hooks (`useEvents` / `usePOIs`) displaying a loading spinner until resolution. Fits geographical views based on loaded boundaries.
+    *   Deep linking via query parameters (`eventId` or `poiId`) automatically filters parent events, focuses maps (zoom level 18), and slides out active metadata cards.
+3.  **Real-Time Telemetry & Heatmap Polling**:
+    *   Toggling telemetry on active events initializes background fetch calls executing **every 5 seconds**.
+    *   Pulls coordinates from `/api/geo/locations`, compiles them into standard GeoJSON structures, and updates the MapLibre layer data source to redraw heatmap densities.
+4.  **Drawing Coordinates & Polygons (`DRAW_BOUNDARY`)**:
+    *   Creating events opens full-screen overlays supporting node-by-node polygon drawings on the canvas. Forms auto-append the initial coordinate to the final index to correctly close the GeoJSON boundary.
+5.  **Reverse Geocoding & WebSocket Live Sync**:
+    *   Placing markers in `PICK_COORDINATE` mode fires queries resolving Human-Readable addresses to auto-populate form inputs.
+    *   Connects to Socket.io channels subscribing to `'admin:pois:updated'` broadcasts, triggering non-blocking visual table refreshes when staff mutate data.
 
-2. **Global Command Center (Command Center - `/`)**:
-   - **Coordinated Loading**: The `useEvents()` and `usePOIs()` hooks efficiently manage synchronous data loading, displaying a global center spinner page until data is successfully integrated.
-   - **URL Parameter Synchronization**: Opening the portal with `poiId` or `eventId` query parameters initiates automatic focusing: makes the parent event visible, zooms the camera to level 18, and renders the metadata slide-out panel in the sidebar drawer.
-
-3. **Search Filtration & Solo Mode Isolation**:
-   - **Unique Match Snap**: While filtering the event list in the sidebar, if the query matches exactly 1 unique event, the map camera automatically snaps to focus on that event.
-   - **Solo Mode Zooming**: Double-clicking an event isolates its bounds, hiding all other event layers and calling `fitBounds` to seamlessly frame the geographical perimeter of the selected event's polygon.
-
-4. **Real-Time Crowd Radar Telemetry Polling**:
-   - **Dynamic Intervals**: Toggling the radar on active events initializes a background fetch routine executing **every 5 seconds**.
-   - **Aggregated Density Heatmaps**: Collects live GPS coordinates from the `/api/geo/locations?eventId=ID` endpoint, parses them into a unified GeoJSON `FeatureCollection`, and passes it directly to the Mapbox/MapLibre source to render real-time Heatmap Tiles.
-
-5. **Event Perimeter Creation & Lifecycle**:
-   - **Interactive Drawing Overlay (`DRAW_BOUNDARY`)**: Creating an event launches a full-screen map overlay allowing point-by-point path definition. Floating tool buttons offer `Undo` and `Clear` state operations.
-   - **Polygon Ring Closing**: Upon form confirmation, the client automatically closes the polygon ring by closing the coordinate array and serializing standard GeoJSON structures.
-
-6. **Amenity Registration & reverse-geocoding (`/pois`)**:
-   - **Reverse Geocoding Coordinates**: Placing custom pins in `PICK_COORDINATE` mode fires a fetch query to `/api/resolve-address?lat=Y&lng=X` to resolve human-readable postal addresses and venue titles, auto-populating the UI inputs.
-   - **WebSocket Multi-Client Sync**: Subscribes the browser client to the `'admin:pois:updated'` topic using WebSockets. When occupancy changes are made elsewhere, it triggers a non-blocking list refresh, maintaining real-time occupancy bar graphs.
+<Callout type="info">
+  **Real-Time Synchronization**: Toggling the active radar starts background telemetry workers in the mobile clients, routing high-frequency logging through dedicated telemetry API paths to ensure optimal mapping accuracy.
+</Callout>
