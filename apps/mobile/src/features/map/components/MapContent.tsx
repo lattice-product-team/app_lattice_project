@@ -21,15 +21,29 @@ import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
 import { useEventStore } from '../../event/store/useEventStore';
-import { normalizePOI, normalizeEventList, normalizePOIList } from '../../poi/adapters/poiAdapter';
+import { normalizePOI, normalizeEventList } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 
 // Components
-import { MapCameraManager, MapCameraHandle } from './MapCameraManager';
 import { MapLayers } from './MapLayers';
 import { MapImageManager } from './MapImageManager';
+
+const DEFAULT_CAMERA_SETTINGS = {
+  centerCoordinate: MAP_CENTER,
+  zoomLevel: 14,
+};
+
+const FLY_TO_PADDING = { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 };
+const ROUTE_OVERVIEW_PADDING = {
+  ne: [0, 0], // Placeholder, calculated dynamically
+  sw: [0, 0],
+  paddingLeft: 60,
+  paddingRight: 60,
+  paddingTop: 140,
+  paddingBottom: 400,
+};
 
 // Constants & Utilities
 import { useLocationStore } from '../../../store/useLocationStore';
@@ -39,10 +53,128 @@ import styleDark from '../../../../assets/map/style-dark.json';
 import {
   MAPTILER_KEY,
   EMPTY_GEOJSON,
-  DEFAULT_ZOOM,
   MAP_CENTER,
 } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
+
+// --- Global Performance Cache: Pre-Filter Style Layers Outside Render Cycle ---
+const filterMapStyle = (baseStyle: any) => {
+  const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
+    const lid = (layer.id || '').toLowerCase();
+    const isSymbolLayer = layer.type === 'symbol';
+    const isEssentialLabel =
+      lid.includes('place') ||
+      lid.includes('city') ||
+      lid.includes('town') ||
+      lid.includes('village') ||
+      lid.includes('country') ||
+      lid.includes('state') ||
+      lid.includes('continent') ||
+      lid.includes('road') ||
+      lid.includes('water');
+
+    // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
+    if (
+      Platform.OS === 'android' &&
+      (lid.includes('building') || layer.type === 'fill-extrusion')
+    ) {
+      return {
+        ...layer,
+        layout: { ...(layer.layout || {}), visibility: 'none' },
+      };
+    }
+
+    if (isSymbolLayer && !isEssentialLabel) {
+      return {
+        ...layer,
+        layout: {
+          ...(layer.layout || {}),
+          visibility: 'none',
+        },
+      };
+    }
+    return layer;
+  });
+
+  return {
+    ...baseStyle,
+    layers: filteredLayers,
+    sources: {
+      ...(baseStyle.sources || {}),
+      maptiler_planet: {
+        type: 'vector',
+        url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`,
+      },
+    },
+  };
+};
+
+let cachedLightStyle: any = null;
+let cachedDarkStyle: any = null;
+
+const getOptimizedStyle = (isDark: boolean) => {
+  if (isDark) {
+    if (!cachedDarkStyle) {
+      cachedDarkStyle = filterMapStyle(JSON.parse(JSON.stringify(styleDark)));
+    }
+    return cachedDarkStyle;
+  } else {
+    if (!cachedLightStyle) {
+      cachedLightStyle = filterMapStyle(JSON.parse(JSON.stringify(styleLight)));
+    }
+    return cachedLightStyle;
+  }
+};
+
+const getNativeIconName = (categoryIcon: any) => {
+  const icon = String(categoryIcon || '').toLowerCase();
+
+  // Food & Drink
+  if (
+    icon.includes('restaurant') ||
+    icon.includes('food') ||
+    icon.includes('utensils') ||
+    icon.includes('coffee')
+  )
+    return 'restaurant';
+  if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
+
+  // Infrastructure
+  if (icon.includes('parking')) return 'parking';
+  if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
+    return 'toilet';
+  if (
+    icon.includes('gate') ||
+    icon.includes('login') ||
+    icon.includes('entrance') ||
+    icon.includes('log-out')
+  )
+    return 'log-out';
+
+  // Health & Safety
+  if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital'))
+    return 'hospital';
+  if (icon.includes('security') || icon.includes('shield')) return 'shield';
+
+  // Info & Points
+  if (icon.includes('info') || icon.includes('library')) return 'library-big';
+  if (icon.includes('meetup') || icon.includes('users')) return 'users';
+
+  // Venues & Shopping
+  if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
+    return 'store';
+  if (
+    icon.includes('stage') ||
+    icon.includes('theater') ||
+    icon.includes('grandstand') ||
+    icon.includes('music')
+  )
+    return 'theater';
+  if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
+    return 'crown';
+
+  return 'library-big'; // Fallback to info-style
+};
 
 interface MapContentProps {
   poisGeoJSON: any;
@@ -63,7 +195,7 @@ export const MapContent = function MapContent({
   islandState,
   is3DActive = false,
 }: MapContentProps) {
-  const cameraRef = useRef<MapCameraHandle>(null);
+  const cameraRef = useRef<MapLibreGL.Camera>(null);
   const mapRef = useRef<any>(null);
   const theme = useLatticeTheme();
   const hasInitialRendered = React.useRef(false);
@@ -81,6 +213,7 @@ export const MapContent = function MapContent({
     lastCameraPosition,
     setLastCameraPosition,
     setInitialLoadComplete,
+    isInitialLoadComplete,
     isProgrammaticMove,
     setIsProgrammaticMove,
     lastProcessedTarget,
@@ -103,6 +236,225 @@ export const MapContent = function MapContent({
   const zoomSharedValue = useSharedValue(initialZoom);
   const lastZoomUpdateRef = useRef(0);
   const ZOOM_THROTTLE_MS = 100;
+
+  // --- Camera Orchestration ---
+  const hasInitialized = useRef(false);
+  const lastIsNavigating = useRef(isNavigating);
+  const lastProcessedRouteId = useRef<string | null>(null);
+  const lastProcessedRecenter = useRef(recenterCount);
+  const lastProcessedForceCenter = useRef(forceCenterCount);
+  const programmaticMoveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // CLEANUP PROGRAMMATIC TIMEOUT ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      if (programmaticMoveTimeoutRef.current) {
+        clearTimeout(programmaticMoveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // SNAP LOGIC: Instantly move the camera without animation
+  const snapToLocation = useCallback((coords: [number, number], zoom?: number, pitch?: number) => {
+    if (!cameraRef.current) return;
+    cameraRef.current.setCamera({
+      centerCoordinate: coords,
+      ...(zoom !== undefined && { zoomLevel: zoom }),
+      ...(pitch !== undefined && { pitch: pitch }),
+      animationDuration: 0,
+      padding: { paddingBottom: 0, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+    });
+  }, []);
+
+  // FLYTO LOGIC: Smooth cinematic transition
+  const flyTo = useCallback(
+    (coords: [number, number], zoom?: number, pitch?: number, duration: number = 1500) => {
+      if (!cameraRef.current) return;
+
+      console.log('[MapContent] ✈️ Flying to:', coords);
+      if (programmaticMoveTimeoutRef.current) {
+        clearTimeout(programmaticMoveTimeoutRef.current);
+      }
+      setIsProgrammaticMove(true);
+      cameraRef.current.setCamera({
+        centerCoordinate: coords,
+        ...(zoom !== undefined && { zoomLevel: zoom }),
+        ...(pitch !== undefined && { pitch: pitch }),
+        animationDuration: duration,
+        animationMode: 'flyTo',
+        padding: FLY_TO_PADDING,
+      });
+
+      // Safety release of programmatic lock
+      programmaticMoveTimeoutRef.current = setTimeout(() => {
+        setIsProgrammaticMove(false);
+      }, duration + 50);
+    },
+    [setIsProgrammaticMove]
+  );
+
+  // NATIVE TRACKING SYNC: Listen to when the native engine breaks follow mode
+  const handleUserTrackingModeChange = useCallback(
+    (e: any) => {
+      const { followUserLocation } = e.nativeEvent.payload;
+      if (!followUserLocation && cameraMode !== MapCameraMode.FREE && !isProgrammaticMove) {
+        console.log('[MapContent] 🚨 Native tracking broken by gesture, syncing state');
+        setCameraMode(MapCameraMode.FREE);
+      }
+    },
+    [cameraMode, isProgrammaticMove, setCameraMode]
+  );
+
+  const getFollowMode = () => {
+    switch (cameraMode) {
+      case MapCameraMode.FOLLOW:
+        return MapLibreGL.UserTrackingMode.Follow;
+      case MapCameraMode.FOLLOW_WITH_HEADING:
+        return MapLibreGL.UserTrackingMode.FollowWithHeading;
+      case MapCameraMode.FOLLOW_WITH_COURSE:
+        return MapLibreGL.UserTrackingMode.FollowWithCourse;
+      default:
+        return MapLibreGL.UserTrackingMode.None;
+    }
+  };
+
+  // DEBUG EFFECT: Log camera state in real-time
+  useEffect(() => {
+    console.log(
+      '[MapContent] 🔍 STATE DEBUG:',
+      'Mode:', cameraMode,
+      'HasInit:', hasInitialized.current,
+      'isProgrammatic:', isProgrammaticMove,
+      'userCoords:', userCoords
+    );
+  }, [cameraMode, isProgrammaticMove, userCoords]);
+
+  // EFFECT 1: INITIAL POSITIONING: Snap to user location on startup
+  useEffect(() => {
+    if (!hasInitialized.current && userCoords && cameraRef.current && isInitialLoadComplete) {
+      console.log('[MapContent] 🚀 Initial Startup Snap to user:', userCoords);
+      snapToLocation([userCoords[0], userCoords[1]], 14);
+      setCameraMode(MapCameraMode.FREE); // Ensure we start in FREE mode
+      hasInitialized.current = true;
+    }
+  }, [userCoords, snapToLocation, setCameraMode, isInitialLoadComplete]);
+
+  // EFFECT 2: NAVIGATION ENGAGEMENT: When navigation actually starts, fly close to user
+  useEffect(() => {
+    if (isNavigating && !lastIsNavigating.current) {
+      const latestCoords = useLocationStore.getState().coords;
+      if (latestCoords) {
+        console.log('[MapContent] 🧭 Navigation START: Close-up FlyTo');
+        flyTo([latestCoords[0], latestCoords[1]], 19.5, 45, 1200);
+        setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
+      }
+    }
+    lastIsNavigating.current = isNavigating;
+  }, [isNavigating, flyTo, setCameraMode]);
+
+  // EFFECT 3: IMPERATIVE CENTER TRIGGER (Recenter Button)
+  useEffect(() => {
+    if (recenterCount > lastProcessedRecenter.current) {
+      lastProcessedRecenter.current = recenterCount;
+      const latestCoords = useLocationStore.getState().coords;
+      if (latestCoords) {
+        if (isNavigating) {
+          console.log('[MapContent] 🎯 Recentering: Entering FOLLOW_WITH_HEADING (Nav Active)');
+          setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
+        } else {
+          console.log('[MapContent] 🎯 Recentering: FlyTo with FREE mode');
+          setCameraMode(MapCameraMode.FREE); // KILL ANY PREVIOUS LOCK
+          flyTo([latestCoords[0], latestCoords[1]], 20.0);
+        }
+      }
+    }
+  }, [recenterCount, isNavigating, setCameraMode, flyTo]);
+
+  // EFFECT 4: IMPERATIVE POI FOCUS TRIGGER
+  useEffect(() => {
+    if (forceCenterCount > lastProcessedForceCenter.current) {
+      lastProcessedForceCenter.current = forceCenterCount;
+      const targetCoords = selectedCoords || selectedEvent?.center?.coordinates;
+      if (targetCoords) {
+        const shouldAnimate = triggerSource === 'exploration' || triggerSource === 'list_click';
+        if (shouldAnimate) {
+          flyTo(targetCoords as [number, number]);
+        }
+      }
+    }
+  }, [forceCenterCount, selectedCoords, selectedEvent, triggerSource, flyTo]);
+
+  // EFFECT 5: ROUTE OVERVIEW: Fit bounds only when route ID changes OR when navigation ends
+  useEffect(() => {
+    const routeId = currentRoute?.properties?.id || currentRoute?.geometry?.coordinates?.length;
+
+    // We trigger the overview if:
+    // 1. We are in planning mode but NOT navigating
+    // 2. AND (the route is new OR we just stopped navigating)
+    const justStoppedNavigating = lastIsNavigating.current && !isNavigating;
+    const isNewRoute = routeId && routeId !== lastProcessedRouteId.current;
+
+    if (isPlanning && !isNavigating && (isNewRoute || justStoppedNavigating)) {
+      const coords = currentRoute?.geometry?.coordinates;
+      if (!coords || coords.length < 2) return;
+
+      console.log('[MapContent] 🗺️ Route Overview: Fitting bounds (StopNav or NewRoute)');
+      lastProcessedRouteId.current = String(routeId);
+
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
+      for (const [x, y] of coords) {
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+
+      if (programmaticMoveTimeoutRef.current) {
+        clearTimeout(programmaticMoveTimeoutRef.current);
+      }
+      setIsProgrammaticMove(true);
+      cameraRef.current?.setCamera({
+        bounds: {
+          ne: [maxX, maxY],
+          sw: [minX, minY],
+          paddingLeft: ROUTE_OVERVIEW_PADDING.paddingLeft,
+          paddingRight: ROUTE_OVERVIEW_PADDING.paddingRight,
+          paddingTop: ROUTE_OVERVIEW_PADDING.paddingTop,
+          paddingBottom: ROUTE_OVERVIEW_PADDING.paddingBottom,
+        },
+        pitch: 0, // Reset tilt for route overview
+        animationDuration: 1200,
+        animationMode: 'flyTo',
+      });
+      programmaticMoveTimeoutRef.current = setTimeout(() => {
+        setIsProgrammaticMove(false);
+      }, 1300);
+    }
+
+    // Cleanup when stopping all planning
+    if (!isPlanning) {
+      lastProcessedRouteId.current = null;
+    }
+
+    // Keep track of navigation state to detect when it ends
+    lastIsNavigating.current = isNavigating;
+  }, [isPlanning, isNavigating, currentRoute, setIsProgrammaticMove]);
+
+  // EFFECT 6: MANUAL FOLLOWER FOR ANDROID:
+  // Instead of relying on native 'followUserLocation' (which is buggy),
+  // we manually move the camera when in a tracking mode.
+  useEffect(() => {
+    if (Platform.OS !== 'android' || cameraMode === MapCameraMode.FREE || !userCoords) return;
+
+    // We only follow if we are not in a programmatic flyTo
+    if (isProgrammaticMove) return;
+
+    // Use moveTo for smooth tracking without altitude changes
+    cameraRef.current?.moveTo([userCoords[0], userCoords[1]], 800);
+  }, [userCoords, cameraMode, isProgrammaticMove]);
 
   // --- Logic Extraction ---
   useRoutingLogic();
@@ -174,11 +526,27 @@ export const MapContent = function MapContent({
 
       // IF USER TOUCHES THE MAP:
       // We break tracking ONLY if the user is actually interacting with the map surface.
-      // We add a small guard: if we are in a programmatic move, we give it a bit of room.
-      const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
-      if (isUserInteraction && cameraMode !== MapCameraMode.FREE && !currentIsProgrammatic) {
-        // console.log('[MapContent] User interaction detected: Breaking camera locks');
-        setCameraMode(MapCameraMode.FREE);
+      // If we are in a programmatic move, physical user interaction aborts it instantly.
+      if (isUserInteraction) {
+        if (cameraMode !== MapCameraMode.FREE) {
+          console.log('[MapContent] 🚨 User interaction detected: Breaking camera locks');
+          setCameraMode(MapCameraMode.FREE);
+        }
+        const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+        if (currentIsProgrammatic) {
+          console.log(
+            '[MapContent] 🚨 User interaction detected during active flight: Aborting programmatic lock'
+          );
+          // Android/Fabric Fix: Abort native active flight animation by overriding with 1ms timing
+          cameraRef.current?.setCamera({
+            animationDuration: 1,
+          });
+          setIsProgrammaticMove(false);
+          if (programmaticMoveTimeoutRef.current) {
+            clearTimeout(programmaticMoveTimeoutRef.current);
+            programmaticMoveTimeoutRef.current = undefined;
+          }
+        }
       }
     },
     [
@@ -188,6 +556,7 @@ export const MapContent = function MapContent({
       setLastCameraPosition,
       cameraMode,
       setCameraMode,
+      setIsProgrammaticMove,
     ]
   );
 
@@ -197,56 +566,6 @@ export const MapContent = function MapContent({
     const spatialPois = poisGeoJSON?.features?.map((f: any) => normalizePOI(f)) || [];
     return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
-
-  const getNativeIconName = (categoryIcon: any) => {
-    const icon = String(categoryIcon || '').toLowerCase();
-
-    // Food & Drink
-    if (
-      icon.includes('restaurant') ||
-      icon.includes('food') ||
-      icon.includes('utensils') ||
-      icon.includes('coffee')
-    )
-      return 'restaurant';
-    if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
-
-    // Infrastructure
-    if (icon.includes('parking')) return 'parking';
-    if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
-      return 'toilet';
-    if (
-      icon.includes('gate') ||
-      icon.includes('login') ||
-      icon.includes('entrance') ||
-      icon.includes('log-out')
-    )
-      return 'log-out';
-
-    // Health & Safety
-    if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital'))
-      return 'hospital';
-    if (icon.includes('security') || icon.includes('shield')) return 'shield';
-
-    // Info & Points
-    if (icon.includes('info') || icon.includes('library')) return 'library-big';
-    if (icon.includes('meetup') || icon.includes('users')) return 'users';
-
-    // Venues & Shopping
-    if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
-      return 'store';
-    if (
-      icon.includes('stage') ||
-      icon.includes('theater') ||
-      icon.includes('grandstand') ||
-      icon.includes('music')
-    )
-      return 'theater';
-    if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
-      return 'crown';
-
-    return 'library-big'; // Fallback to info-style
-  };
 
   // Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
@@ -447,60 +766,7 @@ export const MapContent = function MapContent({
   }, [setInitialLoadComplete, setMapReady]);
 
   const mapStyle = useMemo(() => {
-    const baseStyle = theme.dark ? styleDark : styleLight;
-
-    // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
-    // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
-    const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
-      const lid = (layer.id || '').toLowerCase();
-
-      // Robust approach: Hide most symbol/label layers except essential geographical names
-      const isSymbolLayer = layer.type === 'symbol';
-      const isEssentialLabel =
-        lid.includes('place') ||
-        lid.includes('city') ||
-        lid.includes('town') ||
-        lid.includes('village') ||
-        lid.includes('country') ||
-        lid.includes('state') ||
-        lid.includes('continent') ||
-        lid.includes('road') ||
-        lid.includes('water');
-
-      // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
-      if (
-        Platform.OS === 'android' &&
-        (lid.includes('building') || layer.type === 'fill-extrusion')
-      ) {
-        return {
-          ...layer,
-          layout: { ...(layer.layout || {}), visibility: 'none' },
-        };
-      }
-
-      if (isSymbolLayer && !isEssentialLabel) {
-        return {
-          ...layer,
-          layout: {
-            ...(layer.layout || {}),
-            visibility: 'none',
-          },
-        };
-      }
-      return layer;
-    });
-
-    return {
-      ...baseStyle,
-      layers: filteredLayers,
-      sources: {
-        ...(baseStyle.sources || {}),
-        maptiler_planet: {
-          type: 'vector',
-          url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`,
-        },
-      },
-    };
+    return getOptimizedStyle(theme.dark);
   }, [theme.dark]);
 
   const handleMapPress = useCallback(
@@ -547,126 +813,122 @@ export const MapContent = function MapContent({
     [onDeselect, handlePoiPress]
   );
 
-  // --- NUCLEAR OPTION FOR ANDROID MAGNET BUG ---
-  // We use a gesture handler that sits OVER the map.
-  // The millisecond a finger touches the map area, we kill all locks.
-  const breakLockGesture = Gesture.Pan()
-    .onBegin(() => {
-      'worklet';
-      // If we are in a follow mode or programmatic move, break it!
-      runOnJS(setCameraMode)(MapCameraMode.FREE);
-      runOnJS(setIsProgrammaticMove)(false);
-    })
-    .shouldCancelWhenOutside(false)
-    .hitSlop(0);
-
   return (
     <View style={{ flex: 1 }}>
-      <GestureDetector gesture={breakLockGesture}>
-        <View style={{ flex: 1 }} collapsable={false}>
-          <MapLibreGL.MapView
-            ref={mapRef}
-            style={[styles.map, uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }]}
-            mapStyle={mapStyle as any}
-            logoEnabled={false}
-            attributionEnabled={false}
-            compassEnabled={false}
-            minZoomLevel={2}
-            maxZoomLevel={22}
-            pitchEnabled={true}
-            rotateEnabled={true}
-            scrollEnabled={true}
-            zoomEnabled={true}
-            onPress={handleMapPress}
-            onRegionWillChange={(e) => {
-              // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
-              // This is the only way to reliably detect the START of a user gesture on Android.
-              const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
-              if (!currentIsProgrammatic) {
-                const currentMode = useMapUIStore.getState().cameraMode;
-                if (currentMode !== MapCameraMode.FREE) {
-                  console.log(
-                    '[MapContent] 🚨 Manual gesture detected (onRegionWillChange), breaking camera lock'
-                  );
-                  setCameraMode(MapCameraMode.FREE);
-                }
+      <MapLibreGL.MapView
+        ref={mapRef}
+        style={[styles.map, uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }]}
+        mapStyle={mapStyle as any}
+        logoEnabled={false}
+        attributionEnabled={false}
+        compassEnabled={false}
+        minZoomLevel={2}
+        maxZoomLevel={22}
+        pitchEnabled={true}
+        rotateEnabled={true}
+        scrollEnabled={true}
+        zoomEnabled={true}
+        onPress={handleMapPress}
+        // Android Optimization: Use TextureView under Fabric to prevent blank screens/stutters
+        androidView={Platform.OS === 'android' ? 'texture' : undefined}
+        onRegionWillChange={(e) => {
+          // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
+          // If we detect a definitive user interaction, abort all locks preemptively.
+          const isUser = e.properties?.isUserInteraction;
+          if (isUser) {
+            console.log(
+              '[MapContent] 🚨 User interaction detected in onRegionWillChange: Breaking all locks'
+            );
+            // Android/Fabric Fix: Stop any active native camera flights instantly
+            cameraRef.current?.setCamera({
+              animationDuration: 1,
+            });
+            setCameraMode(MapCameraMode.FREE);
+            setIsProgrammaticMove(false);
+            if (programmaticMoveTimeoutRef.current) {
+              clearTimeout(programmaticMoveTimeoutRef.current);
+              programmaticMoveTimeoutRef.current = undefined;
+            }
+          } else {
+            // Fallback for Android where isUserInteraction can be unreliable
+            const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+            if (!currentIsProgrammatic) {
+              const currentMode = useMapUIStore.getState().cameraMode;
+              if (currentMode !== MapCameraMode.FREE) {
+                console.log(
+                  '[MapContent] 🚨 Manual gesture fallback (onRegionWillChange), breaking camera lock'
+                );
+                // Android/Fabric Fix: Stop any active native camera flights instantly
+                cameraRef.current?.setCamera({
+                  animationDuration: 1,
+                });
+                setCameraMode(MapCameraMode.FREE);
               }
-            }}
-            onRegionIsChanging={(e) => handleCameraChange(e, true)}
-            onRegionDidChange={async (e) => {
-              handleCameraChange(e, false);
+            }
+          }
+        }}
+        onRegionIsChanging={(e) => handleCameraChange(e, true)}
+        onRegionDidChange={async (e) => {
+          handleCameraChange(e, false);
 
-              if (mapRef.current) {
-                const bounds = await mapRef.current.getVisibleBounds();
-                useMapUIStore.getState().setVisibleBounds(bounds);
+          if (mapRef.current) {
+            const bounds = await mapRef.current.getVisibleBounds();
+            useMapUIStore.getState().setVisibleBounds(bounds);
+          }
+        }}
+        onDidFinishLoadingStyle={() => {
+          if (!hasInitialRendered.current) {
+            hasInitialRendered.current = true;
+            setInitialLoadComplete(true);
+            setMapReady(true);
+            startupMetrics.markInteractive('Map');
+          }
+        }}
+      >
+        <MapLibreGL.UserLocation
+          visible={true}
+          animated={true}
+          showsUserHeadingIndicator={Platform.OS === 'ios'}
+          androidRenderMode={cameraMode === MapCameraMode.FREE ? 'normal' : 'gps'}
+          renderMode="normal"
+        />
+
+        <MapImageManager events={events} />
+
+        <MapLibreGL.Camera
+          ref={cameraRef}
+          {...(Platform.OS === 'ios'
+            ? {
+                followUserLocation: cameraMode !== MapCameraMode.FREE,
+                followUserMode: getFollowMode(),
+                defaultSettings: DEFAULT_CAMERA_SETTINGS,
+                followPitch: 45,
+                animationDuration: 0,
+                onUserTrackingModeChange: handleUserTrackingModeChange,
               }
+            : {
+                // Android: ZERO declarative props — 100% imperative via cameraRef.setCamera()
+                followUserLocation: false,
+                onUserTrackingModeChange: handleUserTrackingModeChange,
+              })}
+        />
 
-              const center = e.geometry?.coordinates as [number, number];
-              const zoom = e.properties?.zoomLevel;
-              cameraRef.current?.handleRegionChangeComplete(center, zoom);
-            }}
-            onDidFinishLoadingStyle={() => {
-              if (!hasInitialRendered.current) {
-                hasInitialRendered.current = true;
-                setInitialLoadComplete(true);
-                setMapReady(true);
-                startupMetrics.markInteractive('Map');
-              }
-            }}
-          >
-            <MapLibreGL.UserLocation
-              visible={true}
-              animated={true}
-              showsUserHeadingIndicator={true}
-              androidRenderMode="normal"
-              renderMode="normal"
-            />
-
-            <MapImageManager events={events} />
-
-            <MapCameraManager
-              ref={cameraRef}
-              userCoords={userCoords}
-              selectedCoords={selectedCoords}
-              selectedEvent={selectedEvent}
-              poisGeoJSON={poisGeoJSON}
-              is3DActive={is3DActive}
-              recenterCount={recenterCount}
-              forceCenterCount={forceCenterCount}
-              lastCameraPosition={lastCameraPosition}
-              uiState={uiState}
-              isNavigating={isNavigating}
-              isPlanning={isPlanning}
-              cameraMode={cameraMode}
-              currentRoute={currentRoute}
-              transportMode={transportMode}
-              isFetching={isFetching}
-              selectedPoiId={selectedPoiId}
-              selectedEventId={selectedEventId}
-              realtimeCameraRef={realtimeCameraRef}
-              lastProcessedTarget={lastProcessedTarget}
-              setLastProcessedTarget={setLastProcessedTarget}
-              triggerSource={triggerSource}
-            />
-
-            <MapLayers
-              theme={theme}
-              poisGeoJSON={filteredPoisGeoJSON}
-              eventsGeoJSON={eventsGeoJSON}
-              selectedEventId={selectedEventId}
-              selectedPoiId={selectedPoiId}
-              pathNetwork={EMPTY_GEOJSON}
-              currentRoute={currentRoute}
-              uiState={uiState}
-              onPoiPress={handlePoiPress}
-              zoomLevel={discreteZoom}
-              zoomSharedValue={zoomSharedValue}
-              islandState={islandState}
-              visibleBounds={visibleBounds}
-            />
-          </MapLibreGL.MapView>
-        </View>
-      </GestureDetector>
+        <MapLayers
+          theme={theme}
+          poisGeoJSON={filteredPoisGeoJSON}
+          eventsGeoJSON={eventsGeoJSON}
+          selectedEventId={selectedEventId}
+          selectedPoiId={selectedPoiId}
+          pathNetwork={EMPTY_GEOJSON}
+          currentRoute={currentRoute}
+          uiState={uiState}
+          onPoiPress={handlePoiPress}
+          zoomLevel={discreteZoom}
+          zoomSharedValue={zoomSharedValue}
+          islandState={islandState}
+          visibleBounds={visibleBounds}
+        />
+      </MapLibreGL.MapView>
     </View>
   );
 };

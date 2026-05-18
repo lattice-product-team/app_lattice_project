@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
-import Animated, { useAnimatedStyle, SharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useAnimatedReaction, runOnJS, SharedValue, withTiming } from 'react-native-reanimated';
 import { Navigation, Binoculars, Ticket as TicketIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, useSegments } from 'expo-router';
@@ -43,21 +43,36 @@ export const AdaptiveControlOverlay = React.memo(
     const openAR = useARStore((s) => s.openAR);
     const isARActive = useARStore((s) => s.isVisible) || uiState === MapUIState.AR_EXPLORE;
 
+    const [overlayInteractive, setOverlayInteractive] = useState(false);
+
     const rOverlayStyle = useAnimatedStyle(() => {
       // Hide if:
       // 1. Island is expanded (searching/dashboard)
       // 2. AR is active
-      // 3. We are in NAV/PLANNING mode AND the camera is already following (auto-mode)
+      // 3. We are in NAV/PLANNING mode
       const isIslandExpanded = islandState.value > 0.1;
       const isNavMode = uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING;
       const shouldHide = isIslandExpanded || isARActive || isNavMode;
 
       return {
         opacity: withTiming(shouldHide ? 0 : 1, { duration: 200 }),
-        pointerEvents: shouldHide ? 'none' : 'auto',
         transform: [{ translateY: -bottomOffset - 12 }],
       };
     }, [uiState, isARActive, bottomOffset]);
+
+    // Sync interactivity to JS thread via useAnimatedReaction to avoid
+    // phantom touches caused by animated pointerEvents changes on Android.
+    useAnimatedReaction(
+      () => {
+        const isIslandExpanded = islandState.value > 0.1;
+        const isNavMode = uiState === MapUIState.NAVIGATING || uiState === MapUIState.PLANNING;
+        return !(isIslandExpanded || isARActive || isNavMode);
+      },
+      (isInteractive) => {
+        runOnJS(setOverlayInteractive)(isInteractive);
+      },
+      [uiState, isARActive]
+    );
 
     const handleTicketPress = () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -77,7 +92,10 @@ export const AdaptiveControlOverlay = React.memo(
     };
 
     return (
-      <Animated.View pointerEvents="box-none" style={[styles.container, rOverlayStyle]}>
+      <Animated.View
+        pointerEvents={overlayInteractive ? 'box-none' : 'none'}
+        style={[styles.container, rOverlayStyle]}
+      >
         {/* 1. Top Vertical Pill (Wallet & Recenter) */}
         <View
           style={[
@@ -116,21 +134,17 @@ export const AdaptiveControlOverlay = React.memo(
               },
             ]}
           >
-            {cameraMode === MapCameraMode.FOLLOW_WITH_HEADING ? (
-              <Navigation
-                size={20}
-                color="white"
-                fill="white"
-                strokeWidth={2.2}
-                style={{ transform: [{ rotate: '45deg' }] }} // Subtle tilt for heading
-              />
-            ) : cameraMode === MapCameraMode.FOLLOW_WITH_COURSE ? (
-              <Navigation size={20} color="white" fill="white" strokeWidth={2.5} />
-            ) : cameraMode === MapCameraMode.FOLLOW ? (
-              <Navigation size={20} color="white" fill="white" strokeWidth={2.2} />
-            ) : (
-              <Navigation size={20} color={iconColor} strokeWidth={2.2} />
-            )}
+            <Navigation
+              size={20}
+              color={cameraMode === MapCameraMode.FREE ? iconColor : 'white'}
+              fill={cameraMode === MapCameraMode.FREE ? 'none' : 'white'}
+              strokeWidth={cameraMode === MapCameraMode.FOLLOW_WITH_COURSE ? 2.5 : 2.2}
+              style={{
+                transform: [
+                  { rotate: cameraMode === MapCameraMode.FOLLOW_WITH_HEADING ? '45deg' : '0deg' },
+                ],
+              }}
+            />
           </Pressable>
         </View>
 

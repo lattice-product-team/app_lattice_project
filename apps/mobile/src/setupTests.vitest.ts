@@ -92,21 +92,25 @@ vi.mock('expo-modules-core', () => ({
 }));
 
 vi.mock('lucide-react-native', () => {
-  const mockComponent = (name: string) => name;
+  const mockIcon = (name: string) => {
+    const Comp = () => null;
+    Comp.displayName = name;
+    return Comp;
+  };
   return {
-    Coffee: mockComponent('Coffee'),
-    MapPin: mockComponent('MapPin'),
-    User: mockComponent('User'),
-    Map: mockComponent('Map'),
-    SquarePlus: mockComponent('SquarePlus'),
-    LogIn: mockComponent('LogIn'),
-    Users: mockComponent('Users'),
-    Info: mockComponent('Info'),
-    ShoppingBag: mockComponent('ShoppingBag'),
-    Music: mockComponent('Music'),
-    Utensils: mockComponent('Utensils'),
-    Laptop: mockComponent('Laptop'),
-    Trophy: mockComponent('Trophy'),
-    Calendar: mockComponent('Calendar'),
+    Coffee: mockIcon('Coffee'),
+    MapPin: mockIcon('MapPin'),
+    User: mockIcon('User'),
+    Map: mockIcon('Map'),
+    SquarePlus: mockIcon('SquarePlus'),
+    LogIn: mockIcon('LogIn'),
+    Users: mockIcon('Users'),
+    Info: mockIcon('Info'),
+    ShoppingBag: mockIcon('ShoppingBag'),
+    Music: mockIcon('Music'),
+    Utensils: mockIcon('Utensils'),
+    Laptop: mockIcon('Laptop'),
+    Trophy: mockIcon('Trophy'),
+    Calendar: mockIcon('Calendar'),
   };
 });
