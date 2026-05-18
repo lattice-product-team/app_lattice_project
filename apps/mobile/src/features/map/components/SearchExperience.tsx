@@ -11,58 +11,73 @@ interface SearchExperienceProps {
   onSelectResult: (query: string, coordinates?: [number, number], result?: SearchResult) => void;
 }
 
+// 1. Memoized History Item (defined outside to avoid recreation, will only re-render if props change)
+interface HistoryItemProps {
+  item: string;
+  theme: any;
+  onSelectResult: (query: string) => void;
+  removeSearch: (item: string) => void;
+}
+
+const HistoryItem = React.memo(({ item, theme, onSelectResult, removeSearch }: HistoryItemProps) => (
+  <Pressable style={styles.itemRow} onPress={() => onSelectResult(item)}>
+    <View style={styles.iconContainer}>
+      <History size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
+    </View>
+    <Text style={[styles.itemText, { color: theme.colors.text.primary }]}>{item}</Text>
+    <Pressable onPress={() => removeSearch(item)} style={styles.removeButton}>
+      <X size={16} color={theme.colors.text.muted} strokeWidth={2.2} />
+    </Pressable>
+  </Pressable>
+));
+
+// 2. Memoized Result Item (defined outside to avoid recreation, will only re-render if props change)
+interface ResultItemProps {
+  item: SearchResult;
+  theme: any;
+  onSelectResult: (name: string, coordinates?: [number, number], result?: SearchResult) => void;
+}
+
+const ResultItem = React.memo(({ item, theme, onSelectResult }: ResultItemProps) => (
+  <Pressable
+    style={styles.itemRow}
+    onPress={() => onSelectResult(item.name, item.coordinates, item)}
+  >
+    <View style={styles.eventImageContainer}>
+      {item.imageUrl ? (
+        <Image source={{ uri: item.imageUrl }} style={styles.eventImage} />
+      ) : (
+        <View style={[styles.eventPlaceholder, { backgroundColor: theme.colors.glass.subtle }]}>
+          {item.type === 'event' ? (
+            <Calendar size={20} color={theme.colors.brand.primary} strokeWidth={2.2} />
+          ) : (
+            <MapPin
+              size={20}
+              color={theme.colors.brand.secondary || '#32D74B'}
+              strokeWidth={2.2}
+            />
+          )}
+        </View>
+      )}
+    </View>
+    <View style={styles.eventInfo}>
+      <Text style={[styles.itemText, { color: theme.colors.text.primary }]} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text style={[styles.subText, { color: theme.colors.text.muted }]} numberOfLines={1}>
+        {item.categoryLabel || item.type.toUpperCase()}
+      </Text>
+    </View>
+    <ChevronRight size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
+  </Pressable>
+));
+
 export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProps) => {
   const theme = useAppTheme();
   const { history, removeSearch, clearHistory } = useSearchHistory();
   const { results, loading } = useUnifiedSearch(query);
 
   const isQueryEmpty = !query || query.trim() === '';
-
-  const renderHistoryItem = ({ item }: { item: string }) => (
-    <Pressable style={styles.itemRow} onPress={() => onSelectResult(item)}>
-      <View style={styles.iconContainer}>
-        <History size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
-      </View>
-      <Text style={[styles.itemText, { color: theme.colors.text.primary }]}>{item}</Text>
-      <Pressable onPress={() => removeSearch(item)} style={styles.removeButton}>
-        <X size={16} color={theme.colors.text.muted} strokeWidth={2.2} />
-      </Pressable>
-    </Pressable>
-  );
-
-  const renderResultItem = ({ item }: { item: SearchResult }) => (
-    <Pressable
-      style={styles.itemRow}
-      onPress={() => onSelectResult(item.name, item.coordinates, item)}
-    >
-      <View style={styles.eventImageContainer}>
-        {item.imageUrl ? (
-          <Image source={{ uri: item.imageUrl }} style={styles.eventImage} />
-        ) : (
-          <View style={[styles.eventPlaceholder, { backgroundColor: theme.colors.glass.subtle }]}>
-            {item.type === 'event' ? (
-              <Calendar size={20} color={theme.colors.brand.primary} strokeWidth={2.2} />
-            ) : (
-              <MapPin
-                size={20}
-                color={theme.colors.brand.secondary || '#32D74B'}
-                strokeWidth={2.2}
-              />
-            )}
-          </View>
-        )}
-      </View>
-      <View style={styles.eventInfo}>
-        <Text style={[styles.itemText, { color: theme.colors.text.primary }]} numberOfLines={1}>
-          {item.name}
-        </Text>
-        <Text style={[styles.subText, { color: theme.colors.text.muted }]} numberOfLines={1}>
-          {item.categoryLabel || item.type.toUpperCase()}
-        </Text>
-      </View>
-      <ChevronRight size={18} color={theme.colors.text.muted} strokeWidth={2.2} />
-    </Pressable>
-  );
 
   return (
     <View style={styles.container}>
@@ -79,8 +94,13 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
             </Pressable>
           </View>
           {history.map((item, index) => (
-            <View key={`history-${index}`}>
-              {renderHistoryItem({ item })}
+            <View key={`history-${item}-${index}`}>
+              <HistoryItem
+                item={item}
+                theme={theme}
+                onSelectResult={onSelectResult}
+                removeSearch={removeSearch}
+              />
               {index < history.length - 1 && (
                 <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />
               )}
@@ -101,7 +121,11 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
         ) : results.length > 0 ? (
           results.map((item, index) => (
             <View key={`result-${item.id}`}>
-              {renderResultItem({ item })}
+              <ResultItem
+                item={item}
+                theme={theme}
+                onSelectResult={onSelectResult}
+              />
               {index < results.length - 1 && (
                 <View style={[styles.divider, { backgroundColor: theme.colors.glass.border }]} />
               )}
