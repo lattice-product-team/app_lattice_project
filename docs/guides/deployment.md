@@ -2,151 +2,136 @@ import { Callout } from 'nextra/components'
 
 # Deployment Guide
 
-This manual covers the production deployment architecture and orchestration for the Lattice ecosystem. It is intended for DevOps, SysAdmins, and Release Engineers responsible for maintaining staging or production environments.
+This manual covers the production deployment architecture, container orchestration, SSL proxy configurations, and mobile store distribution pipelines for the Lattice ecosystem.
 
 ---
 
 ## 1. Production Architecture Overview
 
-The Lattice platform uses a modern, containerized architecture that segregates frontend client assets, backend telemetry processing, real-time routing engines, and data caching.
+Lattice is structured as a containerized cluster designed to handle thousands of concurrent client telemetry connections while maintaining strict database isolation:
 
 ```mermaid
 graph TD
-    User([End User / Mobile Client]) -->|HTTPS / WSS| Nginx[Nginx Reverse Proxy / SSL]
-    Admin([Platform Operator]) -->|HTTPS| Nginx
+    classDef client fill:#E1F5FE,stroke:#039BE5,stroke-width:1px;
+    classDef proxy fill:#ECEFF1,stroke:#37474F,stroke-width:1px;
+    classDef app fill:#EDE7F6,stroke:#5E35B1,stroke-width:1px;
+    classDef db fill:#E8F5E9,stroke:#2E7D32,stroke-width:1px;
 
+    User([Attendee / Mobile Client]):::client -->|HTTPS / WSS| Nginx[Nginx Reverse Proxy / SSL]:::proxy
+    Admin([Manager / Operations]):::client -->|HTTPS| Nginx
+ 
     subgraph "Containerized Application Cluster (Docker Compose)"
-        Nginx -->|Port 3004| Next[Next.js Admin Dashboard]
-        Nginx -->|Port 3000| Express[Express Backend API]
-        Express -->|Caching / Session| Redis[Redis Container]
-        Express -->|Routing / GIS| Valhalla[Valhalla Routing Engine]
+        Nginx -->|Port 3004| Next[Next.js Admin Dashboard]:::app
+        Nginx -->|Port 3000| Express[Express API Monolith]:::app
+        Express -->|Port 6379| Redis[Redis Caching Container]:::app
+        Express -->|Port 8002| Valhalla[Valhalla Routing Engine]:::app
     end
 
-    subgraph "Managed Cloud Layer"
-        Express -->|PostgreSQL Protocol| ManagedDB[(Managed PostgreSQL + PostGIS)]
+    subgraph "Managed Cloud Database"
+        Express -->|Port 5432| ManagedDB[(PostgreSQL + PostGIS)]:::db
     end
 ```
 
-### Deployment Guidelines
+### Operational Deployment Rules
 
-- **Frontend (Admin Dashboard)**: Containerized Next.js server running in standalone mode behind Nginx, or deployed directly to an edge hosting platform like Vercel.
-- **Backend (API Server)**: Lightweight Express application containerized and horizontally scaled.
-- **Routing (Valhalla)**: Dedicated container loaded with OSM (OpenStreetMap) regional extracts.
-- **Caching (Redis)**: High-speed key-value cache containerized with strict memory persistence policies.
-- **Database (PostgreSQL)**: **Never deploy database containers to production host servers.** Always use a managed database service.
+*   **Next.js Admin Dashboard**: Containerized server running in standalone mode behind Nginx, or deployed directly to an edge hosting platform like Vercel.
+*   **Express API Server**: Containerized Node.js application, horizontally scaled and managed by process supervisors.
+*   **Redis Caching**: Highly isolated containerized Redis instance, configured with memory thresholds and strict key eviction rules.
+*   **Valhalla Engine**: Heavy routing tile container, loaded with España/Cataluña OSM extracts.
+*   **PostgreSQL & PostGIS Database**: **Never run your database inside container layers on your production hosts.** Always utilize managed database instances (such as AWS RDS or Google Cloud SQL) for high availability.
 
 ---
 
-## 2. Production Database Provisioning
+## 2. Managed Database Provisioning
 
-Lattice requires **PostgreSQL 15+** with the **PostGIS 3.3+** extension.
+Lattice requires a minimum of **PostgreSQL 15** backed by **PostGIS 3.3** or higher.
 
-### Recommended Services
+### Recommended Providers
+*   Amazon RDS (PostgreSQL with PostGIS extensions active).
+*   Google Cloud SQL.
+*   Supabase or Neon (Serverless Postgres).
 
-- Amazon RDS (PostgreSQL with PostGIS engine support)
-- Google Cloud SQL
-- Supabase or Neon (Serverless Postgres)
+### Database Initialization Routine
 
-### DB Initialization Steps
-
-1.  **Create the Database Instance**: Provision a multi-AZ instance for high availability.
-2.  **Enable Connection Pooling**: Due to high concurrency from mobile telemetry tracking, use a connection pooler like **PgBouncer** (usually built-in or enabled on cloud providers).
-3.  **Execute Extensions**: Connect to your database instance via an admin client and enable the extension:
+1.  **Provision the Instance**: Ensure multi-AZ replication is enabled for staging/production.
+2.  **Enable Connection Pooling**: Due to high-frequency telemetry GPS queries, route connections through a connection pooler like **PgBouncer** to prevent resource leaks.
+3.  **Activate PostGIS Extension**: Connect to your database instance via an administrative client and run:
     ```sql
     CREATE EXTENSION postgis;
     ```
-4.  **Secure the Network**: Restrict database inbound traffic (Port 5432) so that only the IP addresses of your API containers can establish a connection.
-5.  **Backup Policy**: Set automated daily snapshots with a minimum retention period of 7 days.
+4.  **Network Security Groups**: Restrict DB inbound traffic (Port 5432) so that only the IP addresses of your API containers can establish connection tunnels.
 
 ---
 
-## 3. Building and Publishing Container Images
+## 3. Building Multi-Stage Production Images
 
-Lattice uses a multi-stage `Dockerfile` to build lightweight, production-ready Docker images.
+Lattice uses multi-stage Docker builds to keep production images under 150MB by omitting devDependencies.
 
+### 1. Build the API Monolith Image
 ```bash
-# Build the production target for API
 docker build --target api-prod -t ghcr.io/your_org/app_lattice_project/api:latest .
+```
 
-# Build the production target for Admin Web
+### 2. Build the Next.js Web Dashboard Image
+```bash
 docker build --target admin-web-prod -t ghcr.io/your_org/app_lattice_project/admin-web:latest .
 ```
 
-### Publishing Images to GHCR
-
-Ensure you are logged into the GitHub Container Registry:
-
+### 3. Publishing to GitHub Container Registry (GHCR)
 ```bash
 echo $CR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
-# Push images
 docker push ghcr.io/your_org/app_lattice_project/api:latest
 docker push ghcr.io/your_org/app_lattice_project/admin-web:latest
 ```
 
 ---
 
-## 4. Production Orchestration (Docker Compose)
+## 4. Container Orchestration & Variables
 
-Lattice provides a `docker-compose.prod.yml` template designed to run the application components on a production host virtual machine.
+Lattice provides a production-ready compose orchestrator (`docker-compose.prod.yml`) that maps service ports, links internal networks, and configures environment variables.
 
-### Environment Setup (`.env.prod`)
+### Environment Schema (`.env.prod`)
 
-Create a production environment file (`.env.prod`) on the server:
-
+Create a production environment file on your host server:
 ```ini
-# Production Environment
 NODE_ENV=production
 JWT_SECRET=a_very_long_cryptographically_secure_random_string
 
-# Networking
+# Network Routing Configuration
 API_PORT=3000
 ALLOWED_ORIGINS=https://admin.yourdomain.com,https://api.yourdomain.com
 
-# Managed Production DB (e.g. AWS RDS or Supabase)
+# Managed Cloud Database Connection
 DATABASE_URL=postgres://db_user:db_password@rds-instance-endpoint:5432/lattice_db
 
-# Admin Initial Credentials (if running seeds)
+# Initial Setup Admin Credentials
 ADMIN_EMAIL=security-admin@yourdomain.com
 ADMIN_PASSWORD=change-me-immediately-on-first-login
 ```
 
 ### Orchestration Commands
 
-Deploy the cluster using the production configuration:
-
+To launch the production cluster, run:
 ```bash
-# Create the external network for reverse proxy mapping (if not already present)
+# Create the external gateway network (if not present)
 docker network create red_proxy
 
 # Start the cluster in detached mode
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
-### Valhalla Auto-Build in Production
-
-In `docker-compose.prod.yml`, the Valhalla service is configured to automatically download regional data on startup:
-
-```yaml
-environment:
-  - tile_urls=https://download.geofabrik.de/europe/spain/cataluna-latest.osm.pbf
-  - build_tiles=True
-  - build_admins=True
-  - build_timezones=True
-  - force_rebuild=True
-```
-
 <Callout type="info">
-  During the first start, Valhalla will download Catalonia's latest OpenStreetMap file and compile it into high-performance routing tiles. Depending on the CPU capacity of your host server, this can take 5–15 minutes. Routing requests will return a `503 Service Unavailable` status until the build completes.
+  **Valhalla Data Compilation**: On initial boot, the Valhalla container downloads the Cataluña OSM extract and compiles pedestrian routing tiles. This process can take 5 to 15 minutes depending on CPU performance. Routing requests will return a `503 Service Unavailable` status until the compilation is complete.
 </Callout>
 
 ---
 
-## 5. Nginx Reverse Proxy & SSL Setup
+## 5. Nginx Reverse Proxy & SSL Terminal
 
-We recommend setting up Nginx as a reverse proxy on the host server to handle SSL/TLS termination, secure cookies, and route filtering.
+We recommend setting up Nginx on your host machine to terminate SSL connections, manage certs, and route traffic to the container ports.
 
-### Nginx Server Block (`/etc/nginx/sites-available/lattice`)
+### Nginx Site Configuration (`/etc/nginx/sites-available/lattice`)
 
 ```nginx
 server {
@@ -196,10 +181,7 @@ server {
 }
 ```
 
-### Installing SSL Certificates (Certbot)
-
-Obtain certificates automatically using Let's Encrypt:
-
+### Let's Encrypt SSL Installation (Certbot)
 ```bash
 sudo apt update
 sudo apt install certbot python3-certbot-nginx
@@ -210,54 +192,40 @@ sudo certbot --nginx -d api.yourdomain.com -d admin.yourdomain.com
 
 ## 6. Mobile Application Distribution
 
-Lattice uses **Expo Application Services (EAS)** for building and publishing native mobile clients to Google Play and Apple App Store.
+Lattice uses **Expo Application Services (EAS)** to compile, sign, and submit native iOS and Android application binaries to the App Stores.
 
-### Step 1: Configure `eas.json`
+### EAS Cloud Compilations
 
-Ensure `eas.json` is configured in the root directory for your build environments (development, preview, production).
-
-### Step 2: Build the Production Bundle
-
-To trigger a secure cloud build for Android and iOS:
+To trigger a production-grade remote cloud compilation, run the following commands in your workspace:
 
 ```bash
-# Trigger cloud compilation for Android (.aab)
+# Build Android App Bundle (.aab)
 pnpm build:mobile:cloud
 
-# Trigger cloud compilation for iOS (.ipa)
+# Build iOS App Store Package (.ipa)
 cd apps/mobile && eas build --platform ios --profile production
 ```
 
-### Step 3: Submission to App Stores
-
-Submit the compiled binaries to developer accounts:
-
+### App Store Submissions
 ```bash
 cd apps/mobile
-# Submit Android app
 eas submit --platform android
-
-# Submit iOS app
 eas submit --platform ios
 ```
 
-### Step 4: Over-The-Air (OTA) Updates
-
-Lattice supports **Expo Updates**. This allows operators to push immediate JavaScript bundles, CSS theme changes, and bug fixes directly to users' phones without going through the slow App Store review cycle.
-
-To deploy a quick OTA update:
-
+### Over-The-Air (OTA) Updates
+Lattice is equipped with **Expo Updates**. This allows developers to push immediate bug fixes or visual adjustments directly to active mobile devices without requiring a full App Store review cycle:
 ```bash
 cd apps/mobile
-eas update --branch production --message "Hotfix: updated active event map style"
+eas update --branch production --message "Hotfix: resolve MapLibre layer rendering bug"
 ```
 
 ---
 
-## 7. Monitoring and Maintenance
+## 7. Monitoring & System Health
 
-1.  **Health Check Endpoint**: Set up external uptime monitoring (e.g., Uptime Robot, Datadog) pointing to `https://api.yourdomain.com/status` or `https://api.yourdomain.com/health`.
-2.  **Log Management**: Use Docker's `json-file` logging driver with limit options to prevent disk overflow:
+1.  **Active Health Checks**: Configure external status pingers (such as Datadog or Uptime Robot) pointing directly to the `/status` and `/health` routes on the API server.
+2.  **Container Logging Constraints**: Set log rotating thresholds inside your `docker-compose.prod.yml` to prevent host storage depletion:
     ```yaml
     logging:
       driver: 'json-file'
@@ -265,4 +233,4 @@ eas update --branch production --message "Hotfix: updated active event map style
         max-size: '10m'
         max-file: '3'
     ```
-3.  **CI/CD Automation**: Deploy using GitHub Actions to automate the build-push-deploy sequence on merging to the `main` branch.
+3.  **CI/CD Workflows**: Link the main branches in Git to trigger automated GitHub Actions, building images and updating container clusters upon code approvals.

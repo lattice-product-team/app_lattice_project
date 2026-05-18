@@ -1,103 +1,121 @@
-# Troubleshooting
+import { Callout } from 'nextra/components'
 
-Common issues and their solutions when developing for Lattice.
+# Troubleshooting Guide
 
-## 1. Database Connectivity
-
-### Error: "Failed to connect to PostgreSQL"
-
-- **Cause**: Docker container is not running or the port `5433` is occupied.
-- **Fix**: Run `docker ps` to ensure the container is up. If port `5433` is busy, stop any local Postgres instances or modify the host port binding in `docker-compose.yml`.
-
-### Error: "Relation 'events' does not exist"
-
-- **Cause**: Migrations haven't been run.
-- **Fix**: Run `pnpm db:migrate` and `pnpm db:seed`.
+This guide compiles common issues, error codes, and operational resolutions encountered during local development, container orchestration, and mobile testing in the Lattice ecosystem.
 
 ---
 
-## 2. Monorepo & Dependencies
+## 1. Database & Geospatial Failures
 
-### Error: "Cannot find module '@app/core'"
+### Error: "Failed to connect to PostgreSQL / Connection Refused"
 
-- **Cause**: Turborepo hasn't built the shared package.
-- **Fix**: Run `pnpm build` from the root.
+*   **Underlying Cause**: The Docker container service is inactive, or a host PostgreSQL service is already occupying the target port.
+*   **Resolution Strategy**:
+    1.  Execute `docker ps` to verify container operations.
+    2.  If port `5433` is occupied, stop any native PostgreSQL instances running on your workstation.
+    3.  Alternatively, adjust the host port binding configuration within `docker-compose.yml` to map to an open port, and update `DATABASE_URL` inside `.env`.
 
-### Issue: "pnpm install takes too long"
+### Error: "Relation 'events' does not exist / Query Failed"
 
-- **Tip**: Ensure you are using the latest version of pnpm. You can also try clearing the cache: `pnpm store prune`.
-
----
-
-## 3. Mobile App (Expo/React Native)
-
-### Issue: "White screen on simulator"
-
-- **Cause**: Usually a bundling error or the API is unreachable.
-- **Fix**: Press `r` in the Expo terminal to reload. Check the logs for any `Network Request Failed` errors.
-
-### Issue: "Map not rendering"
-
-- **Cause**: Missing API key or no internet connection.
-- **Fix**: Ensure your local `.env` has a valid MapLibre or Mapbox token if required.
-
-## 4. Admin Dashboard
-
-### Error: "Hydration failed"
-
-- **Cause**: React server-side rendering mismatch.
-- **Fix**: This usually happens if you use browser-only globals (like `window`) outside of `useEffect`. Check the component where the error originates.
+*   **Underlying Cause**: Database table migrations have not been applied.
+*   **Resolution Strategy**:
+    1.  Ensure your PostGIS database is active.
+    2.  Run `pnpm db:migrate` followed by `pnpm db:seed` from the root workspace directory.
 
 ---
 
-## 5. Google OAuth & Deep Linking (Mobile)
+## 2. Monorepo & Package Resolutions
 
-### Error: "The provided Linking scheme 'com.googleusercontent.apps.xxx' does not appear in the list of possible URI schemes..."
+### Error: "Cannot find module '@app/core' or '@app/db'"
 
-- **Cause**: Expo's `makeRedirectUri` generates a callback URL containing your reverse Client ID scheme (which Google OAuth relies on on native Android to redirect back to the app). If this scheme is not declared in your `app.json` config under `expo.scheme`, the Metro bundler will throw a warning, and Google will block the redirect back to the app.
-- **Fix**: Add the reverse Google Client ID as a scheme in your local `app.json` under `expo.scheme`. For example:
-  ```json
-  "scheme": [
-    "lattice",
-    "com.lattice.app",
-    "com.googleusercontent.apps.560870004174-9hphgg5sqq69nc5hp9mn1lbsnb8ulda3"
-  ]
-  ```
-- **Important**: Any changes to `app.json` scheme or linking intents require a native prebuild regeneration! Run `pnpm dev:android` or `npx expo prebuild --clean` to recompile the native Android manifest and registers.
+*   **Underlying Cause**: Shared packages have not been compiled, preventing the TypeScript compiler from resolving type definitions in client applications.
+*   **Resolution Strategy**:
+    *   Execute `pnpm build` from the workspace root to compile all internal dependencies in the correct order.
+
+### Performance: "pnpm install takes an excessive amount of time"
+
+*   **Resolution Strategy**:
+    *   Prune the local pnpm store to clear stale metadata and corrupted package packages:
+        ```bash
+        pnpm store prune
+        ```
+
+---
+
+## 3. Mobile App & Simulator Troubleshooting
+
+### Issue: "White screen on emulator / Connection Refused"
+
+*   **Underlying Cause**: The Metro bundler is active, but the client application is unable to establish an initial handshake with the Express API server.
+*   **Resolution Strategy**:
+    1.  Ensure your API server is running (`pnpm dev:api`).
+    2.  Confirm that `LAN_IP` inside `.env` matches your workstation's current IP address on the local Wi-Fi network.
+    3.  Verify that both your workstation and physical testing device are connected to the exact same Wi-Fi SSID network.
+
+### Issue: "Map vector graphics are failing to render"
+
+*   **Underlying Cause**: Missing or invalid MapTiler/Mapbox API key parameters.
+*   **Resolution Strategy**:
+    *   Confirm that your `.env` contains a valid `MAPTILER_KEY`. Restart the Metro bundler using `pnpm dev:mobile:lan --clear` to invalidate the cache.
+
+---
+
+## 4. Web Admin Hydration Errors
+
+### Error: "Hydration failed because the initial UI does not match..."
+
+*   **Underlying Cause**: A React hydration mismatch in Next.js, typically caused by accessing client-side browser globals (such as `window` or `document`) during the server-rendering phase.
+*   **Resolution Strategy**:
+    1.  Wrap browser-only initializations within a `useEffect` hook to defer execution until mounting is complete:
+        ```typescript
+        useEffect(() => {
+          if (typeof window !== 'undefined') {
+            // Perform client-safe operations
+          }
+        }, []);
+        ```
+    2.  Alternatively, disable server-side rendering for the affected component using Next.js dynamic imports:
+        ```typescript
+        const DynamicMap = dynamic(() => import('./MapComponent'), { ssr: false });
+        ```
+
+---
+
+## 5. Google OAuth & Deep Linking (Android)
+
+### Error: "The provided Linking scheme does not appear in the list of possible URI schemes..."
+
+*   **Underlying Cause**: Expo's `makeRedirectUri` generates a callback URL containing your reverse Client ID scheme. If this scheme is not declared in your `app.json` config under `expo.scheme`, the Metro bundler will throw a warning, and Google will block the redirect back to the app.
+*   **Resolution Strategy**:
+    1.  Add the reverse Google Client ID as a scheme in your local `app.json` under `expo.scheme`:
+        ```json
+        "scheme": [
+          "lattice",
+          "com.lattice.app",
+          "com.googleusercontent.apps.560870004174-9hphgg5sqq69nc5hp9mn1lbsnb8ulda3"
+        ]
+        ```
+    2.  Any changes to `app.json` scheme or linking intents require a native prebuild regeneration. Run `pnpm dev:android` or `npx expo prebuild --clean` to recompile the native Android manifest.
 
 ### Error: "access_blocked: Lattice request is invalid (Error 400: invalid_request)"
 
-- **Cause**: In Android native Google Sign-in or OAuth, the request SHA-1 certificate fingerprint sent by your running app does NOT match the SHA-1 fingerprint registered in the Google Cloud Console credentials under your package name (`com.lattice.app`).
-- **Fix**:
-  1. Extract your running dev client signature:
-     - For debug builds (local Expo dev client):
-       ```bash
-       keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
-       ```
-       *(Default keystore password is `android`)*
-     - For production / EAS builds:
-       ```bash
-       eas credentials
-       ```
-  2. Copy the `SHA-1` fingerprint from the terminal output.
-  3. Go to the **Google Cloud Console** -> **API & Services** -> **Credentials** -> **OAuth 2.0 Client IDs**.
-  4. Select your Android Client ID, ensure the Package Name is exactly `com.lattice.app`, and paste/update the **SHA-1 certificate fingerprint**.
-  5. Save and rebuild the native app using `pnpm dev:android`.
+*   **Underlying Cause**: The SHA-1 certificate fingerprint of your running mobile client does not match the fingerprint registered in the Google Cloud Console credentials under the target package name (`com.lattice.app`).
+*   **Resolution Strategy**:
+    1.  Extract your running dev client signature:
+        *   For local debug builds:
+            ```bash
+            keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
+            ```
+        *   For production EAS builds:
+            ```bash
+            eas credentials
+            ```
+    2.  Copy the SHA-1 fingerprint output.
+    3.  Navigate to your Google Cloud Console -> **APIs & Services** -> **Credentials**.
+    4.  Select your active Android Client ID, ensure the Package Name is exactly `com.lattice.app`, and paste/update the **SHA-1 certificate fingerprint**.
+    5.  Save the settings and rebuild the client application.
 
-### Issue: "Metro Bundler has stale environment cache / LAN IP connection issues"
-
-- **Cause**: Metro aggressively caches the LAN IP or previous bundling files, leading to incorrect connection issues when switching physical networks or building production variants.
-- **Fix**: Clear the Metro bundler cache by starting the dev client with the `--clear` flag:
-  ```bash
-  pnpm dev:mobile:lan:prod --clear
-  ```
-
----
-
-## Still stuck?
-
-If your issue isn't listed here, please open a thread in the `#engineering-help` channel with:
-
-1. A screenshot of the error.
-2. What you were trying to do.
-3. Your OS and Node version.
+<Callout type="warning">
+  **Stale Environment Cache**: The Metro bundler aggressively caches environment parameters. When changing `.env` variables or switching networks, always restart the mobile bundler clearing its cache: `pnpm dev:mobile:lan --clear`.
+</Callout>

@@ -1,5 +1,6 @@
 export default {
-  index: 'Vision',
-  mobile: 'Mobile App',
-  admin: 'Web Admin',
+  index: 'Vision & Evolution',
+  mobile: 'Mobile Experience',
+  admin: 'Web Control Center',
+  roadmap: 'Product Roadmap',
 };

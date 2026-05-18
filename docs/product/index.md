@@ -1,85 +1,99 @@
-# Product Vision
+import { Callout } from 'nextra/components'
 
-Lattice is the ultimate bridge between Barcelona's cultural scene and its residents and visitors. We believe that discovering urban events should be seamless, inspiring, and real-time.
+# Product Vision & Evolution
 
-## The Problem
+Lattice serves as a digital bridge between Barcelona's cultural events and its residents and visitors. We believe that discovering, accessing, and navigating physical event spaces should be seamless, inspiring, and synchronized in real-time.
 
-Barcelona is a hub of activity, but finding reliable, curated, and location-aware information about festivals and events is often difficult. Information is fragmented across social media, blogs, and official sites.
+---
 
-## Our Solution
+## 1. The Core Problem
 
-Lattice provides a centralized, map-based platform where:
+In high-density urban hubs like Barcelona, discovering and participating in major events is often fragmented and challenging:
+*   **Information Fragmentation**: Event schedules, venue configurations, and access rules are scattered across social media, blogs, and unoptimized corporate websites.
+*   **Physical Navigation Issues**: Standard navigation apps rely on vehicle road networks, making them ineffective inside pedestrian-only venues, parks, or large festival grounds.
+*   **Crowd Congestion**: Attendees struggle to gauge real-time congestion levels at entrance gates, transit hubs, and points of interest, leading to bottlenecks and safety concerns.
+*   **Accessibility Gaps**: Mobility-impaired visitors lack reliable information about wheelchair-friendly routes, accessible restrooms, and step-free access paths.
 
-- **Clients** can discover what's happening around them in seconds.
-- **Organizers** can showcase their festivals and events to a targeted audience.
-- **Administrators** can ensure data quality and provide real-time updates.
+---
 
+## 2. The Lattice Solution
 
+Lattice introduces a unified, location-aware platform built to deliver:
 
-## Prototype Evolution: From CDC to Lattice
+*   **For Attendees**: A native mobile client to discover local events, plan accessible routes, view digital tickets, and navigate complex physical spaces using interactive maps and Augmented Reality.
+*   **For Organizers**: An intuitive web control center to curate event details, draw custom geofences, establish temporary pedestrian routing graphs, and monitor live crowd densities.
+*   **For Operations**: A real-time telemetry pipeline to predict crowd bottlenecks, deploy safety marshals, and adjust access perimeters on the fly.
+
+---
+
+## 3. Product Pillars
+
+1.  **Geospatial First**: Everything begins with the map. Physical location provides the core context for all discovery, ticket claiming, and navigation workflows.
+2.  **Verified Curation**: High-quality, real-time data directly managed by event coordinators, eliminating stale details and inaccurate schedule listings.
+3.  **Accessibility Inclusivity**: Pedestrian routing calculations prioritize step-free paths, paved surfaces, and wheelchair-accessible facilities based on individual preferences.
+
+---
+
+## 4. Platform Evolution: From CDC to Lattice
 
 During Sprints 1 and 2, our team designed a specialized prototype for the **Circuit de Barcelona-Catalunya (CDC)**. Sprints 3 and 4 saw the evolution of this project into **Lattice**, a comprehensive, multi-event urban spatial coordination platform.
 
-### Sprint 1 & 2: Circuit de Barcelona-Catalunya (CDC) Prototype
+### Sprints 1 & 2: Circuit de Barcelona-Catalunya (CDC) Prototype
 
-The original concept was built around a **single-event paradigm**, dedicated exclusively to the Formula 1 and MotoGP circuit venue. The goal was to provide high-fidelity internal mapping, grandstand routing, and a real-time event planner for attendees at the race track. 
+The original concept was built around a **single-venue paradigm**, dedicated exclusively to the Formula 1 and MotoGP circuit venue. The goal was to provide high-fidelity internal mapping, grandstand routing, and a real-time event planner for attendees at the race track. 
 
-Due to strategic disagreements and misaligned business requirements with the target enterprise (Circuit de Catalunya), this single-event direction was discarded. However, this early phase was instrumental in proving our core technical concepts, such as custom routing overlays, augmented reality (AR) HUD concepts, and offline-first capabilities.
+Due to strategic differences and misaligned business requirements with the target enterprise, this single-event direction was discarded. However, this early phase proved our core technical concepts, such as custom routing overlays, augmented reality (AR) HUD concepts, and offline-first capabilities.
 
 #### CDC Prototype Screens
 
-<div className="flex flex-wrap gap-4 mt-6 justify-center">
-  <div className="flex flex-col items-center">
-    <h3>Login</h3>
-    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-login.png" alt="CDC Login Screen" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+<div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', margin: '2rem 0' }}>
+  <div style={{ textAlign: 'center' }}>
+    <h4>Secure Login</h4>
+    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-login.png" alt="CDC Login Screen" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
-  <div className="flex flex-col items-center">
-    <h3>Venue Map & POIs</h3>
-    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-map-details.png" alt="CDC Venue Map & POIs" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <div style={{ textAlign: 'center' }}>
+    <h4>Venue Map & POIs</h4>
+    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-map-details.png" alt="CDC Venue Map & POIs" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
-  <div className="flex flex-col items-center">
-    <h3>Grandstand & Info Sheet</h3>
-    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-events-details.png" alt="CDC Grandstand & Info Sheet" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <div style={{ textAlign: 'center' }}>
+    <h4>Grandstand Details</h4>
+    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-events-details.png" alt="CDC Grandstand & Info Sheet" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
-  <div className="flex flex-col items-center">
-    <h3>AR HUD Navigation</h3>
-    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-ar-sytem.png" alt="CDC Augmented Reality (AR) HUD Navigation" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <div style={{ textAlign: 'center' }}>
+    <h4>AR HUD Navigation</h4>
+    <img src="/assets/displays-prototipe/circuit-de-catalunya/screen-ar-sytem.png" alt="CDC Augmented Reality (AR) HUD Navigation" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
 </div>
 
 ---
 
-### Sprint 3 & 4: Lattice Multi-Event Platform Evolution
+### Sprints 3 & 4: Lattice Multi-Event Platform Evolution
 
-In Sprints 3 and 4, we completely refactored the product vision and expanded the architecture. We transitioned from the single-venue CDC model to **Lattice**, a dynamic, multi-event spatial discovery engine that scales across any number of events, festivals, and venue networks throughout Barcelona.
+In Sprints 3 and 4, we refactored the product vision and expanded the architecture. We transitioned from the single-venue CDC model to **Lattice**, a dynamic, multi-event spatial discovery engine that scales across any number of events, festivals, and venue networks throughout Barcelona.
 
-Lattice introduces robust real-time ticket scanning, crowd density monitoring via live telemetry, and accessibility-first routing (excluding stairs, ramps, or high-slope paths based on individual needs). The UI/UX was polished to reflect a premium, "Apple-style" dark and light theme, prioritizing fluid user navigation.
+Lattice introduces robust real-time ticket scanning, crowd density monitoring via live telemetry, and accessibility-first routing (excluding stairs, ramps, or high-slope paths based on individual needs). The UI/UX was polished to reflect a premium, dark and light theme, prioritizing fluid user navigation.
 
 #### Lattice Final Screens
 
-<div className="flex flex-wrap gap-4 mt-6 justify-center">
-  <div className="flex flex-col items-center">
-    <h3>Event Explorer Feed</h3>
-    <img src="/assets/displays-prototipe/lattice/screen-explore-events.png" alt="Lattice Event Explorer Feed" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+<div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', margin: '2rem 0' }}>
+  <div style={{ textAlign: 'center' }}>
+    <h4>Discovery Feed</h4>
+    <img src="/assets/displays-prototipe/lattice/screen-explore-events.png" alt="Lattice Event Explorer Feed" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
-  <div className="flex flex-col items-center">
-    <h3>Event Search & Selection</h3>
-    <img src="/assets/displays-prototipe/lattice/screen-search-events.png" alt="Lattice Event Search & Selection" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <div style={{ textAlign: 'center' }}>
+    <h4>Search & Filters</h4>
+    <img src="/assets/displays-prototipe/lattice/screen-search-events.png" alt="Lattice Event Search & Selection" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
-  <div className="flex flex-col items-center">
-    <h3>Active Map Tracking</h3>
-    <img src="/assets/displays-prototipe/lattice/screen-search-map.png" alt="Lattice Active Map Tracking" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <div style={{ textAlign: 'center' }}>
+    <h4>Active Map Tracking</h4>
+    <img src="/assets/displays-prototipe/lattice/screen-search-map.png" alt="Lattice Active Map Tracking" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
-  <div className="flex flex-col items-center">
-    <h3>Detailed Info Sheet</h3>
-    <img src="/assets/displays-prototipe/lattice/screen-details-events.png" alt="Lattice Detailed Info Sheet" width="300" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <div style={{ textAlign: 'center' }}>
+    <h4>Detailed Info Sheet</h4>
+    <img src="/assets/displays-prototipe/lattice/screen-details-events.png" alt="Lattice Detailed Info Sheet" width="220" style={{ borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   </div>
 </div>
 
----
-
-## Core Pillars
-
-1.  **Spatial Discovery**: Everything starts with the map. Location is the primary context.
-2.  **Curation**: High-quality, reliable information about the best events in Barcelona.
-3.  **Real-Time**: Updates on gate telemetry, event status, and live happenings.
+<Callout type="info">
+  **Evolution of Success**: While the CDC prototype focused on a single race track, the Lattice platform successfully leverages the same core technologies—custom pedestrian pathfinding and gyroscope-responsive AR layers—across any event venue in Barcelona.
+</Callout>
