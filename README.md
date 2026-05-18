@@ -2,88 +2,146 @@
   
   # Lattice
   
-  **The definitive ecosystem for urban discovery and festival management in Barcelona.**
+  **The high-performance location-aware ecosystem for urban event discovery and festival operations in Barcelona.**
   
-  *Built with a high-performance Modular Monolith architecture within a Turborepo.*
+  *Built with a domain-driven Modular Monolith architecture within a Turborepo workspace.*
 
   <p align="center">
-    <img src="https://img.shields.io/badge/npm-v11.1.8-blue?logo=npm" alt="npm version" />
-    <img src="https://img.shields.io/badge/Test-passing-brightgreen?logo=github" alt="GitHub Test" />
-    <img src="https://img.shields.io/badge/coverage-43%25-orange" alt="coverage" />
+    <img src="https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white" alt="Node.js version" />
+    <img src="https://img.shields.io/badge/pnpm-v8+-F69220?logo=pnpm&logoColor=white" alt="pnpm version" />
+    <img src="https://img.shields.io/badge/Docker-passing-2496ED?logo=docker&logoColor=white" alt="Docker status" />
     <img src="https://img.shields.io/badge/code_style-prettier-ff69b4?logo=prettier" alt="code style prettier" />
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" />
     <img src="https://img.shields.io/badge/license-MIT-blue" alt="license MIT" />
-    <a href="https://gitpod.io/#https://github.com/cdc-grup/app_lattice_project">
-      <img src="https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod" alt="Gitpod Ready-to-Code" />
-    </a>
   </p>
 </div>
 
-<div align="center">
-  <img src="docs/assets/mockups/web-admin-browser.png" alt="Lattice Web-Admin Dashboard" width="48%" align="middle" />
-  <img src="docs/assets/mockups/main-3.1.png" alt="Lattice Mobile Application" width="48%" align="middle" />
-</div>
+---
 
-## Documentation Portal
+## 1. Executive Summary
 
-Explore our comprehensive, domain-driven documentation. Each section is designed to provide deep technical insights and operational guidance.
+Lattice is an enterprise-grade spatial coordination platform designed to bridge the gap between event organizers, municipal authorities, and attendees. The platform addresses the challenges of urban navigation, access control, and crowd safety during high-density festivals throughout Barcelona.
 
-**[Visit the Documentation Portal](https://lattice-product-team.github.io/app_lattice_project/)**
-
-| Domain           | Key Areas           | Description                                      |
-| :--------------- | :------------------ | :----------------------------------------------- |
-| **Product**      | Vision, Roadmap     | Market objectives and long-term strategy.        |
-| **Architecture** | System Design, ADRs | Technical blueprint and architectural decisions. |
-| **API Spec**     | RESTful Contracts   | Shared data schemas and service interfaces.      |
-| **Engineering**  | Standards, Workflow | Coding guidelines and developer productivity.    |
-| **Guides**       | Onboarding, Ops     | Step-by-step manuals for users and devs.         |
+By utilizing customized pedestrian routing graphs, real-time crowd telemetry pipelines, and secure biometric check-ins, Lattice provides a resilient, modern infrastructure for managing and attending urban events.
 
 ---
 
-## Quick Start
+## 2. Core Features
 
-**IMPORTANT**: Ensure you have **Docker**, **Node.js (v20+)**, and **pnpm (v10+)** installed.
+### Mobile Experience (Expo Client)
+*   **Vector Map Canvas**: Fluid 60fps rendering powered by MapLibre GL for navigating large outdoor venues.
+*   **Pedestrian Turn-by-Turn**: Smart pathfinding using a local Valhalla routing instance, prioritizing walkways over vehicle roads.
+*   **Accessibility Routing**: Auto-recalculates paths to bypass steps, steep inclines, or gravel based on user mobility profiles.
+*   **Dynamic Wallet & Scanning**: High-contrast QR codes and dynamic access validation at entry points.
+*   **Augmented Reality (AR) HUD**: Virtual path overlays projected onto the camera feed to guide users in dense crowds.
 
-The fastest way to set up your environment is using our automated onboarding script:
+### Web Control Center (Next.js Dashboard)
+*   **GIS Drawing Tools**: Precise drawing of event boundaries and geofenced zones.
+*   **Crowd Density Radar**: Heatmaps mapping anonymous mobile coordinates to identify bottlenecks.
+*   **Live POI Curation**: Real-time management of emergency posts, food trucks, and facilities, syncing changes to client devices instantly.
+*   **Operational Dashboard**: Comprehensive views for events, ticket sales, and venue health.
 
+---
+
+## 3. Technology Stack & Monorepo Architecture
+
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Expo](https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![PostGIS](https://img.shields.io/badge/PostGIS-139F5C?style=for-the-badge&logo=postgis&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-CC0000?style=for-the-badge&logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-F69220?style=for-the-badge&logo=pnpm&logoColor=white)
+
+Lattice leverages a pnpm workspace and Turborepo to manage dependencies and build processes across applications and shared packages:
+
+
+```text
+app_lattice_project/
+├── apps/
+│   ├── server/          # Node.js & Express API monolith
+│   ├── admin-web/       # Next.js 14 Web Command Center
+│   ├── mobile/          # React Native & Expo Companion Application
+│   └── docs/            # Nextra & Next.js Documentation Portal
+└── packages/
+    ├── db/              # Shared schema and Drizzle migrations
+    ├── types-schema/    # Unified Zod schemas and inferred types
+    ├── core/            # Universal helper libraries and middleware
+    └── theme/           # Design system tokens and styles
+```
+
+### Infrastructure Core
+*   **Database**: PostgreSQL 15 enriched with the **PostGIS** spatial extension.
+*   **Server Core**: Express REST API backed by **Drizzle ORM** for type-safe database queries.
+*   **Caching**: **Redis** container managing active session states and telemetry caches.
+*   **Routing**: **Valhalla Pedestrian Engine** loaded with regional OpenStreetMap extracts.
+
+---
+
+## 4. Documentation Portal
+
+Each sub-system is documented in detail on our centralized portal:
+
+*   **[Vision & Evolution](docs/product/index.md)**: Platform roadmap, problem analysis, and CDC prototype history.
+*   **[System Architecture](docs/architecture/index.md)**: Architectural blueprints, PostGIS entity designs, and data-flow diagrams.
+*   **[API Reference Specification](docs/api-spec/index.md)**: Request/response schemas, JWT authentication, and mobile endpoint specifications.
+*   **[Engineering Standards](docs/engineering/index.md)**: Code standards, linting, git conventions, and workspace commands.
+*   **[Getting Started & Installation](docs/guides/getting-started.md)**: Local developer setup, onboarding commands, and troubleshooting guides.
+
+---
+
+## 5. Quick Start Setup
+
+Ensure you have **Docker**, **Node.js (v18+)**, and **pnpm** installed globally.
+
+### Fast-Track Onboarding
+Execute the following commands in your workspace root to install dependencies and run the automated setup wizard:
 ```bash
 pnpm install
 pnpm onboard
 ```
 
-This command will:
+The script will automatically check prerequisites, generate your root `.env` configuration, start PostgreSQL/Redis/Valhalla containers, apply database schemas, and seed default datasets.
 
-1. Verify your environment (Docker, pnpm, Node).
-2. Initialize your `.env` file.
-3. Start the infrastructure (PostgreSQL, Redis, Valhalla).
-4. Run migrations and seed the database.
-
-Once complete, start the project with:
+### Running the Services
+Once setup is complete, open separate terminals to launch the application stack:
 
 ```bash
-pnpm dev
+# Start API Server
+pnpm dev:api
+
+# Start Web Admin Dashboard
+pnpm dev:web
+
+# Start Mobile Metro Bundler (LAN mode)
+pnpm dev:mobile:lan
 ```
 
+## 6. Contributors & Authors
+
+<a href="https://github.com/cdc-grup/app_lattice_project/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=cdc-grup/app_lattice_project" alt="Lattice Contributors Grid" />
+</a>
+
+Lattice is proudly developed and maintained by:
+
+### Marti Castano
+*   **Role**: Lead Architect & Systems Engineer
+*   **Contact**: marticastanorodriguez@gmail.com
+*   **Focus**: API Monolith design, PostGIS spatial queries, Docker infrastructure, and Nextra portal orchestration.
+
+### Nil Diaz
+*   **Role**: Mobile Systems & Product Engineer
+*   **Contact**: nildiazbel@inspedralbes.cat
+*   **Focus**: React Native mobile companion, MapLibre GL integrations, Expo routing assets, and AR viewport design.
+
 ---
 
-## Technology Stack
+## License
 
-- **Backend**: Node.js (Express) with **Drizzle ORM**.
-- **Database**: PostgreSQL + **PostGIS** for geospatial optimization.
-- **Mobile**: React Native (Expo) with **MapLibre GL** for 60fps mapping.
-- **Admin**: Next.js 14 with high-density operational dashboards.
-- **Auth**: Custom JWT authentication with bcrypt password hashing.
-- **Tooling**: Turborepo, Docker, and Vitest.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-## Shared Packages
-
-- `@app/db`: SSOT for schema and migrations.
-- `@app/types-schema`: Universal TypeScript definitions.
-- `@app/core`: Shared utilities and middleware.
-- `@app/theme`: Visual DNA for all platforms.
-
----
-
-## Contributing
-
-We follow **Conventional Commits**. Please review our **Git Standards** before opening a Pull Request.
