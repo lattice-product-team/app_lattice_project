@@ -12,7 +12,7 @@ import { Pressable as GHPressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { Navigation, ChevronRight } from 'lucide-react-native';
 import Animated, { FadeInRight } from 'react-native-reanimated';
-import { getCategoryMetadata } from '../../../utils/poiUtils';
+import { getCategoryMetadata, resolveBannerUrl } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
 import { StandardUIPOI as UIPOI } from '../../../types/models/poi';
 import * as Haptics from 'expo-haptics';
@@ -44,10 +44,11 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
 
   const metadata = getCategoryMetadata(poi.category);
   const CategoryIcon = metadata.icon;
-  const imageUrl =
+  const imageUrl = resolveBannerUrl(
     poi.images && poi.images.length > 0
       ? poi.images[0]
-      : 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=800&auto=format&fit=crop';
+      : null
+  );
 
   const distanceText = useMemo(() => {
     if (!userCoords || !poi.coordinates) return null;

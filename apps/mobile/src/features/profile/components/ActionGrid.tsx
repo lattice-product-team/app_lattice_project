@@ -31,7 +31,7 @@ export const ActionGrid = () => {
   const actions = [
     {
       id: 'tickets',
-      label: 'Entradas',
+      label: 'Tickets',
       icon: <Ticket size={26} color={theme.colors.brand.primary} strokeWidth={2.2} />,
       onPress: () => handlePress('tickets'),
     },
@@ -43,7 +43,7 @@ export const ActionGrid = () => {
     },
     {
       id: 'saved',
-      label: 'Favoritos',
+      label: 'Favorites',
       icon: <Heart size={24} color={theme.colors.brand.primary} strokeWidth={2.2} />,
       onPress: () => handlePress('saved'),
     },

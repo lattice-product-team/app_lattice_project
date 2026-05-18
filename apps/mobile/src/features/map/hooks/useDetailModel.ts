@@ -5,7 +5,7 @@ import { useEventStore } from '../../event/store/useEventStore';
 import { useEventDetails } from './useEventDetails';
 import { DetailModel } from '../../../types/models/detail';
 import { useAppTheme } from '../../../hooks/useAppTheme';
-import { getCategoryMetadata } from '../../../utils/poiUtils';
+import { getCategoryMetadata, resolveBannerUrl } from '../../../utils/poiUtils';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useSearchEvents } from './useSearchEvents';
 import { useARStore, ARFilterMode } from '../store/useARStore';
@@ -123,7 +123,7 @@ export const useDetailModel = (): DetailModel | null => {
         description:
           (data as any).description ||
           'Explore this event and discover unique experiences in the city.',
-        bannerUrl: (data as any).bannerUrl,
+        bannerUrl: resolveBannerUrl((data as any).bannerUrl),
         galleryUrls: (data as any).galleryUrls || [],
         logoUrl: (data as any).logoUrl,
         social: social
@@ -211,11 +211,13 @@ export const useDetailModel = (): DetailModel | null => {
             onPress: () => console.log('Open website'),
           },
           {
-            id: 'tickets',
-            label: 'TicketIcons',
-            icon: 'TicketIcon',
+            id: 'share',
+            label: 'Share',
+            icon: 'ShareIcon',
             variant: 'subdued',
-            onPress: () => console.log('Buy tickets'),
+            onPress: () => {
+              Alert.alert('Notice', 'This option is currently not available.');
+            },
           },
         ],
       } as DetailModel;
@@ -251,10 +253,11 @@ export const useDetailModel = (): DetailModel | null => {
         name: selectedPoi.displayName,
         subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
-        bannerUrl:
+        bannerUrl: resolveBannerUrl(
           (selectedPoi as any).bannerUrl ||
           (selectedPoi.images?.length > 0 ? selectedPoi.images[0] : undefined) ||
-          (selectedPoi.galleryUrls?.length > 0 ? selectedPoi.galleryUrls[0] : undefined),
+          (selectedPoi.galleryUrls?.length > 0 ? selectedPoi.galleryUrls[0] : undefined)
+        ),
         galleryUrls:
           selectedPoi.images?.length > 0 ? selectedPoi.images : selectedPoi.galleryUrls || [],
         categoryIcon: catMetadata.icon,
@@ -349,8 +352,10 @@ export const useDetailModel = (): DetailModel | null => {
             id: 'share',
             label: 'Share',
             icon: 'ShareIcon',
-            variant: 'secondary',
-            onPress: () => {},
+            variant: 'subdued',
+            onPress: () => {
+              Alert.alert('Notice', 'This option is currently not available.');
+            },
           },
         ],
       } as DetailModel;

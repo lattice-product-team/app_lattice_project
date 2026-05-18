@@ -3,7 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
-import { getCategoryLabel, getEventMetadata } from '../../../utils/poiUtils';
+import { getCategoryLabel, getEventMetadata, resolveBannerUrl } from '../../../utils/poiUtils';
 
 interface Props {
   title: string;
@@ -56,9 +56,7 @@ export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
             >
               <Image
                 source={{
-                  uri:
-                    item.bannerUrl ||
-                    `https://images.unsplash.com/photo-1467226632440-65f0b49574f8?auto=format&fit=crop&w=200&q=80`,
+                  uri: resolveBannerUrl(item.bannerUrl),
                 }}
                 style={{ width: 56, height: 56, borderRadius: 12, marginRight: 12 }}
                 contentFit="cover"

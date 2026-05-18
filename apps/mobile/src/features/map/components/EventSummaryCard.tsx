@@ -81,10 +81,10 @@ export const EventSummaryCard = ({ event, onClear }: EventSummaryCardProps) => {
           )}
           <Text style={[styles.buttonText, { color: theme.colors.text.inverse }]}>
             {isDownloading
-              ? `Descargando ${Math.round(progress * 100)}%`
+              ? `Downloading ${Math.round(progress * 100)}%`
               : isDownloaded
-                ? 'Disponible offline'
-                : 'Descargar pack offline'}
+                ? 'Available offline'
+                : 'Download offline pack'}
           </Text>
         </Pressable>
       </View>

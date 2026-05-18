@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Star } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { resolveBannerUrl } from '../../../utils/poiUtils';
 
 const { width } = Dimensions.get('window');
 const GRID_PADDING = 20;
@@ -51,9 +52,7 @@ export const BentoGrid = React.memo(({ title, items, onPress }: Props) => {
             >
               <Image
                 source={{
-                  uri:
-                    item.bannerUrl ||
-                    `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80`,
+                  uri: resolveBannerUrl(item.bannerUrl),
                 }}
                 style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
