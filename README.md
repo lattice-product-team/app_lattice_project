@@ -20,8 +20,8 @@
 </div>
 
 <div align="center">
-  <img src="docs/assets/mockups/web-admin-browser.png" alt="Lattice Web-Admin Dashboard" width="48%" />
-  <img src="docs/assets/mockups/main-3.1.png" alt="Lattice Mobile Application" width="48%" />
+  <img src="docs/assets/mockups/web-admin-browser.png" alt="Lattice Web-Admin Dashboard" width="48%" align="middle" />
+  <img src="docs/assets/mockups/main-3.1.png" alt="Lattice Mobile Application" width="48%" align="middle" />
 </div>
 
 ## Documentation Portal
