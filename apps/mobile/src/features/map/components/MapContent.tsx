@@ -21,7 +21,7 @@ import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
 import { useEventStore } from '../../event/store/useEventStore';
-import { normalizePOI, normalizeEventList, normalizePOIList } from '../../poi/adapters/poiAdapter';
+import { normalizePOI, normalizeEventList } from '../../poi/adapters/poiAdapter';
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
@@ -53,10 +53,128 @@ import styleDark from '../../../../assets/map/style-dark.json';
 import {
   MAPTILER_KEY,
   EMPTY_GEOJSON,
-  DEFAULT_ZOOM,
   MAP_CENTER,
 } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
+
+// --- Global Performance Cache: Pre-Filter Style Layers Outside Render Cycle ---
+const filterMapStyle = (baseStyle: any) => {
+  const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
+    const lid = (layer.id || '').toLowerCase();
+    const isSymbolLayer = layer.type === 'symbol';
+    const isEssentialLabel =
+      lid.includes('place') ||
+      lid.includes('city') ||
+      lid.includes('town') ||
+      lid.includes('village') ||
+      lid.includes('country') ||
+      lid.includes('state') ||
+      lid.includes('continent') ||
+      lid.includes('road') ||
+      lid.includes('water');
+
+    // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
+    if (
+      Platform.OS === 'android' &&
+      (lid.includes('building') || layer.type === 'fill-extrusion')
+    ) {
+      return {
+        ...layer,
+        layout: { ...(layer.layout || {}), visibility: 'none' },
+      };
+    }
+
+    if (isSymbolLayer && !isEssentialLabel) {
+      return {
+        ...layer,
+        layout: {
+          ...(layer.layout || {}),
+          visibility: 'none',
+        },
+      };
+    }
+    return layer;
+  });
+
+  return {
+    ...baseStyle,
+    layers: filteredLayers,
+    sources: {
+      ...(baseStyle.sources || {}),
+      maptiler_planet: {
+        type: 'vector',
+        url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`,
+      },
+    },
+  };
+};
+
+let cachedLightStyle: any = null;
+let cachedDarkStyle: any = null;
+
+const getOptimizedStyle = (isDark: boolean) => {
+  if (isDark) {
+    if (!cachedDarkStyle) {
+      cachedDarkStyle = filterMapStyle(JSON.parse(JSON.stringify(styleDark)));
+    }
+    return cachedDarkStyle;
+  } else {
+    if (!cachedLightStyle) {
+      cachedLightStyle = filterMapStyle(JSON.parse(JSON.stringify(styleLight)));
+    }
+    return cachedLightStyle;
+  }
+};
+
+const getNativeIconName = (categoryIcon: any) => {
+  const icon = String(categoryIcon || '').toLowerCase();
+
+  // Food & Drink
+  if (
+    icon.includes('restaurant') ||
+    icon.includes('food') ||
+    icon.includes('utensils') ||
+    icon.includes('coffee')
+  )
+    return 'restaurant';
+  if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
+
+  // Infrastructure
+  if (icon.includes('parking')) return 'parking';
+  if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
+    return 'toilet';
+  if (
+    icon.includes('gate') ||
+    icon.includes('login') ||
+    icon.includes('entrance') ||
+    icon.includes('log-out')
+  )
+    return 'log-out';
+
+  // Health & Safety
+  if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital'))
+    return 'hospital';
+  if (icon.includes('security') || icon.includes('shield')) return 'shield';
+
+  // Info & Points
+  if (icon.includes('info') || icon.includes('library')) return 'library-big';
+  if (icon.includes('meetup') || icon.includes('users')) return 'users';
+
+  // Venues & Shopping
+  if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
+    return 'store';
+  if (
+    icon.includes('stage') ||
+    icon.includes('theater') ||
+    icon.includes('grandstand') ||
+    icon.includes('music')
+  )
+    return 'theater';
+  if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
+    return 'crown';
+
+  return 'library-big'; // Fallback to info-style
+};
 
 interface MapContentProps {
   poisGeoJSON: any;
@@ -449,56 +567,6 @@ export const MapContent = function MapContent({
     return [...spatialPois, ...eventPois];
   }, [poisGeoJSON, allEvents]);
 
-  const getNativeIconName = (categoryIcon: any) => {
-    const icon = String(categoryIcon || '').toLowerCase();
-
-    // Food & Drink
-    if (
-      icon.includes('restaurant') ||
-      icon.includes('food') ||
-      icon.includes('utensils') ||
-      icon.includes('coffee')
-    )
-      return 'restaurant';
-    if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
-
-    // Infrastructure
-    if (icon.includes('parking')) return 'parking';
-    if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
-      return 'toilet';
-    if (
-      icon.includes('gate') ||
-      icon.includes('login') ||
-      icon.includes('entrance') ||
-      icon.includes('log-out')
-    )
-      return 'log-out';
-
-    // Health & Safety
-    if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital'))
-      return 'hospital';
-    if (icon.includes('security') || icon.includes('shield')) return 'shield';
-
-    // Info & Points
-    if (icon.includes('info') || icon.includes('library')) return 'library-big';
-    if (icon.includes('meetup') || icon.includes('users')) return 'users';
-
-    // Venues & Shopping
-    if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
-      return 'store';
-    if (
-      icon.includes('stage') ||
-      icon.includes('theater') ||
-      icon.includes('grandstand') ||
-      icon.includes('music')
-    )
-      return 'theater';
-    if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
-      return 'crown';
-
-    return 'library-big'; // Fallback to info-style
-  };
-
   // Hierarchical visibility logic for POIs
   const filteredPoisGeoJSON = useMemo(() => {
     const filteredList = getFilteredPOIs(allUIPois, discreteZoom);
@@ -698,60 +766,7 @@ export const MapContent = function MapContent({
   }, [setInitialLoadComplete, setMapReady]);
 
   const mapStyle = useMemo(() => {
-    const baseStyle = theme.dark ? styleDark : styleLight;
-
-    // Filter out native POI layers to ensure ONLY our custom POIMarkers are visible
-    // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
-    const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
-      const lid = (layer.id || '').toLowerCase();
-
-      // Robust approach: Hide most symbol/label layers except essential geographical names
-      const isSymbolLayer = layer.type === 'symbol';
-      const isEssentialLabel =
-        lid.includes('place') ||
-        lid.includes('city') ||
-        lid.includes('town') ||
-        lid.includes('village') ||
-        lid.includes('country') ||
-        lid.includes('state') ||
-        lid.includes('continent') ||
-        lid.includes('road') ||
-        lid.includes('water');
-
-      // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
-      if (
-        Platform.OS === 'android' &&
-        (lid.includes('building') || layer.type === 'fill-extrusion')
-      ) {
-        return {
-          ...layer,
-          layout: { ...(layer.layout || {}), visibility: 'none' },
-        };
-      }
-
-      if (isSymbolLayer && !isEssentialLabel) {
-        return {
-          ...layer,
-          layout: {
-            ...(layer.layout || {}),
-            visibility: 'none',
-          },
-        };
-      }
-      return layer;
-    });
-
-    return {
-      ...baseStyle,
-      layers: filteredLayers,
-      sources: {
-        ...(baseStyle.sources || {}),
-        maptiler_planet: {
-          type: 'vector',
-          url: `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`,
-        },
-      },
-    };
+    return getOptimizedStyle(theme.dark);
   }, [theme.dark]);
 
   const handleMapPress = useCallback(
@@ -814,6 +829,8 @@ export const MapContent = function MapContent({
         scrollEnabled={true}
         zoomEnabled={true}
         onPress={handleMapPress}
+        // Android Optimization: Use TextureView under Fabric to prevent blank screens/stutters
+        androidView={Platform.OS === 'android' ? 'texture' : undefined}
         onRegionWillChange={(e) => {
           // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
           // If we detect a definitive user interaction, abort all locks preemptively.
