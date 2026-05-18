@@ -24,18 +24,18 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
   const contextTheme = useAppTheme();
   let theme = themeProp || contextTheme;
 
-  // Safety fallback for theme to prevent startup crashes
   if (!theme || !theme.colors) {
     try {
       const { darkTheme } = require('../../../styles/theme');
       theme = darkTheme;
     } catch (e) {
-      // Last resort if even require fails
-      return null;
+      // Safe no-op catch block to avoid early returns
     }
   }
 
   const insets = useSafeAreaInsets();
+  const user = useAuthStore((s) => s.user);
+  const isGuest = useAuthStore((s) => s.isGuest);
 
   const handleSelectCategory = (id: string) => {
     setActiveCategory((prev) => (prev === id ? 'all' : id));
@@ -57,9 +57,6 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
       return section;
     });
   }, [feed, activeCategory]);
-
-  const user = useAuthStore((s) => s.user);
-  const isGuest = useAuthStore((s) => s.isGuest);
 
   const greeting = React.useMemo(() => {
     const hour = new Date().getHours();

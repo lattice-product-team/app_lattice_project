@@ -61,6 +61,65 @@ const hexToRgba = (hex: string, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+interface BackgroundSlideProps {
+  index: number;
+  scrollX: Animated.SharedValue<number>;
+  image: any;
+  theme: any;
+}
+
+const BackgroundSlide = ({ index, scrollX, image, theme }: BackgroundSlideProps) => {
+  const imageStyle = useAnimatedStyle(() => {
+    const inputSize = width;
+    const scale = interpolate(
+      scrollX.value,
+      [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
+      [1.15, 1, 1.15],
+      Extrapolate.CLAMP
+    );
+
+    const opacity = interpolate(
+      scrollX.value,
+      [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
+      [0, 1, 0],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      opacity,
+      transform: [{ scale }],
+    };
+  });
+
+  const bgMain = theme.colors.bg.main;
+
+  return (
+    <Animated.View key={`bg-${index}`} style={[StyleSheet.absoluteFill, imageStyle]}>
+      <Image source={image} style={styles.backgroundImage} contentFit="cover" />
+      {/* Soft contrast-boosting overlay, adaptive to light/dark themes */}
+      <View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            backgroundColor: theme.dark ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.15)',
+          },
+        ]}
+      />
+      <LinearGradient
+        colors={[
+          hexToRgba(bgMain, 0),
+          hexToRgba(bgMain, 0.35),
+          hexToRgba(bgMain, 0.75),
+          bgMain,
+          bgMain,
+        ]}
+        locations={[0, 0.35, 0.55, 0.75, 1]}
+        style={styles.gradient}
+      />
+    </Animated.View>
+  );
+};
+
 export default function OnboardingScreen() {
   const router = useRouter();
   const theme = useAppTheme();
@@ -89,62 +148,6 @@ export default function OnboardingScreen() {
 
     setGuestMode(true);
     router.replace('/(main)');
-  };
-
-  const renderBackground = (index: number) => {
-    const imageStyle = useAnimatedStyle(() => {
-      const inputSize = width;
-      const scale = interpolate(
-        scrollX.value,
-        [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
-        [1.15, 1, 1.15],
-        Extrapolate.CLAMP
-      );
-
-      const opacity = interpolate(
-        scrollX.value,
-        [(index - 1) * inputSize, index * inputSize, (index + 1) * inputSize],
-        [0, 1, 0],
-        Extrapolate.CLAMP
-      );
-
-      return {
-        opacity,
-        transform: [{ scale }],
-      };
-    });
-
-    const bgMain = theme.colors.bg.main;
-
-    return (
-      <Animated.View key={`bg-${index}`} style={[StyleSheet.absoluteFill, imageStyle]}>
-        <Image
-          source={ONBOARDING_DATA[index].image}
-          style={styles.backgroundImage}
-          contentFit="cover"
-        />
-        {/* Soft contrast-boosting overlay, adaptive to light/dark themes */}
-        <View
-          style={[
-            StyleSheet.absoluteFillObject,
-            {
-              backgroundColor: theme.dark ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.15)',
-            },
-          ]}
-        />
-        <LinearGradient
-          colors={[
-            hexToRgba(bgMain, 0),
-            hexToRgba(bgMain, 0.35),
-            hexToRgba(bgMain, 0.75),
-            bgMain,
-            bgMain,
-          ]}
-          locations={[0, 0.35, 0.55, 0.75, 1]}
-          style={styles.gradient}
-        />
-      </Animated.View>
-    );
   };
 
   const renderItem = ({ item }: { item: (typeof ONBOARDING_DATA)[0] }) => (
@@ -187,7 +190,15 @@ export default function OnboardingScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
       <View style={styles.backgroundLayer}>
-        {ONBOARDING_DATA.map((_, index) => renderBackground(index))}
+        {ONBOARDING_DATA.map((item, index) => (
+          <BackgroundSlide
+            key={`bg-${index}`}
+            index={index}
+            scrollX={scrollX}
+            image={item.image}
+            theme={theme}
+          />
+        ))}
       </View>
 
       <FlatList

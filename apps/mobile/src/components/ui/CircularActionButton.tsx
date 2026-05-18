@@ -25,7 +25,7 @@ export const CircularActionButton = ({
   backgroundColor,
 }: CircularActionButtonProps) => {
   const theme = useAppTheme();
-  const Icon = LucideIcons[icon] as any;
+  const Icon = (LucideIcons as any)[icon];
 
   if (!Icon) return null;
 

@@ -83,9 +83,6 @@ const SelectedMarker = React.memo(
     theme: any;
     zoomSharedValue: any;
   }) => {
-    //STRICT GUARD: If we have an event selected, we NEVER show the React pin.
-    if (selectedEventId && String(selectedEventId).length > 0) return null;
-
     const selectedFeature = useMemo(() => {
       if (selectedPoiId) {
         return poisGeoJSON?.features?.find(
@@ -94,6 +91,9 @@ const SelectedMarker = React.memo(
       }
       return null;
     }, [selectedPoiId, poisGeoJSON]);
+
+    //STRICT GUARD: If we have an event selected, we NEVER show the React pin.
+    if (selectedEventId && String(selectedEventId).length > 0) return null;
 
     if (!selectedFeature) return null;
 
@@ -340,3 +340,5 @@ export const MapLayers = React.memo(
 );
 
 MapLayers.displayName = 'MapLayers';
+RouteLayer.displayName = 'RouteLayer';
+SelectedMarker.displayName = 'SelectedMarker';

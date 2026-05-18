@@ -152,7 +152,7 @@ export default function EmailAuthScreen() {
             <Text
               style={{ color: theme.colors.text.muted, fontFamily: 'Inter-Medium', fontSize: 14 }}
             >
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
             </Text>
             <Pressable onPress={() => router.push('/(auth)/email-register')} hitSlop={10}>
               <Text

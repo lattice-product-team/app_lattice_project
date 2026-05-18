@@ -1,4 +1,4 @@
-import { ButtonVariant } from '../components/ui/Button';
+import { ButtonVariant } from '../../components/ui/Button';
 
 export interface DetailMetric {
   label: string;

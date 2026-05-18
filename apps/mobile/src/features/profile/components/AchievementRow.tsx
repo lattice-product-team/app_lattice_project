@@ -52,7 +52,7 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
         {medals.length === 0 ? (
           <View style={[styles.emptyContainer, { backgroundColor: theme.colors.bg.surface }]}>
             <Text style={[styles.emptyText, { color: theme.colors.text.muted }]}>
-              You don't have any achievements yet. Attend events to unlock them!
+              You don&apos;t have any achievements yet. Attend events to unlock them!
             </Text>
             <View style={[styles.border, { borderColor: theme.colors.glass.border }]} />
           </View>

@@ -40,7 +40,7 @@ export const EventHistorySection = ({ events }: EventHistorySectionProps) => {
         })}
         {events.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>You haven't attended any events yet</Text>
+            <Text style={styles.emptyText}>You haven&apos;t attended any events yet</Text>
           </View>
         )}
       </ScrollView>

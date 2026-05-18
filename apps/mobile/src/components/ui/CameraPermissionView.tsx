@@ -22,7 +22,7 @@ export const CameraPermissionView = ({ onRequestPermission }: CameraPermissionVi
         Camera Permission Required
       </Text>
       <Text className="text-center mt-2 mb-8" style={{ color: theme.colors.text.muted }}>
-        We need camera access in order to scan your ticket's QR code.
+        We need camera access in order to scan your ticket&apos;s QR code.
       </Text>
       <Pressable
         className="px-6 py-3 rounded-full active:opacity-90"

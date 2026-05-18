@@ -171,12 +171,10 @@ export const AROverlay: React.FC = () => {
   // Internal component for high-performance projected labels
   const ProjectedLabel = ({ poi, index }: { poi: any; index: number }) => {
     const coords = poi.geometry?.coordinates;
-    if (!coords || !userCoords) return null;
-
-    const [userLon, userLat] = userCoords;
-    const [poiLon, poiLat] = coords;
-    const distance = getDistance(userLat, userLon, poiLat, poiLon);
-    const bearing = getBearing(userLat, userLon, poiLat, poiLon);
+    const [userLon, userLat] = userCoords || [0, 0];
+    const [poiLon, poiLat] = coords || [0, 0];
+    const distance = userCoords && coords ? getDistance(userLat, userLon, poiLat, poiLon) : 0;
+    const bearing = userCoords && coords ? getBearing(userLat, userLon, poiLat, poiLon) : 0;
     const isBeacon = poi.properties?.isBeacon;
     const metadata = getCategoryMetadata(poi.properties?.category);
     const CategoryIcon = metadata.icon;
@@ -184,6 +182,9 @@ export const AROverlay: React.FC = () => {
     const isTrackingSingleTarget = activePois.length === 1 && !isBeacon;
 
     const animatedStyle = useAnimatedStyle(() => {
+      if (!coords || !userCoords) {
+        return { transform: [], opacity: 0 };
+      }
       let angleDiff = bearing - sharedHeading.value;
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
@@ -248,6 +249,7 @@ export const AROverlay: React.FC = () => {
 
     // Sub-animations for directional arrows
     const leftArrowStyle = useAnimatedStyle(() => {
+      if (!coords || !userCoords) return { opacity: 0 };
       let angleDiff = bearing - sharedHeading.value;
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
@@ -255,6 +257,7 @@ export const AROverlay: React.FC = () => {
     });
 
     const rightArrowStyle = useAnimatedStyle(() => {
+      if (!coords || !userCoords) return { opacity: 0 };
       let angleDiff = bearing - sharedHeading.value;
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
@@ -262,6 +265,7 @@ export const AROverlay: React.FC = () => {
     });
 
     const centerContentStyle = useAnimatedStyle(() => {
+      if (!coords || !userCoords) return { opacity: 0 };
       let angleDiff = bearing - sharedHeading.value;
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
@@ -272,6 +276,8 @@ export const AROverlay: React.FC = () => {
         opacity: withTiming(isOffscreen && isTrackingSingleTarget ? 0.3 : 1, { duration: 200 }),
       };
     });
+
+    if (!coords || !userCoords) return null;
 
     return (
       <Animated.View style={[styles.labelWrapper, { width: isBeacon ? 240 : 200 }, animatedStyle]}>

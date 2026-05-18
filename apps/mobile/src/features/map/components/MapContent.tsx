@@ -773,7 +773,7 @@ export const MapContent = function MapContent({
           const features = await mapRef.current.queryRenderedFeaturesAtPoint(
             [screenPointX, screenPointY],
             null, //filter
-            ['eventLabels', 'backgroundPoiDots', 'poiLabelLayer'] //Layer IDs to check
+            ['eventLabelsBackground', 'eventLabelSelected', 'backgroundPoiDots', 'poiIconsLayer'] //Layer IDs to check
           );
 
           if (features?.features && features.features.length > 0) {
