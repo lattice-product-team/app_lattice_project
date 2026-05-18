@@ -1,28 +1,18 @@
-import { Callout } from 'nextra/components';
+import { Callout } from 'nextra/components'
 
 # Custom Infrastructure & Environment Manual
 
 This manual provides instructions for advanced configurations, custom environment tuning, and native infrastructure setups.
 
 <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
-  <img
-    src="/app_lattice_project/assets/mockups/map-black-1.png"
-    alt="Relational Spatial Maps (Dark Mode)"
-    style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
-  />
-  <img
-    src="/app_lattice_project/assets/mockups/map-white-1.png"
-    alt="Relational Spatial Maps (Light Mode)"
-    style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
-  />
+  <img src="/assets/mockups/map-black-1.png" alt="Relational Spatial Maps (Dark Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
+  <img src="/assets/mockups/map-white-1.png" alt="Relational Spatial Maps (Light Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
 </div>
 
 ---
 
 <Callout type="info">
-  **Looking for the fast path?** If you are setting up your workspace for the first time using our
-  standard Docker Compose stack, refer to the [Getting Started Guide](./getting-started.md). You do
-  not need to install Postgres, PostGIS, or Redis natively on your host machine.
+  **Looking for the fast path?** If you are setting up your workspace for the first time using our standard Docker Compose stack, refer to the [Getting Started Guide](./getting-started.md). You do not need to install Postgres, PostGIS, or Redis natively on your host machine.
 </Callout>
 
 ---
@@ -87,8 +77,7 @@ pnpm db:seed
 ```
 
 <Callout type="warning">
-  If migrations or seeding fail, make sure the database is fully initialized and your `DATABASE_URL`
-  contains the correct password and port. You can run `pnpm db:check` to diagnose connection issues.
+  If migrations or seeding fail, make sure the database is fully initialized and your `DATABASE_URL` contains the correct password and port. You can run `pnpm db:check` to diagnose connection issues.
 </Callout>
 
 ---
