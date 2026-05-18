@@ -1,122 +1,103 @@
+import { Callout } from 'nextra/components'
+
 # Technology Stack
 
-Lattice is built with a modern, type-safe, and high-performance technology stack designed to handle real-time geospatial data and complex event management.
-
-### Technology Stack Overview
-
-| Technology                                                                                                                 | Category       | Primary Purpose                             | Key Features                                            |
-| :------------------------------------------------------------------------------------------------------------------------- | :------------- | :------------------------------------------ | :------------------------------------------------------ |
-| <img src="https://cdn.simpleicons.org/typescript/3178C6" width="18" height="18" align="middle" /> **TypeScript**           | Core Language  | End-to-end static type safety               | Strong compilation boundaries, shared Drizzle models    |
-| <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="18" height="18" align="middle" /> **Node.js**               | Core Runtime   | Scalable server runtime environment         | Event-driven architecture, high IO throughput           |
-| <img src="https://cdn.simpleicons.org/react/61DAFB" width="18" height="18" align="middle" /> **React / Next.js**           | Frontend       | Web management & operations dashboard       | Nextra documentation engine, fast Server Actions        |
-| <img src="https://cdn.simpleicons.org/expo/000020" width="18" height="18" align="middle" /> **Expo & React Native**        | Mobile         | Native iOS & Android client application     | Cross-platform performance, hardware GPS/AR bindings    |
-| <img src="https://cdn.simpleicons.org/express/000000" width="18" height="18" align="middle" /> **Express.js**              | Backend API    | Lightweight REST API gateway                | Middleware-driven routing, clean MVC controllers        |
-| <img src="https://cdn.simpleicons.org/socketdotio/010101" width="18" height="18" align="middle" /> **Socket.IO**           | Telemetry      | Real-time bi-directional messaging          | Low-latency crowd coordinates, live room sync           |
-| <img src="https://cdn.simpleicons.org/postgresql/4169E1" width="18" height="18" align="middle" /> **PostgreSQL (PostGIS)** | Data           | Relational storage & geospatial mapping     | Native PostGIS spatial grids, polygons, proximity pings |
-| <img src="https://cdn.simpleicons.org/drizzle/C5F74F" width="18" height="18" align="middle" /> **Drizzle ORM**             | Data           | High-performance, type-safe database access | Zero overhead compilation, instant schema sync          |
-| <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" width="18" height="18" align="middle" /> **TailwindCSS**         | Styling        | Rapid utility-first UI development          | Sleek administrative dashboard, curated dark mode       |
-| <img src="https://cdn.simpleicons.org/turborepo/EF4444" width="18" height="18" align="middle" /> **Turborepo**             | DevOps         | Monorepo pipeline & task orchestration      | Global remote compilation cache, parallelized tests     |
-| <img src="https://cdn.simpleicons.org/docker/2496ED" width="18" height="18" align="middle" /> **Docker**                   | Infrastructure | Containerized local environment             | Consistent Postgres/Redis/Valhalla image orchestration  |
-| <img src="https://cdn.simpleicons.org/git/F05032" width="18" height="18" align="middle" /> **Git**                         | VCS            | Structured version control                  | Safe peer code reviews, continuous integration          |
+Lattice is engineered with a modern, highly optimized, and type-safe technology stack designed to handle real-time geospatial calculations, low-latency client synchronization, and robust high-capacity ticketing operations.
 
 ---
 
-## Core Language & Runtime
+## Technology Stack Overview
+
+Our stack is carefully structured across multiple layer boundaries to guarantee extreme type safety and high IO throughput:
+
+| Technology | Category | Primary Purpose | Key Features |
+| :--- | :--- | :--- | :--- |
+| **TypeScript** | Core Language | End-to-end static type safety | Strict compilation constraints, shared Drizzle entities |
+| **Node.js** | Core Runtime | Scalable server runtime environment | Event-driven architecture, high I/O throughput |
+| **React / Next.js** | Web Frontend | Web admin dashboard & operations | Nextra documentation engine, React Server Actions |
+| **Expo & React Native** | Mobile Client | Native iOS & Android client | Cross-platform performance, hardware GPS/AR bindings |
+| **Express.js** | Backend API | Lightweight REST API gateway | Middleware-driven routing, decoupled controller layers |
+| **Socket.IO** | Telemetry | Real-time bi-directional messaging | Low-latency telemetry loops, live room isolation |
+| **PostgreSQL & PostGIS** | Data Storage | Relational database & spatial mapping | Native PostGIS geometries, GIST indexing, proximity pings |
+| **Drizzle ORM** | Data Access | High-performance type-safe ORM | Zero overhead compilation, instant migration tracking |
+| **TailwindCSS** | Web Styling | Rapid utility-first UI styling | Curated dark mode configurations, CSS variables |
+| **Turborepo** | DevOps Pipeline | Monorepo task orchestration | Global remote compilation cache, parallelized tests |
+| **Docker** | Infrastructure | Containerized local environment | Standardized PostgreSQL, Redis, and Valhalla setups |
+| **Git** | Version Control | Structured code collaboration | Conventional commits, automated CI/CD triggers |
+
+---
+
+## Core Runtime and Language
 
 ### TypeScript
-
-<img src="/img/typescript.svg" alt="TypeScript" width="64" height="64" />
-
-The primary language for the entire monorepo. We use **TypeScript** for both frontend (React, React Native) and backend (Node.js) to ensure end-to-end type safety, reducing runtime errors and improving developer productivity.
+The structural backbone of the entire monorepo. TypeScript is enforced across all apps and shared packages in **Strict Mode** to guarantee:
+*   Absolute type safety from database schemas straight to client UI interfaces.
+*   Zero compiler bypasses (`any` is prohibited).
+*   Automatic compilation checks during continuous integration pipelines.
 
 ### Node.js
-
-<img src="/img/nodejs.svg" alt="Node.js" width="64" height="64" />
-
-Our backend services run on **Node.js**, providing a fast and scalable environment for our API and real-time communication layers.
+Our backend monolith runs on the long-term support (LTS) release of **Node.js**, leveraging its asynchronous, event-driven I/O engine to manage thousands of concurrent device telemetry connections.
 
 ---
 
 ## Frontend Frameworks
 
-### React (Web Dashboard)
+### React and Next.js (Web Dashboard)
+The admin Command Center is built utilizing **React** orchestrated by **Next.js 14**, taking full advantage of:
+*   **React Server Components (RSC)**: Renders static views on the server to reduce JavaScript bundle sizes and accelerate initial page loads.
+*   **Server Actions**: Executes secure database mutations and API orchestrations directly from client components.
+*   **Nextra Engine**: Renders our technical documentation from markdown source trees.
 
-<img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" width="64" height="64" />
- 
-The administrative dashboard is built with **React**, leveraging **Next.js** for routing and **Nextra** for documentation. It provides a rich, interactive interface for managing events, POIs, and telemetry.
- 
-### Expo & React Native (Mobile)
-<img src="/img/expo.svg" alt="Expo" width="64" height="64" />
- 
-The mobile application is built using **React Native** and **Expo**. This allows us to share code between platforms while maintaining native performance and access to device features like GPS and AR.
- 
+### Expo and React Native (Mobile App)
+The customer-facing application is built on **React Native** and powered by **Expo**:
+*   **Performance**: Renders native iOS and Android UI elements at 60fps, utilizing MapLibre GL's GPU hardware bindings.
+*   **Hardware Access**: Leverages native hardware modules for high-frequency GPS tracking, compass heading updates, and gyroscope telemetry for Augmented Reality HUD overlays.
+
 ---
- 
-## Backend & Infrastructure
- 
+
+## Backend & Telemetry Gateways
+
 ### Express.js
-<img src="https://cdn.simpleicons.org/express/000000" alt="Express.js" width="64" height="64" />
- 
-Our RESTful API is powered by **Express.js**, providing a lightweight and flexible foundation for our business logic and data orchestration.
- 
-### Socket.IO
-<img src="https://cdn.simpleicons.org/socketdotio/010101" alt="Socket.IO" width="64" height="64" />
- 
-For real-time telemetry and live updates, we use **Socket.IO**. This enables instant synchronization between mobile devices and the administrative dashboard.
- 
----
- 
-## Data Management
- 
-### PostgreSQL
-<img src="/img/postgresql.svg" alt="PostgreSQL" width="64" height="64" />
- 
-**PostgreSQL** is our primary relational database, chosen for its reliability, performance, and strong support for geospatial data via PostGIS.
- 
-### Drizzle ORM
-<img src="https://cdn.simpleicons.org/drizzle/C5F74F" alt="Drizzle ORM" width="64" height="64" />
- 
-We use **Drizzle ORM** as our type-safe companion for PostgreSQL. It provides a thin, high-performance layer that ensures our database queries are as safe as our application code.
- 
----
- 
-## Styling & Utilities
- 
-### TailwindCSS
-<img src="/img/tailwindcss.svg" alt="TailwindCSS" width="64" height="64" />
- 
-We use **TailwindCSS** for rapid and consistent UI development across our web applications, ensuring a modern and responsive design.
- 
-### Turborepo
-<img src="https://cdn.simpleicons.org/turborepo/EF4444" alt="Turborepo" width="64" height="64" />
+A modular monolith backend structured on **Express.js**. Controllers manage HTTP requests, validate bodies with **Zod**, and delegate operations to dedicated domain services.
 
-Our monorepo is managed by **Turborepo**, which optimizes our build pipeline and ensures efficient caching and task execution across all packages.
+### Socket.IO
+Our persistent, real-time messaging gateway. Coordinates private room streams for location sharing between groups and streams active crowd coordinates to the admin dashboard.
+
+---
+
+## Data Architecture
+
+### PostgreSQL and PostGIS
+Our primary relational database engine.
+*   **PostGIS Ext**: Expands PostgreSQL's capabilities to manage geodetic spatial geometries.
+*   **Spatial Indexing**: Leverages **GIST** indices to process polygon intersections and proximity searches in microseconds.
+
+### Drizzle ORM
+A thin, zero-overhead TypeScript ORM.
+*   **Type Safety**: Infers types directly from Drizzle table columns, eliminating manually declared TypeScript models.
+*   **Optimized Queries**: Translates Drizzle commands into raw SQL syntax without introducing runtime translation overhead.
+
+---
+
+## DevOps and Tooling
+
+### Turborepo
+Enforces build pipeline constraints, ensuring dependencies compile in the correct order. It caches successful builds, reducing build times.
 
 ### Docker
-
-<img src="/img/docker.svg" alt="Docker" width="64" height="64" />
-
-We use **Docker** to containerize our services, ensuring consistent development environments and streamlined deployment processes.
-
-### Git
-
-<img src="/img/git.svg" alt="Git" width="64" height="64" />
-
-**Git** is our version control system, following a structured workflow for collaboration and code quality.
-
-### Antigravity
-
-<img src="/img/antigravity.svg" alt="Antigravity" width="64" height="64" />
-
-**Antigravity** is our powerful agentic AI coding assistant, helping us maintain and evolve the Lattice ecosystem with speed and precision.
+Provides containerized databases, caching layers (Redis), and third-party pathfinding engines (Valhalla) locally, ensuring consistent development environments.
 
 ---
 
-## Architectural Choices & Rationale
+## Architectural Rationale
 
-We selected this specific combination of technologies to address the extreme performance requirements of high-density pedestrian navigation and ticketing operations:
+Lattice utilizes this specialized combination of technologies to meet the stringent demands of high-density crowd navigation:
 
-- **Geospatial Processing Engine ([PostgreSQL](https://www.postgresql.org/) & [PostGIS](https://postgis.net/))**: Unlike generic Document or Key-Value databases, PostGIS provides native standard-conformant R-tree index operations. This lets us run real-time polygonal containment checks and spatial proximity queries directly on the database engine. This prevents overhead by ensuring that only coordinate nodes relevant to active festival boundaries are pulled into the routing engine.
-- **Zero-Overhead Data Layer ([Drizzle ORM](https://orm.drizzle.team/))**: Traditional heavy ORMs introduce query construction overhead and poor support for customized PostGIS SQL syntax. Drizzle ORM acts as a zero-overhead compilation layer. It gives us strict end-to-end type safety, generates optimized SQL, and easily maps PostGIS geometry columns, allowing us to keep route processing sub-millisecond.
-- **Persistent Real-Time Streaming ([Socket.IO](https://socket.io/))**: Monitoring crowd density across thousands of mobile GPS telemetry coordinates requires a low-latency persistent connection layer. By choosing Socket.IO, we gain instant connection restoration, automatic buffering, and standard client-room isolation, allowing the platform to broadcast density updates instantly.
-- **Hardware-Native Performance ([React Native](https://reactnative.dev/) & [Expo](https://expo.dev/))**: Maintaining separate Swift and Kotlin teams for maps and navigation leads to high coordination costs and slower feature releases. Building with Expo provides native-level hardware integration (GPS, compass, camera) and maps 60fps tracking using MapLibre GL's GPU hardware bindings, while maintaining a single unified codebase.
+*   **Geospatial Engines over Document Stores**: Document and key-value databases lack native R-Tree indexing. PostGIS WGS 84 calculations run directly inside PostgreSQL's engine, eliminating the need to pull heavy spatial data into Node for calculation.
+*   **Zero-Overhead Compile Layers over Heavy ORMs**: Traditional ORMs introduce notable query translation overhead and have poor support for custom PostGIS syntax. Drizzle ORM acts as a zero-overhead compilation layer, enabling sub-millisecond query execution.
+*   **Persistent WebSockets over Long-Polling**: Streaming crowd telemetry coordinates requires a persistent, bi-directional connection. Socket.IO provides low-latency communication with built-in connection restoration and backpressure buffers.
+*   **Shared Code over Multi-Platform Teams**: Maintaining separate Swift and Android codebases increases coordination overhead. React Native and Expo allow for a single shared codebase while preserving native performance.
+
+<Callout type="info">
+  Every technology in our stack is strictly open-source, features strong TypeScript integration, and supports local Docker replication.
+</Callout>

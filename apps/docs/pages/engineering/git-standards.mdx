@@ -1,65 +1,91 @@
+import { Callout } from 'nextra/components'
+
 # Git & Collaboration Standards
 
-To maintain a clean and searchable history, we follow strict Git conventions.
+To maintain a clean, traceable, and searchable codebase history, all contributors must strictly adhere to these Git conventions and peer review processes.
 
-## 1. Commit Messages
+---
 
-We follow the **Conventional Commits** specification.
+## 1. Commit Message Conventions
 
-**Format:** `<type>(<scope>): <description>`
+Lattice enforces the **Conventional Commits 1.0.0** specification. Every commit message must match the following structural pattern:
 
-### Types
+```text
+<type>(<scope>): <description>
+```
 
-- `feat`: A new feature for the user.
-- `fix`: A bug fix.
-- `docs`: Documentation only changes.
-- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc).
-- `refactor`: A code change that neither fixes a bug nor adds a feature.
-- `perf`: A code change that improves performance.
-- `test`: Adding missing tests or correcting existing tests.
-- `chore`: Changes to the build process or auxiliary tools and libraries.
+### Supported Types
+
+*   `feat`: A new feature introduced to the user or application.
+*   `fix`: A bug fix resolved in a component or route.
+*   `docs`: Documentation-only modifications (such as API spec updates).
+*   `style`: Formatting updates, white-space alignments, or missing semicolons.
+*   `refactor`: A code restructuring that neither fixes a bug nor adds a feature.
+*   `perf`: Code changes aimed strictly at accelerating performance or latency.
+*   `test`: Adding missing tests or refactoring test suites.
+*   `chore`: Tooling updates, build pipeline modifications, or dependency updates.
+
+### Scope Definitions
+
+Scopes must reflect the affected package or application within the monorepo:
+*   `mobile`: React Native / Expo application scope.
+*   `server`: Express Monolith scope.
+*   `admin`: Next.js Web Dashboard scope.
+*   `db`: Drizzle ORM models and database migrations scope.
+*   `core`: Global utilities and common middlewares scope.
+*   `api`: General API route contracts and specifications.
 
 ### Examples
 
-- `feat(mobile): add passkey login support`
-- `fix(server): resolve race condition in ticket sync`
-- `docs(api): update event schema definition`
+*   `feat(mobile): add biometric passkey registration challenge`
+*   `fix(server): resolve concurrency lock in ticket validation`
+*   `perf(db): add gist index to telemetry logs table`
+*   `docs(api): update forward geocoding payload description`
 
 ---
 
-## 2. Branch Naming
+## 2. Branch Lifecycle and Naming
 
-Branches should be descriptive and prefixed with the type of change.
+Branches must be named descriptively and prefixed with the nature of the change:
 
-**Format:** `<type>/<short-description>`
+```text
+<type>/<short-description>
+```
 
-- `feat/passkey-auth`
-- `fix/map-flicker`
-- `refactor/geo-service`
+### Branch Naming Patterns
+
+*   `feat/apple-sso`: Integrating social authentication.
+*   `fix/map-flicker`: Addressing camera animation flicker in the map component.
+*   `chore/update-drizzle`: Upgrading Drizzle package dependencies.
 
 ---
 
-## 3. Pull Request (PR) Guidelines
+## 3. Pull Request Guidelines
 
-Before opening a PR, ensure:
+Before opening a Pull Request (PR) in the repository, you must verify that all changes compile, lint, and pass test suites locally:
 
-1.  The code builds locally (`pnpm run build`).
-2.  Tests pass (`pnpm test`).
-3.  The code is formatted (`pnpm run format`).
+1.  **Dependency Resolution**: Run `pnpm install` to ensure lockfiles are clean.
+2.  **Lint and Format**: Run `pnpm lint` and `pnpm format` to ensure styling guidelines are met.
+3.  **Local Build**: Run `pnpm build` to verify workspace links compile correctly.
+4.  **Test Executions**: Run `pnpm test` to verify the codebase's logical integrity.
 
-### PR Description Template
+### Pull Request Description Template
 
-A good PR description should include:
+To facilitate the code review process, ensure every opened PR includes a detailed description containing the following key sections:
 
-- **Summary**: What does this PR do?
-- **Related Issues**: Link to relevant tasks or specs.
-- **Testing Done**: How did you verify these changes?
-- **Screenshots/Videos**: Required for UI changes.
+*   **Summary**: A concise explanation of the changes made and the technical implementation details.
+*   **Related Issues**: Link to the target specification or open task cards (e.g., `Closes #142`).
+*   **Verification & Testing**: Explain how the changes were tested locally (e.g., database verification, device simulator logs, unit test outputs).
+*   **Visual Assets**: Include screenshots or screen-recorded videos for all visual modifications to the mobile UI or admin interface.
 
 ---
 
 ## 4. Code Review Process
 
-- All PRs require at least one approval from a maintainer.
-- Reviewers focus on architectural alignment, security, and the [Coding Standards](./coding-standards.md).
-- Use "Nitpick" for minor styling issues that shouldn't block the PR.
+*   **Review Gates**: All Pull Requests require at least one approval from a repository maintainer before they can be merged.
+*   **Review Criteria**: Reviewers focus on architectural alignment, security implications (such as input validation), performance impact, and adherence to [Coding Standards](./coding-standards.md).
+*   **Constructive Feedback**: Use "Nitpick" or "Minor" for minor syntax adjustments that should not prevent merging, allowing developers to address them without delaying deployment.
+
+<Callout type="info">
+  **Continuous Integration Enforcement**: Our automated CI pipeline rejects any Pull Request that contains failing tests, TypeScript compiler warnings, or linting violations.
+</Callout>
