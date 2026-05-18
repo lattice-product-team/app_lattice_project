@@ -17,7 +17,6 @@ export class SocialService {
       if (result.length === 0) return null;
       const asset = result[0] as any;
 
-
       const existingMetadata = asset.metadata ? JSON.parse(asset.metadata) : {};
       const lastSync = existingMetadata.social?.last_sync;
 

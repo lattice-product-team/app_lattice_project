@@ -23,7 +23,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Compass, Map as MapIcon, Ticket as TicketIcon } from 'lucide-react-native';
 
-
 import { MapContent } from '../../src/features/map/components/MapContent';
 import { AdaptiveControlOverlay } from '../../src/features/map/components/AdaptiveControlOverlay';
 import { FloatingSearchBar } from '../../src/components/ui/FloatingSearchBar';
@@ -41,7 +40,6 @@ import { useSearchHistory } from '../../src/features/map/hooks/useSearchHistory'
 import { useUnifiedSearch } from '../../src/features/map/hooks/useUnifiedSearch';
 import { useEventSpatial } from '../../src/features/map/hooks/useEventSpatial';
 import { usePOIs } from '../../src/features/poi/hooks/usePOIs';
-
 
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { usePOIStore } from '../../src/features/poi/store/usePOIStore';
@@ -66,7 +64,6 @@ import { ProfileSheet } from '../../src/features/profile/components/ProfileSheet
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
 
-
 enum UILayer {
   BASE = 0,
   PROFILE = 1,
@@ -87,7 +84,6 @@ export default function MapIndexPage() {
 
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
 
   const uiLayer = useSharedValue(UILayer.BASE);
   const islandState = useSharedValue(0); //0: Level 1, 0.5: Level 2, 1: Level 3

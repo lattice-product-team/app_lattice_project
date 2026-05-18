@@ -4,7 +4,6 @@ import { useOrientationStore } from '../../../../store/useOrientationStore';
 import { getCategoryMetadata } from '../../../../utils/poiUtils';
 import { calculateDistance } from '../../../../utils/geoUtils';
 
-
 const getBearing = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const p1 = (lat1 * Math.PI) / 180;
   const p2 = (lat2 * Math.PI) / 180;

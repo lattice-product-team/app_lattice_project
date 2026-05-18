@@ -44,7 +44,6 @@ interface MapUIStore {
   lastScreenMode: number;
   visibleBounds: number[][] | null;
 
-
   setUIState: (state: MapUIState) => void;
   setCameraMode: (mode: MapCameraMode) => void;
   setIsProgrammaticMove: (isMove: boolean) => void;
@@ -58,7 +57,6 @@ interface MapUIStore {
   setLastProcessedTarget: (target: string | null) => void;
   setVisibleBounds: (bounds: number[][] | null) => void;
 }
-
 
 let isProcessingSetUIState = false;
 

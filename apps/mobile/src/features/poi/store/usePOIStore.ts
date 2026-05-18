@@ -7,26 +7,21 @@ interface POIState {
   selectedCoords: number[] | null;
   isRemote: boolean;
 
-
   selectedEventId: string | number | null;
   userInsideEventId: string | number | null;
   activeCategoryFilters: string[];
 
-
   selectPoi: (poi: StandardUIPOI | null, shouldSyncUI?: boolean) => void;
   deselect: (shouldSyncUI?: boolean) => void;
   setRemote: (isRemote: boolean) => void;
-
 
   setSelectedEvent: (eventId: string | number | null, shouldSyncUI?: boolean) => void;
   setUserInsideEvent: (eventId: string | number | null) => void;
   toggleCategoryFilter: (category: string) => void;
   clearFilters: () => void;
 
-
   getFilteredPOIs: (allPOIs: StandardUIPOI[], zoom?: number) => StandardUIPOI[];
 }
-
 
 let isProcessingPOIAction = false;
 

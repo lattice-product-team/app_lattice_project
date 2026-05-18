@@ -16,7 +16,6 @@ interface ARState {
   currentEventContext: LatticeEvent | null;
   isWithinBoundary: boolean;
 
-
   openAR: (mode: ARFilterMode, id?: string | number) => void;
   closeAR: () => void;
   setContext: (event: LatticeEvent | null, withinBoundary: boolean) => void;

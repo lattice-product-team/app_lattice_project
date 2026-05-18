@@ -7,7 +7,6 @@ const MAX_HISTORY_ITEMS = 10;
 export const useSearchHistory = () => {
   const [history, setHistory] = useState<string[]>([]);
 
-
   useEffect(() => {
     const saved = storage.getString(SEARCH_HISTORY_KEY);
     if (saved) {

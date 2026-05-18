@@ -12,9 +12,11 @@ En dispositivos Android, la cámara del mapa se teletransporta instantáneamente
 ## Capabilities
 
 ### New Capabilities
+
 <!-- None -->
 
 ### Modified Capabilities
+
 - `decoupled-location-management`: Se refina el requerimiento de seguimiento visual para garantizar que el encuadre inicial (startup centering) ocurra estrictamente una sola vez y no interfiera con el paneo manual del usuario.
 
 ## Impact

@@ -5,7 +5,6 @@ interface EventStore {
   currentEventId: number | null;
   selectedEvent: LatticeEvent | null;
 
-
   setCurrentEvent: (event: LatticeEvent | null) => void;
   clearEvent: () => void;
 }

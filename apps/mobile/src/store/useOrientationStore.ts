@@ -5,7 +5,6 @@ interface OrientationState {
   pitch: number;
   isLandscape: boolean;
 
-
   setHeading: (heading: number) => void;
   setPitch: (pitch: number) => void;
   setIsLandscape: (isLandscape: boolean) => void;

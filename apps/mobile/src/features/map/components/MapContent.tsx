@@ -16,7 +16,6 @@ import * as Haptics from 'expo-haptics';
  */
 //... (rest of imports)
 
-
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
@@ -25,7 +24,6 @@ import { normalizePOI, normalizeEventList } from '../../poi/adapters/poiAdapter'
 import { useRoutingLogic } from '../../navigation/hooks/useRoutingLogic';
 import { usePathNetwork } from '../../navigation/hooks/usePathNetwork';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
-
 
 import { MapLayers } from './MapLayers';
 import { MapImageManager } from './MapImageManager';
@@ -45,16 +43,11 @@ const ROUTE_OVERVIEW_PADDING = {
   paddingBottom: 400,
 };
 
-
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useStartupStore } from '../../../store/useStartupStore';
 import styleLight from '../../../../assets/map/style-light.json';
 import styleDark from '../../../../assets/map/style-dark.json';
-import {
-  MAPTILER_KEY,
-  EMPTY_GEOJSON,
-  MAP_CENTER,
-} from '../../../constants/mapConstants';
+import { MAPTILER_KEY, EMPTY_GEOJSON, MAP_CENTER } from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
 
 //--- Global Performance Cache: Pre-Filter Style Layers Outside Render Cycle ---
@@ -141,8 +134,7 @@ const getNativeIconName = (categoryIcon: any) => {
 
   //Infrastructure
   if (icon.includes('parking')) return 'parking';
-  if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
-    return 'toilet';
+  if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom')) return 'toilet';
   if (
     icon.includes('gate') ||
     icon.includes('login') ||
@@ -161,8 +153,7 @@ const getNativeIconName = (categoryIcon: any) => {
   if (icon.includes('meetup') || icon.includes('users')) return 'users';
 
   //Venues & Shopping
-  if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
-    return 'store';
+  if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping')) return 'store';
   if (
     icon.includes('stage') ||
     icon.includes('theater') ||
@@ -170,8 +161,7 @@ const getNativeIconName = (categoryIcon: any) => {
     icon.includes('music')
   )
     return 'theater';
-  if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
-    return 'crown';
+  if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive')) return 'crown';
 
   return 'library-big'; //Fallback to info-style
 };
@@ -244,7 +234,6 @@ export const MapContent = function MapContent({
   const lastProcessedRecenter = useRef(recenterCount);
   const lastProcessedForceCenter = useRef(forceCenterCount);
   const programmaticMoveTimeoutRef = useRef<NodeJS.Timeout>();
-
 
   useEffect(() => {
     return () => {
@@ -322,10 +311,14 @@ export const MapContent = function MapContent({
   useEffect(() => {
     console.log(
       '[MapContent] 🔍 STATE DEBUG:',
-      'Mode:', cameraMode,
-      'HasInit:', hasInitialized.current,
-      'isProgrammatic:', isProgrammaticMove,
-      'userCoords:', userCoords
+      'Mode:',
+      cameraMode,
+      'HasInit:',
+      hasInitialized.current,
+      'isProgrammatic:',
+      isProgrammaticMove,
+      'userCoords:',
+      userCoords
     );
   }, [cameraMode, isProgrammaticMove, userCoords]);
 
@@ -433,7 +426,6 @@ export const MapContent = function MapContent({
         setIsProgrammaticMove(false);
       }, 1300);
     }
-
 
     if (!isPlanning) {
       lastProcessedRouteId.current = null;

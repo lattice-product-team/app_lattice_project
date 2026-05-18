@@ -38,7 +38,6 @@ interface NavigationState {
     bicycle: RouteMetadata | null;
   };
 
-
   setRoutes: (
     routes: {
       driving: RouteGeoJSON | null;

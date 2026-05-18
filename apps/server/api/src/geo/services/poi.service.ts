@@ -110,7 +110,6 @@ export class PoiService {
   }
 
   async getPois(category?: string, eventId?: string) {
-
     const cacheKey = `geo:pois:cat=${category || 'all'}:evt=${eventId || 'global'}`;
     const cachedData = await getCache(cacheKey);
 

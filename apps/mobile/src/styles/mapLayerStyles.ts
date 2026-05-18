@@ -28,7 +28,6 @@ export const mapLayerStyles = {
     lineOpacity: 0.3,
   } as LineLayerStyle,
 
-
   selectedPoiPinBody: {
     circleRadius: 18,
     circleColor: primitiveColors.brand.primary, //Solar Gold
@@ -48,7 +47,6 @@ export const mapLayerStyles = {
     textAllowOverlap: true,
     textPitchAlignment: 'map',
   } as SymbolLayerStyle,
-
 
   poiCircles: {
     circleRadius: 16,
@@ -126,7 +124,6 @@ export const mapLayerStyles = {
     textAllowOverlap: false,
     textOptional: true,
   } as SymbolLayerStyle,
-
 
   clusterCircles: {
     circleColor: primitiveColors.brand.primary, //Solar Gold for clusters

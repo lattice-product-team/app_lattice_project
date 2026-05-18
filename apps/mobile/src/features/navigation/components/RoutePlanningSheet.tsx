@@ -12,7 +12,6 @@ import Animated, {
   SharedValue,
 } from 'react-native-reanimated';
 
-
 import { useNavigationStore } from '../store/useNavigationStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useEventStore } from '../../event/store/useEventStore';

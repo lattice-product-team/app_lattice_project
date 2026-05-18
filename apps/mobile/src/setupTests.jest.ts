@@ -2,9 +2,7 @@ import { jest } from '@jest/globals';
 import '@testing-library/jest-native/extend-expect';
 import { LocationCallback, LocationOptions } from 'expo-location';
 
-
 //Removed the problematic NativeAnimatedHelper mock since jest-expo handles most of this
-
 
 jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn(() =>
@@ -39,14 +37,12 @@ jest.mock('expo-location', () => ({
   Accuracy: { High: 4 },
 }));
 
-
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   notificationAsync: jest.fn(),
   selectionAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
 }));
-
 
 jest.mock('@maplibre/maplibre-react-native', () => ({
   MapView: ({ children }: { children: React.ReactNode }) => children,
@@ -58,7 +54,6 @@ jest.mock('@maplibre/maplibre-react-native', () => ({
   UserTrackingMode: { FollowWithHeading: 'FollowWithHeading' },
 }));
 
-
 jest.mock('@expo/vector-icons', () => ({
   MaterialCommunityIcons: 'MaterialCommunityIcons',
   Feather: 'Feather',
@@ -66,6 +61,5 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
   AntDesign: 'AntDesign',
 }));
-
 
 global.fetch = jest.fn() as any;

@@ -13,7 +13,6 @@ interface LocationState {
   avoidSlopes: boolean;
   status: PermissionStatus;
 
-
   setLocation: (coords: number[] | null) => void;
   setLogicalLocation: (coords: number[] | null) => void;
   setHeading: (heading: number | null) => void;

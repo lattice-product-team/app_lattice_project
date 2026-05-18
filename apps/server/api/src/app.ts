@@ -21,8 +21,6 @@ export const app = express();
  */
 app.set('trust proxy', 1);
 
-
-
 //1. Helmet for security headers
 app.use(helmet());
 
@@ -84,7 +82,6 @@ const healthHandler = (req: Request, res: Response) => {
     path: req.originalUrl,
   });
 };
-
 
 //Health checks and Root
 app.get('/status', healthHandler);

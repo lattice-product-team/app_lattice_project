@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable, Text } from 'react-native';
 import { useMapUIStore, MapCameraMode, MapUIState } from '../store/useMapUIStore';
-import Animated, { useAnimatedStyle, useAnimatedReaction, runOnJS, SharedValue, withTiming } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useAnimatedReaction,
+  runOnJS,
+  SharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { Navigation, Binoculars, Ticket as TicketIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, useSegments } from 'expo-router';

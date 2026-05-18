@@ -1,7 +1,5 @@
 import { db, nodes, pathSegments, pointsOfInterest, sql, eq } from '@app/db';
 
-
-
 interface Node {
   id: number;
   location: { x: number; y: number };
@@ -22,8 +20,6 @@ interface GraphNeighbor {
 }
 
 type AdjacencyList = Record<number, GraphNeighbor[]>;
-
-
 
 /***
  * Resolves lat/lng coordinates from either raw values or a POI ID.
@@ -62,7 +58,6 @@ function buildAdjacencyList(
   nodes.forEach((n) => (graph[n.id] = []));
 
   edges.forEach((e) => {
-
     if (options.avoidStairs && e.hasStairs) return;
     if (options.wheelchairAccess && e.hasStairs) return; //Wheelchairs definitely avoid stairs
 
@@ -103,8 +98,6 @@ async function reconstructPath(pathNodes: number[]) {
     return (nodeData as any).coordinates;
   });
 }
-
-
 
 export async function findRoute(
   origin: { lat?: number; lng?: number; poiId?: number },
