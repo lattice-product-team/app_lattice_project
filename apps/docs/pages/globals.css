@@ -12,3 +12,74 @@
   }
 }
 
+/* Custom resets when inside Zoomable container */
+.nextra-mermaid-zoom-container .nextra-mermaid {
+  background-color: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.nextra-mermaid-zoom-container .nextra-mermaid svg {
+  min-width: 900px !important; /* Force a robust minimum width so texts are fully readable */
+  max-width: none !important;  /* Allow the diagram to expand naturally so it doesn't squeeze */
+  height: auto !important;
+}
+
+/* Shields.io badges layout overrides */
+img[src*="shields.io"] {
+  display: inline-block !important;
+  vertical-align: middle;
+  margin: 0 !important;
+}
+
+p:has(img[src*="shields.io"]) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 1.5rem 0 !important;
+}
+
+p:has(img[src*="shields.io"]) a {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Mockups side-by-side layout styles */
+div[align="center"]:has(img[src*="/assets/mockups/"]) {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 16px !important;
+  margin: 2rem auto !important;
+  width: 100% !important;
+}
+
+div[align="center"]:has(img[src*="/assets/mockups/"]) p {
+  display: contents !important; /* Bypasses any paragraph markup wrappers */
+}
+
+img[src*="/assets/mockups/"] {
+  display: inline-block !important;
+  width: 48% !important;
+  max-width: 48% !important;
+  height: auto !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+img[src*="/assets/mockups/"]:hover {
+  transform: scale(1.02) !important;
+}
+
+

@@ -33,29 +33,32 @@ Ensure you have the following installed:
 
 
 ## 3. Launch Sequence
- 
-Follow this order to ensure all services are linked correctly:
- 
-### Step 1: Infrastructure
-```bash
-docker compose up -d
-```
-*This starts PostgreSQL (on port `5433`), Redis, and Valhalla in the background.*
- 
-### Step 2: Dependencies
+
+We provide an automated script to handle the heavy lifting of environment setup.
+
+### The Fast Track (Recommended)
+
 ```bash
 pnpm install
+pnpm onboard
 ```
- 
-### Step 3: Database Initialization
-```bash
-pnpm db:migrate
-pnpm db:seed
-```
-*This compiles the SQL migrations and populates the database with default spatial events, POIs, and nodes.*
- 
+
+The `onboard` script will automatically:
+- Check for required tools (Docker, pnpm).
+- Create your `.env` from the example template.
+- Start the Docker infrastructure (Postgres, Redis, Valhalla).
+- Wait for the database to be healthy.
+- Run migrations and seed the initial development data.
+
+### Manual Setup (Alternative)
+
+If you prefer to run steps individually:
+
+1. **Infrastructure**: `docker compose up -d`
+2. **Database Initialization**: `pnpm db:migrate && pnpm db:seed`
+
 ### Step 4: Start Applications
-Open three separate terminals to start the core services:
+Open separate terminals to start the core services:
  
 *   **Server (API)**: 
     ```bash
