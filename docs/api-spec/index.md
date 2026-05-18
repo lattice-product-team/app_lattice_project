@@ -2,25 +2,29 @@ import { Callout } from 'nextra/components'
 
 # API Reference
 
-This domain contains the technical specifications for all internal and external APIs used in the Lattice ecosystem.
+This technical domain contains detailed specifications for all internal and external APIs utilized within the Lattice ecosystem. The backend is comprised of a high-performance modular Express monolith with robust geospatial capabilities powered by PostGIS and database operations optimized via Drizzle ORM.
 
 ## API Philosophy
 
-Our APIs are designed to be **developer-friendly**, **consistent**, and **performant**. We follow RESTful principles and use custom JWT-based identity management.
+Our APIs are designed according to modern RESTful patterns, prioritizing real-time geospatial performance, data consistency, and seamless integration for client applications.
 
 ### Core Principles
 
-1.  **JSON-First**: All request and response bodies MUST be valid JSON.
-2.  **Resource-Oriented**: Endpoints are organized around resources (e.g., `/events`, `/pois`).
-3.  **Authentication**: All sensitive endpoints REQUIRE a valid JSON Web Token (JWT) passed in the `Authorization` header.
-4.  **Idempotency**: All `PUT` and `DELETE` operations are idempotent.
-5.  **Error Handling**: We use standard HTTP status codes and provide descriptive error messages in a consistent format.
+1. **JSON-First**: All request and response bodies MUST strictly utilize the `application/json` media type.
+2. **Resource-Oriented**: Endpoints are organized around logical resources (such as `/events`, `/pois`, `/saved`, or `/telemetry`).
+3. **Integrated Security**: Protected endpoints require standard Bearer token authentication in the HTTP header.
+4. **Idempotency**: Data mutation and deletion operations (`PUT`, `PATCH`, `DELETE`) are designed to be safe and idempotent.
+5. **Unified Error Schema**: In the event of a failure, the API returns a structured, highly descriptive payload supporting machine-readable codes and user-friendly messaging.
 
-## Authentication
+---
 
-Lattice uses a **Custom JWT-based Authentication**. Clients must exchange user credentials (email/password) for a token via the `/auth/login` endpoint and include it in all protected requests.
+## Authentication and Access Control
 
-**Header Format:**
+Lattice utilizes a **JSON Web Token (JWT)** authentication mechanism. Upon successful registration or login, clients receive a signed token which must be supplied on subsequent requests requiring authentication.
+
+### Authorization Header
+
+For all protected routes, include the following HTTP header:
 
 ```http
 Authorization: Bearer <JWT_TOKEN>
@@ -30,74 +34,107 @@ Authorization: Bearer <JWT_TOKEN>
 
 ```mermaid
 sequenceDiagram
-    participant C as Mobile/Web Client
-    participant A as Auth API
-    participant D as PostgreSQL
+    participant Client as Client (Mobile/Web)
+    participant Auth as Authentication Service
+    participant DB as Database (PostgreSQL)
 
-    C->>A: POST /auth/login (email, password)
-    A->>D: Find user by email
-    D-->>A: User record (hashed password)
-    A->>A: Verify password (bcrypt)
+    Client->>Auth: POST /auth/login { email, password }
+    Auth->>DB: Query user by email
+    DB-->>Auth: User record (password hash)
+    Auth->>Auth: Verify credentials (Bcrypt)
 
-    alt Success
-        A->>A: Sign JWT (Secret key)
-        A-->>C: 200 OK (Token + User Profile)
-    else Failure
-        A-->>C: 401 Unauthorized (Invalid credentials)
+    alt Valid Credentials
+        Auth->>Auth: Sign JWT (Private Key)
+        Auth-->>Client: 200 OK { user, token, tickets }
+    else Invalid Credentials
+        Auth-->>Client: 401 Unauthorized { error }
     end
 ```
 
 <Callout type="warning">
-  Ensure your client handles token storage and expiration logic (standard 24h duration).
+  Issued tokens are subject to standard expiration windows. Client applications must implement secure credential storage and handle token expiration gracefully to avoid abrupt user redirection.
 </Callout>
+
+---
 
 ## Global Error Schema
 
-All error responses follow this structure:
+All platform errors return a standardized, strongly-typed JSON structure to facilitate seamless handling in frontend clients:
 
 ```json
 {
-  "error": "Short description of what went wrong",
-  "code": "MACHINE_READABLE_ERROR_CODE",
-  "details": {
-    "field": "Additional context or validation errors"
+  "error": {
+    "code": "INVALID_INPUT",
+    "message": "Email and password are required",
+    "user_friendly_message": "Email and password are required.",
+    "status": 400
   }
 }
 ```
 
-### Common Status Codes
+### Error Object Fields
 
-| Code  | Meaning               | Description                                           |
-| :---- | :-------------------- | :---------------------------------------------------- |
-| `200` | OK                    | Request succeeded.                                    |
-| `201` | Created               | Resource successfully created.                        |
-| `400` | Bad Request           | Invalid parameters or malformed body.                 |
-| `401` | Unauthorized          | Missing or invalid authentication token.              |
-| `403` | Forbidden             | Authenticated but lacks permissions for the resource. |
-| `404` | Not Found             | The requested resource does not exist.                |
-| `429` | Too Many Requests     | Rate limit exceeded.                                  |
-| `500` | Internal Server Error | Something went wrong on our end.                      |
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `code` | `string` | Unique identifier for the error type, designed for client-side control flow. |
+| `message` | `string` | Technical details regarding the failure, tailored for developer debugging. |
+| `user_friendly_message` | `string` | Optional. Safe, localized string intended for direct rendering to end-users. |
+| `status` | `number` | The HTTP status code duplicated in the payload for client convenience. |
 
-## Available APIs
+### Common HTTP Status Codes
 
-| API                           | Description                                       | Target Audience        |
-| :---------------------------- | :------------------------------------------------ | :--------------------- |
-| [Admin API](./admin-api.md)   | Operations for platform management and telemetry. | Admin Dashboard        |
-| [Mobile API](./mobile-api.md) | Discovery and client-side interactions.           | Mobile App (Lattice)   |
-| [API Schemas](./schemas.md)   | Shared JSON schemas, enums, and geospatial types. | Mobile & Admin Clients |
-
-## Data Formats
-
-### Timestamp
-
-All timestamps MUST be in ISO 8601 format (UTC).
-
-### Location
-
-Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`. For complete coordinate types and spatial formatting, check out our [API Schemas Guide](./schemas.md#geospatial-standards).
+| Code | Meaning | Description |
+| :--- | :--- | :--- |
+| `200` | OK | Request completed successfully and returned the requested payload. |
+| `201` | Created | Resource successfully initialized on the server (e.g., Event, POI, Ticket). |
+| `204` | No Content | Action executed successfully (common in deletions) with an empty response body. |
+| `400` | Bad Request | Invalid parameters, malformed request body, or spatial validation failure. |
+| `401` | Unauthorized | Missing authentication token or the supplied token has expired. |
+| `403` | Forbidden | Authenticated successfully, but lacks necessary privileges to access the resource. |
+| `404` | Not Found | The requested geospatial or identity resource could not be found. |
+| `429` | Too Many Requests | Rate limiting thresholds exceeded at the Express monolith level. |
+| `500` | Internal Error | Unexpected server error. An internal log is compiled for diagnostic analysis. |
 
 ---
 
+## Available APIs and Modules
+
+The Lattice API is modularized to support long-term maintainability and system scalability:
+
+| Section | Purpose | Primary Target |
+| :--- | :--- | :--- |
+| [Mobile API](./mobile-api.md) | Routes optimized for discovery, pedestrian navigation, tickets, and user profiles. | Mobile Client (React Native/Expo) |
+| [Admin API](./admin-api.md) | High-privilege operations, spatial curation, and active crowd telemetry. | Control Panel (Next.js) |
+| [Data Schemas](./schemas.md) | Standardized schemas, database models, spatial objects, and enumerations. | Shared (Mobile, Web, Server) |
+
+---
+
+## Data Standards and Formats
+
+To guarantee data uniformity across all clients, the following formatting rules are enforced:
+
+### Date and Time
+
+All timestamps are serialized as **ISO 8601** strings with global UTC encoding:
+
+```json
+"startDate": "2026-05-20T10:00:00.000Z"
+```
+
+### Geospatial Data
+
+Geospatial data parsed and returned by the platform strictly follows the **GeoJSON (RFC 7946)** specification. The internal projection model utilizes the standard **WGS 84 (SRID 4326)** coordinate reference system.
+
+Coordinates are always structured in the standard cartographic sequence:
+`[longitude, latitude]`
+
+```json
+{
+  "type": "Point",
+  "coordinates": [2.1734, 41.3851]
+}
+```
+
 <Callout type="info">
-  For local development, the API is usually available at `http://localhost:3001/api/v1`.
+  For local development, the monolith API is typically exposed on port 3001. The base URL for all endpoints is `/api/v1` or as mounted directly on the monolith routes.
 </Callout>
