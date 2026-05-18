@@ -39,9 +39,8 @@ erDiagram
     NODE {
         int id PK
         int event_id FK
-        string name
         geometry location
-        string type
+        string name
     }
 
     PATH_SEGMENT {
@@ -51,7 +50,9 @@ erDiagram
         int target_node_id FK
         float distance
         string surface
+        float slope_percentage
         boolean has_stairs
+        string crowd_level
     }
 ```
 
@@ -76,8 +77,18 @@ erDiagram
         string email UK
         string password_hash
         string full_name
+        string google_id UK
+        string apple_id UK
+        string bio
+        string avatar_url
+        boolean is_passkey_enabled
         string mobility_mode
+        boolean avoid_stairs
+        boolean avoid_crowds
+        boolean avoid_slopes
+        boolean avoid_grandstands
         boolean has_ticket
+        timestamp created_at
     }
 
     TICKET {

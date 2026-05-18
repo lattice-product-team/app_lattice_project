@@ -256,7 +256,7 @@ eas update --branch production --message "Hotfix: updated active event map style
 
 ## 7. Monitoring and Maintenance
 
-1.  **Health Check Endpoint**: Set up external uptime monitoring (e.g., Uptime Robot, Datadog) pointing to `https://api.yourdomain.com/api/v1/status`.
+1.  **Health Check Endpoint**: Set up external uptime monitoring (e.g., Uptime Robot, Datadog) pointing to `https://api.yourdomain.com/status` or `https://api.yourdomain.com/health`.
 2.  **Log Management**: Use Docker's `json-file` logging driver with limit options to prevent disk overflow:
     ```yaml
     logging:

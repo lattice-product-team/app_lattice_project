@@ -4,11 +4,6 @@ import { Callout } from 'nextra/components'
 
 This manual provides instructions for advanced configurations, custom environment tuning, and native infrastructure setups.
 
-<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
-  <img src="/assets/mockups/map-black-1.png" alt="Relational Spatial Maps (Dark Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-  <img src="/assets/mockups/map-white-1.png" alt="Relational Spatial Maps (Light Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-</div>
-
 ---
 
 <Callout type="info">
@@ -118,7 +113,7 @@ Once these database, caching, and routing containers are active, please refer di
 
 To confirm everything is fully operational:
 
-1. **API Check**: Open `http://localhost:3001/status` in your browser. It should return `{"status": "ok"}`.
+1. **API Check**: Open `http://localhost:3000/status` in your browser. It should return `{"status": "api_ok", ...}`.
 2. **Admin Login**: Navigate to `http://localhost:3004`. Log in with your `ADMIN_EMAIL` and `ADMIN_PASSWORD` defined in `.env`.
 3. **Map Telemetry**: Ensure that the map on the Admin Dashboard loads correctly (verifies the `MAPTILER_KEY`).
 4. **Mobile Navigation**: Open the app in Expo Go, tap on an active event, and try planning a route. If routes compute successfully, the Valhalla container is communicating correctly with the API.

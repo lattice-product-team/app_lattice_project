@@ -66,6 +66,7 @@ if [ "$NODE_ENV" = "production" ]; then
   find "$PAGES_DIR" -name "*.mdx" ! -name ".*" -exec "${SED_I[@]}" 's|src="/assets/|src="/app_lattice_project/assets/|g' {} +
   find "$PAGES_DIR" -name "*.mdx" ! -name ".*" -exec "${SED_I[@]}" 's|href="/assets/|href="/app_lattice_project/assets/|g' {} +
   find "$PAGES_DIR" -name "*.mdx" ! -name ".*" -exec "${SED_I[@]}" 's|(/assets/|(/app_lattice_project/assets/|g' {} +
+  find "$PAGES_DIR" -name "*.mdx" ! -name ".*" -exec "${SED_I[@]}" 's|src="/icon.png"|src="/app_lattice_project/icon.png"|g' {} +
 fi
 
 # 6. Security Cleanup: Remove non-documentation files (but preserve _meta and Next.js essentials)

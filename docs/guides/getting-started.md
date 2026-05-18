@@ -4,12 +4,6 @@ import { Callout } from 'nextra/components'
 
 This guide provides the essential steps to get the Lattice ecosystem running on your local machine for development.
 
-<div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
-  <img src="/assets/mockups/map-2.png" alt="Mobile Live Map View" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-  <img src="/assets/mockups/navigation-2.png" alt="AR Navigation HUD View" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-  <img src="/assets/mockups/details-pois-2.png" alt="Service Detail View" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
-</div>
-
 ## 1. Prerequisites
 
 Ensure you have the following installed:
@@ -79,8 +73,8 @@ Open separate terminals to start the core services:
 
 ## 4. Verification
 
-- **API Health**: Visit `http://localhost:3001/status`.
-- **Admin Dashboard**: Visit `http://localhost:3000`.
+- **API Health**: Visit `http://localhost:3000/status` (should return `{"status": "api_ok", ...}`).
+- **Admin Dashboard**: Visit `http://localhost:3004` (when running via Docker Compose) or `http://localhost:3001` (if running locally outside Docker where port 3000 is occupied by the API).
 - **Mobile Expo Console**: Scan the QR code displayed in the terminal with the Expo Go app (or Expo dev client) or press `i` (iOS simulator) or `a` (Android emulator).
 
 ---
