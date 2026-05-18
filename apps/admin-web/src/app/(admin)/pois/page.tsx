@@ -100,6 +100,8 @@ export default function POIsPage() {
   const [selectionSource, setSelectionSource] = useState<'CLICK' | 'SEARCH' | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [poiToDeleteId, setPoiToDeleteId] = useState<number | null>(null);
+  const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const { selectedPoi, selectPoi, clearPoi } = useMapInteractions('PICK_COORDINATE');
 
@@ -271,6 +273,24 @@ export default function POIsPage() {
       }
     } catch (err) {
       console.error('Failed to delete POI', err);
+    }
+  };
+
+  const handleDeletePoiInline = async (id: number) => {
+    try {
+      const res = await fetch(`${API_BASE}/pois/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setIsInterfaceOpen(false);
+        setIsDeleteConfirming(false);
+        setPendingDeleteId(null);
+        resetForm();
+        refetch();
+      }
+    } catch (err) {
+      console.error('Failed to delete POI inline', err);
     }
   };
 
@@ -621,13 +641,26 @@ export default function POIsPage() {
                   </button>
 
                   {editingPoiId && (
-                    <button
-                      onClick={handleDeletePoi}
-                      className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 flex items-center justify-center gap-2"
-                    >
-                      <Icons.Trash className="w-3.5 h-3.5" />
-                      Delete
-                    </button>
+                    isDeleteConfirming ? (
+                      <button
+                        onClick={() => handleDeletePoiInline(editingPoiId)}
+                        className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-white bg-ember hover:bg-ember/90 transition-all border border-transparent flex items-center justify-center gap-2 shadow-lg active:scale-95 animate-pulse"
+                      >
+                        <Icons.AlertTriangle className="w-3.5 h-3.5 animate-bounce" />
+                        Are you sure?
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setIsDeleteConfirming(true);
+                          setTimeout(() => setIsDeleteConfirming(false), 4000);
+                        }}
+                        className="flex-1 h-14 rounded-full text-[10px] font-bold uppercase tracking-widest text-ember bg-ember/5 hover:bg-ember/10 transition-colors border border-ember/20 flex items-center justify-center gap-2 active:scale-95"
+                      >
+                        <Icons.Trash className="w-3.5 h-3.5" />
+                        Delete
+                      </button>
+                    )
                   )}
                 </div>
               </div>
@@ -946,15 +979,27 @@ export default function POIsPage() {
                           >
                             Edit
                           </button>
-                          <button
-                            onClick={() => {
-                              handleDeletePoi(poi.id);
-                            }}
-                            className="h-9 w-9 flex items-center justify-center text-gravel hover:text-ember bg-surface/50 hover:bg-ember/5 border border-border rounded-xl transition-all active:scale-95 shrink-0"
-                            title="Delete Asset"
-                          >
-                            <Icons.Trash className="w-3.5 h-3.5" />
-                          </button>
+                          {pendingDeleteId === poi.id ? (
+                            <button
+                              onClick={() => handleDeletePoiInline(poi.id)}
+                              className="h-9 px-3 flex items-center justify-center text-white bg-ember hover:bg-ember/90 border border-transparent rounded-xl transition-all active:scale-95 shrink-0 text-[9px] font-bold uppercase tracking-widest gap-1 animate-pulse"
+                              title="Confirm Delete"
+                            >
+                              <Icons.AlertTriangle className="w-3 h-3" />
+                              Sure?
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setPendingDeleteId(poi.id);
+                                setTimeout(() => setPendingDeleteId(null), 4000);
+                              }}
+                              className="h-9 w-9 flex items-center justify-center text-gravel hover:text-ember bg-surface/50 hover:bg-ember/5 border border-border rounded-xl transition-all active:scale-95 shrink-0"
+                              title="Delete Asset"
+                            >
+                              <Icons.Trash className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

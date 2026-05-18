@@ -42,6 +42,8 @@ export const poiTypeEnum = pgEnum('poi_type', [
   'stage',
   'merch',
   'security',
+  'coffee',
+  'vip',
 ]);
 
 export const crowdLevelEnum = pgEnum('crowd_level', ['low', 'moderate', 'high', 'blocked']);
