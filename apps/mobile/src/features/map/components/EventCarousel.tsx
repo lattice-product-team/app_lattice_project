@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { ScrollView, Pressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import Animated, { FadeInRight } from 'react-native-reanimated';
-import { getEventMetadata } from '../../../utils/poiUtils';
+import { getEventMetadata, resolveBannerUrl } from '../../../utils/poiUtils';
 import { typography } from '../../../styles/typography';
 import { LatticeEvent } from '../../../types';
 import * as Haptics from 'expo-haptics';
@@ -22,9 +22,7 @@ interface EventCarouselLegacyCardProps {
 const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyCardProps) => {
   const metadata = getEventMetadata(event.type);
   const CategoryIcon = metadata.icon;
-  const imageUrl =
-    event.imageUrl ||
-    'https://images.unsplash.com/photo-1459749411177-042180ce673c?q=80&w=800&auto=format&fit=crop';
+  const imageUrl = resolveBannerUrl(event.imageUrl);
 
   return (
     <Animated.View

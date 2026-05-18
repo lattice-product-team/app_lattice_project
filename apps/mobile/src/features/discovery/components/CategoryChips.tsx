@@ -1,6 +1,17 @@
 import React from 'react';
 import { ScrollView, Pressable, Text, View } from 'react-native';
-import { Headphones, UtensilsCrossed, Zap, Trophy, Sparkles, MapPin } from 'lucide-react-native';
+import {
+  Headphones,
+  Music,
+  UtensilsCrossed,
+  Beer,
+  ShoppingBag,
+  Star,
+  Zap,
+  Trophy,
+  Sparkles,
+  MapPin
+} from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 
@@ -17,11 +28,28 @@ interface Props {
 }
 
 const IconMap: Record<string, React.FC<any>> = {
-  music: Headphones,
+  music: Music,
+  headphones: Headphones,
   utensils: UtensilsCrossed,
+  beer: Beer,
+  'shopping-bag': ShoppingBag,
+  star: Star,
+  stage: Music,
+  restaurant: UtensilsCrossed,
+  bar: Beer,
+  shop: ShoppingBag,
+  meetup_point: Star,
   cpu: Zap,
   trophy: Trophy,
   sparkles: Sparkles,
+};
+
+const LabelMap: Record<string, string> = {
+  stage: 'Escenarios',
+  restaurant: 'Gastronomía',
+  bar: 'Bebidas',
+  shop: 'Tiendas',
+  meetup_point: 'Zonas VIP',
 };
 
 export const CategoryChips = React.memo(({ categories, activeCategory, onSelect }: Props) => {
@@ -35,7 +63,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
         contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
       >
         {categories.map((cat) => {
-          const Icon = IconMap[cat.icon] || MapPin;
+          const Icon = IconMap[cat.icon] || IconMap[cat.id] || MapPin;
           const isActive = activeCategory === cat.id;
 
           return (
@@ -73,7 +101,7 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
                   textAlign: 'center',
                 }}
               >
-                {cat.label}
+                {LabelMap[cat.id] || cat.label}
               </Text>
             </Pressable>
           );

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Star } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
+import { resolveBannerUrl } from '../../../utils/poiUtils';
 import { LatticeEvent } from '../../../types';
 
 const { width } = Dimensions.get('window');
@@ -36,8 +37,7 @@ export const FeaturedCarousel = React.memo(({ events, onPress }: Props) => {
           >
             <Image
               source={{
-                uri:
-                  event.bannerUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+                uri: resolveBannerUrl(event.bannerUrl),
               }}
               style={{ width: '100%', height: '100%' }}
               contentFit="cover"

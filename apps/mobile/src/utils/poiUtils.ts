@@ -218,6 +218,7 @@ export const getEventMetadata = (type?: string): CategoryMetadata => {
 // Legacy support and direct accessors
 export const getCategoryLabel = (category?: string): string => getCategoryMetadata(category).label;
 
+
 /**
  * Generates a stable, vibrant color based on a string ID.
  * Useful for giving each event a distinct look.
@@ -244,3 +245,17 @@ export const getStableColor = (id: string): string => {
   const index = Math.abs(hash) % eventColors.length;
   return eventColors[index];
 };
+
+export const DEFAULT_POI_BANNER = `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUyOTNiIi8+PHN0b3CBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwZjE3MmEiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0idXJsKCNnKSIgcng9IjE2Ii8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iMTAwIiByPSI0MCIgZmlsbD0iIzFlMjkzYiIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTAwIDc1Yy0xMy44IDAtMjUgMTEuMi0yNSAyNSAwIDE4LjggMjUgNDAgMjUgNDBzMjUtMjEuMiAyNS00MGMwLTEzLjgtMTEuMi0yNS0yNS0yNXptMCAzNWMtNS41IDAtMTAtNC41LTEwLTEwczQuNS0xMCAxMC0xMCAxMCA0LjUgMTAgMTAtNC41IDEwLTEwIDEweiIgZmlsbD0iIzY0NzQ4YiIvPjwvc3ZnPg==`;
+
+export const resolveBannerUrl = (url?: string | null): string => {
+  if (
+    !url ||
+    url === 'null' ||
+    (typeof url === 'string' && (url.trim() === '' || url.startsWith('PLACEHOLDER_')))
+  ) {
+    return DEFAULT_POI_BANNER;
+  }
+  return url;
+};
+

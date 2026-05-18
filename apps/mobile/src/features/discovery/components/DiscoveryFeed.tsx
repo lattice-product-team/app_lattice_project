@@ -11,6 +11,14 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import { typography } from '../../../styles/typography';
 import { LatticeTheme } from '../../../styles/theme';
 
+const TitleTranslations: Record<string, string> = {
+  'Featured Experiences': 'Experiencias Destacadas',
+  'Trending Right Now': 'Tendencias del Momento',
+  'Popular Nearby': 'Populares Cerca de Ti',
+  'Trending': 'Tendencias',
+  'Nearby': 'Cerca de Ti',
+};
+
 interface Props {
   onItemPress: (item: any) => void;
   theme?: LatticeTheme;
@@ -60,12 +68,12 @@ export const DiscoveryFeed = React.memo(function DiscoveryFeed({ onItemPress, th
 
   const greeting = React.useMemo(() => {
     const hour = new Date().getHours();
-    let baseGreeting = 'Good morning';
-    if (hour >= 12 && hour < 17) baseGreeting = 'Good afternoon';
-    else if (hour >= 17 && hour < 21) baseGreeting = 'Good evening';
-    else if (hour >= 21 || hour < 5) baseGreeting = 'Good night';
+    let baseGreeting = 'Buenos días';
+    if (hour >= 12 && hour < 17) baseGreeting = 'Buenas tardes';
+    else if (hour >= 17 && hour < 21) baseGreeting = 'Buenas noches';
+    else if (hour >= 21 || hour < 5) baseGreeting = 'Buenas noches';
 
-    const name = isGuest ? 'Explorer' : user?.fullName?.split(' ')[0] || 'User';
+    const name = isGuest ? 'Explorador' : user?.fullName?.split(' ')[0] || 'Usuario';
     return `${baseGreeting},\n${name}`;
   }, [user, isGuest]);
 
@@ -100,7 +108,7 @@ export const DiscoveryFeed = React.memo(function DiscoveryFeed({ onItemPress, th
           return (
             <BentoGrid
               key={`trending-${index}`}
-              title={section.title || 'Trending'}
+              title={TitleTranslations[section.title] || section.title || 'Tendencias'}
               items={section.items}
               onPress={onItemPress}
             />
@@ -109,7 +117,7 @@ export const DiscoveryFeed = React.memo(function DiscoveryFeed({ onItemPress, th
           return (
             <NearbyList
               key={`nearby-${index}`}
-              title={section.title || 'Nearby'}
+              title={TitleTranslations[section.title] || section.title || 'Cerca de Ti'}
               items={section.items}
               onPress={onItemPress}
             />

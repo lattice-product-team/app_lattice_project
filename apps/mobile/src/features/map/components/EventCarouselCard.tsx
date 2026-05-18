@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { Star, Calendar, MapPin } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
-import { getEventMetadata } from '../../../utils/poiUtils';
+import { getEventMetadata, resolveBannerUrl } from '../../../utils/poiUtils';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore } from '../store/useMapUIStore';
 import { useMemo } from 'react';
@@ -95,7 +95,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
         <View style={styles.container}>
           {/* Background Image */}
           <Image
-            source={event.image || event.bannerUrl}
+            source={{ uri: resolveBannerUrl(event.image || event.bannerUrl) }}
             style={styles.image}
             contentFit="cover"
             transition={300}

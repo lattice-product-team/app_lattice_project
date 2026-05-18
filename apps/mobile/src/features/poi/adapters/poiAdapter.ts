@@ -1,6 +1,6 @@
 import { POIGeoJSON } from '../../../types';
 import { StandardUIPOI } from '../../../types/models/poi';
-import { getCategoryMetadata, getStableColor } from '../../../utils/poiUtils';
+import { getCategoryMetadata, getStableColor, resolveBannerUrl } from '../../../utils/poiUtils';
 
 /***
  * Validates that coordinates are present and not [0,0].
@@ -57,7 +57,7 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
   }
 
   const bannerCandidate = properties.bannerUrl || raw?.bannerUrl || validImages[0];
-  const bannerUrl = isRealUrl(bannerCandidate) ? bannerCandidate : validImages[0];
+  const bannerUrl = resolveBannerUrl(isRealUrl(bannerCandidate) ? bannerCandidate : validImages[0]);
 
   //Robust category detection
   const category = (properties.category || properties.type || 'generic').toLowerCase();
@@ -110,7 +110,7 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     mainColor: color,
     coordinates: [coords[0] || 0, coords[1] || 0],
     images: event.images || (event.bannerUrl ? [event.bannerUrl] : []),
-    bannerUrl: event.bannerUrl || event.images?.[0],
+    bannerUrl: resolveBannerUrl(event.bannerUrl || event.images?.[0]),
     galleryUrls: event.galleryUrls || event.images || [],
     imageKey: event.bannerUrl || event.images?.[0] ? `event-img-${id}` : 'placeholder-event',
     raw: event,

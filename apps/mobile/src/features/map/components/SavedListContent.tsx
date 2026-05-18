@@ -6,6 +6,7 @@ import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { StandardUIPOI } from '../../../types/models/poi';
 import { Image } from 'expo-image';
+import { resolveBannerUrl } from '../../../utils/poiUtils';
 
 interface SavedListContentProps {
   savedItems: StandardUIPOI[];
@@ -82,9 +83,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
           >
             <Image
               source={{
-                uri:
-                  item.images?.[0] ||
-                  'https://images.unsplash.com/photo-1514525253344-f81bad3b7431?q=80&w=200&auto=format&fit=crop',
+                uri: resolveBannerUrl(item.images?.[0]),
               }}
               style={styles.itemImage}
             />

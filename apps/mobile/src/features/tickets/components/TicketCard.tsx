@@ -6,6 +6,7 @@ import { Ticket } from '../../../types/models/auth';
 import { Image } from 'expo-image';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useAppTheme as useLatticeTheme } from '../../../hooks/useAppTheme';
+import { resolveBannerUrl } from '../../../utils/poiUtils';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
 import { usePOIStore } from '../../poi/store/usePOIStore';
 import { useNavigationStore } from '../../navigation/store/useNavigationStore';
@@ -99,9 +100,7 @@ export const TicketCard: React.FC<TicketCardProps> = React.memo(
           {/* Subtle Background Image of the Event */}
           <Image
             source={{
-              uri:
-                ticket.eventBanner ||
-                'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+              uri: resolveBannerUrl(ticket.eventBanner),
             }}
             style={[StyleSheet.absoluteFill, { opacity: 0.15 }]}
             contentFit="cover"
