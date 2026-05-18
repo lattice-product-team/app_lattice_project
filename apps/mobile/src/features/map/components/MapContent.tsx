@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
+import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate, runOnJS } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 /**
@@ -502,116 +503,134 @@ export const MapContent = function MapContent({
 
       if (onDeselect) {
         console.log('[MapContent] Map background pressed: Triggering deselect');
+        setCameraMode(MapCameraMode.FREE); // KILL THE MAGNET
         onDeselect();
       }
     },
     [onDeselect, handlePoiPress]
   );
 
+  // --- NUCLEAR OPTION FOR ANDROID MAGNET BUG ---
+  // We use a gesture handler that sits OVER the map.
+  // The millisecond a finger touches the map area, we kill all locks.
+  const breakLockGesture = Gesture.Pan()
+    .onBegin(() => {
+      'worklet';
+      // If we are in a follow mode or programmatic move, break it!
+      runOnJS(setCameraMode)(MapCameraMode.FREE);
+      runOnJS(setIsProgrammaticMove)(false);
+    })
+    .shouldCancelWhenOutside(false)
+    .hitSlop(0);
+
   return (
     <View style={{ flex: 1 }}>
-      <MapLibreGL.MapView
-        ref={mapRef}
-        style={[
-          styles.map,
-          uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }
-        ]}
-        mapStyle={mapStyle as any}
-        logoEnabled={false}
-        attributionEnabled={false}
-        compassEnabled={false}
-        minZoomLevel={2}
-        maxZoomLevel={22}
-        pitchEnabled={true}
-        rotateEnabled={true}
-        scrollEnabled={true}
-        zoomEnabled={true}
-        onPress={handleMapPress}
-        onRegionWillChange={(e) => {
-          // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
-          // This is the only way to reliably detect the START of a user gesture on Android.
-          const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
-          if (!currentIsProgrammatic) {
-            const currentMode = useMapUIStore.getState().cameraMode;
-            if (currentMode !== MapCameraMode.FREE) {
-              console.log('[MapContent] 🚨 Manual gesture detected (onRegionWillChange), breaking camera lock');
-              setCameraMode(MapCameraMode.FREE);
-            }
-          }
-        }}
-        onRegionIsChanging={(e) => handleCameraChange(e, true)}
-        onRegionDidChange={async (e) => {
-          handleCameraChange(e, false);
-          
-          if (mapRef.current) {
-            const bounds = await mapRef.current.getVisibleBounds();
-            useMapUIStore.getState().setVisibleBounds(bounds);
-          }
+      <GestureDetector gesture={breakLockGesture}>
+        <View style={{ flex: 1 }} collapsable={false}>
+          <MapLibreGL.MapView
+            ref={mapRef}
+            style={[
+              styles.map,
+              uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }
+            ]}
+            mapStyle={mapStyle as any}
+            logoEnabled={false}
+            attributionEnabled={false}
+            compassEnabled={false}
+            minZoomLevel={2}
+            maxZoomLevel={22}
+            pitchEnabled={true}
+            rotateEnabled={true}
+            scrollEnabled={true}
+            zoomEnabled={true}
+            onPress={handleMapPress}
+            onRegionWillChange={(e) => {
+              // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
+              // This is the only way to reliably detect the START of a user gesture on Android.
+              const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+              if (!currentIsProgrammatic) {
+                const currentMode = useMapUIStore.getState().cameraMode;
+                if (currentMode !== MapCameraMode.FREE) {
+                  console.log('[MapContent] 🚨 Manual gesture detected (onRegionWillChange), breaking camera lock');
+                  setCameraMode(MapCameraMode.FREE);
+                }
+              }
+            }}
+            onRegionIsChanging={(e) => handleCameraChange(e, true)}
+            onRegionDidChange={async (e) => {
+              handleCameraChange(e, false);
+              
+              if (mapRef.current) {
+                const bounds = await mapRef.current.getVisibleBounds();
+                useMapUIStore.getState().setVisibleBounds(bounds);
+              }
 
-          const center = e.geometry?.coordinates as [number, number];
-          const zoom = e.properties?.zoomLevel;
-          cameraRef.current?.handleRegionChangeComplete(center, zoom);
-        }}
-        onDidFinishLoadingStyle={() => {
-          if (!hasInitialRendered.current) {
-            hasInitialRendered.current = true;
-            setInitialLoadComplete(true);
-            setMapReady(true);
-            startupMetrics.markInteractive('Map');
-          }
-        }}
-      >
-        <MapLibreGL.UserLocation
-          visible={true}
-          animated={true}
-          showsUserHeadingIndicator={true}
-          androidRenderMode="normal"
-          renderMode="normal"
-        />
+              const center = e.geometry?.coordinates as [number, number];
+              const zoom = e.properties?.zoomLevel;
+              cameraRef.current?.handleRegionChangeComplete(center, zoom);
+            }}
+            onDidFinishLoadingStyle={() => {
+              if (!hasInitialRendered.current) {
+                hasInitialRendered.current = true;
+                setInitialLoadComplete(true);
+                setMapReady(true);
+                startupMetrics.markInteractive('Map');
+              }
+            }}
+          >
+            <MapLibreGL.UserLocation
+              visible={true}
+              animated={true}
+              showsUserHeadingIndicator={true}
+              androidRenderMode="normal"
+              renderMode="normal"
+            />
 
-        <MapImageManager events={events} />
+            <MapImageManager events={events} />
 
-        <MapCameraManager
-          ref={cameraRef}
-          userCoords={userCoords}
-          selectedCoords={selectedCoords}
-          selectedEvent={selectedEvent}
-          poisGeoJSON={poisGeoJSON}
-          is3DActive={is3DActive}
-          recenterCount={recenterCount}
-          forceCenterCount={forceCenterCount}
-          lastCameraPosition={lastCameraPosition}
-          uiState={uiState}
-          isNavigating={isNavigating}
-          isPlanning={isPlanning}
-          cameraMode={cameraMode}
-          currentRoute={currentRoute}
-          transportMode={transportMode}
-          isFetching={isFetching}
-          selectedPoiId={selectedPoiId}
-          selectedEventId={selectedEventId}
-          realtimeCameraRef={realtimeCameraRef}
-          lastProcessedTarget={lastProcessedTarget}
-          setLastProcessedTarget={setLastProcessedTarget}
-          triggerSource={triggerSource}
-        />
+            <MapCameraManager
+              ref={cameraRef}
+              userCoords={userCoords}
+              selectedCoords={selectedCoords}
+              selectedEvent={selectedEvent}
+              poisGeoJSON={poisGeoJSON}
+              is3DActive={is3DActive}
+              recenterCount={recenterCount}
+              forceCenterCount={forceCenterCount}
+              lastCameraPosition={lastCameraPosition}
+              uiState={uiState}
+              isNavigating={isNavigating}
+              isPlanning={isPlanning}
+              cameraMode={cameraMode}
+              currentRoute={currentRoute}
+              transportMode={transportMode}
+              isFetching={isFetching}
+              selectedPoiId={selectedPoiId}
+              selectedEventId={selectedEventId}
+              realtimeCameraRef={realtimeCameraRef}
+              lastProcessedTarget={lastProcessedTarget}
+              setLastProcessedTarget={setLastProcessedTarget}
+              triggerSource={triggerSource}
+            />
 
-        <MapLayers
-          theme={theme}
-          poisGeoJSON={filteredPoisGeoJSON}
-          eventsGeoJSON={eventsGeoJSON}
-          selectedEventId={selectedEventId}
-          selectedPoiId={selectedPoiId}
-          pathNetwork={EMPTY_GEOJSON}
-          currentRoute={currentRoute}
-          uiState={uiState}
-          onPoiPress={handlePoiPress}
-          zoomLevel={discreteZoom}
-          zoomSharedValue={zoomSharedValue}
-          islandState={islandState}
-          visibleBounds={visibleBounds}
-        />
-      </MapLibreGL.MapView>
+            <MapLayers
+              theme={theme}
+              poisGeoJSON={filteredPoisGeoJSON}
+              eventsGeoJSON={eventsGeoJSON}
+              selectedEventId={selectedEventId}
+              selectedPoiId={selectedPoiId}
+              pathNetwork={EMPTY_GEOJSON}
+              currentRoute={currentRoute}
+              uiState={uiState}
+              onPoiPress={handlePoiPress}
+              zoomLevel={discreteZoom}
+              zoomSharedValue={zoomSharedValue}
+              islandState={islandState}
+              visibleBounds={visibleBounds}
+            />
+          </MapLibreGL.MapView>
+        </View>
+      </GestureDetector>
     </View>
   );
 };

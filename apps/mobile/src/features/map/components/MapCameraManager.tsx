@@ -1,4 +1,5 @@
 import React, { forwardRef, useRef, useEffect, useImperativeHandle, useCallback } from 'react';
+import { Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { MapCameraMode, useMapUIStore, MapCameraTriggerSource } from '../store/useMapUIStore';
 import { MAP_CENTER } from '../../../constants/mapConstants';
@@ -205,7 +206,20 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     lastIsNavigating.current = isNavigating;
   }, [isPlanning, isNavigating, currentRoute, setIsProgrammaticMove]);
 
-  // DYNAMIC FOLLOW MODE
+  // MANUAL FOLLOWER FOR ANDROID:
+  // Instead of relying on native 'followUserLocation' (which is buggy), 
+  // we manually move the camera when in a tracking mode.
+  useEffect(() => {
+    if (Platform.OS !== 'android' || cameraMode === MapCameraMode.FREE || !userCoords) return;
+
+    // We only follow if we are not in a programmatic flyTo
+    if (isProgrammaticMove) return;
+
+    // Use moveTo for smooth tracking without altitude changes
+    cameraRef.current?.moveTo([userCoords[0], userCoords[1]], 800);
+  }, [userCoords, cameraMode, isProgrammaticMove]);
+
+  // DYNAMIC FOLLOW MODE (iOS only or Fallback)
   const getFollowMode = () => {
     switch (cameraMode) {
       case MapCameraMode.FOLLOW:
@@ -219,10 +233,12 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     }
   };
 
+  const isNativeFollowing = Platform.OS === 'ios' && cameraMode !== MapCameraMode.FREE;
+
   return (
     <MapLibreGL.Camera
       ref={cameraRef}
-      followUserLocation={cameraMode !== MapCameraMode.FREE}
+      followUserLocation={isNativeFollowing}
       followUserMode={getFollowMode()}
       followPitch={45}
       animationDuration={0}
