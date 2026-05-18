@@ -90,3 +90,28 @@ vi.mock('expo-modules-core', () => ({
     OS: 'ios',
   },
 }));
+
+vi.mock('lucide-react-native', () => {
+  const mockIcon = (name: string) => {
+    const Comp = () => null;
+    Comp.displayName = name;
+    return Comp;
+  };
+  return {
+    Coffee: mockIcon('Coffee'),
+    MapPin: mockIcon('MapPin'),
+    User: mockIcon('User'),
+    Map: mockIcon('Map'),
+    SquarePlus: mockIcon('SquarePlus'),
+    LogIn: mockIcon('LogIn'),
+    Users: mockIcon('Users'),
+    Info: mockIcon('Info'),
+    ShoppingBag: mockIcon('ShoppingBag'),
+    Music: mockIcon('Music'),
+    Utensils: mockIcon('Utensils'),
+    Laptop: mockIcon('Laptop'),
+    Trophy: mockIcon('Trophy'),
+    Calendar: mockIcon('Calendar'),
+  };
+});
+

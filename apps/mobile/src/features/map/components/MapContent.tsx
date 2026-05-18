@@ -125,6 +125,16 @@ export const MapContent = function MapContent({
   const lastProcessedRouteId = useRef<string | null>(null);
   const lastProcessedRecenter = useRef(recenterCount);
   const lastProcessedForceCenter = useRef(forceCenterCount);
+  const programmaticMoveTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // CLEANUP PROGRAMMATIC TIMEOUT ON UNMOUNT
+  useEffect(() => {
+    return () => {
+      if (programmaticMoveTimeoutRef.current) {
+        clearTimeout(programmaticMoveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // SNAP LOGIC: Instantly move the camera without animation
   const snapToLocation = useCallback((coords: [number, number], zoom?: number, pitch?: number) => {
@@ -144,6 +154,9 @@ export const MapContent = function MapContent({
       if (!cameraRef.current) return;
 
       console.log('[MapContent] ✈️ Flying to:', coords);
+      if (programmaticMoveTimeoutRef.current) {
+        clearTimeout(programmaticMoveTimeoutRef.current);
+      }
       setIsProgrammaticMove(true);
       cameraRef.current.setCamera({
         centerCoordinate: coords,
@@ -155,7 +168,9 @@ export const MapContent = function MapContent({
       });
 
       // Safety release of programmatic lock
-      setTimeout(() => setIsProgrammaticMove(false), duration + 50);
+      programmaticMoveTimeoutRef.current = setTimeout(() => {
+        setIsProgrammaticMove(false);
+      }, duration + 50);
     },
     [setIsProgrammaticMove]
   );
@@ -279,6 +294,9 @@ export const MapContent = function MapContent({
         if (y > maxY) maxY = y;
       }
 
+      if (programmaticMoveTimeoutRef.current) {
+        clearTimeout(programmaticMoveTimeoutRef.current);
+      }
       setIsProgrammaticMove(true);
       cameraRef.current?.setCamera({
         bounds: {
@@ -293,7 +311,9 @@ export const MapContent = function MapContent({
         animationDuration: 1200,
         animationMode: 'flyTo',
       });
-      setTimeout(() => setIsProgrammaticMove(false), 1300);
+      programmaticMoveTimeoutRef.current = setTimeout(() => {
+        setIsProgrammaticMove(false);
+      }, 1300);
     }
 
     // Cleanup when stopping all planning
@@ -388,11 +408,27 @@ export const MapContent = function MapContent({
 
       // IF USER TOUCHES THE MAP:
       // We break tracking ONLY if the user is actually interacting with the map surface.
-      // We add a small guard: if we are in a programmatic move, we give it a bit of room.
-      const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
-      if (isUserInteraction && cameraMode !== MapCameraMode.FREE && !currentIsProgrammatic) {
-        // console.log('[MapContent] User interaction detected: Breaking camera locks');
-        setCameraMode(MapCameraMode.FREE);
+      // If we are in a programmatic move, physical user interaction aborts it instantly.
+      if (isUserInteraction) {
+        if (cameraMode !== MapCameraMode.FREE) {
+          console.log('[MapContent] 🚨 User interaction detected: Breaking camera locks');
+          setCameraMode(MapCameraMode.FREE);
+        }
+        const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+        if (currentIsProgrammatic) {
+          console.log(
+            '[MapContent] 🚨 User interaction detected during active flight: Aborting programmatic lock'
+          );
+          // Android/Fabric Fix: Abort native active flight animation by overriding with 1ms timing
+          cameraRef.current?.setCamera({
+            animationDuration: 1,
+          });
+          setIsProgrammaticMove(false);
+          if (programmaticMoveTimeoutRef.current) {
+            clearTimeout(programmaticMoveTimeoutRef.current);
+            programmaticMoveTimeoutRef.current = undefined;
+          }
+        }
       }
     },
     [
@@ -402,6 +438,7 @@ export const MapContent = function MapContent({
       setLastCameraPosition,
       cameraMode,
       setCameraMode,
+      setIsProgrammaticMove,
     ]
   );
 
@@ -779,15 +816,37 @@ export const MapContent = function MapContent({
         onPress={handleMapPress}
         onRegionWillChange={(e) => {
           // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
-          // This is the only way to reliably detect the START of a user gesture on Android.
-          const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
-          if (!currentIsProgrammatic) {
-            const currentMode = useMapUIStore.getState().cameraMode;
-            if (currentMode !== MapCameraMode.FREE) {
-              console.log(
-                '[MapContent] 🚨 Manual gesture detected (onRegionWillChange), breaking camera lock'
-              );
-              setCameraMode(MapCameraMode.FREE);
+          // If we detect a definitive user interaction, abort all locks preemptively.
+          const isUser = e.properties?.isUserInteraction;
+          if (isUser) {
+            console.log(
+              '[MapContent] 🚨 User interaction detected in onRegionWillChange: Breaking all locks'
+            );
+            // Android/Fabric Fix: Stop any active native camera flights instantly
+            cameraRef.current?.setCamera({
+              animationDuration: 1,
+            });
+            setCameraMode(MapCameraMode.FREE);
+            setIsProgrammaticMove(false);
+            if (programmaticMoveTimeoutRef.current) {
+              clearTimeout(programmaticMoveTimeoutRef.current);
+              programmaticMoveTimeoutRef.current = undefined;
+            }
+          } else {
+            // Fallback for Android where isUserInteraction can be unreliable
+            const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+            if (!currentIsProgrammatic) {
+              const currentMode = useMapUIStore.getState().cameraMode;
+              if (currentMode !== MapCameraMode.FREE) {
+                console.log(
+                  '[MapContent] 🚨 Manual gesture fallback (onRegionWillChange), breaking camera lock'
+                );
+                // Android/Fabric Fix: Stop any active native camera flights instantly
+                cameraRef.current?.setCamera({
+                  animationDuration: 1,
+                });
+                setCameraMode(MapCameraMode.FREE);
+              }
             }
           }
         }}
@@ -813,7 +872,7 @@ export const MapContent = function MapContent({
           visible={true}
           animated={true}
           showsUserHeadingIndicator={Platform.OS === 'ios'}
-          androidRenderMode="gps"
+          androidRenderMode={cameraMode === MapCameraMode.FREE ? 'normal' : 'gps'}
           renderMode="normal"
         />
 
