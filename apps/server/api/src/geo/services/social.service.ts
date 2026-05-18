@@ -1,23 +1,23 @@
 import { db, events, pointsOfInterest, eq, sql } from '@app/db';
 import { dataForSEO } from './dataforseo.client.js';
 
-/**
+/***
  * Orchestrates social proof synchronization for Lattice assets.
  */
 export class SocialService {
-  /**
+  /***
    * Synchronizes social data for a specific asset (Event or POI).
    */
   async syncAssetSocialData(type: 'event' | 'poi', id: number, force = false) {
     try {
-      // 1. Fetch asset details
+      //1. Fetch asset details
       const table = type === 'event' ? events : pointsOfInterest;
       const result = await db.select().from(table).where(eq(table.id, id)).limit(1);
 
       if (result.length === 0) return null;
       const asset = result[0] as any;
 
-      // --- CACHE CHECK ---
+
       const existingMetadata = asset.metadata ? JSON.parse(asset.metadata) : {};
       const lastSync = existingMetadata.social?.last_sync;
 
@@ -35,13 +35,13 @@ export class SocialService {
 
       console.log(`[SocialService] Syncing ${type} ${id} from DataForSEO...`);
 
-      // Use asset location if available
+      //Use asset location if available
       let lat = 41.3851;
-      let lng = 2.1734; // Default BCN
+      let lng = 2.1734; //Default BCN
 
       if (asset.location) {
-        // PostGIS point format "POINT(lng lat)" or binary
-        // Drizzle might return it differently depending on setup
+        //PostGIS point format "POINT(lng lat)" or binary
+        //Drizzle might return it differently depending on setup
         if (typeof asset.location === 'string') {
           const match = asset.location.match(/POINT\((.+) (.+)\)/);
           if (match) {
@@ -51,13 +51,13 @@ export class SocialService {
         }
       }
 
-      // 2. Perform Search (Optimized: only if we don't have a place identifier)
+      //2. Perform Search (Optimized: only if we don't have a place identifier)
       const existingPlaceId = existingMetadata.social?.place_id;
       let business = null;
       let targetId = existingPlaceId;
 
       if (!targetId) {
-        // Use manual override if available, otherwise search by name
+        //Use manual override if available, otherwise search by name
         const searchKeyword =
           existingMetadata.social?.source_url || existingMetadata.source_url || asset.name;
         business = await dataForSEO.searchBusiness(searchKeyword, { lat, lng });
@@ -69,7 +69,7 @@ export class SocialService {
         targetId = business.place_id || business.cid;
       }
 
-      // 3. Prepare social metadata
+      //3. Prepare social metadata
       const socialData = {
         rating: business
           ? business.rating?.value || business.rating || 0
@@ -85,7 +85,7 @@ export class SocialService {
         snippets: [] as string[],
       };
 
-      // 4. Fetch reviews if place_id/cid found
+      //4. Fetch reviews if place_id/cid found
       if (targetId) {
         const reviews = await dataForSEO.getReviews(targetId);
         socialData.snippets = reviews
@@ -94,8 +94,8 @@ export class SocialService {
           .filter(Boolean);
       }
 
-      // 4. Update metadata in DB
-      // We merge with existing metadata
+      //4. Update metadata in DB
+      //We merge with existing metadata
       const updatedMetadata = JSON.stringify({
         ...existingMetadata,
         social: socialData,
@@ -111,12 +111,12 @@ export class SocialService {
     }
   }
 
-  /**
+  /***
    * Background sync for all active assets.
    */
   async syncAllActive() {
-    // Logic to iterate over active events and their POIs
-    // This could be triggered by a cron job
+    //Logic to iterate over active events and their POIs
+    //This could be triggered by a cron job
   }
 }
 

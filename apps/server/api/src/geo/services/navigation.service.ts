@@ -1,6 +1,6 @@
 import { db, nodes, pathSegments, pointsOfInterest, sql, eq } from '@app/db';
 
-// --- Interfaces & Types ---
+
 
 interface Node {
   id: number;
@@ -23,9 +23,9 @@ interface GraphNeighbor {
 
 type AdjacencyList = Record<number, GraphNeighbor[]>;
 
-// --- Helper Functions ---
 
-/**
+
+/***
  * Resolves lat/lng coordinates from either raw values or a POI ID.
  */
 async function resolveCoords(input: { lat?: number; lng?: number; poiId?: number }) {
@@ -50,7 +50,7 @@ async function resolveCoords(input: { lat?: number; lng?: number; poiId?: number
   throw new Error('Invalid origin/destination: coords or poiId required');
 }
 
-/**
+/***
  * Builds the adjacency list for the routing graph.
  */
 function buildAdjacencyList(
@@ -62,9 +62,9 @@ function buildAdjacencyList(
   nodes.forEach((n) => (graph[n.id] = []));
 
   edges.forEach((e) => {
-    // Accessibility filters
+
     if (options.avoidStairs && e.hasStairs) return;
-    if (options.wheelchairAccess && e.hasStairs) return; // Wheelchairs definitely avoid stairs
+    if (options.wheelchairAccess && e.hasStairs) return; //Wheelchairs definitely avoid stairs
 
     let weight = e.distance;
     if (e.crowdLevel === 'high') weight *= 1.5;
@@ -80,7 +80,7 @@ function buildAdjacencyList(
   return graph;
 }
 
-/**
+/***
  * Reconstructs the coordinate path from the predecessor map.
  */
 async function reconstructPath(pathNodes: number[]) {
@@ -104,7 +104,7 @@ async function reconstructPath(pathNodes: number[]) {
   });
 }
 
-// --- Main Service Function ---
+
 
 export async function findRoute(
   origin: { lat?: number; lng?: number; poiId?: number },
@@ -114,7 +114,7 @@ export async function findRoute(
   const startCoords = await resolveCoords(origin);
   const endCoords = await resolveCoords(destination);
 
-  // 1. Find entry/exit nodes
+  //1. Find entry/exit nodes
   const [startNode] = await db
     .select({ id: nodes.id })
     .from(nodes)
@@ -131,14 +131,14 @@ export async function findRoute(
     throw new Error('Routing error: No accessible path nodes found near location');
   }
 
-  // 2. Build graph context
+  //2. Build graph context
   let nodeQuery = db.select().from(nodes).$dynamic();
   let edgeQuery = db.select().from(pathSegments).$dynamic();
 
   if (options.eventId) {
     nodeQuery = nodeQuery.where(eq(nodes.eventId, options.eventId));
-    // For edges, we filter based on the source node's event_id
-    // This assumes segments don't cross between events (which they shouldn't in this model)
+    //For edges, we filter based on the source node's event_id
+    //This assumes segments don't cross between events (which they shouldn't in this model)
     edgeQuery = edgeQuery.where(
       sql`source_node_id IN (SELECT id FROM nodes WHERE event_id = ${options.eventId})`
     );
@@ -148,7 +148,7 @@ export async function findRoute(
   const allEdges = await edgeQuery;
   const graph = buildAdjacencyList(allNodes, allEdges, options);
 
-  // 3. Dijkstra Core
+  //3. Dijkstra Core
   const distances: Record<number, number> = {};
   const previous: Record<number, number | null> = {};
   const queue: number[] = [];
@@ -177,7 +177,7 @@ export async function findRoute(
     }
   }
 
-  // 4. Path reconstruction
+  //4. Path reconstruction
   const pathNodeIds: number[] = [];
   let curr: number | null = endNode.id;
   while (curr !== null) {
@@ -199,7 +199,7 @@ export async function findRoute(
     },
     properties: {
       distance: distances[endNode.id],
-      durationEstimate: Math.round(distances[endNode.id] / 1.4), // 1.4 m/s avg walking speed
+      durationEstimate: Math.round(distances[endNode.id] / 1.4), //1.4 m/s avg walking speed
     },
   };
 }

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import 'dotenv/config';
-import { db, pointsOfInterest, sql, events, eq, telemetryLogs } from '@app/db';
+import { db, pointsOfInterest, sql, events, eq, telemetryLogs, and } from '@app/db';
 
 import { findRoute } from '../services/navigation.service.js';
 import { valhallaService } from '../services/valhalla.service.js';
@@ -235,22 +235,23 @@ export const getLocations = async (req: Request, res: Response) => {
   try {
     const { eventId } = req.query;
 
-    // We filter by last 15 minutes to keep it "live"
+    const conditions = [sql`timestamp > now() - interval '2 minutes'`];
+
+    if (eventId) {
+      const eid = parseInt(eventId as string, 10);
+      if (!isNaN(eid)) {
+        conditions.push(eq(telemetryLogs.eventId, eid));
+      }
+    }
+
     const query = db
       .select({
         id: telemetryLogs.id,
         geometry: sql<string>`ST_AsGeoJSON(${telemetryLogs.location})`,
       })
       .from(telemetryLogs)
-      .where(sql`timestamp > now() - interval '2 minutes'`)
+      .where(and(...conditions))
       .$dynamic();
-
-    if (eventId) {
-      const eid = parseInt(eventId as string, 10);
-      if (!isNaN(eid)) {
-        query.where(eq(telemetryLogs.eventId, eid));
-      }
-    }
 
     const results = await query;
 
