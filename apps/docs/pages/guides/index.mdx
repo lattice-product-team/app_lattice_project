@@ -12,4 +12,5 @@ Practical instructions and manuals for developing, troubleshooting, and operatin
 ## Operational & DevOps Guides
 
 - **[Admin User Guide](./admin-user-guide)**: How to use the dashboard to curate events and monitor telemetry.
+- **[Mobile User Guide](./mobile-user-guide)**: Step-by-step manual for attendees navigating events via the mobile companion app.
 - **[Deployment Guide](./deployment)**: Production deployment architecture, orchestration, and EAS mobile store submissions.
