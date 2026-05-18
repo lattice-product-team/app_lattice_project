@@ -1,11 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Pressable, Dimensions } from 'react-native';
 import { ChevronLeft, ScanLine, Ticket as TicketIcon } from 'lucide-react-native';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withSpring 
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { typography } from '../../src/styles/typography';
 import { WalletStack } from '../../src/features/tickets/components/WalletStack';
@@ -16,7 +12,7 @@ const TicketsScreen = () => {
   const theme = useAppTheme();
   const router = useRouter();
   const { tickets } = useAuthStore();
-  
+
   // Dynamic Island State (0: Tickets, 1: Scan)
   const islandMode = useSharedValue(0);
 
@@ -32,7 +28,15 @@ const TicketsScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
       {/* Dynamic Island Header */}
       <View style={styles.headerContainer}>
-        <View style={[styles.island, { backgroundColor: theme.colors.glass.background, borderColor: theme.colors.glass.border }]}>
+        <View
+          style={[
+            styles.island,
+            {
+              backgroundColor: theme.colors.glass.background,
+              borderColor: theme.colors.glass.border,
+            },
+          ]}
+        >
           {/* Back Button */}
           <Pressable onPress={handleBack} style={styles.backButton}>
             <ChevronLeft size={20} color={theme.colors.text.primary} />
@@ -42,26 +46,32 @@ const TicketsScreen = () => {
 
           {/* Mode Selector */}
           <View style={styles.selectorContainer}>
-            <Animated.View style={[styles.activeIndicator, { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }, modeIndicatorStyle]} />
-            
-            <Pressable 
+            <Animated.View
+              style={[
+                styles.activeIndicator,
+                { backgroundColor: theme.dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' },
+                modeIndicatorStyle,
+              ]}
+            />
+
+            <Pressable
               onPress={() => {
                 islandMode.value = withSpring(0);
               }}
               style={styles.modeOption}
             >
               <TicketIcon size={18} color={theme.colors.text.primary} />
-              <Text style={[styles.modeText, { color: theme.colors.text.primary }]}>Entradas</Text>
+              <Text style={[styles.modeText, { color: theme.colors.text.primary }]}>Tickets</Text>
             </Pressable>
 
-            <Pressable 
+            <Pressable
               onPress={() => {
                 router.push('/(main)/scan');
               }}
               style={styles.modeOption}
             >
               <ScanLine size={18} color={theme.colors.text.secondary} />
-              <Text style={[styles.modeText, { color: theme.colors.text.secondary }]}>Escanear</Text>
+              <Text style={[styles.modeText, { color: theme.colors.text.secondary }]}>Scan</Text>
             </Pressable>
           </View>
         </View>
@@ -74,16 +84,18 @@ const TicketsScreen = () => {
         ) : (
           <View style={styles.emptyState}>
             <TicketIcon size={64} color={theme.colors.interactive.disabled} strokeWidth={1} />
-            <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>No tienes entradas</Text>
-            <Text style={[styles.emptySub, { color: theme.colors.text.secondary }]}>
-              Escanea un código QR para añadir tu entrada al Wallet de Lattice.
+            <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>
+              No tickets yet
             </Text>
-            <Pressable 
+            <Text style={[styles.emptySub, { color: theme.colors.text.secondary }]}>
+              Scan a QR code to add your ticket to the Lattice Wallet.
+            </Text>
+            <Pressable
               onPress={() => router.push('/(main)/scan')}
               style={[styles.scanButton, { backgroundColor: theme.colors.brand.primary }]}
             >
               <ScanLine size={20} color="#fff" />
-              <Text style={styles.scanButtonText}>Escanear mi entrada</Text>
+              <Text style={styles.scanButtonText}>Scan my ticket</Text>
             </Pressable>
           </View>
         )}

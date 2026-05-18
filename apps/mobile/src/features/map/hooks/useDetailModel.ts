@@ -11,8 +11,12 @@ import { useSearchEvents } from './useSearchEvents';
 import { useARStore, ARFilterMode } from '../store/useARStore';
 import { useLocationStore } from '../../../store/useLocationStore';
 import { useMapUIStore } from '../../map/store/useMapUIStore';
-import { calculateDistance, isPointInPolygon, formatDistance, formatDuration } from '../../../utils/geoUtils';
-
+import {
+  calculateDistance,
+  isPointInPolygon,
+  formatDistance,
+  formatDuration,
+} from '../../../utils/geoUtils';
 
 /**
  * Normalization hook that converts Event or POI data into a unified
@@ -53,16 +57,23 @@ export const useDetailModel = (): DetailModel | null => {
   // Coordinate Fallback Logic: POI Coords -> Parent Event Coords -> [0,0]
   const destinationCoords = useMemo(() => {
     // 1. Try POI coordinates
-    if (selectedPoi?.coordinates && (selectedPoi.coordinates[0] !== 0 || selectedPoi.coordinates[1] !== 0)) {
+    if (
+      selectedPoi?.coordinates &&
+      (selectedPoi.coordinates[0] !== 0 || selectedPoi.coordinates[1] !== 0)
+    ) {
       return selectedPoi.coordinates as [number, number];
     }
-    
+
     // 2. Try Event coordinates (if POI is selected but has no coords, or if Event is selected)
-    const targetEvent = selectedEvent || allEvents?.find((e) => String(e.id) === String(selectedPoi?.parentId));
+    const targetEvent =
+      selectedEvent || allEvents?.find((e) => String(e.id) === String(selectedPoi?.parentId));
     const eventCoords = targetEvent?.center?.coordinates || (targetEvent as any)?.coordinates;
-    
+
     if (eventCoords && (eventCoords[0] !== 0 || eventCoords[1] !== 0)) {
-      console.log('[useDetailModel] 🛡️ Fallback to Event coordinates for POI:', selectedPoi?.displayName);
+      console.log(
+        '[useDetailModel] 🛡️ Fallback to Event coordinates for POI:',
+        selectedPoi?.displayName
+      );
       return eventCoords as [number, number];
     }
 
@@ -166,7 +177,12 @@ export const useDetailModel = (): DetailModel | null => {
           {
             id: 'directions',
             label: isFetching ? '...' : formatDuration(currentDuration || estimatedDuration),
-            icon: transportMode === 'driving' ? 'CarIcon' : transportMode === 'walking' ? 'FootprintsIcon' : 'BikeIcon',
+            icon:
+              transportMode === 'driving'
+                ? 'CarIcon'
+                : transportMode === 'walking'
+                  ? 'FootprintsIcon'
+                  : 'BikeIcon',
             variant: 'primary',
             onPress: () => {
               setPlanning(true);
@@ -183,7 +199,7 @@ export const useDetailModel = (): DetailModel | null => {
                 clearEvent();
                 deselectPoi();
               } else {
-                Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
+                Alert.alert('Notice', 'This button is available if you are at the event.');
               }
             },
           },
@@ -235,8 +251,12 @@ export const useDetailModel = (): DetailModel | null => {
         name: selectedPoi.displayName,
         subtitle: `${selectedPoi.categoryLabel}${social?.rating ? ` • ${social.rating} ⭐` : ''}`,
         description: selectedPoi.description || 'A notable point of interest in the area.',
-        bannerUrl: (selectedPoi as any).bannerUrl || (selectedPoi.images?.length > 0 ? selectedPoi.images[0] : undefined) || (selectedPoi.galleryUrls?.length > 0 ? selectedPoi.galleryUrls[0] : undefined),
-        galleryUrls: selectedPoi.images?.length > 0 ? selectedPoi.images : (selectedPoi.galleryUrls || []),
+        bannerUrl:
+          (selectedPoi as any).bannerUrl ||
+          (selectedPoi.images?.length > 0 ? selectedPoi.images[0] : undefined) ||
+          (selectedPoi.galleryUrls?.length > 0 ? selectedPoi.galleryUrls[0] : undefined),
+        galleryUrls:
+          selectedPoi.images?.length > 0 ? selectedPoi.images : selectedPoi.galleryUrls || [],
         categoryIcon: catMetadata.icon,
         parentName,
         social: social
@@ -299,7 +319,12 @@ export const useDetailModel = (): DetailModel | null => {
           {
             id: 'directions',
             label: isFetching ? '...' : formatDuration(currentDuration || estimatedDuration),
-            icon: transportMode === 'driving' ? 'CarIcon' : transportMode === 'walking' ? 'FootprintsIcon' : 'BikeIcon',
+            icon:
+              transportMode === 'driving'
+                ? 'CarIcon'
+                : transportMode === 'walking'
+                  ? 'FootprintsIcon'
+                  : 'BikeIcon',
             variant: 'primary',
             onPress: () => {
               setPlanning(true);
@@ -316,7 +341,7 @@ export const useDetailModel = (): DetailModel | null => {
                 deselectPoi();
                 clearEvent();
               } else {
-                Alert.alert('Aviso', 'Este botón está disponible si te encuentras en el evento.');
+                Alert.alert('Notice', 'This button is available if you are at the event.');
               }
             },
           },
@@ -327,7 +352,7 @@ export const useDetailModel = (): DetailModel | null => {
             variant: 'secondary',
             onPress: () => {},
           },
-          ],
+        ],
       } as DetailModel;
     }
 

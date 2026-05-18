@@ -49,13 +49,13 @@ export const SearchFilters = ({
         contentContainerStyle={styles.container}
       >
         <CategoryChip
-          label="Música"
+          label="Music"
           isSelected={activeCategory === 'music'}
           activeColor={semanticColors.categories.music}
           onPress={() => onSelectCategory?.('music')}
         />
         <CategoryChip
-          label="Comida"
+          label="Food"
           isSelected={activeCategory === 'food'}
           activeColor={semanticColors.categories.food}
           onPress={() => onSelectCategory?.('food')}
@@ -67,7 +67,7 @@ export const SearchFilters = ({
           onPress={() => onSelectCategory?.('services')}
         />
         <CategoryChip
-          label="Tiendas"
+          label="Shopping"
           isSelected={activeCategory === 'shopping'}
           activeColor={semanticColors.categories.shopping}
           onPress={() => onSelectCategory?.('shopping')}

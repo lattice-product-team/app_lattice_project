@@ -1,6 +1,19 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, Text, Dimensions, Platform, Pressable as NativePressable, ScrollView as NativeScrollView } from 'react-native';
-import { ScrollView as GHScrollView, Pressable as GHPressable, GestureDetector, Gesture } from 'react-native-gesture-handler';
+import {
+  View,
+  StyleSheet,
+  Text,
+  Dimensions,
+  Platform,
+  Pressable as NativePressable,
+  ScrollView as NativeScrollView,
+} from 'react-native';
+import {
+  ScrollView as GHScrollView,
+  Pressable as GHPressable,
+  GestureDetector,
+  Gesture,
+} from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useAnimatedStyle,
@@ -44,11 +57,7 @@ interface DiscoveryDashboardProps {
 }
 
 export const DiscoveryDashboard = React.memo(
-  ({
-    islandState,
-    onSelectCategory,
-    onSelectEvent,
-  }: DiscoveryDashboardProps) => {
+  ({ islandState, onSelectCategory, onSelectEvent }: DiscoveryDashboardProps) => {
     const theme = useAppTheme();
     const { activeCategoryFilters, toggleCategoryFilter } = usePOIStore();
     const { events: allEvents, loading: eventsLoading } = useSearchEvents('');
@@ -174,7 +183,7 @@ export const DiscoveryDashboard = React.memo(
           {eventsLoading ? (
             <View style={[styles.carouselScrollContainer, { justifyContent: 'center' }]}>
               <Text style={{ color: theme.colors.text.muted, textAlign: 'center' }}>
-                Cargando eventos...
+                Loading events...
               </Text>
             </View>
           ) : (
@@ -214,7 +223,7 @@ export const DiscoveryDashboard = React.memo(
                         fontFamily: typography.primary.medium,
                       }}
                     >
-                      No hay eventos de esta categoría hoy.
+                      No events in this category today.
                     </Text>
                   </View>
                 )}

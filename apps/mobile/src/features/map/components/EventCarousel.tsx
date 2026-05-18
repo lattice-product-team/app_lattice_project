@@ -62,7 +62,7 @@ const EventCarouselLegacyCard = ({ event, onPress, index }: EventCarouselLegacyC
             <Text style={styles.eventName} numberOfLines={1}>
               {event.name}
             </Text>
-            <Text style={styles.dateText}>{event.startDate || 'Próximamente'}</Text>
+            <Text style={styles.dateText}>{event.startDate || 'Coming Soon'}</Text>
           </View>
         </View>
       </Pressable>

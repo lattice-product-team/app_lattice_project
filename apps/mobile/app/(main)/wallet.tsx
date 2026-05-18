@@ -10,7 +10,7 @@ export default function WalletScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
       <Text style={[styles.title, { color: theme.colors.text.primary }]}>Lattice Wallet</Text>
       <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-        Gestiona tus puntos y recompensas aquí.
+        Manage your points and rewards here.
       </Text>
     </View>
   );

@@ -20,7 +20,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
     try {
       const names = savedItems.map((i) => i.displayName).join(', ');
       await Share.share({
-        message: `¡Mira mis eventos y sitios guardados en Lattice!: ${names}`,
+        message: `Check out my saved events and locations on Lattice!: ${names}`,
       });
     } catch (error) {
       console.error('Error sharing list:', error);
@@ -31,7 +31,7 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: `Echa un vistazo a este sitio en Lattice: ${item.displayName}`,
+        message: `Check out this venue on Lattice: ${item.displayName}`,
       });
     } catch (error) {
       console.error('Error sharing item:', error);
@@ -43,10 +43,10 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
       <View style={styles.emptyContainer}>
         <Bookmark size={64} color="rgba(255,255,255,0.1)" strokeWidth={1.5} />
         <Text style={[styles.emptyTitle, { color: theme.colors.text.primary }]}>
-          Tu lista está vacía
+          Your list is empty
         </Text>
         <Text style={[styles.emptySubtitle, { color: theme.colors.text.muted }]}>
-          Guarda eventos o sitios para verlos aquí y compartirlos con tus amigos.
+          Save events or venues to see them here and share them with friends.
         </Text>
       </View>
     );
@@ -55,14 +55,14 @@ export const SavedListContent = ({ savedItems, onSelectItem }: SavedListContentP
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Mis Guardados</Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>My Saved</Text>
         <Pressable
           onPress={handleShareList}
           style={({ pressed }) => [styles.shareAllButton, pressed && { opacity: 0.7 }]}
         >
           <Share2 size={18} color={theme.colors.brand.primary} strokeWidth={2.2} />
           <Text style={[styles.shareAllText, { color: theme.colors.brand.primary }]}>
-            Compartir lista
+            Share list
           </Text>
         </Pressable>
       </View>

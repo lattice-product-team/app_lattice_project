@@ -117,7 +117,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 ]}
               >
                 <Navigation size={24} color="#000" strokeWidth={2.5} />
-                <Text style={styles.tridentLabelPrimary}>IR</Text>
+                <Text style={styles.tridentLabelPrimary}>GO</Text>
               </Pressable>
 
               {/* Tickets */}
@@ -129,13 +129,9 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 style={styles.tridentButtonSecondary}
               >
                 <SafeBlurView intensity={20} style={styles.buttonBlur}>
-                  <Ticket
-                    size={22}
-                    color={theme.colors.brand.primary}
-                    strokeWidth={2.2}
-                  />
+                  <Ticket size={22} color={theme.colors.brand.primary} strokeWidth={2.2} />
                 </SafeBlurView>
-                <Text style={styles.tridentLabelSecondary}>ENTRADAS</Text>
+                <Text style={styles.tridentLabelSecondary}>TICKETS</Text>
               </Pressable>
 
               {/* Calendar */}
@@ -149,7 +145,7 @@ export const PoiDetailSheet = React.forwardRef<BottomSheet, PoiDetailSheetProps>
                 <SafeBlurView intensity={20} style={styles.buttonBlur}>
                   <Calendar size={22} color={theme.colors.brand.primary} strokeWidth={2.2} />
                 </SafeBlurView>
-                <Text style={styles.tridentLabelSecondary}>AÑADIR</Text>
+                <Text style={styles.tridentLabelSecondary}>ADD</Text>
               </Pressable>
             </View>
           </View>
