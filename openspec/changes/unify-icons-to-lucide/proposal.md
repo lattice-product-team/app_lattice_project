@@ -1,6 +1,7 @@
 ## Why
 
 The current mobile application uses a mixture of multiple icon libraries, including `lucide-react-native`, `@expo/vector-icons` (Feather, MaterialCommunityIcons, Ionicons), and potentially others. This fragmentation leads to:
+
 - **Visual Inconsistency**: Differing line weights, corner radii, and artistic styles across the UI.
 - **Limited Design Control**: `@expo/vector-icons` doesn't natively support dynamic `strokeWidth` adjustments, making it difficult to achieve a consistent "premium" look.
 - **Maintenance Overhead**: Developers must choose between multiple libraries, leading to arbitrary decisions and inconsistent code patterns.
@@ -17,9 +18,11 @@ Unifying to Lucide provides a modern, cohesive, and highly customizable icon sys
 ## Capabilities
 
 ### New Capabilities
+
 - None: This is a refactoring of the visual presentation layer.
 
 ### Modified Capabilities
+
 - `mobile-ui-system`: Standardize the icon language across all UI components as part of the core design system.
 - `map-interface`: Update all map-related controls and overlays to use unified Lucide icons.
 

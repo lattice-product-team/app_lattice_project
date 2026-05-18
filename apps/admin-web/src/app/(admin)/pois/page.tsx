@@ -108,7 +108,9 @@ export default function POIsPage() {
     if (selectedPoi && selectedPoi.lat && selectedPoi.lng) {
       const resolve = async () => {
         try {
-          const res = await fetch(`${API_BASE}/resolve-address?lat=${selectedPoi.lat}&lng=${selectedPoi.lng}`);
+          const res = await fetch(
+            `${API_BASE}/resolve-address?lat=${selectedPoi.lat}&lng=${selectedPoi.lng}`
+          );
           if (res.ok) {
             const data = await res.json();
             setAddress(data.address);
@@ -139,7 +141,8 @@ export default function POIsPage() {
         poi.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         poi.locationName?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = !typeValue || typeValue === 'all' || poi.type === typeValue;
-      const matchesEvent = !eventValue || eventValue === 'all' || poi.eventId?.toString() === eventValue;
+      const matchesEvent =
+        !eventValue || eventValue === 'all' || poi.eventId?.toString() === eventValue;
       return matchesSearch && matchesType && matchesEvent;
     });
   }, [pois, searchTerm, typeFilter, eventFilter]);
@@ -178,7 +181,7 @@ export default function POIsPage() {
     setBannerUrl(poi.bannerUrl || '');
     setGalleryUrls(poi.galleryUrls || []);
     setSelectionSource('CLICK');
-    
+
     const coords = poi.geometry?.coordinates || poi.center?.coordinates;
     if (coords) {
       selectPoi({
@@ -216,7 +219,7 @@ export default function POIsPage() {
           coordinates: [selectedPoi.lng, selectedPoi.lat],
         },
         bannerUrl,
-        galleryUrls
+        galleryUrls,
       };
 
       const url = editingPoiId ? `${API_BASE}/pois/${editingPoiId}` : `${API_BASE}/pois`;
@@ -246,7 +249,7 @@ export default function POIsPage() {
   const handleDeletePoi = async (id?: number) => {
     const targetId = id || editingPoiId || poiToDeleteId;
     if (!targetId) return;
-    
+
     // Instead of native confirm, we open our custom modal
     if (!isDeleteModalOpen) {
       setPoiToDeleteId(targetId);
@@ -273,8 +276,8 @@ export default function POIsPage() {
 
   const syncSocial = async (id: number) => {
     if (syncingIds.has(id)) return;
-    
-    setSyncingIds(prev => new Set(prev).add(id));
+
+    setSyncingIds((prev) => new Set(prev).add(id));
     try {
       const res = await fetch(`${API_BASE}/social/sync`, {
         method: 'POST',
@@ -285,7 +288,7 @@ export default function POIsPage() {
     } catch (err) {
       console.error('Sync failed', err);
     } finally {
-      setSyncingIds(prev => {
+      setSyncingIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
@@ -346,8 +349,8 @@ export default function POIsPage() {
 
           {/* Floating Close Button */}
           <div className="absolute top-10 left-10 z-[110]">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="rounded-full w-14 h-14 p-0 flex items-center justify-center bg-surface border border-border hover:border-foreground shadow-massive transition-colors group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
@@ -357,10 +360,11 @@ export default function POIsPage() {
 
           {/* Floating Studio Card */}
           <div className="absolute right-12 top-12 bottom-12 w-[460px] bg-surface rounded-[48px] shadow-massive border border-border overflow-hidden flex flex-col z-[105] animate-in slide-in-from-right-8 duration-500">
-            
             {/* Header */}
             <div className="px-12 pt-12 pb-8 border-b border-border/40 shrink-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">Lattice Studio</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">
+                Lattice Studio
+              </p>
               <h2 className="waldenburg-display text-3xl text-foreground">
                 {editingPoiId ? 'Edit Asset' : 'New Asset'}
               </h2>
@@ -368,16 +372,20 @@ export default function POIsPage() {
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-scroll custom-scrollbar px-12 py-10 space-y-12">
-              
               {/* Section 1: Context */}
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Operational Context</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  1. Operational Context
+                </p>
                 <Select
                   className="w-full"
                   aria-label="Select parent event"
                   selectedKey={selectedEventId}
                   onSelectionChange={(key) => {
-                    const newKey = key && typeof key === 'object' && 'anchorKey' in key ? (key as any).anchorKey : (key as string);
+                    const newKey =
+                      key && typeof key === 'object' && 'anchorKey' in key
+                        ? (key as any).anchorKey
+                        : (key as string);
                     if (newKey && newKey !== selectedEventId) setSelectedEventId(newKey);
                   }}
                 >
@@ -404,10 +412,14 @@ export default function POIsPage() {
 
               {/* Section 2: Definition */}
               <div className="space-y-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Asset Definition</p>
-                
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  2. Asset Definition
+                </p>
+
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Asset Name</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Asset Name
+                  </label>
                   <input
                     placeholder="e.g. South Gate, Medical tent A"
                     value={name}
@@ -417,7 +429,9 @@ export default function POIsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Description</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Description
+                  </label>
                   <textarea
                     placeholder="Brief description of the asset's purpose..."
                     value={description}
@@ -429,10 +443,14 @@ export default function POIsPage() {
 
               {/* Section 3: Media */}
               <div className="space-y-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Media Assets</p>
-                
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  3. Media Assets
+                </p>
+
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Banner Image URL</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Banner Image URL
+                  </label>
                   <input
                     placeholder="https://example.com/banner.jpg"
                     value={bannerUrl}
@@ -441,13 +459,16 @@ export default function POIsPage() {
                   />
                   {bannerUrl && (
                     <div className="mt-2 h-32 w-full rounded-2xl overflow-hidden border border-border">
-                      <img 
-                        src={(bannerUrl.startsWith('PLACEHOLDER_') || bannerUrl === 'null' || bannerUrl === '')
-                          ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`
-                          : bannerUrl
-                        } 
-                        alt="Banner Preview" 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={
+                          bannerUrl.startsWith('PLACEHOLDER_') ||
+                          bannerUrl === 'null' ||
+                          bannerUrl === ''
+                            ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`
+                            : bannerUrl
+                        }
+                        alt="Banner Preview"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`;
                         }}
@@ -457,7 +478,9 @@ export default function POIsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Gallery Images</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Gallery Images
+                  </label>
                   <div className="flex gap-2">
                     <input
                       placeholder="https://example.com/image.jpg"
@@ -477,12 +500,19 @@ export default function POIsPage() {
                       <Icons.Plus className="w-5 h-5" />
                     </button>
                   </div>
-                  
+
                   {galleryUrls.length > 0 && (
                     <div className="grid grid-cols-3 gap-3 mt-4">
                       {galleryUrls.map((url, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
-                          <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                        <div
+                          key={idx}
+                          className="relative aspect-square rounded-xl overflow-hidden border border-border group"
+                        >
+                          <img
+                            src={url}
+                            alt={`Gallery ${idx}`}
+                            className="w-full h-full object-cover"
+                          />
                           <button
                             onClick={() => setGalleryUrls(galleryUrls.filter((_, i) => i !== idx))}
                             className="absolute top-1 right-1 bg-ember text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -498,10 +528,14 @@ export default function POIsPage() {
 
               {/* Section 4: Specifications */}
               <div className="space-y-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">4. Technical Specifications</p>
-                
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  4. Technical Specifications
+                </p>
+
                 <div className="space-y-4">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Category</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Category
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     {POI_TYPES.map((t) => (
                       <button
@@ -520,7 +554,9 @@ export default function POIsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Capacity</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Capacity
+                  </label>
                   <input
                     type="number"
                     placeholder="Max occupancy"
@@ -533,17 +569,27 @@ export default function POIsPage() {
 
               {/* Section 3: Location (Auto) */}
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Location Intelligence</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  3. Location Intelligence
+                </p>
                 {address ? (
                   <div className="p-6 rounded-[2rem] bg-elevated/40 border border-border/60 animate-in fade-in slide-in-from-bottom-2">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-gravel/60 mb-2">Resolved Address</p>
-                    <p className="text-[12px] text-foreground font-medium leading-relaxed">{address}</p>
-                    <p className="text-[9px] font-medium text-gravel/40 mt-3 uppercase tracking-tighter italic">Drag the pin on the map to refine position</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-gravel/60 mb-2">
+                      Resolved Address
+                    </p>
+                    <p className="text-[12px] text-foreground font-medium leading-relaxed">
+                      {address}
+                    </p>
+                    <p className="text-[9px] font-medium text-gravel/40 mt-3 uppercase tracking-tighter italic">
+                      Drag the pin on the map to refine position
+                    </p>
                   </div>
                 ) : (
                   <div className="p-8 rounded-[2rem] border border-dashed border-border flex flex-col items-center justify-center text-center">
                     <Icons.MapPin className="w-6 h-6 text-gravel/20 mb-3" />
-                    <p className="text-[10px] text-gravel/40 uppercase font-bold tracking-widest">Select position on map</p>
+                    <p className="text-[10px] text-gravel/40 uppercase font-bold tracking-widest">
+                      Select position on map
+                    </p>
                   </div>
                 )}
               </div>
@@ -556,14 +602,14 @@ export default function POIsPage() {
                   {formError}
                 </p>
               )}
-              
+
               <div className="flex flex-col gap-3">
-                <button 
+                <button
                   onClick={handleRegisterAsset}
                   disabled={isSubmitting}
                   className="w-full h-16 rounded-full bg-foreground text-background text-[12px] font-black uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all shadow-massive disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Syncing...' : (editingPoiId ? 'Update Asset' : 'Confirm Asset')}
+                  {isSubmitting ? 'Syncing...' : editingPoiId ? 'Update Asset' : 'Confirm Asset'}
                 </button>
 
                 <div className="flex gap-3">
@@ -573,7 +619,7 @@ export default function POIsPage() {
                   >
                     Cancel
                   </button>
-                  
+
                   {editingPoiId && (
                     <button
                       onClick={handleDeletePoi}
@@ -593,7 +639,6 @@ export default function POIsPage() {
       <div className="space-y-0">
         {/* Toolbar - integrated with canvas */}
         <div className="w-full bg-surface border border-border/60 border-b-0 shadow-subtle transition-colors">
-
           {/* Search + filters row */}
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-0 lg:divide-x divide-border/60 divide-y lg:divide-y-0">
             {/* Search — takes up all remaining space */}
@@ -628,11 +673,20 @@ export default function POIsPage() {
                 </Select.Trigger>
                 <Select.Popover className="rounded-2xl border border-border/60 shadow-massive bg-surface border border-border/60 shadow-massive">
                   <ListBox className="outline-none">
-                    <ListBox.Item id="all" textValue="All Types" className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center">
+                    <ListBox.Item
+                      id="all"
+                      textValue="All Types"
+                      className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
+                    >
                       All Types
                     </ListBox.Item>
                     {POI_TYPES.map((t) => (
-                      <ListBox.Item key={t.value} id={t.value} textValue={t.label} className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center">
+                      <ListBox.Item
+                        key={t.value}
+                        id={t.value}
+                        textValue={t.label}
+                        className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
+                      >
                         {t.label}
                       </ListBox.Item>
                     ))}
@@ -653,11 +707,20 @@ export default function POIsPage() {
                 </Select.Trigger>
                 <Select.Popover className="rounded-2xl border border-border/60 shadow-massive bg-surface border border-border/60 shadow-massive">
                   <ListBox className="outline-none">
-                    <ListBox.Item id="all" textValue="Global Assets" className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center">
+                    <ListBox.Item
+                      id="all"
+                      textValue="Global Assets"
+                      className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
+                    >
                       Global Assets
                     </ListBox.Item>
                     {events.map((e: any) => (
-                      <ListBox.Item key={e.id.toString()} id={e.id.toString()} textValue={e.name} className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center">
+                      <ListBox.Item
+                        key={e.id.toString()}
+                        id={e.id.toString()}
+                        textValue={e.name}
+                        className="flex items-center px-4 py-3 rounded-xl text-[10px] font-medium uppercase tracking-wider text-gravel hover:bg-elevated hover:text-foreground cursor-pointer outline-none data-[selected=true]:bg-foreground data-[selected=true]:text-background text-center"
+                      >
                         {e.name}
                       </ListBox.Item>
                     ))}
@@ -667,8 +730,8 @@ export default function POIsPage() {
             </div>
 
             {/* Clear filters — only shown when active */}
-            {(searchTerm || 
-              (selectionValue(typeFilter) && selectionValue(typeFilter) !== 'all') || 
+            {(searchTerm ||
+              (selectionValue(typeFilter) && selectionValue(typeFilter) !== 'all') ||
               (selectionValue(eventFilter) && selectionValue(eventFilter) !== 'all')) && (
               <div className="px-4 py-4 shrink-0 border-l border-border/60">
                 <Button
@@ -689,9 +752,9 @@ export default function POIsPage() {
 
             {/* Create Button — Now integrated into the filters row */}
             <div className="px-6 py-4 shrink-0 ml-auto border-l border-border/60 flex items-center">
-              <Button 
-                variant="primary" 
-                onClick={handleOpenCreate} 
+              <Button
+                variant="primary"
+                onClick={handleOpenCreate}
                 className="h-10 px-8 text-[11px] font-bold uppercase tracking-[0.15em] shadow-massive"
               >
                 <Icons.Plus className="w-4 h-4 mr-2" />
@@ -705,14 +768,30 @@ export default function POIsPage() {
           <table className="w-full text-left border-collapse min-w-[1300px]">
             <thead>
               <tr className="border-b border-border bg-elevated/20">
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">ID</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Asset Details</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Rating</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">Location / Address</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Occupancy (Live)</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Accessibility</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">Status</th>
-                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-right">Operations</th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  ID
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Asset Details
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Rating
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black">
+                  Location / Address
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">
+                  Occupancy (Live)
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">
+                  Accessibility
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-center">
+                  Status
+                </th>
+                <th className="py-5 px-6 text-gravel uppercase text-[10px] tracking-widest font-black text-right">
+                  Operations
+                </th>
               </tr>
             </thead>
             <tbody className="transition-colors divide-y divide-border/30">
@@ -730,33 +809,57 @@ export default function POIsPage() {
                   </td>
                 </tr>
               ) : filteredPois.length === 0 ? (
-                <tr><td colSpan={8} className="py-24 text-center text-gravel font-medium uppercase text-[10px] tracking-[0.25em] opacity-40">No asset matches found.</td></tr>
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="py-24 text-center text-gravel font-medium uppercase text-[10px] tracking-[0.25em] opacity-40"
+                  >
+                    No asset matches found.
+                  </td>
+                </tr>
               ) : (
                 filteredPois.map((poi: any) => {
-                  const occupancy = poi.capacity ? Math.round((poi.currentOccupancy / poi.capacity) * 100) : 0;
+                  const occupancy = poi.capacity
+                    ? Math.round((poi.currentOccupancy / poi.capacity) * 100)
+                    : 0;
                   const status = poi.status || 'open';
                   const social = poi.metadata?.social;
 
                   return (
-                    <tr key={poi.id} className="border-b border-border hover:bg-elevated/10 transition-all group">
-                      <td className="py-4 px-6 font-mono text-admin-xs text-slate opacity-40">POI-{poi.id.toString().padStart(3, '0')}</td>
+                    <tr
+                      key={poi.id}
+                      className="border-b border-border hover:bg-elevated/10 transition-all group"
+                    >
+                      <td className="py-4 px-6 font-mono text-admin-xs text-slate opacity-40">
+                        POI-{poi.id.toString().padStart(3, '0')}
+                      </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-elevated border border-border overflow-hidden shrink-0 shadow-sm">
-                            <img 
-                              src={(!poi.bannerUrl || poi.bannerUrl === 'null' || (typeof poi.bannerUrl === 'string' && (poi.bannerUrl.startsWith('PLACEHOLDER_') || poi.bannerUrl === ''))) 
-                                ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>` 
-                                : poi.bannerUrl} 
-                              alt="" 
-                              className="w-full h-full object-cover" 
+                            <img
+                              src={
+                                !poi.bannerUrl ||
+                                poi.bannerUrl === 'null' ||
+                                (typeof poi.bannerUrl === 'string' &&
+                                  (poi.bannerUrl.startsWith('PLACEHOLDER_') ||
+                                    poi.bannerUrl === ''))
+                                  ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`
+                                  : poi.bannerUrl
+                              }
+                              alt=""
+                              className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231e293b"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e293b" stroke="%23334155" stroke-width="2"/><path d="M100 75c-13.8 0-25 11.2-25 25 0 18.8 25 40 25 40s25-21.2 25-40c0-13.8-11.2-25-25-25zm0 35c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="%2364748b"/></svg>`;
                               }}
                             />
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-foreground text-admin-base uppercase tracking-tight truncate">{poi.name}</span>
-                            <span className="text-[10px] text-gravel uppercase tracking-wider font-medium opacity-40 truncate">{poi.eventName || 'Global Asset'}</span>
+                            <span className="font-bold text-foreground text-admin-base uppercase tracking-tight truncate">
+                              {poi.name}
+                            </span>
+                            <span className="text-[10px] text-gravel uppercase tracking-wider font-medium opacity-40 truncate">
+                              {poi.eventName || 'Global Asset'}
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -790,29 +893,41 @@ export default function POIsPage() {
                       <td className="py-4 px-6">
                         <div className="flex items-center justify-center gap-4">
                           <div className="w-20 h-1.5 bg-border/40 rounded-full overflow-hidden">
-                            <div className={`h-full ${occupancy > 80 ? 'bg-ember' : 'bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.2)]'}`} style={{ width: `${occupancy}%` }} />
+                            <div
+                              className={`h-full ${occupancy > 80 ? 'bg-ember' : 'bg-foreground shadow-[0_0_8px_rgba(255,255,255,0.2)]'}`}
+                              style={{ width: `${occupancy}%` }}
+                            />
                           </div>
-                          <span className="text-[10px] font-medium text-foreground w-8">{occupancy}%</span>
+                          <span className="text-[10px] font-medium text-foreground w-8">
+                            {occupancy}%
+                          </span>
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex items-center justify-center gap-3 text-gravel opacity-40">
-                          {poi.isWheelchairAccessible && <Icons.Accessibility className="w-5 h-5" />}
-                          {poi.hasPriorityLane && <Icons.UserCheck className="w-5 h-5 text-signal-blue" />}
+                          {poi.isWheelchairAccessible && (
+                            <Icons.Accessibility className="w-5 h-5" />
+                          )}
+                          {poi.hasPriorityLane && (
+                            <Icons.UserCheck className="w-5 h-5 text-signal-blue" />
+                          )}
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
                         <div className="flex justify-center">
                           <button
                             className={`min-w-[110px] h-9 px-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] border transition-all shadow-subtle flex items-center justify-center gap-2.5
-                              ${status === 'open' 
-                                ? 'bg-surface border-border text-foreground hover:shadow-massive hover:border-foreground/20' 
-                                : status === 'maintenance'
-                                ? 'bg-surface border-ember/20 text-ember hover:shadow-massive hover:border-ember/40'
-                                : 'bg-elevated/40 border-border/40 text-gravel opacity-60'
+                              ${
+                                status === 'open'
+                                  ? 'bg-surface border-border text-foreground hover:shadow-massive hover:border-foreground/20'
+                                  : status === 'maintenance'
+                                    ? 'bg-surface border-ember/20 text-ember hover:shadow-massive hover:border-ember/40'
+                                    : 'bg-elevated/40 border-border/40 text-gravel opacity-60'
                               } transition-colors`}
                           >
-                            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${status === 'open' ? 'bg-success' : status === 'maintenance' ? 'bg-ember' : 'bg-gravel'}`} />
+                            <div
+                              className={`w-1.5 h-1.5 rounded-full animate-pulse ${status === 'open' ? 'bg-success' : status === 'maintenance' ? 'bg-ember' : 'bg-gravel'}`}
+                            />
                             {status}
                           </button>
                         </div>
@@ -853,17 +968,21 @@ export default function POIsPage() {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={() => setIsDeleteModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-md"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
           <div className="relative w-full max-w-md bg-surface border border-border/60 shadow-massive p-10 animate-in fade-in zoom-in duration-300">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="w-16 h-16 rounded-full bg-ember/10 flex items-center justify-center">
                 <Icons.AlertTriangle className="w-8 h-8 text-ember" />
               </div>
-              
+
               <div className="space-y-2">
                 <h3 className="waldenburg-display text-2xl text-foreground">Confirm Deletion</h3>
                 <p className="text-admin-base text-gravel font-medium uppercase tracking-tight opacity-60">
-                  Are you sure you want to remove this asset? This action is permanent and cannot be undone.
+                  Are you sure you want to remove this asset? This action is permanent and cannot be
+                  undone.
                 </p>
               </div>
 

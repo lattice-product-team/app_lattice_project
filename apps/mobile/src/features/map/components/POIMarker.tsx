@@ -38,25 +38,46 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     const { properties } = poi;
     const categoryKey = properties.category?.toLowerCase() || 'generic';
     const metadata = getCategoryMetadata(categoryKey);
-    
+
     // USAR COLOR DIRECTO DEL GEOJSON (Sincronizado con nativo)
-    const color = properties.color_hex || properties.color || metadata.color || theme.colors.brand.primary;
-    
+    const color =
+      properties.color_hex || properties.color || metadata.color || theme.colors.brand.primary;
+
     // PNG Asset Mapper for visual consistency
     const pngIcon = useMemo(() => {
       const category = categoryKey;
-      if (category.includes('restaurant') || category.includes('food') || category.includes('coffee')) return require('../../../../assets/icons/restaurant.png');
+      if (
+        category.includes('restaurant') ||
+        category.includes('food') ||
+        category.includes('coffee')
+      )
+        return require('../../../../assets/icons/restaurant.png');
       if (category.includes('parking')) return require('../../../../assets/icons/parking.png');
-      if (category.includes('wc') || category.includes('toilet') || category.includes('restroom')) return require('../../../../assets/icons/toilet.png');
-      if (category.includes('medical') || category.includes('hospital')) return require('../../../../assets/icons/hospital.png');
-      if (category.includes('info') || category.includes('library')) return require('../../../../assets/icons/library-big.png');
-      if (category.includes('gate') || category.includes('login') || category.includes('entrance') || category.includes('log-out')) return require('../../../../assets/icons/log-out.png');
-      if (category.includes('bar') || category.includes('beer')) return require('../../../../assets/icons/beer.png');
-      if (category.includes('vip') || category.includes('crown')) return require('../../../../assets/icons/crown.png');
-      if (category.includes('security') || category.includes('shield')) return require('../../../../assets/icons/shield.png');
-      if (category.includes('shop') || category.includes('store') || category.includes('shopping')) return require('../../../../assets/icons/store.png');
-      if (category.includes('stage') || category.includes('theater') || category.includes('music')) return require('../../../../assets/icons/theater.png');
-      if (category.includes('meetup') || category.includes('users')) return require('../../../../assets/icons/users.png');
+      if (category.includes('wc') || category.includes('toilet') || category.includes('restroom'))
+        return require('../../../../assets/icons/toilet.png');
+      if (category.includes('medical') || category.includes('hospital'))
+        return require('../../../../assets/icons/hospital.png');
+      if (category.includes('info') || category.includes('library'))
+        return require('../../../../assets/icons/library-big.png');
+      if (
+        category.includes('gate') ||
+        category.includes('login') ||
+        category.includes('entrance') ||
+        category.includes('log-out')
+      )
+        return require('../../../../assets/icons/log-out.png');
+      if (category.includes('bar') || category.includes('beer'))
+        return require('../../../../assets/icons/beer.png');
+      if (category.includes('vip') || category.includes('crown'))
+        return require('../../../../assets/icons/crown.png');
+      if (category.includes('security') || category.includes('shield'))
+        return require('../../../../assets/icons/shield.png');
+      if (category.includes('shop') || category.includes('store') || category.includes('shopping'))
+        return require('../../../../assets/icons/store.png');
+      if (category.includes('stage') || category.includes('theater') || category.includes('music'))
+        return require('../../../../assets/icons/theater.png');
+      if (category.includes('meetup') || category.includes('users'))
+        return require('../../../../assets/icons/users.png');
       return require('../../../../assets/icons/library-big.png'); // Fallback
     }, [categoryKey]);
 
@@ -71,12 +92,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
 
     const animatedStyle = useAnimatedStyle(() => {
       const zoom = zoomSharedValue.value;
-      const baseScale = interpolate(
-        zoom,
-        [14, 16, 18],
-        [0.8, 1, 1.3],
-        Extrapolation.CLAMP
-      );
+      const baseScale = interpolate(zoom, [14, 16, 18], [0.8, 1, 1.3], Extrapolation.CLAMP);
 
       // Selected markers are even larger
       const scale = isSelected ? 1.3 : baseScale;
@@ -84,9 +100,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
       const opacity = interpolate(zoom, [13.5, 14.5], [0, 1], Extrapolation.CLAMP);
 
       return {
-        transform: [
-          { scale: scale * mountScale.value },
-        ],
+        transform: [{ scale: scale * mountScale.value }],
         opacity: (isSelected || isLinkedToSelectedEvent ? 1 : opacity) * mountOpacity.value,
       };
     });
@@ -100,10 +114,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
     });
 
     return (
-      <Animated.View
-        style={[mapPinStyles.markerWrapper, animatedStyle]}
-        pointerEvents="auto"
-      >
+      <Animated.View style={[mapPinStyles.markerWrapper, animatedStyle]} pointerEvents="auto">
         <TouchableOpacity onPress={() => onPress(poi)} activeOpacity={0.9}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
             <MapPinFrame
@@ -123,7 +134,7 @@ export const POIMarker: React.FC<POIMarkerProps> = React.memo(
 
             {properties.name && (
               <Animated.View style={[mapPinStyles.labelBadge, labelStyle]}>
-                <Text 
+                <Text
                   style={[mapPinStyles.labelText, { color, textShadowRadius: 0 }]}
                   numberOfLines={1}
                 >

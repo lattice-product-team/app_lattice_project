@@ -1,4 +1,5 @@
 import React, { forwardRef, useRef, useEffect, useImperativeHandle, useCallback } from 'react';
+import { Platform } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { MapCameraMode, useMapUIStore, MapCameraTriggerSource } from '../store/useMapUIStore';
 import { MAP_CENTER } from '../../../constants/mapConstants';
@@ -9,6 +10,21 @@ export interface MapCameraHandle {
   handleRegionChangeComplete: (center: number[], zoom: number) => void;
   setCamera: (config: any) => void;
 }
+
+const DEFAULT_CAMERA_SETTINGS = {
+  centerCoordinate: MAP_CENTER,
+  zoomLevel: 14,
+};
+
+const FLY_TO_PADDING = { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 };
+const ROUTE_OVERVIEW_PADDING = {
+  ne: [0, 0], // Placeholder, calculated dynamically
+  sw: [0, 0],
+  paddingLeft: 60,
+  paddingRight: 60,
+  paddingTop: 140,
+  paddingBottom: 400,
+};
 
 /**
  * MapCameraManager: Professional-grade orchestrator for the MapLibre Camera.
@@ -60,7 +76,7 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
         ...(pitch !== undefined && { pitch: pitch }),
         animationDuration: duration,
         animationMode: 'flyTo',
-        padding: { paddingBottom: 250, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+        padding: FLY_TO_PADDING,
       });
 
       // Safety release of programmatic lock
@@ -77,16 +93,30 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     setCamera: (config: any) => cameraRef.current?.setCamera(config),
   }));
 
+  // NATIVE TRACKING SYNC: Listen to when the native engine breaks follow mode
+  const handleUserTrackingModeChange = useCallback(
+    (e: any) => {
+      const { followUserLocation } = e.nativeEvent.payload;
+      if (!followUserLocation && cameraMode !== MapCameraMode.FREE && !isProgrammaticMove) {
+        console.log('[MapCameraManager] 🚨 Native tracking broken by gesture, syncing state');
+        setCameraMode(MapCameraMode.FREE);
+      }
+    },
+    [cameraMode, isProgrammaticMove, setCameraMode]
+  );
+
   const lastProcessedRecenter = useRef(recenterCount);
   const lastProcessedForceCenter = useRef(forceCenterCount);
 
   // INITIAL POSITIONING: Snap to user location on startup
   useEffect(() => {
     if (!hasInitialized.current && userCoords && cameraRef.current) {
+      console.log('[MapCameraManager] 🚀 Initial Startup Snap to user:', userCoords);
       snapToLocation([userCoords[0], userCoords[1]], 14);
+      setCameraMode(MapCameraMode.FREE); // Ensure we start in FREE mode
       hasInitialized.current = true;
     }
-  }, [userCoords]);
+  }, [userCoords, snapToLocation, setCameraMode]);
 
   // NAVIGATION ENGAGEMENT: When navigation actually starts, fly close to user
   useEffect(() => {
@@ -102,14 +132,16 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   useEffect(() => {
     if (recenterCount > lastProcessedRecenter.current && userCoords) {
       lastProcessedRecenter.current = recenterCount;
-      if (isNavigating || isPlanning) {
+      if (isNavigating) {
+        console.log('[MapCameraManager] 🎯 Recentering: Entering FOLLOW_WITH_HEADING (Nav Active)');
         setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
       } else {
+        console.log('[MapCameraManager] 🎯 Recentering: FlyTo with FREE mode');
+        setCameraMode(MapCameraMode.FREE); // KILL ANY PREVIOUS LOCK
         flyTo([userCoords[0], userCoords[1]], 20.0);
       }
     }
   }, [recenterCount, userCoords, isNavigating, isPlanning, setCameraMode, flyTo]);
-
 
   // IMPERATIVE POI FOCUS TRIGGER
   useEffect(() => {
@@ -157,10 +189,10 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
         bounds: {
           ne: [maxX, maxY],
           sw: [minX, minY],
-          paddingLeft: 60,
-          paddingRight: 60,
-          paddingTop: 140,
-          paddingBottom: 400,
+          paddingLeft: ROUTE_OVERVIEW_PADDING.paddingLeft,
+          paddingRight: ROUTE_OVERVIEW_PADDING.paddingRight,
+          paddingTop: ROUTE_OVERVIEW_PADDING.paddingTop,
+          paddingBottom: ROUTE_OVERVIEW_PADDING.paddingBottom,
         },
         pitch: 0, // Reset tilt for route overview
         animationDuration: 1200,
@@ -178,7 +210,20 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     lastIsNavigating.current = isNavigating;
   }, [isPlanning, isNavigating, currentRoute, setIsProgrammaticMove]);
 
-  // DYNAMIC FOLLOW MODE
+  // MANUAL FOLLOWER FOR ANDROID:
+  // Instead of relying on native 'followUserLocation' (which is buggy),
+  // we manually move the camera when in a tracking mode.
+  useEffect(() => {
+    if (Platform.OS !== 'android' || cameraMode === MapCameraMode.FREE || !userCoords) return;
+
+    // We only follow if we are not in a programmatic flyTo
+    if (isProgrammaticMove) return;
+
+    // Use moveTo for smooth tracking without altitude changes
+    cameraRef.current?.moveTo([userCoords[0], userCoords[1]], 800);
+  }, [userCoords, cameraMode, isProgrammaticMove]);
+
+  // DYNAMIC FOLLOW MODE (iOS only or Fallback)
   const getFollowMode = () => {
     switch (cameraMode) {
       case MapCameraMode.FOLLOW:
@@ -192,17 +237,17 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
     }
   };
 
+  const isNativeFollowing = Platform.OS === 'ios' && cameraMode !== MapCameraMode.FREE;
+
   return (
     <MapLibreGL.Camera
       ref={cameraRef}
-      followUserLocation={cameraMode !== MapCameraMode.FREE}
+      followUserLocation={isNativeFollowing}
       followUserMode={getFollowMode()}
       followPitch={45}
       animationDuration={0}
-      defaultSettings={{
-        centerCoordinate: MAP_CENTER,
-        zoomLevel: 14,
-      }}
+      defaultSettings={DEFAULT_CAMERA_SETTINGS}
+      onUserTrackingModeChange={handleUserTrackingModeChange}
     />
   );
 });

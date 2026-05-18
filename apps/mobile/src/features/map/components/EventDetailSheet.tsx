@@ -96,7 +96,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
   );
 
   const gesture = Gesture.Pan()
-    .activeOffsetY([-10, 10]) 
+    .activeOffsetY([-10, 10])
     .failOffsetX([-20, 20]) // Allow horizontal gestures to pass through to carousels
     .activeOffsetX(Platform.OS === 'android' ? [-500, 500] : [-20, 20]) // Prevent horizontal takeover on Android
     .onStart(() => {
@@ -143,7 +143,12 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
       Extrapolation.CLAMP
     );
 
-    const margin = interpolate(islandState.value, [SNAP_POINTS.MID, 0.8], [12, 0], Extrapolation.CLAMP);
+    const margin = interpolate(
+      islandState.value,
+      [SNAP_POINTS.MID, 0.8],
+      [12, 0],
+      Extrapolation.CLAMP
+    );
 
     return {
       height,
@@ -188,12 +193,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
       Extrapolation.CLAMP
     );
 
-    const height = interpolate(
-      islandState.value,
-      [0.34, 1.0],
-      [0, 140],
-      Extrapolation.CLAMP
-    );
+    const height = interpolate(islandState.value, [0.34, 1.0], [0, 140], Extrapolation.CLAMP);
 
     return {
       opacity,
@@ -215,8 +215,8 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
             {displayModel ? (
               <>
                 <SheetHeader />
-                
-                <Animated.ScrollView 
+
+                <Animated.ScrollView
                   showsVerticalScrollIndicator={false}
                   decelerationRate="fast"
                   contentContainerStyle={styles.scrollContent}
@@ -229,7 +229,7 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                   {/* Banner grows above the title */}
                   {displayModel.bannerUrl && (
                     <Animated.View style={[styles.bannerContainer, bannerStyle]}>
-                      <Animated.Image 
+                      <Animated.Image
                         source={{ uri: displayModel.bannerUrl }}
                         style={StyleSheet.absoluteFill}
                         resizeMode="cover"
@@ -253,9 +253,9 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
 
                   <ActionPillBar actions={displayModel.actions} />
                   <MetricGrid metrics={displayModel.metrics} />
-                  
+
                   {displayModel.social && (
-                    <ReviewSection 
+                    <ReviewSection
                       rating={displayModel.social.rating}
                       reviewsCount={displayModel.social.reviewsCount}
                       snippets={displayModel.social.snippets}
@@ -264,27 +264,39 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                   )}
 
                   {displayModel.galleryUrls && displayModel.galleryUrls.length > 0 && (
-                    <GalleryCarousel 
-                      images={displayModel.galleryUrls} 
-                    />
+                    <GalleryCarousel images={displayModel.galleryUrls} />
                   )}
                   <View style={styles.content}>
                     {displayModel.parentName && (
-                      <View style={[styles.eventBadge, { backgroundColor: theme.colors.brand.primary + '20' }]}>
+                      <View
+                        style={[
+                          styles.eventBadge,
+                          { backgroundColor: theme.colors.brand.primary + '20' },
+                        ]}
+                      >
                         <MapPinIcon size={12} color={theme.colors.brand.primary} />
-                        <Text style={[styles.eventBadgeText, { color: theme.colors.brand.primary }]}>
+                        <Text
+                          style={[styles.eventBadgeText, { color: theme.colors.brand.primary }]}
+                        >
                           Located in {displayModel.parentName}
                         </Text>
                       </View>
                     )}
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>About</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+                      About
+                    </Text>
                     <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
                       {displayModel.description}
                     </Text>
 
                     {displayModel.info && displayModel.info.length > 0 && (
                       <View style={styles.infoSection}>
-                        <Text style={[styles.sectionTitle, { color: theme.colors.text.primary, marginTop: 24 }]}>
+                        <Text
+                          style={[
+                            styles.sectionTitle,
+                            { color: theme.colors.text.primary, marginTop: 24 },
+                          ]}
+                        >
                           Information
                         </Text>
                         <View style={styles.infoGrid}>
@@ -292,14 +304,23 @@ export const EventDetailSheet = ({ islandState, onClose }: EventDetailSheetProps
                             const Icon = (LucideIcons as any)[item.icon] || LucideIcons.InfoIcon;
                             return (
                               <View key={idx} style={styles.infoItem}>
-                                <View style={[styles.infoIconBox, { backgroundColor: theme.colors.glass.subtle }]}>
+                                <View
+                                  style={[
+                                    styles.infoIconBox,
+                                    { backgroundColor: theme.colors.glass.subtle },
+                                  ]}
+                                >
                                   <Icon size={18} color={theme.colors.brand.primary} />
                                 </View>
                                 <View>
-                                  <Text style={[styles.infoLabel, { color: theme.colors.text.muted }]}>
+                                  <Text
+                                    style={[styles.infoLabel, { color: theme.colors.text.muted }]}
+                                  >
                                     {item.label}
                                   </Text>
-                                  <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>
+                                  <Text
+                                    style={[styles.infoValue, { color: theme.colors.text.primary }]}
+                                  >
                                     {item.value}
                                   </Text>
                                 </View>

@@ -13,9 +13,11 @@ The current map and location system suffers from state fragmentation across mult
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-map-orchestration`: A centralized manager for application modes, camera transitions, and UI layer synchronization.
 
 ### Modified Capabilities
+
 - `navigation-system`: Update requirements to formalize the transition between "Planning" and "Navigating" camera behaviors.
 - `hybrid-map-rendering`: Refine camera behavior requirements to include platform-specific resilience protocols for Android.
 - `granular-mobile-state`: Align global state updates with the new unified mode orchestration to reduce redundant re-renders.

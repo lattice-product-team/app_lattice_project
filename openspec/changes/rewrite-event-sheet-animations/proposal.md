@@ -12,9 +12,11 @@ The current `EventDetailSheet` implementation is plagued by interaction conflict
 ## Capabilities
 
 ### New Capabilities
+
 - None
 
 ### Modified Capabilities
+
 - `pure-ui-animation-bridge`: Update the state machine to include a "Persistent Invisible" state for bottom-up sheets.
 
 ## Impact

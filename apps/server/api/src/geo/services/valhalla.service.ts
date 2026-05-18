@@ -83,27 +83,28 @@ export const valhallaService = {
 
     data.trip.legs.forEach((leg: any) => {
       const legCoords = decodePolyline(leg.shape, 6);
-      
+
       // Filter out invalid coordinates
-      const validLegCoords = legCoords.filter(c => 
-        c && c.length === 2 && 
-        !isNaN(c[0]) && !isNaN(c[1])
+      const validLegCoords = legCoords.filter(
+        (c) => c && c.length === 2 && !isNaN(c[0]) && !isNaN(c[1])
       );
-      
+
       allCoords.push(...validLegCoords);
-      
+
       if (leg.maneuvers) {
-        allManeuvers.push(...leg.maneuvers.map((m: any) => ({
-          text: m.instruction,
-          distance: (m.length || 0) * 1000,
-          maneuverType: m.type?.toString() || '',
-          index: m.begin_shape_index,
-          coordinate: legCoords[m.begin_shape_index],
-        })));
+        allManeuvers.push(
+          ...leg.maneuvers.map((m: any) => ({
+            text: m.instruction,
+            distance: (m.length || 0) * 1000,
+            maneuverType: m.type?.toString() || '',
+            index: m.begin_shape_index,
+            coordinate: legCoords[m.begin_shape_index],
+          }))
+        );
       }
 
       totalDistance += (leg.summary?.length || 0) * 1000;
-      totalTime += (leg.summary?.time || 0);
+      totalTime += leg.summary?.time || 0;
     });
 
     const result = {
@@ -123,6 +124,5 @@ export const valhallaService = {
     await setCache(cacheKey, JSON.stringify(result), 3600);
 
     return result;
-    },
-    };
-
+  },
+};

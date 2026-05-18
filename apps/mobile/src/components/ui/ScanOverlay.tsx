@@ -43,7 +43,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({ isProcessing, scanned,
             className="bg-white/10 border border-white/20 px-8 py-4 rounded-full flex-row items-center"
           >
             <RefreshCw size={18} color="white" strokeWidth={2.2} />
-            <Text className="text-white font-bold ml-3">ESCANEAR OTRA</Text>
+            <Text className="text-white font-bold ml-3">SCAN ANOTHER</Text>
           </Pressable>
         </View>
       )}
@@ -52,7 +52,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = ({ isProcessing, scanned,
       {!scanned && !isProcessing && (
         <View className="absolute bottom-24 left-0 right-0 items-center">
           <Text className="text-white/60 bg-black/40 px-6 py-2 rounded-full overflow-hidden">
-            Centra el código QR en el cuadro
+            Center the QR code in the frame
           </Text>
         </View>
       )}

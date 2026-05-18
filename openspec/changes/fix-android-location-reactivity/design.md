@@ -5,17 +5,20 @@ The `MapLibreGL.UserLocation` component on Android currently uses `androidRender
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Fix the lack of reactivity in the user location pointer on Android.
 - Enable smooth heading updates when rotating the device.
 - Ensure the pointer updates position smoothly during movement.
 
 **Non-Goals:**
+
 - Changes to the iOS location implementation.
 - Redesigning the `useLocationService` hook.
 
 ## Decisions
 
 ### Decision: Use `compass` render mode on Android
+
 - **Rationale**: The `compass` mode in MapLibre Android utilizes the device's magnetometer/gyroscope sensors to update the heading indicator in real-time, even when the user is stationary. This matches the behavior on iOS.
 - **Alternatives**:
   - `normal`: Only shows a dot, no heading.

@@ -29,7 +29,7 @@ export const initSocket = async (httpServer: HttpServer) => {
     const pubClient = await getRedisClient();
     const subClient = pubClient.duplicate();
     await subClient.connect();
-    
+
     io.adapter(createAdapter(pubClient, subClient));
     console.log('[Socket] Redis Adapter integrated (shared client)');
   } catch (error) {
@@ -38,7 +38,8 @@ export const initSocket = async (httpServer: HttpServer) => {
 
   // Authentication Middleware (Task 2.1)
   io.use((socket, next) => {
-    const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+    const token =
+      socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
 
     if (!token) {
       return next(new Error('Authentication error: Token missing'));

@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { isPointInPolygon, calculatePolygonArea, calculateCentroid, calculateBBox, calculateDistance, formatDuration, formatDistance } from '../geoUtils';
+import {
+  isPointInPolygon,
+  calculatePolygonArea,
+  calculateCentroid,
+  calculateBBox,
+  calculateDistance,
+  formatDuration,
+  formatDistance,
+} from '../geoUtils';
 
 describe('geoUtils', () => {
   describe('isPointInPolygon', () => {
@@ -8,7 +16,7 @@ describe('geoUtils', () => {
       [10, 0],
       [10, 10],
       [0, 10],
-      [0, 0]
+      [0, 0],
     ];
 
     it('should return true if point is inside the polygon', () => {
@@ -31,7 +39,7 @@ describe('geoUtils', () => {
         [0, 0],
         [10, 0],
         [10, 10],
-        [0, 10]
+        [0, 10],
       ];
       expect(calculatePolygonArea(square)).toBe(100);
     });
@@ -40,7 +48,7 @@ describe('geoUtils', () => {
       const triangle: [number, number][] = [
         [0, 0],
         [10, 0],
-        [0, 10]
+        [0, 10],
       ];
       expect(calculatePolygonArea(triangle)).toBe(50);
     });
@@ -52,7 +60,7 @@ describe('geoUtils', () => {
         [0, 0],
         [10, 0],
         [10, 10],
-        [0, 10]
+        [0, 10],
       ];
       expect(calculateCentroid(square)).toEqual([5, 5]);
     });
@@ -67,7 +75,7 @@ describe('geoUtils', () => {
       const points: [number, number][] = [
         [0, 5],
         [10, 0],
-        [5, 10]
+        [5, 10],
       ];
       expect(calculateBBox(points)).toEqual([0, 0, 10, 10]);
     });

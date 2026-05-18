@@ -13,8 +13,10 @@ El sistema SHALL ejecutar todas las transformaciones visuales del bottom sheet e
 ## ADDED Requirements
 
 ### Requirement: Heavy Render Deferral
+
 The system SHALL defer the rendering of complex UI elements (like the map or large lists) during high-velocity transitions on Android.
 
 #### Scenario: Dragging to Level 3
+
 - **WHEN** the user drags the island rapidly towards Level 3 on Android
 - **THEN** the system MUST pause or simplify the rendering of the Discovery Feed background until the transition completes.

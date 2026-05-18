@@ -1,7 +1,14 @@
 import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import MapLibreGL from '@maplibre/maplibre-react-native';
-import Animated, { useSharedValue, withSpring, useAnimatedStyle, interpolate } from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  withSpring,
+  useAnimatedStyle,
+  interpolate,
+  runOnJS,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
 /**
@@ -29,7 +36,12 @@ import { useLocationStore } from '../../../store/useLocationStore';
 import { useStartupStore } from '../../../store/useStartupStore';
 import styleLight from '../../../../assets/map/style-light.json';
 import styleDark from '../../../../assets/map/style-dark.json';
-import { MAPTILER_KEY, EMPTY_GEOJSON, DEFAULT_ZOOM, MAP_CENTER } from '../../../constants/mapConstants';
+import {
+  MAPTILER_KEY,
+  EMPTY_GEOJSON,
+  DEFAULT_ZOOM,
+  MAP_CENTER,
+} from '../../../constants/mapConstants';
 import { startupMetrics } from '../../../utils/startupMetrics';
 
 interface MapContentProps {
@@ -135,9 +147,10 @@ export const MapContent = function MapContent({
         // while MapLibre's C++ layout engine is busy, causing hard crashes.
         // On Android, we are even stricter to prevent re-renders during active tracking.
         const isStationary = !isChanging;
-        const canUpdateZoom = Platform.OS === 'android'
-          ? !isChanging && cameraMode === MapCameraMode.FREE
-          : isStationary || now - lastZoomUpdateRef.current > 250;
+        const canUpdateZoom =
+          Platform.OS === 'android'
+            ? !isChanging && cameraMode === MapCameraMode.FREE
+            : isStationary || now - lastZoomUpdateRef.current > 250;
 
         if (canUpdateZoom) {
           lastZoomUpdateRef.current = now;
@@ -187,29 +200,51 @@ export const MapContent = function MapContent({
 
   const getNativeIconName = (categoryIcon: any) => {
     const icon = String(categoryIcon || '').toLowerCase();
-    
+
     // Food & Drink
-    if (icon.includes('restaurant') || icon.includes('food') || icon.includes('utensils') || icon.includes('coffee')) return 'restaurant';
+    if (
+      icon.includes('restaurant') ||
+      icon.includes('food') ||
+      icon.includes('utensils') ||
+      icon.includes('coffee')
+    )
+      return 'restaurant';
     if (icon.includes('bar') || icon.includes('drink') || icon.includes('beer')) return 'beer';
-    
+
     // Infrastructure
     if (icon.includes('parking')) return 'parking';
-    if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom')) return 'toilet';
-    if (icon.includes('gate') || icon.includes('login') || icon.includes('entrance') || icon.includes('log-out')) return 'log-out';
-    
+    if (icon.includes('wc') || icon.includes('toilet') || icon.includes('restroom'))
+      return 'toilet';
+    if (
+      icon.includes('gate') ||
+      icon.includes('login') ||
+      icon.includes('entrance') ||
+      icon.includes('log-out')
+    )
+      return 'log-out';
+
     // Health & Safety
-    if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital')) return 'hospital';
+    if (icon.includes('medical') || icon.includes('plus') || icon.includes('hospital'))
+      return 'hospital';
     if (icon.includes('security') || icon.includes('shield')) return 'shield';
-    
+
     // Info & Points
     if (icon.includes('info') || icon.includes('library')) return 'library-big';
     if (icon.includes('meetup') || icon.includes('users')) return 'users';
-    
+
     // Venues & Shopping
-    if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping')) return 'store';
-    if (icon.includes('stage') || icon.includes('theater') || icon.includes('grandstand') || icon.includes('music')) return 'theater';
-    if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive')) return 'crown';
-    
+    if (icon.includes('shop') || icon.includes('store') || icon.includes('shopping'))
+      return 'store';
+    if (
+      icon.includes('stage') ||
+      icon.includes('theater') ||
+      icon.includes('grandstand') ||
+      icon.includes('music')
+    )
+      return 'theater';
+    if (icon.includes('vip') || icon.includes('crown') || icon.includes('exclusive'))
+      return 'crown';
+
     return 'library-big'; // Fallback to info-style
   };
 
@@ -418,7 +453,7 @@ export const MapContent = function MapContent({
     // This prevents the 'ghost icons' in white/blue that MapLibre shows by default
     const filteredLayers = (baseStyle.layers || []).map((layer: any) => {
       const lid = (layer.id || '').toLowerCase();
-      
+
       // Robust approach: Hide most symbol/label layers except essential geographical names
       const isSymbolLayer = layer.type === 'symbol';
       const isEssentialLabel =
@@ -433,7 +468,10 @@ export const MapContent = function MapContent({
         lid.includes('water');
 
       // Android Optimization: Disable building extrusion and complex terrain shaders if they exist
-      if (Platform.OS === 'android' && (lid.includes('building') || layer.type === 'fill-extrusion')) {
+      if (
+        Platform.OS === 'android' &&
+        (lid.includes('building') || layer.type === 'fill-extrusion')
+      ) {
         return {
           ...layer,
           layout: { ...(layer.layout || {}), visibility: 'none' },
@@ -502,104 +540,133 @@ export const MapContent = function MapContent({
 
       if (onDeselect) {
         console.log('[MapContent] Map background pressed: Triggering deselect');
+        setCameraMode(MapCameraMode.FREE); // KILL THE MAGNET
         onDeselect();
       }
     },
     [onDeselect, handlePoiPress]
   );
 
+  // --- NUCLEAR OPTION FOR ANDROID MAGNET BUG ---
+  // We use a gesture handler that sits OVER the map.
+  // The millisecond a finger touches the map area, we kill all locks.
+  const breakLockGesture = Gesture.Pan()
+    .onBegin(() => {
+      'worklet';
+      // If we are in a follow mode or programmatic move, break it!
+      runOnJS(setCameraMode)(MapCameraMode.FREE);
+      runOnJS(setIsProgrammaticMove)(false);
+    })
+    .shouldCancelWhenOutside(false)
+    .hitSlop(0);
+
   return (
     <View style={{ flex: 1 }}>
-      <MapLibreGL.MapView
-        ref={mapRef}
-        style={[
-          styles.map,
-          uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }
-        ]}
-        mapStyle={mapStyle as any}
-        logoEnabled={false}
-        attributionEnabled={false}
-        compassEnabled={false}
-        minZoomLevel={2}
-        maxZoomLevel={22}
-        pitchEnabled={true}
-        rotateEnabled={true}
-        scrollEnabled={true}
-        zoomEnabled={true}
-        onPress={handleMapPress}
-        onRegionIsChanging={(e) => handleCameraChange(e, true)}
-        onRegionDidChange={async (e) => {
-          handleCameraChange(e, false);
-          
-          if (mapRef.current) {
-            const bounds = await mapRef.current.getVisibleBounds();
-            useMapUIStore.getState().setVisibleBounds(bounds);
-          }
+      <GestureDetector gesture={breakLockGesture}>
+        <View style={{ flex: 1 }} collapsable={false}>
+          <MapLibreGL.MapView
+            ref={mapRef}
+            style={[styles.map, uiState === MapUIState.AR_EXPLORE && { opacity: 0, height: 0 }]}
+            mapStyle={mapStyle as any}
+            logoEnabled={false}
+            attributionEnabled={false}
+            compassEnabled={false}
+            minZoomLevel={2}
+            maxZoomLevel={22}
+            pitchEnabled={true}
+            rotateEnabled={true}
+            scrollEnabled={true}
+            zoomEnabled={true}
+            onPress={handleMapPress}
+            onRegionWillChange={(e) => {
+              // ANDROID FIX: Aggressively break tracking if map moves and it's not programmatic.
+              // This is the only way to reliably detect the START of a user gesture on Android.
+              const currentIsProgrammatic = useMapUIStore.getState().isProgrammaticMove;
+              if (!currentIsProgrammatic) {
+                const currentMode = useMapUIStore.getState().cameraMode;
+                if (currentMode !== MapCameraMode.FREE) {
+                  console.log(
+                    '[MapContent] 🚨 Manual gesture detected (onRegionWillChange), breaking camera lock'
+                  );
+                  setCameraMode(MapCameraMode.FREE);
+                }
+              }
+            }}
+            onRegionIsChanging={(e) => handleCameraChange(e, true)}
+            onRegionDidChange={async (e) => {
+              handleCameraChange(e, false);
 
-          const center = e.geometry?.coordinates as [number, number];
-          const zoom = e.properties?.zoomLevel;
-          cameraRef.current?.handleRegionChangeComplete(center, zoom);
-        }}
-        onDidFinishLoadingStyle={() => {
-          if (!hasInitialRendered.current) {
-            hasInitialRendered.current = true;
-            setInitialLoadComplete(true);
-            setMapReady(true);
-            startupMetrics.markInteractive('Map');
-          }
-        }}
-      >
-        <MapLibreGL.UserLocation
-          visible={true}
-          animated={true}
-          showsUserHeadingIndicator={true}
-          androidRenderMode="normal"
-          renderMode="normal"
-        />
+              if (mapRef.current) {
+                const bounds = await mapRef.current.getVisibleBounds();
+                useMapUIStore.getState().setVisibleBounds(bounds);
+              }
 
-        <MapImageManager events={events} />
+              const center = e.geometry?.coordinates as [number, number];
+              const zoom = e.properties?.zoomLevel;
+              cameraRef.current?.handleRegionChangeComplete(center, zoom);
+            }}
+            onDidFinishLoadingStyle={() => {
+              if (!hasInitialRendered.current) {
+                hasInitialRendered.current = true;
+                setInitialLoadComplete(true);
+                setMapReady(true);
+                startupMetrics.markInteractive('Map');
+              }
+            }}
+          >
+            <MapLibreGL.UserLocation
+              visible={true}
+              animated={true}
+              showsUserHeadingIndicator={true}
+              androidRenderMode="normal"
+              renderMode="normal"
+            />
 
-        <MapCameraManager
-          ref={cameraRef}
-          userCoords={userCoords}
-          selectedCoords={selectedCoords}
-          selectedEvent={selectedEvent}
-          poisGeoJSON={poisGeoJSON}
-          is3DActive={is3DActive}
-          recenterCount={recenterCount}
-          forceCenterCount={forceCenterCount}
-          lastCameraPosition={lastCameraPosition}
-          uiState={uiState}
-          isNavigating={isNavigating}
-          isPlanning={isPlanning}
-          cameraMode={cameraMode}
-          currentRoute={currentRoute}
-          transportMode={transportMode}
-          isFetching={isFetching}
-          selectedPoiId={selectedPoiId}
-          selectedEventId={selectedEventId}
-          realtimeCameraRef={realtimeCameraRef}
-          lastProcessedTarget={lastProcessedTarget}
-          setLastProcessedTarget={setLastProcessedTarget}
-          triggerSource={triggerSource}
-        />
+            <MapImageManager events={events} />
 
-        <MapLayers
-          theme={theme}
-          poisGeoJSON={filteredPoisGeoJSON}
-          eventsGeoJSON={eventsGeoJSON}
-          selectedEventId={selectedEventId}
-          selectedPoiId={selectedPoiId}
-          pathNetwork={EMPTY_GEOJSON}
-          currentRoute={currentRoute}
-          uiState={uiState}
-          onPoiPress={handlePoiPress}
-          zoomLevel={discreteZoom}
-          zoomSharedValue={zoomSharedValue}
-          islandState={islandState}
-          visibleBounds={visibleBounds}
-        />
-      </MapLibreGL.MapView>
+            <MapCameraManager
+              ref={cameraRef}
+              userCoords={userCoords}
+              selectedCoords={selectedCoords}
+              selectedEvent={selectedEvent}
+              poisGeoJSON={poisGeoJSON}
+              is3DActive={is3DActive}
+              recenterCount={recenterCount}
+              forceCenterCount={forceCenterCount}
+              lastCameraPosition={lastCameraPosition}
+              uiState={uiState}
+              isNavigating={isNavigating}
+              isPlanning={isPlanning}
+              cameraMode={cameraMode}
+              currentRoute={currentRoute}
+              transportMode={transportMode}
+              isFetching={isFetching}
+              selectedPoiId={selectedPoiId}
+              selectedEventId={selectedEventId}
+              realtimeCameraRef={realtimeCameraRef}
+              lastProcessedTarget={lastProcessedTarget}
+              setLastProcessedTarget={setLastProcessedTarget}
+              triggerSource={triggerSource}
+            />
+
+            <MapLayers
+              theme={theme}
+              poisGeoJSON={filteredPoisGeoJSON}
+              eventsGeoJSON={eventsGeoJSON}
+              selectedEventId={selectedEventId}
+              selectedPoiId={selectedPoiId}
+              pathNetwork={EMPTY_GEOJSON}
+              currentRoute={currentRoute}
+              uiState={uiState}
+              onPoiPress={handlePoiPress}
+              zoomLevel={discreteZoom}
+              zoomSharedValue={zoomSharedValue}
+              islandState={islandState}
+              visibleBounds={visibleBounds}
+            />
+          </MapLibreGL.MapView>
+        </View>
+      </GestureDetector>
     </View>
   );
 };

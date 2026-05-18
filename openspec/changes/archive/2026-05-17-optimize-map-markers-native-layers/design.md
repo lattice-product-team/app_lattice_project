@@ -1,16 +1,18 @@
 ## Context
 
-The current application relies on React Native `PointAnnotation` components to render map markers for POIs and Events. On high-end devices, this works adequately, but on older hardware (especially Android), the overhead of maintaining dozens of individual native views synchronized with the map's OpenGL loop causes severe frame drops and lag. 
+The current application relies on React Native `PointAnnotation` components to render map markers for POIs and Events. On high-end devices, this works adequately, but on older hardware (especially Android), the overhead of maintaining dozens of individual native views synchronized with the map's OpenGL loop causes severe frame drops and lag.
 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Transition the bulk of map markers to GPU-accelerated `SymbolLayer` components.
 - Implement dynamic coloring using Signed Distance Field (SDF) icons.
 - Ensure event and POI labels are performant and readable using native halos.
 - Implement native clustering to handle dense marker areas smoothly.
 
 **Non-Goals:**
+
 - Removing React-based markers entirely (a single marker will remain for the "selected" state).
 - Changes to the underlying map style or provider (MapTiler).
 

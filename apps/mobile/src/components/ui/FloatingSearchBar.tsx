@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, TextInput, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { Search, XCircle, Mic } from 'lucide-react-native';
-import Animated, { 
-  useAnimatedStyle, 
-  withRepeat, 
-  withSpring, 
-  withSequence, 
+import Animated, {
+  useAnimatedStyle,
+  withRepeat,
+  withSpring,
+  withSequence,
   withTiming,
   interpolate,
   useSharedValue,
@@ -64,7 +64,7 @@ export const FloatingSearchBar = React.memo(
       // Setup Speech Recognition - Only once on mount
       React.useEffect(() => {
         console.log('[Voice] Initializing listeners...');
-        
+
         Voice.onSpeechStart = (e: any) => {
           console.log('[Voice] === EVENT: onSpeechStart ===', e);
           setIsListening(true);
@@ -99,12 +99,14 @@ export const FloatingSearchBar = React.memo(
               Voice.onSpeechEnd = undefined;
               Voice.onSpeechResults = undefined;
               Voice.onSpeechError = undefined;
-              
-              Voice.destroy().then(() => {
-                console.log('[Voice] Destroyed successfully');
-              }).catch((err) => {
-                console.log('[Voice] Destroy error (ignored):', err);
-              });
+
+              Voice.destroy()
+                .then(() => {
+                  console.log('[Voice] Destroyed successfully');
+                })
+                .catch((err) => {
+                  console.log('[Voice] Destroy error (ignored):', err);
+                });
             }
           } catch (e) {
             console.log('[Voice] Cleanup error suppressed:', e);
@@ -116,7 +118,7 @@ export const FloatingSearchBar = React.memo(
 
       const startListening = React.useCallback(async () => {
         if (!Voice || isOperationInProgress.current) return;
-        
+
         try {
           isOperationInProgress.current = true;
           const currentPermission = await requestPermission();
@@ -125,10 +127,10 @@ export const FloatingSearchBar = React.memo(
             return;
           }
 
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           if (onMicPress) onMicPress();
-          
+
           await Voice.start();
           setIsListening(true);
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -175,7 +177,12 @@ export const FloatingSearchBar = React.memo(
 
       return (
         <View style={styles.innerContainer}>
-          <Search size={20} color={theme.colors.text.primary} strokeWidth={2.2} style={styles.icon} />
+          <Search
+            size={20}
+            color={theme.colors.text.primary}
+            strokeWidth={2.2}
+            style={styles.icon}
+          />
 
           <Pressable
             style={{ flex: 1, justifyContent: 'center' }}
@@ -198,11 +205,11 @@ export const FloatingSearchBar = React.memo(
                 pointerEvents={editable ? 'auto' : 'none'}
               />
               {Platform.OS === 'android' && !value && (
-                <Text 
+                <Text
                   style={[
-                    styles.input, 
-                    styles.placeholderOverlay, 
-                    { color: theme.colors.text.muted }
+                    styles.input,
+                    styles.placeholderOverlay,
+                    { color: theme.colors.text.muted },
                   ]}
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -223,29 +230,28 @@ export const FloatingSearchBar = React.memo(
           <View style={styles.rightActions}>
             <View style={styles.micContainer}>
               {isListening && (
-                <Animated.View 
+                <Animated.View
                   style={[
-                    styles.micRing, 
+                    styles.micRing,
                     { backgroundColor: theme.colors.brand.primary },
-                    ringStyle
-                  ]} 
+                    ringStyle,
+                  ]}
                 />
               )}
-              <Pressable 
-                style={styles.micButton}
-                onPress={toggleListening}
-              >
+              <Pressable style={styles.micButton} onPress={toggleListening}>
                 <Animated.View style={micAnimatedStyle}>
-                  <Mic 
-                     size={22} 
-                     color={isListening ? theme.colors.brand.primary : theme.colors.text.primary} 
-                     strokeWidth={isListening ? 3 : 2.2} 
+                  <Mic
+                    size={22}
+                    color={isListening ? theme.colors.brand.primary : theme.colors.text.primary}
+                    strokeWidth={isListening ? 3 : 2.2}
                   />
                 </Animated.View>
               </Pressable>
             </View>
 
-            <View style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]} />
+            <View
+              style={[styles.verticalDivider, { backgroundColor: theme.colors.border.subtle }]}
+            />
 
             <Pressable style={styles.profileButton} onPress={onProfilePress}>
               <UserAvatar size={32} url={avatarUrl} isGuest={isGuest} />

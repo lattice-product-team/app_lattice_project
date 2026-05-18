@@ -51,14 +51,20 @@ export const CenteringButton = ({ uiLayer }: CenteringButtonProps) => {
   return (
     <Animated.View style={[styles.container, { bottom: insets.bottom + 180 }, rStyle]}>
       <TouchableOpacity onPress={handleCenter} activeOpacity={0.8}>
-        <View style={[
-          styles.button, 
-          { 
-            backgroundColor: theme.colors.bg.surface,
-            borderColor: theme.colors.border.subtle,
-          }
-        ]}>
-          <Navigation size={18} color={theme.colors.text.primary} fill={theme.colors.text.primary} />
+        <View
+          style={[
+            styles.button,
+            {
+              backgroundColor: theme.colors.bg.surface,
+              borderColor: theme.colors.border.subtle,
+            },
+          ]}
+        >
+          <Navigation
+            size={18}
+            color={theme.colors.text.primary}
+            fill={theme.colors.text.primary}
+          />
           <Text style={[styles.text, { color: theme.colors.text.primary }]}>Recenter</Text>
         </View>
       </TouchableOpacity>

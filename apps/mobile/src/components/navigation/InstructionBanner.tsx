@@ -33,18 +33,20 @@ export const InstructionBanner = () => {
 
   // Helper to get the correct icon based on maneuver text
   const renderIcon = () => {
-    const iconProps = { 
-      size: 42, 
-      color: theme.dark ? '#FFFFFF' : theme.colors.text.primary, 
-      strokeWidth: 2.5 
+    const iconProps = {
+      size: 42,
+      color: theme.dark ? '#FFFFFF' : theme.colors.text.primary,
+      strokeWidth: 2.5,
     };
 
     const instructionStr = text?.toLowerCase() || '';
     if (instructionStr.includes('left')) return <CornerUpLeft {...iconProps} />;
     if (instructionStr.includes('right')) return <CornerUpRight {...iconProps} />;
-    if (instructionStr.includes('u-turn') || instructionStr.includes('u turn')) return <RotateCcw {...iconProps} />;
-    if (instructionStr.includes('straight') || instructionStr.includes('keep')) return <ArrowUp {...iconProps} />;
-    
+    if (instructionStr.includes('u-turn') || instructionStr.includes('u turn'))
+      return <RotateCcw {...iconProps} />;
+    if (instructionStr.includes('straight') || instructionStr.includes('keep'))
+      return <ArrowUp {...iconProps} />;
+
     return <ArrowUp {...iconProps} />;
   };
 
@@ -54,9 +56,9 @@ export const InstructionBanner = () => {
   };
 
   return (
-    <Animated.View 
-      entering={FadeInUp} 
-      exiting={FadeOutUp} 
+    <Animated.View
+      entering={FadeInUp}
+      exiting={FadeOutUp}
       style={[styles.outerContainer, { top: insets.top + 10 }]}
     >
       <View
@@ -65,7 +67,15 @@ export const InstructionBanner = () => {
           {
             backgroundColor: theme.colors.glass.background,
             borderColor: theme.colors.glass.border,
-            ...(theme.dark ? {} : { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 })
+            ...(theme.dark
+              ? {}
+              : {
+                  backgroundColor: '#FFFFFF',
+                  shadowColor: '#000',
+                  shadowOpacity: 0.1,
+                  shadowRadius: 10,
+                  elevation: 5,
+                }),
           },
         ]}
       >
@@ -73,11 +83,19 @@ export const InstructionBanner = () => {
           <>
             <View style={styles.iconContainer}>{renderIcon()}</View>
             <View style={styles.textContainer}>
-              <Text style={[styles.distanceText, { color: theme.dark ? '#FFFFFF' : theme.colors.text.primary }]}>
+              <Text
+                style={[
+                  styles.distanceText,
+                  { color: theme.dark ? '#FFFFFF' : theme.colors.text.primary },
+                ]}
+              >
                 {formatDistance(distance)}
               </Text>
-              <Text 
-                style={[styles.instructionText, { color: theme.dark ? 'rgba(255, 255, 255, 0.8)' : theme.colors.text.secondary }]} 
+              <Text
+                style={[
+                  styles.instructionText,
+                  { color: theme.dark ? 'rgba(255, 255, 255, 0.8)' : theme.colors.text.secondary },
+                ]}
                 numberOfLines={2}
               >
                 {text}
@@ -86,8 +104,17 @@ export const InstructionBanner = () => {
           </>
         ) : (
           <View style={styles.loadingContainer}>
-            <Loader2 size={24} color={theme.dark ? '#FFFFFF' : theme.colors.text.primary} style={styles.loader} />
-            <Text style={[styles.loadingText, { color: theme.dark ? '#FFFFFF' : theme.colors.text.primary }]}>
+            <Loader2
+              size={24}
+              color={theme.dark ? '#FFFFFF' : theme.colors.text.primary}
+              style={styles.loader}
+            />
+            <Text
+              style={[
+                styles.loadingText,
+                { color: theme.dark ? '#FFFFFF' : theme.colors.text.primary },
+              ]}
+            >
               Calculating next move...
             </Text>
           </View>

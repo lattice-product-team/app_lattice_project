@@ -12,9 +12,11 @@ The current map interface has a visual disconnect between "Events" (using rich M
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-marker-system`: Centralized logic for all map pin variants (Events, POIs, Saved places) ensuring consistent framing and animation behavior.
 
 ### Modified Capabilities
+
 - `map-pin-components`: Update existing marker components to support the new unified pill/bubble aesthetic.
 - `hybrid-map-rendering`: Adjust the rendering balance to favor MarkerViews for POIs while retaining GL for non-interactive elements.
 

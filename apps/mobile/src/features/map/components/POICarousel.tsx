@@ -1,5 +1,13 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, Pressable as NativePressable, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  Pressable as NativePressable,
+  Dimensions,
+} from 'react-native';
 import { Pressable as GHPressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { Navigation, ChevronRight } from 'lucide-react-native';
@@ -31,7 +39,7 @@ const POICarouselCard = ({ poi, onPress, index }: POICarouselCardProps) => {
   const theme = useLatticeTheme();
   const logicalCoords = useLocationStore((s) => s.logicalCoords);
   const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
-  
+
   const userCoords = discoveryLocation || logicalCoords;
 
   const metadata = getCategoryMetadata(poi.category);
@@ -134,7 +142,7 @@ export const POICarousel = ({ pois, onSelectPoi, title }: POICarouselProps) => {
   const logicalCoords = useLocationStore((s) => s.logicalCoords);
   const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
   const triggerForceCenter = useMapUIStore((s) => s.triggerForceCenter);
-  
+
   const userCoords = discoveryLocation || logicalCoords;
 
   const sortedPois = useMemo(() => {

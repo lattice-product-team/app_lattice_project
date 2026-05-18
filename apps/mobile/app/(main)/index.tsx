@@ -978,7 +978,9 @@ export default function MapIndexPage() {
                         setCurrentEvent(null);
                         selectPoi(result.raw);
                       } else {
-                        const match = result?.raw || allEvents.find((e) => e.name.toLowerCase() === q.toLowerCase());
+                        const match =
+                          result?.raw ||
+                          allEvents.find((e) => e.name.toLowerCase() === q.toLowerCase());
                         if (match) handleEventSelect(match);
                       }
                     }}

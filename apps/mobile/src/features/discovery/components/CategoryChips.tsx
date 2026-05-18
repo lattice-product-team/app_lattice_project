@@ -50,7 +50,9 @@ export const CategoryChips = React.memo(({ categories, activeCategory, onSelect 
                   width: 64,
                   height: 64,
                   borderRadius: 32,
-                  backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.glass.background,
+                  backgroundColor: isActive
+                    ? theme.colors.brand.primary
+                    : theme.colors.glass.background,
                   borderColor: theme.colors.glass.border,
                   borderWidth: 1,
                   alignItems: 'center',

@@ -17,8 +17,10 @@ The system SHALL allow seamless transitions between general event discovery, spe
 ## ADDED Requirements
 
 ### Requirement: Independent Explore Mode
+
 The system SHALL provide a dedicated "Explore" mode within the sliding canvas that is independent of the Map's state.
 
 #### Scenario: Entering Explore Mode
+
 - **WHEN** the user toggles the "Explore" mode in the main HUD
 - **THEN** the system SHALL slide the canvas to reveal the Discovery Feed without modifying the active filters on the Map mode.

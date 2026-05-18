@@ -10,9 +10,11 @@ The current user location indicator on Android is not reactive. The pointer rema
 ## Capabilities
 
 ### New Capabilities
+
 - None
 
 ### Modified Capabilities
+
 - `decoupled-location-management`: Ensure the "Smooth Map Tracking" requirement is correctly implemented for Android by utilizing appropriate native render modes.
 
 ## Impact

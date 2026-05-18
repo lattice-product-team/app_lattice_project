@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -34,7 +33,11 @@ export default function GlobalOperationsPage() {
   const [radarData, setRadarData] = useState<any>(null);
   const [selectedAsset, setSelectedAsset] = useState<BaseAsset | null>(null);
   const [selectionSource, setSelectionSource] = useState<'SEARCH' | 'CLICK' | null>(null);
-  const [mapInitialView, setMapInitialView] = useState({ longitude: 2.1734, latitude: 41.3851, zoom: 11 });
+  const [mapInitialView, setMapInitialView] = useState({
+    longitude: 2.1734,
+    latitude: 41.3851,
+    zoom: 11,
+  });
   const [hasDoneInitialFit, setHasDoneInitialFit] = useState(false);
   const [initialFitBoundary, setInitialFitBoundary] = useState<any>(null);
   const lastCenteredAssetId = React.useRef<string | null>(null);
@@ -44,7 +47,7 @@ export default function GlobalOperationsPage() {
   // Filtering events based on search
   const filteredEventsForList = useMemo(() => {
     if (!searchTerm) return events;
-    return events.filter(e => e.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    return events.filter((e) => e.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [events, searchTerm]);
 
   // Clear selection when search is emptied
@@ -58,16 +61,16 @@ export default function GlobalOperationsPage() {
   // Handle the one-time initial global fit
   useEffect(() => {
     if (!hasDoneInitialFit && !eventsLoading && events.length > 0) {
-      const boundaries = events.filter(e => e.boundary);
-      
+      const boundaries = events.filter((e) => e.boundary);
+
       if (boundaries.length > 0) {
         setInitialFitBoundary({
           type: 'FeatureCollection',
-          features: boundaries.map(e => ({
+          features: boundaries.map((e) => ({
             type: 'Feature',
             geometry: e.boundary,
-            properties: { isGlobalFit: true }
-          }))
+            properties: { isGlobalFit: true },
+          })),
         });
         setHasDoneInitialFit(true);
       }
@@ -80,10 +83,10 @@ export default function GlobalOperationsPage() {
       return {
         type: 'Feature',
         geometry: (selectedAsset as any).boundary,
-        properties: {}
+        properties: {},
       };
     }
-    
+
     // Return the initial global fit only if we haven't done it yet
     if (!hasDoneInitialFit && initialFitBoundary) {
       return initialFitBoundary;
@@ -91,14 +94,14 @@ export default function GlobalOperationsPage() {
 
     // Return to global view only if a SEARCH was just cleared
     if (searchTerm === '' && selectionSource === 'SEARCH' && events.length > 0) {
-      const boundaries = events.filter(e => e.boundary);
+      const boundaries = events.filter((e) => e.boundary);
       return {
         type: 'FeatureCollection',
-        features: boundaries.map(e => ({
+        features: boundaries.map((e) => ({
           type: 'Feature',
           geometry: e.boundary,
-          properties: { isGlobalFit: true }
-        }))
+          properties: { isGlobalFit: true },
+        })),
       };
     }
 
@@ -116,7 +119,7 @@ export default function GlobalOperationsPage() {
         setSelectionSource('SEARCH');
         setSelectedAsset(event);
         lastCenteredAssetId.current = eventId;
-        
+
         // Only set initial view if no boundary is available (boundary-fitting happens in AdminMap)
         if (!event.boundary && event.center?.coordinates) {
           setMapInitialView({
@@ -149,9 +152,7 @@ export default function GlobalOperationsPage() {
           })
         );
 
-        const allFeatures = results
-          .filter(Boolean)
-          .flatMap((data: any) => data.features || []);
+        const allFeatures = results.filter(Boolean).flatMap((data: any) => data.features || []);
 
         setRadarData({
           type: 'FeatureCollection',
@@ -169,13 +170,17 @@ export default function GlobalOperationsPage() {
 
   useEffect(() => {
     if (selectedAsset) {
-      const coords = (selectedAsset as any).geometry?.coordinates || (selectedAsset as any).center?.coordinates;
-      
+      const coords =
+        (selectedAsset as any).geometry?.coordinates || (selectedAsset as any).center?.coordinates;
+
       if (coords) {
         setMapInitialView({
           longitude: coords[0],
           latitude: coords[1],
-          zoom: (selectedAsset as any).category === 'EVENT' || !(selectedAsset as any).category ? 15 : 18,
+          zoom:
+            (selectedAsset as any).category === 'EVENT' || !(selectedAsset as any).category
+              ? 15
+              : 18,
         });
       }
     }
@@ -232,7 +237,12 @@ export default function GlobalOperationsPage() {
 
   // Initialize visibility when events load
   useEffect(() => {
-    if (events.length > 0 && visibleEventIds.size === 0 && !searchParams.get('eventId') && !searchParams.get('poiId')) {
+    if (
+      events.length > 0 &&
+      visibleEventIds.size === 0 &&
+      !searchParams.get('eventId') &&
+      !searchParams.get('poiId')
+    ) {
       setVisibleEventIds(new Set(events.map((e) => e.id.toString())));
     }
   }, [events, visibleEventIds.size, searchParams]);
@@ -246,7 +256,7 @@ export default function GlobalOperationsPage() {
 
   const isolateEventVisibility = (id: string) => {
     const event = events.find((e) => e.id.toString() === id);
-    
+
     // If only this one is visible, show all. Otherwise, isolate this one.
     if (visibleEventIds.size === 1 && visibleEventIds.has(id)) {
       setVisibleEventIds(new Set(events.map((e) => e.id.toString())));
@@ -292,7 +302,7 @@ export default function GlobalOperationsPage() {
 
   return (
     <div className="flex h-screen w-full bg-eggshell overflow-hidden">
-      <Sidebar 
+      <Sidebar
         isOpen={isSidebarOpen}
         onClose={closeSidebar}
         events={filteredEventsForList}
@@ -320,7 +330,7 @@ export default function GlobalOperationsPage() {
         />
 
         {selectedAsset && (
-          <AssetPanel 
+          <AssetPanel
             asset={selectedAsset}
             onClose={() => setSelectedAsset(null)}
             onToggleRadar={(e) => toggleRadar(selectedAsset.id.toString(), e)}

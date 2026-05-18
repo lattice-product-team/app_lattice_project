@@ -31,7 +31,8 @@ if (fs.existsSync(rootEnvPath)) {
     const envOutput = dotenv.config({ path: fallbackPath });
     expand(envOutput);
   } else {
-    if (shouldLog) console.log('ℹ️ [Config] No .env files found, relying on environment variables.');
+    if (shouldLog)
+      console.log('ℹ️ [Config] No .env files found, relying on environment variables.');
   }
 }
 process.env.APP_CONFIG_LOADED = 'true';

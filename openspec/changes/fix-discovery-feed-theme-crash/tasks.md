@@ -1,7 +1,9 @@
 ## 1. Pass Theme as a Prop and Fix Parent Fallback
+
 **Rationale**: `MapIndexPage` (the parent of `DiscoveryFeed`) had a broken `require` path for its theme fallback. Fixing this ensures the parent itself doesn't crash. Passing the resolved `theme` as a prop to `DiscoveryFeed` guarantees stability.
 
 ### 2. Force Explore Mode on Startup
+
 **Rationale**: To ensure the most stable entry point, we are forcing the `screenMode` to `0` (Explore) on mount, bypassing the previous session's state for the initial view.
 
 - [x] 1.1 Update `DiscoveryFeed` props interface to include an optional `theme` of type `LatticeTheme`.

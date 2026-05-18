@@ -1,8 +1,8 @@
 # ADR-001: Migration to PostgreSQL and Drizzle ORM
 
-*   **Status**: Accepted
-*   **Deciders**: Engineering Team
-*   **Date**: 2024-05-12
+- **Status**: Accepted
+- **Deciders**: Engineering Team
+- **Date**: 2024-05-12
 
 ## Context and Problem Statement
 
@@ -10,9 +10,9 @@ The project initially considered a Cloud-managed NoSQL approach (such as Firesto
 
 ## Decision Drivers
 
-*   **Geospatial Performance**: Need for advanced proximity and boundary queries.
-*   **Relational Integrity**: Ensuring tickets, events, and users are correctly linked.
-*   **Developer Experience**: Strong type safety and easy migration management.
+- **Geospatial Performance**: Need for advanced proximity and boundary queries.
+- **Relational Integrity**: Ensuring tickets, events, and users are correctly linked.
+- **Developer Experience**: Strong type safety and easy migration management.
 
 ## Considered Options
 
@@ -25,23 +25,23 @@ Chosen option: **PostgreSQL with Drizzle ORM**, because it provides the best bal
 
 ### Positive Consequences
 
-*   Full support for PostGIS for advanced mapping features.
-*   Type safety across the entire stack via `@app/db`.
-*   Clear migration path for schema changes.
+- Full support for PostGIS for advanced mapping features.
+- Type safety across the entire stack via `@app/db`.
+- Clear migration path for schema changes.
 
 ### Negative Consequences
 
-*   Increased infrastructure complexity (requires a running Postgres instance).
-*   Lose out on Firestore's native real-time listeners (must be implemented via WebSockets or polling).
+- Increased infrastructure complexity (requires a running Postgres instance).
+- Lose out on Firestore's native real-time listeners (must be implemented via WebSockets or polling).
 
 ## Pros and Cons of the Options
 
 ### Cloud NoSQL (Firestore)
 
-*   **Good**: Built-in real-time support and zero infrastructure management.
-*   **Bad**: Limited geospatial queries and difficult to manage complex relations without data duplication.
+- **Good**: Built-in real-time support and zero infrastructure management.
+- **Bad**: Limited geospatial queries and difficult to manage complex relations without data duplication.
 
 ### PostgreSQL with Drizzle ORM
 
-*   **Good**: Powerful queries, strict schema, and PostGIS integration.
-*   **Bad**: Requires manual management of database connections and migrations.
+- **Good**: Powerful queries, strict schema, and PostGIS integration.
+- **Bad**: Requires manual management of database connections and migrations.

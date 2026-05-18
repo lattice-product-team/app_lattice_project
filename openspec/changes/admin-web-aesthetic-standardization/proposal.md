@@ -12,9 +12,11 @@ The admin-web application currently lacks aesthetic consistency between screens.
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-ui-standardization`: Defines the visual and structural standards for the Lattice Admin interface, including typography, spacing, and component behavior.
 
 ### Modified Capabilities
+
 <!-- No functional requirements are changing, only the visual implementation and UI consistency. -->
 
 ## Impact

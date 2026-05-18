@@ -15,7 +15,7 @@ let connectionPromise: Promise<Socket> | null = null;
 export const useSocket = () => {
   const token = useAuthStore((state) => state.token);
   const isGuest = useAuthStore((state) => state.isGuest);
-  
+
   // Use centralized store for connection state
   const isConnected = useSocketStore((state) => state.isConnected);
   const setIsConnected = useSocketStore((state) => state.setIsConnected);
@@ -65,7 +65,10 @@ export const useSocket = () => {
       globalSocket = socketInstance;
 
       socketInstance.on('connect', () => {
-        console.log('[Socket] Connected SUCCESSFULLY! Transport:', socketInstance.io.engine.transport.name);
+        console.log(
+          '[Socket] Connected SUCCESSFULLY! Transport:',
+          socketInstance.io.engine.transport.name
+        );
         setIsConnected(true);
         resolve(socketInstance);
       });

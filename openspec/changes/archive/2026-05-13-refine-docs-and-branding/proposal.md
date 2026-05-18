@@ -12,10 +12,12 @@ The current documentation portal has residual visual inconsistencies (emojis in 
 ## Capabilities
 
 ### New Capabilities
+
 - `documentation-asset-management`: Defines the strategy for managing, hosting, and referencing visual assets within the Turborepo documentation app.
 - `pro-documentation-standards`: Establishes the professional tone, formatting (MDX strictness), and link persistence standards for the project.
 
 ### Modified Capabilities
+
 - `standards-alignment`: Inclusion of documentation style guidelines (no emojis) and asset linking requirements.
 - `ci-cd-standards`: Updates to the documentation deployment flow to handle static asset persistence.
 

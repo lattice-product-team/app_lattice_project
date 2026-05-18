@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { 
-  Trophy, 
-  Medal as MedalIcon, 
-  Star, 
-  Flame, 
-  Crown, 
+import {
+  Trophy,
+  Medal as MedalIcon,
+  Star,
+  Flame,
+  Crown,
   Award,
-  LucideIcon
+  LucideIcon,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '../../../hooks/useAppTheme';
@@ -36,9 +36,11 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.colors.text.primary }]}>Logros Lattice</Text>
+        <Text style={[styles.title, { color: theme.colors.text.primary }]}>
+          Lattice Achievements
+        </Text>
         <Pressable>
-          <Text style={[styles.seeAll, { color: theme.colors.brand.primary }]}>Ver todos</Text>
+          <Text style={[styles.seeAll, { color: theme.colors.brand.primary }]}>See all</Text>
         </Pressable>
       </View>
 
@@ -50,7 +52,7 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
         {medals.length === 0 ? (
           <View style={[styles.emptyContainer, { backgroundColor: theme.colors.bg.surface }]}>
             <Text style={[styles.emptyText, { color: theme.colors.text.muted }]}>
-              Aún no tienes logros. ¡Asiste a eventos para desbloquearlos!
+              You don't have any achievements yet. Attend events to unlock them!
             </Text>
             <View style={[styles.border, { borderColor: theme.colors.glass.border }]} />
           </View>
@@ -68,10 +70,14 @@ export const AchievementRow = ({ medals }: AchievementRowProps) => {
                     }
                     style={styles.medalGradient}
                   >
-                    <View style={[styles.innerCircle, { backgroundColor: theme.colors.bg.surface }]}>
+                    <View
+                      style={[styles.innerCircle, { backgroundColor: theme.colors.bg.surface }]}
+                    >
                       <IconComponent
                         size={28}
-                        color={medal.isLocked ? theme.colors.text.muted : theme.colors.brand.primary}
+                        color={
+                          medal.isLocked ? theme.colors.text.muted : theme.colors.brand.primary
+                        }
                         strokeWidth={2.2}
                       />
                     </View>

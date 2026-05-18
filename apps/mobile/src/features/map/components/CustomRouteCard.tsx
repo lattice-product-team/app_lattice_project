@@ -11,7 +11,7 @@ export const CustomRouteCard = () => {
     <Pressable
       style={({ pressed }) => [
         styles.container,
-        { 
+        {
           backgroundColor: theme.dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
           borderColor: theme.colors.border.subtle,
         },

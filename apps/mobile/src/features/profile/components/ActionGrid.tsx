@@ -32,37 +32,19 @@ export const ActionGrid = () => {
     {
       id: 'tickets',
       label: 'Entradas',
-      icon: (
-        <Ticket
-          size={26}
-          color={theme.colors.brand.primary}
-          strokeWidth={2.2}
-        />
-      ),
+      icon: <Ticket size={26} color={theme.colors.brand.primary} strokeWidth={2.2} />,
       onPress: () => handlePress('tickets'),
     },
     {
       id: 'wallet',
       label: 'Wallet',
-      icon: (
-        <Wallet
-          size={26}
-          color={theme.colors.brand.primary}
-          strokeWidth={2.2}
-        />
-      ),
+      icon: <Wallet size={26} color={theme.colors.brand.primary} strokeWidth={2.2} />,
       onPress: () => handlePress('wallet'),
     },
     {
       id: 'saved',
       label: 'Favoritos',
-      icon: (
-        <Heart 
-          size={24} 
-          color={theme.colors.brand.primary} 
-          strokeWidth={2.2} 
-        />
-      ),
+      icon: <Heart size={24} color={theme.colors.brand.primary} strokeWidth={2.2} />,
       onPress: () => handlePress('saved'),
     },
   ];

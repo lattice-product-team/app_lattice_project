@@ -22,7 +22,6 @@ The Primary Drawer operates from the top of the viewport downward. It manages th
 If any secondary bottom drawer (Event Detail, Profile, Registration Callout) is activated, the Primary top drawer MUST collapse automatically to **Level 1** to prevent overlap and UI clutter.
 </Callout>
 
-
 ---
 
 ## 2. Secondary Drawers (Bottom-Up Sheets)
@@ -30,18 +29,21 @@ If any secondary bottom drawer (Event Detail, Profile, Registration Callout) is 
 Secondary components slide from the bottom of the viewport upward. They are categorized by context and purpose:
 
 ### A. Business & Event Detail Sheet
+
 - **Level 1: Compact Overview (ST - Semi-Transparent)**  
   Renders key basic information: Title, Category, Action buttons ("How to Get There", "Directions"), and primary contact details.
 - **Level 2: Extended Details (NT - Non-Transparent)**  
   Expands to a larger height, revealing extended text: media banners, full descriptions, social media profiles, and upcoming schedules. Uses a solid background for high readability.
 
 ### B. User Profile Sheet
+
 - **Level 1: Quick Stats (ST - Semi-Transparent)**  
   Displays quick-action statistics: User name, account level, active notifications, and avatar badges.
 - **Level 2: Account Console (NT - Non-Transparent)**  
   Expands to full detail: advanced metrics, historical attendance, and deep access to system settings.
 
 ### C. Registration & Account Notice
+
 - **Level 1: Action Banner (ST - Semi-Transparent)**  
   A single, static mid-sized drawer. Explains the benefits of creating a permanent account and features a direct Registration CTA (Call to Action) button.
 
@@ -66,8 +68,10 @@ We enforce a strict distinction between transparency levels to maintain a premiu
 - **NT (No Transparent):** Solid color backgrounds to optimize text legibility for heavy or dense content.
 
 ### The HUD Fade Effect
-When any bottom-up drawer (whether ST or NT) moves upward and physically overlaps the bounding boxes of the floating HUD controls, the affected controls must perform a smooth **fade-out** animation until they are completely invisible. 
-* To eliminate visual noise, **no blur filter is applied to the buttons**; we use pure opacity fading to keep the transition clean.
+
+When any bottom-up drawer (whether ST or NT) moves upward and physically overlaps the bounding boxes of the floating HUD controls, the affected controls must perform a smooth **fade-out** animation until they are completely invisible.
+
+- To eliminate visual noise, **no blur filter is applied to the buttons**; we use pure opacity fading to keep the transition clean.
 
 ---
 
@@ -76,7 +80,7 @@ When any bottom-up drawer (whether ST or NT) moves upward and physically overlap
 During an active route navigation session, the layout alters dynamically to support the driving/walking context:
 
 - **Primary Top Drawer:** Hidden completely from the viewport.
-- **Navigation HUD Overlays:**  
+- **Navigation HUD Overlays:**
   - **Top Banner:** Active turn-by-turn routing instructions (maneuvers, street names).
   - **Bottom Banner:** Real-time route metrics (remaining time, remaining distance, ETA).
 - **Floating Controls:** Replaced or hidden entirely to adapt to the navigation focus.
@@ -99,5 +103,3 @@ This section showcases the interactive mockups representing the visual transitio
   <img src="/assets/mockups/details-pois-1.png" alt="Bottom Detail Drawer Overview (Level 1)" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
   <img src="/assets/mockups/details-pois-2.png" alt="Bottom Detail Drawer Fully Expanded (Level 2)" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
 </div>
-
-

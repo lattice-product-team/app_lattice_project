@@ -1,10 +1,16 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions, Text, Platform, ScrollView as NativeScrollView } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  Text,
+  Platform,
+  ScrollView as NativeScrollView,
+} from 'react-native';
 import { ScrollView as GHScrollView, GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { typography } from '../../../styles/typography';
 import { useAppTheme } from '../../../hooks/useAppTheme';
-
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_WIDTH = SCREEN_WIDTH * 0.7;
@@ -17,7 +23,7 @@ interface GalleryCarouselProps {
 
 export const GalleryCarousel = React.memo(({ images }: GalleryCarouselProps) => {
   const theme = useAppTheme();
-  
+
   if (!images || images.length === 0) return null;
 
   return (

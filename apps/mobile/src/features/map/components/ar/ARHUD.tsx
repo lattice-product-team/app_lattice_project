@@ -20,10 +20,10 @@ interface ARHUDProps {
   statusMessage?: string;
 }
 
-export const ARHUD: React.FC<ARHUDProps> = ({ 
-  onExit, 
-  isScanning = true, 
-  statusMessage = 'AR ACTIVE' 
+export const ARHUD: React.FC<ARHUDProps> = ({
+  onExit,
+  isScanning = true,
+  statusMessage = 'AR ACTIVE',
 }) => {
   const insets = useSafeAreaInsets();
   const theme = useLatticeTheme();
@@ -60,16 +60,21 @@ export const ARHUD: React.FC<ARHUDProps> = ({
         >
           <View style={{ gap: 8 }}>
             <Animated.View style={[styles.statusBadge, scanAnimatedStyle]}>
-              <View style={[styles.statusDot, { backgroundColor: isScanning ? '#FF9F0A' : '#32D74B' }]} />
+              <View
+                style={[styles.statusDot, { backgroundColor: isScanning ? '#FF9F0A' : '#32D74B' }]}
+              />
               <Text style={styles.statusText}>
                 {isScanning ? 'SCANNING LATTICE…' : statusMessage.toUpperCase()}
               </Text>
             </Animated.View>
 
             {isWithinBoundary && currentEvent && (
-              <Animated.View 
+              <Animated.View
                 entering={FadeInDown.duration(400)}
-                style={[styles.contextBadge, { backgroundColor: theme.colors.brand.primary + 'CC' }]}
+                style={[
+                  styles.contextBadge,
+                  { backgroundColor: theme.colors.brand.primary + 'CC' },
+                ]}
               >
                 <MapPin size={10} color="white" />
                 <Text style={styles.contextText}>{currentEvent.name.toUpperCase()}</Text>
@@ -101,7 +106,9 @@ export const ARHUD: React.FC<ARHUDProps> = ({
           <View style={styles.headingContainer}>
             <View style={styles.compassLine} />
             <View style={styles.compassCenter}>
-              <Text style={styles.headingText}>{isWithinBoundary ? 'EVENT NAVIGATION' : 'GLOBAL DISCOVERY'}</Text>
+              <Text style={styles.headingText}>
+                {isWithinBoundary ? 'EVENT NAVIGATION' : 'GLOBAL DISCOVERY'}
+              </Text>
               <View className="flex-row items-center mt-1">
                 <Compass size={12} color={theme.colors.brand.primary} strokeWidth={2.2} />
                 <Text style={[styles.subHeadingText, { color: 'rgba(255,255,255,0.6)' }]}>
@@ -114,10 +121,7 @@ export const ARHUD: React.FC<ARHUDProps> = ({
         </View>
 
         {/* Side Controls - Zoom/etc */}
-        <View
-          style={[styles.sideControls, { right: 24 }]}
-          pointerEvents="box-none"
-        >
+        <View style={[styles.sideControls, { right: 24 }]} pointerEvents="box-none">
           <View style={styles.controlGroup}>
             <Pressable style={styles.sideButton} accessibilityLabel="Zoom in AR">
               <Plus size={20} color="white" strokeWidth={2.2} />

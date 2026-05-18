@@ -52,12 +52,14 @@ pnpm onboard
 ```
 
 This command will:
+
 1. Verify your environment (Docker, pnpm, Node).
 2. Initialize your `.env` file.
 3. Start the infrastructure (PostgreSQL, Redis, Valhalla).
 4. Run migrations and seed the database.
 
 Once complete, start the project with:
+
 ```bash
 pnpm dev
 ```

@@ -17,17 +17,12 @@ const config: DocsThemeConfig = {
   project: {
     link: 'https://github.com/cdc-grup/app_lattice_project',
   },
-  docsRepositoryBase:
-    'https://github.com/cdc-grup/app_lattice_project/tree/main/apps/docs',
+  docsRepositoryBase: 'https://github.com/cdc-grup/app_lattice_project/tree/main/apps/docs',
   footer: {
     content: (
       <span>
         {new Date().getFullYear()} ©{' '}
-        <a
-          href="https://github.com/cdc-grup"
-          target="_blank"
-          className="hover:underline"
-        >
+        <a href="https://github.com/cdc-grup" target="_blank" className="hover:underline">
           CDC Grup
         </a>
         .
@@ -38,10 +33,7 @@ const config: DocsThemeConfig = {
     <>
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta property="og:title" content="App Lattice Documentation" />
-      <meta
-        property="og:description"
-        content="Documentation for the App Lattice project"
-      />
+      <meta property="og:description" content="Documentation for the App Lattice project" />
     </>
   ),
 };

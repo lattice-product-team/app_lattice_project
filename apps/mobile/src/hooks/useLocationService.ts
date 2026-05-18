@@ -74,7 +74,11 @@ export const useLocationService = (): LocationState => {
           try {
             const lastKnown = await Location.getLastKnownPositionAsync().catch(() => null);
             if (lastKnown) {
-              console.log('[LocationService] Last known position:', lastKnown.coords.longitude, lastKnown.coords.latitude);
+              console.log(
+                '[LocationService] Last known position:',
+                lastKnown.coords.longitude,
+                lastKnown.coords.latitude
+              );
               updateLocation(lastKnown.coords.longitude, lastKnown.coords.latitude);
             }
           } catch {
@@ -87,7 +91,11 @@ export const useLocationService = (): LocationState => {
           }).catch(() => null);
 
           if (initial) {
-            console.log('[LocationService] Initial position:', initial.coords.longitude, initial.coords.latitude);
+            console.log(
+              '[LocationService] Initial position:',
+              initial.coords.longitude,
+              initial.coords.latitude
+            );
             updateLocation(initial.coords.longitude, initial.coords.latitude);
           }
 
@@ -134,7 +142,7 @@ export const useLocationService = (): LocationState => {
 
     // Start periodic pings (every 30 seconds)
     const cleanup = telemetryService.startPinging(30000);
-    
+
     return cleanup;
   }, [status]);
 

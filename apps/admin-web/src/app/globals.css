@@ -62,7 +62,7 @@
 
   /* Safe Area for fixed navigation */
   --admin-safe-area: 120px;
-  
+
   /* Command Center Redesign Variables */
   --sidebar-width: 320px;
   --command-dock-height: 80px;
@@ -103,7 +103,9 @@ body {
   font-family: var(--font-sans);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .waldenburg-display {

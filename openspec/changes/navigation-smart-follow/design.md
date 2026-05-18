@@ -11,15 +11,18 @@ La navegación requiere que la cámara se comporte de forma pasiva (permitiendo 
 ## Decisions
 
 ### 1. FlyTo al Usuario en Planificación
+
 - **Acción**: Al cambiar `isPlanning` de `false` a `true`, disparar `flyTo` a `userCoords` con `zoom: 17` y `pitch: 45`.
 - **Razón**: Centra al usuario en el mapa justo cuando va a empezar a moverse.
 
 ### 2. Gestión de Estados (Sticky vs Free)
+
 - **Modo Seguimiento (Sticky)**: `cameraMode: MapCameraMode.FOLLOW_WITH_HEADING`.
 - **Modo Libre (Free)**: `cameraMode: MapCameraMode.FREE`.
 - **Lógica**: `MapContent` detecta gestos manuales y cambia a `FREE`. El botón `Recenter` cambia de nuevo a `FOLLOW_WITH_HEADING`.
 
 ### 3. Sincronización de UI
+
 - El botón de `Recenter` en `AdaptiveControlOverlay` debe mostrar un estado visual "activo" cuando el seguimiento está habilitado.
 
 ## Risks

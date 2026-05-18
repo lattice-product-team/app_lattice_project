@@ -24,7 +24,6 @@ const backendEnvSchema = z.object({
   DB_NAME: z.string().default('lattice_db'),
   DB_SSL: z.enum(['true', 'false']).default('false'),
 
-
   // Redis
   REDIS_URL: z.string().url().optional(),
   REDIS_HOST: z.string().default('localhost'),

@@ -40,8 +40,16 @@ interface NavigationState {
 
   // Actions
   setRoutes: (
-    routes: { driving: RouteGeoJSON | null; walking: RouteGeoJSON | null; bicycle: RouteGeoJSON | null },
-    metadata: { driving: RouteMetadata | null; walking: RouteMetadata | null; bicycle: RouteMetadata | null }
+    routes: {
+      driving: RouteGeoJSON | null;
+      walking: RouteGeoJSON | null;
+      bicycle: RouteGeoJSON | null;
+    },
+    metadata: {
+      driving: RouteMetadata | null;
+      walking: RouteMetadata | null;
+      bicycle: RouteMetadata | null;
+    }
   ) => void;
   setNavigating: (navigating: boolean) => void;
   setPlanning: (isPlanning: boolean) => void;
@@ -63,13 +71,13 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
   transportMode: 'walking',
   nextInstruction: null,
   isFetching: false,
-  
+
   routes: {
     driving: null,
     walking: null,
     bicycle: null,
   },
-  
+
   metadata: {
     driving: null,
     walking: null,
@@ -116,7 +124,7 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     } catch (e) {}
     set({ isPlanning });
   },
-  
+
   startNavigation: (islandState) => {
     console.log('[NavigationStore] startNavigation triggered');
     try {
@@ -125,18 +133,18 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
       const { useEventStore } = require('../../event/store/useEventStore');
       const { withSpring } = require('react-native-reanimated');
       const { theme } = require('../../../styles/theme');
-      
+
       const uiStore = useMapUIStore.getState();
-      
+
       // 1. Update state
-      set({ 
-        isPlanning: false, 
-        isNavigating: true 
+      set({
+        isPlanning: false,
+        isNavigating: true,
       });
 
       // 2. Transition UI state
       uiStore.setUIState(MapUIState.NAVIGATING);
-      
+
       // 3. DO NOT force camera changes. Keep it static as per user requirement.
       // Removed: uiStore.setIsProgrammaticMove(true);
       // Removed: uiStore.setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
@@ -147,7 +155,6 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
       }
 
       // 5. REMOVED: Do NOT clear selections. We want to return to them later.
-      
     } catch (e) {
       console.warn('[NavigationStore] startNavigation failed:', e);
     }
@@ -161,14 +168,14 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     try {
       const { useMapUIStore, MapUIState, MapCameraMode } = require('../../map/store/useMapUIStore');
       const uiStore = useMapUIStore.getState();
-      
+
       // Atomic update of all relevant states
       uiStore.setUIState(MapUIState.PLANNING);
       uiStore.setCameraMode(MapCameraMode.FREE);
-      
-      set({ 
-        isNavigating: false, 
-        isPlanning: true 
+
+      set({
+        isNavigating: false,
+        isPlanning: true,
       });
     } catch (e) {
       console.warn('[NavigationStore] stopNavigation failed:', e);
@@ -180,10 +187,13 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       const { usePOIStore } = require('../../poi/store/usePOIStore');
       const { useEventStore } = require('../../event/store/useEventStore');
-      
-      const hasSelection = usePOIStore.getState().selectedPoi || useEventStore.getState().selectedEvent;
-      
-      useMapUIStore.getState().setUIState(hasSelection ? MapUIState.POI_DETAIL : MapUIState.EXPLORING);
+
+      const hasSelection =
+        usePOIStore.getState().selectedPoi || useEventStore.getState().selectedEvent;
+
+      useMapUIStore
+        .getState()
+        .setUIState(hasSelection ? MapUIState.POI_DETAIL : MapUIState.EXPLORING);
     } catch (e) {}
     set({
       currentRoute: null,

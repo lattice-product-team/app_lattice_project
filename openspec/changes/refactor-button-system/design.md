@@ -5,6 +5,7 @@ The mobile application currently uses a `PremiumButton` component which is visua
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Replace `PremiumButton` with a new `Button` component.
 - Implement 4 variants: `primary`, `subdued`, `tertiary`, `ghost`.
 - Ensure each variant has a distinct implementation for Light and Dark modes (8 total states).
@@ -12,13 +13,16 @@ The mobile application currently uses a `PremiumButton` component which is visua
 - Add haptic feedback and smooth press animations.
 
 **Non-Goals:**
+
 - Creating a separate "Link" component (can be a ghost button variant).
 - Redesigning every single custom button in the app (focus on the primary reusable ones).
 
 ## Decisions
 
 ### 1. Component Interface
+
 The new `Button` will use a standard set of props:
+
 - `label`: string
 - `onPress`: () => void
 - `variant`: 'primary' | 'subdued' | 'tertiary' | 'ghost'
@@ -28,6 +32,7 @@ The new `Button` will use a standard set of props:
 - `style`: ViewStyle (for layout overrides)
 
 ### 2. Styling Strategy (8 States: 4 per theme)
+
 - **Primary**:
   - Light: `bg: brand.primary`, `text: text.inverse`
   - Dark: `bg: brand.primary`, `text: text.inverse`
@@ -43,10 +48,12 @@ The new `Button` will use a standard set of props:
 - **No Gradients**: All backgrounds will use solid colors or alpha-blended brand colors.
 
 ### 3. Animation & Feedback
+
 - Use `Animated.Value` for scale and opacity changes on press.
 - Integrate `Haptics.impactAsync` for a premium feel.
 
 ### 4. Migration Path
+
 - Create `Button.tsx`.
 - Identify all `PremiumButton` usages.
 - Replace one by one, mapping `variant="primary"` to the new `primary` style.

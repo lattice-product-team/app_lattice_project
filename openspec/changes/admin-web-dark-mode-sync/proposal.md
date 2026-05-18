@@ -13,11 +13,13 @@ The `admin-web` dashboard currently forces a light theme regardless of the user'
 ## Capabilities
 
 ### New Capabilities
+
 - `theme-management`: Handles the global theme state, system preference detection, manual overrides, and persistence across sessions.
 - `map-theme-sync`: Extends the theme state to the geographic visualization layer.
 - `theme-toggle-ui`: Provides a visual interface for users to manually switch themes with animated feedback.
 
 ### Modified Capabilities
+
 - None.
 
 ## Impact

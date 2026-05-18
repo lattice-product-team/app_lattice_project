@@ -2,7 +2,7 @@ import { Callout } from 'nextra/components'
 
 # Custom Infrastructure & Environment Manual
 
-This manual provides instructions for advanced configurations, custom environment tuning, and native infrastructure setups. 
+This manual provides instructions for advanced configurations, custom environment tuning, and native infrastructure setups.
 
 <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', padding: '12px 0' }}>
   <img src="/assets/mockups/map-black-1.png" alt="Relational Spatial Maps (Dark Mode)" style={{ height: '360px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
@@ -42,14 +42,17 @@ cp .env.example .env
 Lattice requires **PostGIS** (PostgreSQL Geospatial Extension) to manage coordinate grids, event boundaries, and active crowd zones. For complete details on the relational layouts, composite keys, and spatial fields, refer to our [Database Schema Architecture Guide](../architecture/database-schema.md).
 
 ### Option A: Using Docker (Recommended)
+
 Start the pre-configured Postgres container defined in `docker-compose.yml`:
 
 ```bash
 docker compose up db -d
 ```
+
 _This starts a `postgis/postgis:15-3.3` image and exposes it on port `5433` as defined in your `.env`._
 
 ### Option B: Local Installation on Host PostgreSQL
+
 If you choose to use an existing PostgreSQL server on your host machine:
 
 1. Ensure the PostgreSQL service is active.
@@ -65,6 +68,7 @@ If you choose to use an existing PostgreSQL server on your host machine:
 4. Update your `.env` file's `DATABASE_URL` to point to port `5432` or your custom host port.
 
 ### Migrating and Seeding Data
+
 Once the database service is running and accessible, run the schema migrations and load the master seed data (default events, points of interest, paths, and admin accounts):
 
 ```bash
@@ -97,6 +101,7 @@ Lattice utilizes the **Valhalla Routing Engine** to compute custom, optimized na
 To spin up the supporting containers separately:
 
 ### Start the Redis Caching Server
+
 Redis handles session caching and temporary telemetry buffers:
 
 ```bash
@@ -104,6 +109,7 @@ docker compose up redis -d
 ```
 
 ### Launching Application Servers
+
 Once these database, caching, and routing containers are active, please refer directly to the [Getting Started Guide](./getting-started.md#step-4-start-applications) for dev scripts to spin up the API server, Admin panel, and mobile Metro bundlers.
 
 ---

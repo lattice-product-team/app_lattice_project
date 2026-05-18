@@ -11,57 +11,62 @@ interface ReviewSectionProps {
   sourceUrl?: string;
 }
 
-export const ReviewSection = React.memo(({ rating, reviewsCount, snippets, sourceUrl }: ReviewSectionProps) => {
-  const theme = useAppTheme();
+export const ReviewSection = React.memo(
+  ({ rating, reviewsCount, snippets, sourceUrl }: ReviewSectionProps) => {
+    const theme = useAppTheme();
 
-  const renderStars = (score: number) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      if (i <= score) {
-        stars.push(<Star key={i} size={16} color="#FFD700" fill="#FFD700" />);
-      } else if (i - 0.5 <= score) {
-        stars.push(<StarHalf key={i} size={16} color="#FFD700" fill="#FFD700" />);
-      } else {
-        stars.push(<Star key={i} size={16} color="#FFD700" />);
+    const renderStars = (score: number) => {
+      const stars = [];
+      for (let i = 1; i <= 5; i++) {
+        if (i <= score) {
+          stars.push(<Star key={i} size={16} color="#FFD700" fill="#FFD700" />);
+        } else if (i - 0.5 <= score) {
+          stars.push(<StarHalf key={i} size={16} color="#FFD700" fill="#FFD700" />);
+        } else {
+          stars.push(<Star key={i} size={16} color="#FFD700" />);
+        }
       }
-    }
-    return stars;
-  };
+      return stars;
+    };
 
-  if (snippets.length === 0 && rating === 0) return null;
+    if (snippets.length === 0 && rating === 0) return null;
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.ratingRow}>
-          <Text style={[styles.ratingText, { color: theme.colors.text.primary }]}>
-            {rating.toFixed(1)}
-          </Text>
-          <View style={styles.stars}>{renderStars(rating)}</View>
-          <Text style={[styles.countText, { color: theme.colors.text.muted }]}>
-            ({reviewsCount.toLocaleString()})
-          </Text>
-        </View>
-        {sourceUrl && (
-          <TouchableOpacity onPress={() => Linking.openURL(sourceUrl)}>
-            <ExternalLink size={20} color="#00AF87" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.snippets}>
-        {snippets.slice(0, 3).map((text, index) => (
-          <View key={index} style={styles.snippetItem}>
-            <Quote size={16} color={theme.colors.text.muted} fill={theme.colors.glass.subtle} />
-            <Text style={[styles.snippetText, { color: theme.colors.text.secondary }]} numberOfLines={2}>
-              {text}
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.ratingRow}>
+            <Text style={[styles.ratingText, { color: theme.colors.text.primary }]}>
+              {rating.toFixed(1)}
+            </Text>
+            <View style={styles.stars}>{renderStars(rating)}</View>
+            <Text style={[styles.countText, { color: theme.colors.text.muted }]}>
+              ({reviewsCount.toLocaleString()})
             </Text>
           </View>
-        ))}
+          {sourceUrl && (
+            <TouchableOpacity onPress={() => Linking.openURL(sourceUrl)}>
+              <ExternalLink size={20} color="#00AF87" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.snippets}>
+          {snippets.slice(0, 3).map((text, index) => (
+            <View key={index} style={styles.snippetItem}>
+              <Quote size={16} color={theme.colors.text.muted} fill={theme.colors.glass.subtle} />
+              <Text
+                style={[styles.snippetText, { color: theme.colors.text.secondary }]}
+                numberOfLines={2}
+              >
+                {text}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
-    </View>
-  );
-});
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {

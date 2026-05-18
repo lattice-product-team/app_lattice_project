@@ -3,15 +3,14 @@ import { StyleSheet, View, Text, Pressable, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Footprints, Bike, Car } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  interpolate, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
   Extrapolation,
-  SharedValue
+  SharedValue,
 } from 'react-native-reanimated';
-
 
 // Hooks & State
 import { useNavigationStore } from '../store/useNavigationStore';
@@ -33,19 +32,19 @@ interface RoutePlanningSheetProps {
 export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningSheetProps) => {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  
-  const { 
-    isPlanning, 
+
+  const {
+    isPlanning,
     isNavigating,
-    setPlanning, 
+    setPlanning,
     startNavigation,
-    transportMode, 
-    setTransportMode, 
+    transportMode,
+    setTransportMode,
     routeMetadata,
     metadata,
     isFetching,
   } = useNavigationStore();
-  
+
   const { selectedPoi } = usePOIStore();
   const { selectedEvent } = useEventStore();
 
@@ -60,17 +59,12 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
   const rContainerStyle = useAnimatedStyle(() => {
     const height = 320 + insets.bottom;
     const isHidden = internalState.value < 0.01;
-    
+
     return {
       transform: [
-        { 
-          translateY: interpolate(
-            internalState.value, 
-            [0, 1], 
-            [height, 0], 
-            Extrapolation.CLAMP
-          ) 
-        }
+        {
+          translateY: interpolate(internalState.value, [0, 1], [height, 0], Extrapolation.CLAMP),
+        },
       ],
       opacity: internalState.value,
       marginHorizontal: 16,
@@ -89,20 +83,19 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
   const hasRoute = !!(metadata[transportMode] || routeMetadata);
 
   return (
-    <Animated.View style={[
-      styles.container,
-      { 
-        backgroundColor: theme.colors.bg.surface,
-        borderColor: theme.colors.border.subtle,
-      },
-      rContainerStyle
-    ]}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.bg.surface,
+          borderColor: theme.colors.border.subtle,
+        },
+        rContainerStyle,
+      ]}
+    >
       <View style={styles.content}>
         <View style={styles.topActions}>
-          <CircularActionButton 
-            icon="X"
-            onPress={() => setPlanning(false)}
-          />
+          <CircularActionButton icon="X" onPress={() => setPlanning(false)} />
         </View>
 
         <View style={styles.modesContainer}>
@@ -128,27 +121,37 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
                 }}
                 style={[
                   styles.modeButton,
-                  { backgroundColor: isActive ? theme.colors.brand.primary : theme.colors.bg.elevation },
-                  !isAvailable && { opacity: 0.4 }
+                  {
+                    backgroundColor: isActive
+                      ? theme.colors.brand.primary
+                      : theme.colors.bg.elevation,
+                  },
+                  !isAvailable && { opacity: 0.4 },
                 ]}
               >
-                <Icon 
-                  size={24} 
-                  color={isActive ? theme.colors.text.inverse : theme.colors.text.muted} 
+                <Icon
+                  size={24}
+                  color={isActive ? theme.colors.text.inverse : theme.colors.text.muted}
                   strokeWidth={2.2}
                 />
                 <View style={styles.modeTextContainer}>
-                  <Text style={[
-                    styles.modeLabel, 
-                    { color: isActive ? theme.colors.text.inverse : theme.colors.text.primary }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.modeLabel,
+                      { color: isActive ? theme.colors.text.inverse : theme.colors.text.primary },
+                    ]}
+                  >
                     {mode === 'driving' ? 'Drive' : mode === 'walking' ? 'Walk' : 'Bike'}
                   </Text>
-                  <Text style={[
-                    styles.modeEta, 
-                    { color: isActive ? theme.colors.text.inverse : theme.colors.text.muted }
-                  ]}>
-                    {isFetching && !metadata[mode] ? '...' : formatDuration(metadata[mode]?.duration)}
+                  <Text
+                    style={[
+                      styles.modeEta,
+                      { color: isActive ? theme.colors.text.inverse : theme.colors.text.muted },
+                    ]}
+                  >
+                    {isFetching && !metadata[mode]
+                      ? '...'
+                      : formatDuration(metadata[mode]?.duration)}
                   </Text>
                 </View>
               </Pressable>
@@ -168,7 +171,13 @@ export const RoutePlanningSheet = ({ visibility, islandState }: RoutePlanningShe
 
           {/* Elevation / Slope Info for Active Modes */}
           {(transportMode === 'walking' || transportMode === 'bicycle') && hasRoute && (
-            <View style={[styles.metric, styles.metricBorder, { borderLeftColor: theme.colors.border.subtle }]}>
+            <View
+              style={[
+                styles.metric,
+                styles.metricBorder,
+                { borderLeftColor: theme.colors.border.subtle },
+              ]}
+            >
               <Text style={[styles.metricValue, { color: '#32D74B' }]}>
                 {transportMode === 'bicycle' ? '+14m' : '+8m'}
               </Text>

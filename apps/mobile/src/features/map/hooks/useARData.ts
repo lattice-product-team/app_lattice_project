@@ -15,7 +15,7 @@ export const useARData = () => {
   const { isVisible, filterMode, targetId, setContext } = useARStore();
   const userCoords = useLocationStore((s) => s.coords);
   const { allEvents } = useSearchEvents('');
-  
+
   const [activePois, setActivePois] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -33,11 +33,11 @@ export const useARData = () => {
       setLoading(true);
       try {
         // 1. Determine Spatial Context (Are we inside an event boundary?)
-        const eventsWithBoundaries = allEvents.filter(e => e.boundary?.coordinates?.[0]);
+        const eventsWithBoundaries = allEvents.filter((e) => e.boundary?.coordinates?.[0]);
         let activeEvent: LatticeEvent | null = null;
         let smallestArea = Infinity;
 
-        eventsWithBoundaries.forEach(event => {
+        eventsWithBoundaries.forEach((event) => {
           const polygon = event.boundary!.coordinates[0];
           if (isPointInPolygon(userPoint, polygon)) {
             const area = calculatePolygonArea(polygon);
@@ -62,47 +62,49 @@ export const useARData = () => {
             // B. CITY-SCALE MODE: Show distant events as Beacons
             setStatusMessage('DISCOVERING EVENTS');
             // We transform events into a POI-like structure for the AR renderer
-            const eventBeacons = allEvents.map(event => ({
-              type: 'Feature',
-              geometry: event.center,
-              properties: {
-                id: `event-${event.id}`,
-                name: event.name,
-                category: 'event_beacon', // Special category for custom rendering
-                isBeacon: true,
-              }
-            })).filter(e => e.geometry);
-            
+            const eventBeacons = allEvents
+              .map((event) => ({
+                type: 'Feature',
+                geometry: event.center,
+                properties: {
+                  id: `event-${event.id}`,
+                  name: event.name,
+                  category: 'event_beacon', // Special category for custom rendering
+                  isBeacon: true,
+                },
+              }))
+              .filter((e) => e.geometry);
+
             setActivePois(eventBeacons);
           }
-
         } else if (filterMode === ARFilterMode.SELECTED_EVENT) {
           // 3. Load pins for a specific event (Forced)
           const eventId = Number(targetId);
-          const event = allEvents.find(e => e.id === eventId);
-          
+          const event = allEvents.find((e) => e.id === eventId);
+
           setStatusMessage(`VIEWING ${(event?.name || 'EVENT').toUpperCase()}`);
           const spatial = await geoService.getEventSpatial(eventId);
           setActivePois(spatial?.features || []);
-
         } else if (filterMode === ARFilterMode.SPECIFIC_PIN) {
           // 4. Load a single pin (Forced)
           const poiId = Number(targetId);
           const poi = await geoService.getPOI(poiId);
-          
+
           if (poi && poi.geometry?.coordinates) {
             const [poiLon, poiLat] = poi.geometry.coordinates;
             const distance = calculateDistance(userLat, userLon, poiLat, poiLon);
-            
+
             if (distance < 15) {
               setStatusMessage(`🎯 ARRIVED AT ${(poi.name || 'POI').toUpperCase()}`);
             } else {
-              setStatusMessage(`TRACKING ${(poi.name || 'POI').toUpperCase()} (${Math.round(distance)}m)`);
+              setStatusMessage(
+                `TRACKING ${(poi.name || 'POI').toUpperCase()} (${Math.round(distance)}m)`
+              );
             }
           } else {
             setStatusMessage(`TRACKING POI`);
           }
-          
+
           setActivePois(poi ? [poi] : []);
         }
       } catch (error) {

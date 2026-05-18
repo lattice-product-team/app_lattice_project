@@ -13,9 +13,11 @@ The current Global Map interface suffers from layout congestion and poor interac
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-map-command-center`: Defines the requirements for the centralized map control interface, including search, layer management, and native labeling.
 
 ### Modified Capabilities
+
 <!-- No functional changes to core data services, only UI/UX re-architecture. -->
 
 ## Impact

@@ -13,9 +13,11 @@ La aplicación Lattice muestra un rendimiento excelente en iOS, pero presenta un
 ## Capabilities
 
 ### New Capabilities
+
 - `android-performance-profiling`: Implementación de herramientas de monitoreo de FPS y JS Thread para validación en tiempo real durante el desarrollo.
 
 ### Modified Capabilities
+
 - `premium-sheet-interaction`: Mejora de la fluidez en el despliegue de las hojas de detalles (`EventDetailSheet`) en Android.
 - `pure-ui-animation-bridge`: Ajustes específicos para Android para evitar el "bottleneck" del JS thread durante animaciones complejas en el `MapIndexPage`.
 

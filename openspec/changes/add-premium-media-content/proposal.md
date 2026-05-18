@@ -6,7 +6,7 @@ Actualmente, los eventos y lugares (POIs) solo cuentan con una imagen básica (`
 
 - **Esquema de Base de Datos**: Actualización de las tablas `events` y `points_of_interest` para incluir `banner_url` y `gallery_urls`.
 - **Adaptadores de Datos**: Modificación de `poiAdapter.ts` y `useDetailModel.ts` para mapear los nuevos campos multimedia.
-- **Interfaz de Detalle (Mobile)**: 
+- **Interfaz de Detalle (Mobile)**:
   - Rediseño de la cabecera para soportar imágenes de banner con efecto parallax.
   - Implementación de un carrusel dinámico en la sección de galería utilizando los datos reales de la base de datos.
 - **Deduplicación de Campos**: Consolidación de `imageUrl` como la foto de perfil/thumbnail principal.
@@ -14,9 +14,11 @@ Actualmente, los eventos y lugares (POIs) solo cuentan con una imagen básica (`
 ## Capabilities
 
 ### New Capabilities
+
 - `premium-media-gallery`: Sistema de visualización de galerías de fotos de alta resolución con soporte para carruseles interactivos.
 
 ### Modified Capabilities
+
 - `event-branding-model`: Ampliación del modelo de marca para incluir activos visuales secundarios (banners y activos de galería).
 - `poi-metadata-registry`: Inclusión de campos multimedia estándar en el registro de metadatos de puntos de interés.
 - `event-detail-sheet`: Actualización de los requisitos de renderizado para soportar hero images (banners) y contenido dinámico de galería.

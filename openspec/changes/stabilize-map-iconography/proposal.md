@@ -12,9 +12,11 @@ The current map marker implementation using `MarkerView` and `PointAnnotation` i
 ## Capabilities
 
 ### New Capabilities
+
 - `map-marker-system`: A centralized system for managing and rendering custom map markers with native-like stability.
 
 ### Modified Capabilities
+
 - map-pin-components: Updating requirements for coordinate synchronization, marker lifecycle, and hierarchical visibility.
 - zoom-based-discovery: Updating zoom thresholds for POI reveal to 13.5.
 

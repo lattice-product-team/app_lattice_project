@@ -5,6 +5,7 @@ El sistema de navegación actual utiliza una integración directa entre la selec
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Desacoplar el inicio de la navegación mediante un `RoutePlanningSheet`.
 - Implementar un modo de navegación "limpio" que oculte elementos de UI no relacionados.
 - Añadir un control de recentrado manual explícito durante la navegación.
@@ -12,6 +13,7 @@ El sistema de navegación actual utiliza una integración directa entre la selec
 - Soportar el modo de transporte bicicleta.
 
 **Non-Goals:**
+
 - Implementar recalculo de rutas en tiempo real (fuera de alcance para esta fase).
 - Cambiar el motor de renderizado de mapas.
 

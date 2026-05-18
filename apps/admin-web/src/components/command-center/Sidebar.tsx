@@ -8,7 +8,7 @@ import { Checkbox } from '@heroui/react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 
-const ThemeToggle = dynamic(() => import('./ThemeToggle').then(mod => mod.ThemeToggle), {
+const ThemeToggle = dynamic(() => import('./ThemeToggle').then((mod) => mod.ThemeToggle), {
   ssr: false,
 });
 
@@ -50,18 +50,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={cn(
-        "z-[200] bg-background border border-border shadow-massive flex flex-col overflow-hidden shrink-0",
-        "fixed left-8 top-8 bottom-8 rounded-[2.5rem] transition-all duration-500",
-        "animate-in slide-in-from-left duration-500",
-        isOpen ? 'w-[var(--sidebar-width)] translate-x-0 opacity-100' : 'w-0 -translate-x-full opacity-0 pointer-events-none'
+        'z-[200] bg-background border border-border shadow-massive flex flex-col overflow-hidden shrink-0',
+        'fixed left-8 top-8 bottom-8 rounded-[2.5rem] transition-all duration-500',
+        'animate-in slide-in-from-left duration-500',
+        isOpen
+          ? 'w-[var(--sidebar-width)] translate-x-0 opacity-100'
+          : 'w-0 -translate-x-full opacity-0 pointer-events-none'
       )}
     >
       <div className="px-8 pt-[calc(var(--admin-safe-area)+1rem)] pb-8 border-b border-border/10 shrink-0 flex justify-between items-center w-[var(--sidebar-width)]">
         <div>
-          <p className="text-[9px] font-medium uppercase tracking-[0.3em] text-gravel mb-1">Operative Context</p>
+          <p className="text-[9px] font-medium uppercase tracking-[0.3em] text-gravel mb-1">
+            Operative Context
+          </p>
           <h2 className="waldenburg-display text-admin-xl text-foreground">Control Panel</h2>
         </div>
-        <button 
+        <button
           onClick={onClose}
           className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-foreground hover:text-background transition-all duration-300 border border-border"
           title="Close Sidebar"
@@ -75,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <section>
           <div className="bg-surface/40 border border-border/20 rounded-xl px-4 py-2 flex items-center gap-3 transition-all focus-within:border-foreground/20">
             <Icons.Search className="w-3.5 h-3.5 text-gravel opacity-50" />
-            <input 
+            <input
               type="text"
               placeholder="Filter context..."
               defaultValue={searchParams.get('q') || ''}
@@ -95,8 +99,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 key={event.id}
                 className={cn(
-                  "flex items-center justify-between p-2.5 rounded-xl hover:bg-elevated transition-all cursor-pointer group",
-                  !visibleEventIds.has(event.id.toString()) && "opacity-60 grayscale-[0.3]"
+                  'flex items-center justify-between p-2.5 rounded-xl hover:bg-elevated transition-all cursor-pointer group',
+                  !visibleEventIds.has(event.id.toString()) && 'opacity-60 grayscale-[0.3]'
                 )}
                 onClick={() => isolateEventVisibility(event.id.toString())}
               >
@@ -106,37 +110,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className="w-2.5 h-2.5 rounded-full shadow-sm"
                       style={{ backgroundColor: event.primaryColor || '#000' }}
                     />
-                    {new Date() >= new Date(event.startDate) && new Date() <= new Date(event.endDate) && (
-                      <div 
-                        className="absolute inset-0 w-2.5 h-2.5 rounded-full animate-ping opacity-75"
-                        style={{ backgroundColor: event.primaryColor || '#000' }}
-                      />
-                    )}
+                    {new Date() >= new Date(event.startDate) &&
+                      new Date() <= new Date(event.endDate) && (
+                        <div
+                          className="absolute inset-0 w-2.5 h-2.5 rounded-full animate-ping opacity-75"
+                          style={{ backgroundColor: event.primaryColor || '#000' }}
+                        />
+                      )}
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-[11px] font-medium text-foreground truncate max-w-[140px] uppercase tracking-tight">
                       {event.name}
                     </span>
-                    <span className={cn(
-                      "text-[7px] font-medium uppercase tracking-[0.1em] mt-0.5",
-                      new Date() >= new Date(event.startDate) && new Date() <= new Date(event.endDate)
-                        ? "text-emerald-500"
+                    <span
+                      className={cn(
+                        'text-[7px] font-medium uppercase tracking-[0.1em] mt-0.5',
+                        new Date() >= new Date(event.startDate) &&
+                          new Date() <= new Date(event.endDate)
+                          ? 'text-emerald-500'
+                          : new Date() > new Date(event.endDate)
+                            ? 'text-gravel/40'
+                            : 'text-amber-500/80'
+                      )}
+                    >
+                      {new Date() >= new Date(event.startDate) &&
+                      new Date() <= new Date(event.endDate)
+                        ? '• Live Now'
                         : new Date() > new Date(event.endDate)
-                          ? "text-gravel/40"
-                          : "text-amber-500/80"
-                    )}>
-                      {new Date() >= new Date(event.startDate) && new Date() <= new Date(event.endDate)
-                        ? "• Live Now"
-                        : new Date() > new Date(event.endDate)
-                          ? "Completed"
-                          : "Scheduled"}
+                          ? 'Completed'
+                          : 'Scheduled'}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     className={cn(
-                      "h-7 w-7 flex items-center justify-center rounded-full transition-all",
+                      'h-7 w-7 flex items-center justify-center rounded-full transition-all',
                       radarEventIds.has(event.id.toString())
                         ? 'bg-ember text-white shadow-subtle'
                         : 'text-gravel hover:bg-border/50 opacity-40 group-hover:opacity-100'
@@ -157,14 +166,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ))}
           </div>
         </section>
-
       </div>
 
       {/* Sidebar Footer with Theme Toggle */}
       <div className="p-6 border-t border-border/10 flex items-center justify-between shrink-0 w-[var(--sidebar-width)]">
         <ThemeToggle />
         <div className="flex flex-col items-end">
-          <span className="text-[8px] font-medium uppercase tracking-widest text-gravel/60">Lattice OS</span>
+          <span className="text-[8px] font-medium uppercase tracking-widest text-gravel/60">
+            Lattice OS
+          </span>
           <span className="text-[7px] font-medium text-gravel/40 uppercase">v0.1.0-alpha</span>
         </div>
       </div>

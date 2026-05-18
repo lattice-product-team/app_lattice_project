@@ -13,9 +13,11 @@ The sheet transitions MUST utilize a spring physics model that conveys "mass" an
 ## ADDED Requirements
 
 ### Requirement: Android Interaction Responsiveness
+
 The system SHALL prioritize gesture responsiveness over visual complexity during sheet transitions on Android.
 
 #### Scenario: Adaptive Content Quality
+
 - **WHEN** the user is dragging the detail sheet on Android
 - **AND** the JS thread is busy
 - **THEN** the system MUST prioritize the sheet's translation over updating background filters or heavy image renders.

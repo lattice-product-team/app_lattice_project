@@ -36,7 +36,7 @@ export const useUnifiedSearch = (query: string) => {
 
   const searchResults = useMemo(() => {
     // Normalization
-    const normalizedEvents: SearchResult[] = events.map(e => ({
+    const normalizedEvents: SearchResult[] = events.map((e) => ({
       id: `event-${e.id}`,
       name: e.name,
       type: 'event',
@@ -48,7 +48,7 @@ export const useUnifiedSearch = (query: string) => {
       raw: e,
     }));
 
-    const normalizedPois: SearchResult[] = (poisData?.features || []).map(f => {
+    const normalizedPois: SearchResult[] = (poisData?.features || []).map((f) => {
       const poi = normalizePOI(f);
       return {
         id: `poi-${poi.id}`,
@@ -70,38 +70,41 @@ export const useUnifiedSearch = (query: string) => {
     }
 
     const searchLower = query.toLowerCase().trim();
-    const terms = searchLower.split(/\s+/).filter(t => t.length > 0);
+    const terms = searchLower.split(/\s+/).filter((t) => t.length > 0);
 
-    return allResults.filter(result => {
-      const name = result.name.toLowerCase();
-      const desc = result.description?.toLowerCase() || '';
-      const cat = result.category?.toLowerCase() || '';
-      const catLabel = result.categoryLabel?.toLowerCase() || '';
+    return allResults
+      .filter((result) => {
+        const name = result.name.toLowerCase();
+        const desc = result.description?.toLowerCase() || '';
+        const cat = result.category?.toLowerCase() || '';
+        const catLabel = result.categoryLabel?.toLowerCase() || '';
 
-      // "Intelligent" matching: check if ALL terms appear in ANY of the fields
-      return terms.every(term => 
-        name.includes(term) || 
-        desc.includes(term) || 
-        cat.includes(term) || 
-        catLabel.includes(term)
-      );
-    }).sort((a, b) => {
-      // Ranking: Exact name matches first, then startsWith
-      const aName = a.name.toLowerCase();
-      const bName = b.name.toLowerCase();
-      
-      const aExact = aName === searchLower;
-      const bExact = bName === searchLower;
-      if (aExact && !bExact) return -1;
-      if (!aExact && bExact) return 1;
+        // "Intelligent" matching: check if ALL terms appear in ANY of the fields
+        return terms.every(
+          (term) =>
+            name.includes(term) ||
+            desc.includes(term) ||
+            cat.includes(term) ||
+            catLabel.includes(term)
+        );
+      })
+      .sort((a, b) => {
+        // Ranking: Exact name matches first, then startsWith
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
 
-      const aStarts = aName.startsWith(searchLower);
-      const bStarts = bName.startsWith(searchLower);
-      if (aStarts && !bStarts) return -1;
-      if (!aStarts && bStarts) return 1;
-      
-      return aName.localeCompare(bName);
-    });
+        const aExact = aName === searchLower;
+        const bExact = bName === searchLower;
+        if (aExact && !bExact) return -1;
+        if (!aExact && bExact) return 1;
+
+        const aStarts = aName.startsWith(searchLower);
+        const bStarts = bName.startsWith(searchLower);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+
+        return aName.localeCompare(bName);
+      });
   }, [query, events, poisData]);
 
   return {

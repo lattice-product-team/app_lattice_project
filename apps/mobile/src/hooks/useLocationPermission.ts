@@ -43,11 +43,11 @@ export const useLocationPermission = () => {
         console.log('[Permission] D. Blocked permanently');
         setStatus('blocked');
         Alert.alert(
-          'Permisos de ubicación',
-          'Has denegado los permisos de ubicación de forma permanente. Por favor, actívalos en los ajustes de la aplicación.',
+          'Location Permissions',
+          'You have permanently denied location permissions. Please enable them in the application settings.',
           [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Abrir Ajustes', onPress: () => Linking.openSettings() },
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
           ]
         );
         return false;

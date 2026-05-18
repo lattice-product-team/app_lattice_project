@@ -5,19 +5,23 @@ The mobile map implementation on Android currently suffers from camera instabili
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Eliminate the "bounce" effect on Android when deselecting map items.
 - Modernize the camera tracking state management by adopting native library enums.
 - Simplify `MapCameraManager` by removing redundant prop mappings.
 - Ensure consistent 4-state tracking cycle (Free -> Follow -> Compass -> Course) across both platforms.
 
 **Non-Goals:**
+
 - Redesigning the Map UI components themselves.
 - Changing the underlying map library (MapLibre).
 
 ## Decisions
 
 ### 1. Adopt `UserTrackingMode` Integer Enum
+
 Instead of the custom string-based `MapCameraMode`, we will use the native `MapLibreGL.UserTrackingMode` integers in `useMapUIStore.ts`.
+
 - **Rationale**: Integer enums are more robust for native bridge communication and align with the library's internal state.
 - **Mapping**:
   - `0`: None (Free)
@@ -26,11 +30,15 @@ Instead of the custom string-based `MapCameraMode`, we will use the native `MapL
   - `3`: FollowWithCourse (Course)
 
 ### 2. State-Preserving `safetyReset` for Android
+
 Modify the `safetyReset` callback in `MapCameraManager.tsx` to explicitly include the current map center when running on Android.
+
 - **Rationale**: Android's `setCamera` implementation often re-centers on the last programmatic target if a new center is not provided. By passing the current center, we "lock" the position while resetting padding.
 
 ### 3. Direct Prop Mapping in `MapLibreGL.Camera`
+
 Update `MapCameraManager` to pass the `userTrackingMode` prop directly instead of separate `followUserLocation` and `followUserMode` props.
+
 - **Rationale**: The `userTrackingMode` prop is the modern way to control tracking in `maplibre-react-native` and reduces the logic footprint in our manager.
 
 ## Risks / Trade-offs

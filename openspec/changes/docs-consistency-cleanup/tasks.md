@@ -12,16 +12,13 @@
 - [x] 2.3 Correct the database port to `5433` in [troubleshooting.md](file:///Users/kore/Documents/Code/Projects/app_lattice_project/docs/guides/troubleshooting.md) and align package filter commands to root scripts.
 - [x] 2.4 Fix the broken light/dark nested icon image references on [tech-stack.md](file:///Users/kore/Documents/Code/Projects/app_lattice_project/docs/engineering/tech-stack.md) by pointing them directly to the flat SVGs under `public/img`.
 
-
 ## 3. Database & API Schema Alignment
 
 - [x] 3.1 Update the ER diagrams and documentation in [database-schema.md](file:///Users/kore/Documents/Code/Projects/app_lattice_project/docs/architecture/database-schema.md) to include the missing tables: `passkey_credentials`, `groups`, `group_members`, `saved_locations`, and `offline_packages`.
 - [x] 3.2 Align table primary keys (composite keys on `group_members` and string IDs on `passkey_credentials`) and fields (removing unused telemetry speed/bearing) to match Drizzle `schema.ts`.
 - [x] 3.3 Synchronize POI and mobility mode enums in [schemas.md](file:///Users/kore/Documents/Code/Projects/app_lattice_project/docs/api-spec/schemas.md) to accurately represent their Drizzle code equivalents.
 
-
 ## 4. Synchronization Verification
 
 - [x] 4.1 Execute `sync-docs.sh` manually from `apps/docs/` to compile all new Markdown updates into Nextra MDX files.
 - [x] 4.2 Run/restart `pnpm dev:docs` and verify that the local documentation site loads flawlessly, with all diagrams and links rendering in perfect, minimal, light-mode compatible style.
-

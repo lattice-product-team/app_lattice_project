@@ -6,8 +6,8 @@ The current AR implementation lacks contextual awareness, displaying generic pin
 
 - **Boundary-Aware AR Filtering**: Implementation of real-time check to determine if the user is inside an event's boundary (polygon).
 - **Dual-Mode AR Visualization**:
-    - **City-Scale Mode**: Shows large "Beacons" for events when the user is outside any boundary.
-    - **Event-Scale Mode**: Shows detailed "Pins" for POIs only within the active event boundary.
+  - **City-Scale Mode**: Shows large "Beacons" for events when the user is outside any boundary.
+  - **Event-Scale Mode**: Shows detailed "Pins" for POIs only within the active event boundary.
 - **Specific POI Tracking**: Support for tracking a single POI with a dedicated "Target" view.
 - **Immersive AR UI**: Automatic hiding of the Map/Explore navigation and search bar when AR is active to provide a full-screen experience.
 - **Contextual AR Access**: The "Use AR" button in POI details will now only be available if the user is within the event's boundary.
@@ -15,10 +15,12 @@ The current AR implementation lacks contextual awareness, displaying generic pin
 ## Capabilities
 
 ### New Capabilities
+
 - `contextual-ar-filtering`: Logic for switching AR modes based on user location relative to event polygons.
 - `immersive-ar-ui-manager`: System for managing the visibility of non-AR UI components when the AR overlay is active.
 
 ### Modified Capabilities
+
 - `event-poi-orchestration`: Updating how spatial data is filtered and passed to the AR scene based on boundary intersection.
 - `event-detail-sheet`: Updating the conditional visibility and behavior of the "Use AR" action.
 - `spatial-hierarchy-logic`: Incorporating boundary-in-polygon checks for mode switching.

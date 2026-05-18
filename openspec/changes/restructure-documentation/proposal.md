@@ -13,9 +13,11 @@ The project needs to comply with a specific 10-part documentation template provi
 ## Capabilities
 
 ### New Capabilities
+
 - `project-documentation`: The new 10-section documentation framework in `/docs` (lowercase English folders a-j).
 
 ### Modified Capabilities
+
 <!-- No existing functional capabilities are being modified, only documentation -->
 
 ## Impact

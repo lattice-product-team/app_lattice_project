@@ -35,12 +35,7 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
         [0, 1, 1, 0],
         Extrapolation.CLAMP
       );
-      const scale = interpolate(
-        zoomSharedValue.value,
-        [11.5, 13],
-        [0.6, 1],
-        Extrapolation.CLAMP
-      );
+      const scale = interpolate(zoomSharedValue.value, [11.5, 13], [0.6, 1], Extrapolation.CLAMP);
 
       return {
         opacity: isSelected ? 1 : opacity,
@@ -84,7 +79,11 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
 
     return (
       <View style={mapPinStyles.markerWrapper}>
-        <TouchableOpacity onPress={() => onPress(event)} activeOpacity={0.9} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <TouchableOpacity
+          onPress={() => onPress(event)}
+          activeOpacity={0.9}
+          style={{ alignItems: 'center', justifyContent: 'center' }}
+        >
           {/* CIRCULAR ICON (Zoomed In View) */}
           <Animated.View style={iconStyle}>
             <MapPinFrame
@@ -109,7 +108,6 @@ export const EventMarker: React.FC<EventMarkerProps> = React.memo(
                 </View>
               )}
             </MapPinFrame>
-
           </Animated.View>
         </TouchableOpacity>
       </View>

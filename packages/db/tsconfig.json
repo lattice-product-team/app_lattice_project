@@ -6,7 +6,5 @@
   },
   "include": ["src/**/*", "index.ts", "drizzle.config.ts", "src/**/*.json"],
   "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../core" }
-  ]
+  "references": [{ "path": "../core" }]
 }

@@ -78,8 +78,11 @@ const POI_METADATA: Record<string, { icon: any; color: string }> = {
 };
 
 const getBBox = (coords: any): [number, number, number, number] => {
-  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
-  
+  let minLng = Infinity,
+    minLat = Infinity,
+    maxLng = -Infinity,
+    maxLat = -Infinity;
+
   const process = (c: any) => {
     if (typeof c[0] === 'number') {
       minLng = Math.min(minLng, c[0]);
@@ -90,21 +93,23 @@ const getBBox = (coords: any): [number, number, number, number] => {
       c.forEach(process);
     }
   };
-  
+
   process(coords);
   return [minLng, minLat, maxLng, maxLat];
 };
 
 const isPointInPolygon = (point: [number, number], vs: [number, number][][]): boolean => {
-  const x = point[0], y = point[1];
+  const x = point[0],
+    y = point[1];
   let inside = false;
   // Use the first ring for simplicity
   const polygon = vs[0];
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][0], yi = polygon[i][1];
-    const xj = polygon[j][0], yj = polygon[j][1];
-    const intersect = ((yi > y) !== (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    const xi = polygon[i][0],
+      yi = polygon[i][1];
+    const xj = polygon[j][0],
+      yj = polygon[j][1];
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
     if (intersect) inside = !inside;
   }
   return inside;
@@ -115,69 +120,81 @@ const getCentroid = (coordinates: [number, number][][]): [number, number] => {
   return [(minLng + maxLng) / 2, (minLat + maxLat) / 2];
 };
 
-const MapMarker = React.memo(({ 
-  type, 
-  data, 
-  isSelected, 
-  onClick,
-  currentZoom = 0
-}: { 
-  type: 'event' | 'poi'; 
-  data: any; 
-  isSelected?: boolean;
-  onClick?: (data: any) => void;
-  currentZoom?: number;
-}) => {
-  const metadata = POI_METADATA[data.category] || POI_METADATA.default;
-  const size = type === 'event' ? 'w-10 h-10' : 'w-8 h-8';
-  const color = type === 'event' ? (data.primaryColor || '#F8D548') : metadata.color;
-  const Icon = type === 'event' ? Icons.Ticket : metadata.icon;
+const MapMarker = React.memo(
+  ({
+    type,
+    data,
+    isSelected,
+    onClick,
+    currentZoom = 0,
+  }: {
+    type: 'event' | 'poi';
+    data: any;
+    isSelected?: boolean;
+    onClick?: (data: any) => void;
+    currentZoom?: number;
+  }) => {
+    const metadata = POI_METADATA[data.category] || POI_METADATA.default;
+    const size = type === 'event' ? 'w-10 h-10' : 'w-8 h-8';
+    const color = type === 'event' ? data.primaryColor || '#F8D548' : metadata.color;
+    const Icon = type === 'event' ? Icons.Ticket : metadata.icon;
 
-  const coords = type === 'event' 
-    ? (data.center?.coordinates || (data.boundary ? getCentroid(data.boundary.coordinates) : null))
-    : data.geometry.coordinates;
+    const coords =
+      type === 'event'
+        ? data.center?.coordinates ||
+          (data.boundary ? getCentroid(data.boundary.coordinates) : null)
+        : data.geometry.coordinates;
 
-  if (!coords) return null;
+    if (!coords) return null;
 
-  // Dynamic scaling based on zoom to prevent markers from overwhelming boundaries
-  const zoomScale = isSelected ? 1.25 : (currentZoom < 14 ? 0.75 : 1);
-  const hideLabelByZoom = type === 'event' && currentZoom < 15;
+    // Dynamic scaling based on zoom to prevent markers from overwhelming boundaries
+    const zoomScale = isSelected ? 1.25 : currentZoom < 14 ? 0.75 : 1;
+    const hideLabelByZoom = type === 'event' && currentZoom < 15;
 
-  // Stability: Don't render markers if we are too far out
-  if (type === 'event' && currentZoom < 11) return null;
-  if (type === 'poi' && currentZoom < 14.5) return null;
+    // Stability: Don't render markers if we are too far out
+    if (type === 'event' && currentZoom < 11) return null;
+    if (type === 'poi' && currentZoom < 14.5) return null;
 
-  return (
-    <Marker
-      longitude={coords[0]}
-      latitude={coords[1]}
-      anchor="bottom"
-      onClick={(e) => {
-        e.originalEvent.stopPropagation();
-        onClick?.(data);
-      }}
-    >
-      <div 
-        className="group relative cursor-pointer flex flex-col items-center transition-transform duration-300"
-        style={{ transform: `scale(${zoomScale})` }}
+    return (
+      <Marker
+        longitude={coords[0]}
+        latitude={coords[1]}
+        anchor="bottom"
+        onClick={(e) => {
+          e.originalEvent.stopPropagation();
+          onClick?.(data);
+        }}
       >
-        <div 
-          className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 ${isSelected ? 'ring-4 ring-white/30' : 'hover:scale-110'}`}
-          style={{ backgroundColor: color }}
+        <div
+          className="group relative cursor-pointer flex flex-col items-center transition-transform duration-300"
+          style={{ transform: `scale(${zoomScale})` }}
         >
-          <Icon className={type === 'event' ? "w-5 h-5" : "w-4 h-4"} color="white" strokeWidth={2.5} />
+          <div
+            className={`${size} rounded-full border-[2.5px] border-white shadow-md flex items-center justify-center transition-all duration-300 ${isSelected ? 'ring-4 ring-white/30' : 'hover:scale-110'}`}
+            style={{ backgroundColor: color }}
+          >
+            <Icon
+              className={type === 'event' ? 'w-5 h-5' : 'w-4 h-4'}
+              color="white"
+              strokeWidth={2.5}
+            />
+          </div>
+
+          {/* Label - visible on hover, if selected, or if it's an event and we are zoomed in */}
+          <div
+            className={`mt-1 bg-obsidian text-eggshell text-[10px] font-black uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-300 whitespace-nowrap ${
+              isSelected || (type === 'event' && !hideLabelByZoom)
+                ? 'opacity-100 scale-100'
+                : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'
+            }`}
+          >
+            {data.name}
+          </div>
         </div>
-        
-        {/* Label - visible on hover, if selected, or if it's an event and we are zoomed in */}
-        <div className={`mt-1 bg-obsidian text-eggshell text-[10px] font-black uppercase py-1 px-3 rounded-full shadow-lg transition-all duration-300 whitespace-nowrap ${
-          (isSelected || (type === 'event' && !hideLabelByZoom)) ? 'opacity-100 scale-100' : 'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100'
-        }`}>
-          {data.name}
-        </div>
-      </div>
-    </Marker>
-  );
-});
+      </Marker>
+    );
+  }
+);
 
 MapMarker.displayName = 'MapMarker';
 
@@ -208,7 +225,9 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   React.useEffect(() => {
     if (activeEventBoundary) {
       const isCollection = activeEventBoundary.type === 'FeatureCollection';
-      const isGlobal = isCollection ? activeEventBoundary.features?.[0]?.properties?.isGlobalFit : activeEventBoundary.properties?.isGlobalFit;
+      const isGlobal = isCollection
+        ? activeEventBoundary.features?.[0]?.properties?.isGlobalFit
+        : activeEventBoundary.properties?.isGlobalFit;
       const boundaryId = isGlobal ? 'global-fit' : JSON.stringify(activeEventBoundary);
       const isManualSelection = selectionSource === 'CLICK' || selectionSource === 'SEARCH';
 
@@ -216,7 +235,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
       // OR if this was a manual selection (click/search) to ensure it centers
       if (lastFittedBoundary.current === boundaryId && !isManualSelection) return;
 
-      const bbox = isCollection 
+      const bbox = isCollection
         ? getBBox(activeEventBoundary.features.map((f: any) => f.geometry.coordinates))
         : getBBox(activeEventBoundary.geometry.coordinates);
 
@@ -226,10 +245,10 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             [bbox[0], bbox[1]],
             [bbox[2], bbox[3]],
           ],
-          { 
-            padding: { top: 100, bottom: 100, left: 380, right: 480 }, 
-            duration: 1000, 
-            maxZoom: 16 
+          {
+            padding: { top: 100, bottom: 100, left: 380, right: 480 },
+            duration: 1000,
+            maxZoom: 16,
           }
         );
         lastFittedBoundary.current = boundaryId;
@@ -258,7 +277,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         center: [selectedPoi.lng, selectedPoi.lat],
         zoom: 17,
         duration: 1500,
-        padding: { top: 0, bottom: 0, left: 350, right: 0 } // Offset for the sidebar
+        padding: { top: 0, bottom: 0, left: 350, right: 0 }, // Offset for the sidebar
       });
     }
   }, [selectedPoi?.lng, selectedPoi?.lat, selectionSource]);
@@ -269,11 +288,11 @@ export const AdminMap: React.FC<AdminMapProps> = ({
 
       // Handle layer clicks first (Events via boundaries)
       const features = e.features;
-      const boundaryFeature = features?.find(f => f.layer.id === 'global-boundaries-fill');
-      
+      const boundaryFeature = features?.find((f) => f.layer.id === 'global-boundaries-fill');
+
       if (boundaryFeature && mode === 'GLOBAL_VIEW' && onAssetClick) {
         const eventId = boundaryFeature.properties?.id;
-        const event = events.find(ev => String(ev.id) === String(eventId));
+        const event = events.find((ev) => String(ev.id) === String(eventId));
         if (event) {
           onAssetClick(event);
           return;
@@ -329,8 +348,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
 
   const allBoundariesGeoJSON = useMemo(() => {
     // If an asset is selected, only show that one (Focus Mode)
-    const filteredEvents = selectedAssetId 
-      ? events.filter(e => String(e.id) === String(selectedAssetId))
+    const filteredEvents = selectedAssetId
+      ? events.filter((e) => String(e.id) === String(selectedAssetId))
       : events;
 
     return {
@@ -346,8 +365,8 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   }, [events, selectedAssetId]);
 
   const allLabelsGeoJSON = useMemo(() => {
-    const filteredEvents = selectedAssetId 
-      ? events.filter(e => String(e.id) === String(selectedAssetId))
+    const filteredEvents = selectedAssetId
+      ? events.filter((e) => String(e.id) === String(selectedAssetId))
       : events;
 
     return {
@@ -368,7 +387,7 @@ export const AdminMap: React.FC<AdminMapProps> = ({
   const applyLayerFiltering = useCallback(() => {
     const map = mapRef.current?.getMap();
     if (!map) return;
-    
+
     const style = map.getStyle();
     if (!style || !style.layers) return;
 
@@ -378,10 +397,10 @@ export const AdminMap: React.FC<AdminMapProps> = ({
 
       const isOurLayer = layer.id.startsWith('global-');
       // More comprehensive list of native labels to keep visible
-      const isEssentialLabel = 
-        layer.id.includes('place') || 
-        layer.id.includes('road') || 
-        layer.id.includes('street') || 
+      const isEssentialLabel =
+        layer.id.includes('place') ||
+        layer.id.includes('road') ||
+        layer.id.includes('street') ||
         layer.id.includes('highway') ||
         layer.id.includes('water') ||
         layer.id.includes('poi') ||
@@ -420,9 +439,12 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     };
   }, [mapStyle, applyLayerFiltering]);
 
-  const handleMapLoad = useCallback((e: any) => {
-    applyLayerFiltering();
-  }, [applyLayerFiltering]);
+  const handleMapLoad = useCallback(
+    (e: any) => {
+      applyLayerFiltering();
+    },
+    [applyLayerFiltering]
+  );
 
   return (
     <div className="w-full h-full relative">
@@ -503,12 +525,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
                   'interpolate',
                   ['linear'],
                   ['heatmap-density'],
-                  0, 'rgba(0, 242, 255, 0)',
-                  0.1, 'rgba(0, 242, 255, 0.2)',
-                  0.3, 'rgba(110, 255, 158, 0.4)',
-                  0.5, 'rgba(255, 230, 0, 0.6)',
-                  0.8, 'rgba(255, 136, 0, 0.8)',
-                  1, 'rgba(255, 51, 0, 1)'
+                  0,
+                  'rgba(0, 242, 255, 0)',
+                  0.1,
+                  'rgba(0, 242, 255, 0.2)',
+                  0.3,
+                  'rgba(110, 255, 158, 0.4)',
+                  0.5,
+                  'rgba(255, 230, 0, 0.6)',
+                  0.8,
+                  'rgba(255, 136, 0, 0.8)',
+                  1,
+                  'rgba(255, 51, 0, 1)',
                 ],
                 // Smaller radius for precision but enough to see the density
                 'heatmap-radius': ['interpolate', ['linear'], ['zoom'], 0, 5, 18, 35],
@@ -524,18 +552,18 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="context-boundary-fill"
               type="fill"
-              paint={{ 
-                'fill-color': theme === 'dark' ? '#fff' : '#000', 
-                'fill-opacity': 0.05 
+              paint={{
+                'fill-color': theme === 'dark' ? '#fff' : '#000',
+                'fill-opacity': 0.05,
               }}
             />
             <Layer
               id="context-boundary-outline"
               type="line"
-              paint={{ 
-                'line-color': theme === 'dark' ? '#fff' : '#000', 
-                'line-width': 1, 
-                'line-dasharray': [2, 2] 
+              paint={{
+                'line-color': theme === 'dark' ? '#fff' : '#000',
+                'line-width': 1,
+                'line-dasharray': [2, 2],
               }}
             />
           </Source>
@@ -546,17 +574,17 @@ export const AdminMap: React.FC<AdminMapProps> = ({
             <Layer
               id="current-boundary-fill"
               type="fill"
-              paint={{ 
-                'fill-color': theme === 'dark' ? '#fff' : '#000', 
-                'fill-opacity': 0.1 
+              paint={{
+                'fill-color': theme === 'dark' ? '#fff' : '#000',
+                'fill-opacity': 0.1,
               }}
             />
             <Layer
               id="current-boundary-outline"
               type="line"
-              paint={{ 
-                'line-color': theme === 'dark' ? '#fff' : '#000', 
-                'line-width': 2 
+              paint={{
+                'line-color': theme === 'dark' ? '#fff' : '#000',
+                'line-width': 2,
               }}
             />
           </Source>
@@ -565,10 +593,10 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         {mode === 'GLOBAL_VIEW' && (
           <>
             {pois.map((poi) => (
-              <MapMarker 
-                key={`poi-${poi.id}`} 
-                type="poi" 
-                data={poi} 
+              <MapMarker
+                key={`poi-${poi.id}`}
+                type="poi"
+                data={poi}
                 onClick={onAssetClick}
                 currentZoom={_internalViewState.zoom}
               />
@@ -578,26 +606,33 @@ export const AdminMap: React.FC<AdminMapProps> = ({
 
         {/* Selected POI Marker (New POI creation mode) */}
         {mode === 'PICK_COORDINATE' && selectedPoi && (
-          <Marker 
-            longitude={selectedPoi.lng} 
-            latitude={selectedPoi.lat} 
+          <Marker
+            longitude={selectedPoi.lng}
+            latitude={selectedPoi.lat}
             anchor="bottom"
             draggable
             onDragEnd={handlePoiDrag}
           >
             <div className="flex flex-col items-center group cursor-grab active:cursor-grabbing">
-              <div 
+              <div
                 className="w-10 h-10 rounded-full border-[2.5px] border-white shadow-massive flex items-center justify-center transition-all duration-300 animate-in fade-in zoom-in"
-                style={{ backgroundColor: POI_METADATA[selectedCategory || 'default']?.color || '#000' }}
+                style={{
+                  backgroundColor: POI_METADATA[selectedCategory || 'default']?.color || '#000',
+                }}
               >
-                {React.createElement(POI_METADATA[selectedCategory || 'default']?.icon || Icons.MapPin, {
-                  className: "w-5 h-5",
-                  color: "white",
-                  strokeWidth: 2.5
-                })}
+                {React.createElement(
+                  POI_METADATA[selectedCategory || 'default']?.icon || Icons.MapPin,
+                  {
+                    className: 'w-5 h-5',
+                    color: 'white',
+                    strokeWidth: 2.5,
+                  }
+                )}
               </div>
               <div className="mt-2 bg-surface px-3 py-1 rounded-full shadow-lg border border-border transition-colors">
-                <span className="text-[8px] font-black uppercase tracking-widest text-foreground">Drag to adjust</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-foreground">
+                  Drag to adjust
+                </span>
               </div>
             </div>
           </Marker>
@@ -606,9 +641,9 @@ export const AdminMap: React.FC<AdminMapProps> = ({
         {/* Boundary Control Points */}
         {mode === 'DRAW_BOUNDARY' &&
           boundaryPoints.map((point, i) => (
-            <Marker 
-              key={`bp-${i}`} 
-              longitude={point[0]} 
+            <Marker
+              key={`bp-${i}`}
+              longitude={point[0]}
               latitude={point[1]}
               draggable
               onDragEnd={(e) => handleMarkerDrag(i, e)}
@@ -622,4 +657,3 @@ export const AdminMap: React.FC<AdminMapProps> = ({
     </div>
   );
 };
-

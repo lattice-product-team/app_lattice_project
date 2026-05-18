@@ -27,16 +27,22 @@ export const ThemeToggle: React.FC = () => {
       aria-label="Toggle theme"
     >
       <div className="relative w-5 h-5">
-        <div className={`absolute inset-0 transition-all duration-700 transform ${isDark ? 'rotate-0 scale-100 opacity-100' : 'rotate-90 scale-0 opacity-0'}`}>
+        <div
+          className={`absolute inset-0 transition-all duration-700 transform ${isDark ? 'rotate-0 scale-100 opacity-100' : 'rotate-90 scale-0 opacity-0'}`}
+        >
           <Icons.Moon className="w-5 h-5 text-signal-blue" />
         </div>
-        <div className={`absolute inset-0 transition-all duration-700 transform ${!isDark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'}`}>
+        <div
+          className={`absolute inset-0 transition-all duration-700 transform ${!isDark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'}`}
+        >
           <Icons.Sun className="w-5 h-5 text-ember" />
         </div>
       </div>
-      
+
       {/* Background glow effect on hover */}
-      <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${isDark ? 'bg-signal-blue' : 'bg-ember'}`} />
+      <div
+        className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${isDark ? 'bg-signal-blue' : 'bg-ember'}`}
+      />
     </button>
   );
 };

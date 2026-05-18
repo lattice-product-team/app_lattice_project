@@ -74,10 +74,10 @@ export const usePOIStore = create<POIState>((set) => ({
   },
 
   clearSelection: () => {
-    set({ 
-      selectedPoiId: null, 
-      selectedPoi: null, 
-      selectedCoords: null 
+    set({
+      selectedPoiId: null,
+      selectedPoi: null,
+      selectedCoords: null,
     });
   },
 
@@ -85,11 +85,11 @@ export const usePOIStore = create<POIState>((set) => ({
     if (isProcessingPOIAction) return;
 
     // Update local state first
-    set({ 
-      selectedPoi: null, 
-      selectedPoiId: null, 
+    set({
+      selectedPoi: null,
+      selectedPoiId: null,
       selectedCoords: null,
-      activeCategoryFilters: [] 
+      activeCategoryFilters: [],
     });
 
     if (!shouldSyncUI) return;
@@ -99,7 +99,7 @@ export const usePOIStore = create<POIState>((set) => ({
     try {
       const { useMapUIStore, MapUIState } = require('../../map/store/useMapUIStore');
       const currentState = useMapUIStore.getState().uiState;
-      
+
       // Force return to EXPLORING if we are deselecting
       if (currentState !== MapUIState.EXPLORING) {
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
@@ -153,15 +153,18 @@ export const usePOIStore = create<POIState>((set) => ({
 
   clearFilters: () => set({ activeCategoryFilters: [] }),
   getFilteredPOIs: (allPOIs, zoom = 0) => {
-    const { selectedEventId, userInsideEventId, activeCategoryFilters, selectedPoiId } = usePOIStore.getState();
+    const { selectedEventId, userInsideEventId, activeCategoryFilters, selectedPoiId } =
+      usePOIStore.getState();
 
     // 0. Navigation Mode Override
     try {
       // Access navigation state directly to avoid circular dependency
-      const isNavigating = require('../../navigation/store/useNavigationStore').useNavigationStore.getState().isNavigating;
+      const isNavigating =
+        require('../../navigation/store/useNavigationStore').useNavigationStore.getState()
+          .isNavigating;
       if (isNavigating) {
         // Only show the destination POI if one is selected
-        return allPOIs.filter(p => String(p.id) === String(selectedPoiId));
+        return allPOIs.filter((p) => String(p.id) === String(selectedPoiId));
       }
     } catch (e) {
       // Fallback silently if store is not accessible
@@ -171,10 +174,10 @@ export const usePOIStore = create<POIState>((set) => ({
     if (zoom < 12.0 && !selectedPoiId) return [];
 
     // Filter logic
-    const filtered = allPOIs.filter(p => {
+    const filtered = allPOIs.filter((p) => {
       // ALWAYS keep the selected POI
       if (selectedPoiId && String(p.id) === String(selectedPoiId)) return true;
-      
+
       // Zoom threshold for others
       if (zoom < 12.0) return false;
 

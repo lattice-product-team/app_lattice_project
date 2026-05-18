@@ -13,9 +13,11 @@ Currently, the category filters in the Level 2 Discovery Dashboard (the "Island"
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-discovery-filtering`: Defines the requirements for synchronized filtering across map and dashboard layers.
 
 ### Modified Capabilities
+
 - `poi-category-filtering`: Expand requirements to include the Discovery Dashboard as a source of filters and the Carousel as a target of filtering.
 
 ## Impact

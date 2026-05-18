@@ -12,9 +12,11 @@ Android users experience a frustrating "bounce" effect when deselecting POIs/Eve
 ## Capabilities
 
 ### New Capabilities
+
 - None.
 
 ### Modified Capabilities
+
 - `navigation-system`: Update tracking mode requirements to use native integer enums for improved Android stability.
 - `adaptive-map-controls`: Refine the 4-state recenter cycle to align with the new native tracking modes.
 

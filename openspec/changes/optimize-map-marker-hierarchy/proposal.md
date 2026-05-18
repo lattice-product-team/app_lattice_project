@@ -11,10 +11,12 @@ The map currently suffers from visual clutter where Event markers and their chil
 ## Capabilities
 
 ### New Capabilities
+
 - **map-marker-hierarchy**: Logic to manage parent-child relationships between map markers and their visibility thresholds.
 - **lod-visibility-engine**: A system to handle smooth transitions and fading of markers based on zoom level.
 
 ### Modified Capabilities
+
 - **navigation-system**: Update to handle POI visibility during active navigation to a specific event.
 
 ## Impact

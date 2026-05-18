@@ -18,7 +18,7 @@ export const useEventSync = () => {
     const unsubscribeEvents = subscribe('sync:events', (payload: any) => {
       console.log('[Sync] Event update received:', payload);
       queryClient.invalidateQueries({ queryKey: ['events-search'] });
-      
+
       // Optional: Visual/Haptic feedback if it's a new event
       if (payload.action === 'created') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

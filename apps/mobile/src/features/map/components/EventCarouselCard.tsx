@@ -2,11 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, Platform, Pressable as NativePressable } from 'react-native';
 import { Pressable as GHPressable } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
-import { 
-  Star, 
-  Calendar, 
-  MapPin 
-} from 'lucide-react-native';
+import { Star, Calendar, MapPin } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { typography } from '../../../styles/typography';
 import { getEventMetadata } from '../../../utils/poiUtils';
@@ -39,7 +35,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
   const theme = useAppTheme();
   const logicalCoords = useLocationStore((s) => s.logicalCoords);
   const discoveryLocation = useMapUIStore((s) => s.discoveryLocation);
-  
+
   const userCoords = discoveryLocation || logicalCoords;
 
   const metadata = getEventMetadata(event.type);
@@ -65,8 +61,9 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
   }, [event.date, event.startDate]);
 
   const { distanceText, durationText } = useMemo(() => {
-    if (!userCoords || !event.center?.coordinates) return { distanceText: null, durationText: null };
-    
+    if (!userCoords || !event.center?.coordinates)
+      return { distanceText: null, durationText: null };
+
     const d = calculateDistance(
       userCoords[1],
       userCoords[0],
@@ -80,9 +77,9 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
     // Safety check for invalid numbers
     if (!isFinite(d) || !isFinite(dur)) return { distanceText: null, durationText: null };
 
-    return { 
-      distanceText: formatDistance(d), 
-      durationText: formatDuration(dur) 
+    return {
+      distanceText: formatDistance(d),
+      durationText: formatDuration(dur),
     };
   }, [userCoords, event.center?.coordinates]);
 
@@ -150,7 +147,7 @@ export const EventCarouselCard = React.memo(({ event, onPress }: EventCarouselCa
                     {formattedDate}
                   </Text>
                 </View>
-                
+
                 {distanceText && (
                   <>
                     <View style={styles.detailSeparator} />

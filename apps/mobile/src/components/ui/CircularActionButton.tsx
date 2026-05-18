@@ -13,7 +13,7 @@ interface CircularActionButtonProps {
 }
 
 /**
- * A reusable circular action button typically used for top-level 
+ * A reusable circular action button typically used for top-level
  * header actions like Share, Close, Settings, etc.
  */
 export const CircularActionButton = ({
@@ -38,10 +38,7 @@ export const CircularActionButton = ({
         style,
       ]}
     >
-      <Icon 
-        size={iconSize} 
-        color={iconColor || theme.colors.text.primary} 
-      />
+      <Icon size={iconSize} color={iconColor || theme.colors.text.primary} />
     </Pressable>
   );
 };

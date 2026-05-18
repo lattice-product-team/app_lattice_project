@@ -91,10 +91,10 @@ export const SettingsGroup = () => {
   const router = useRouter();
 
   const handleLogout = () => {
-    Alert.alert('Cerrar Sesión', '¿Estás seguro de que quieres salir de Lattice?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert('Log Out', 'Are you sure you want to log out of Lattice?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Salir',
+        text: 'Log Out',
         style: 'destructive',
         onPress: () => {
           useAuthStore.getState().logout();
@@ -110,54 +110,48 @@ export const SettingsGroup = () => {
   return (
     <View style={styles.container}>
       <Text style={[styles.groupTitle, { color: theme.colors.text.muted }]}>
-        Cuenta y Seguridad
+        Account & Security
       </Text>
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
         <SettingsItem
           icon={User}
-          label="Información Personal"
-          onPress={() => handlePress('Información Personal')}
+          label="Personal Info"
+          onPress={() => handlePress('Personal Info')}
         />
         <SettingsItem
           icon={Shield}
-          label="Privacidad y Seguridad"
-          onPress={() => handlePress('Privacidad y Seguridad')}
+          label="Privacy & Security"
+          onPress={() => handlePress('Privacy & Security')}
         />
         <SettingsItem
           icon={Bell}
-          label="Notificaciones"
+          label="Notifications"
           isLast
-          onPress={() => handlePress('Notificaciones')}
+          onPress={() => handlePress('Notifications')}
         />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
 
-      <Text style={[styles.groupTitle, { color: theme.colors.text.muted }]}>Soporte</Text>
+      <Text style={[styles.groupTitle, { color: theme.colors.text.muted }]}>Support</Text>
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface }]}>
         <SettingsItem
           icon={HelpCircle}
-          label="Centro de Ayuda"
-          onPress={() => handlePress('Centro de Ayuda')}
+          label="Help Center"
+          onPress={() => handlePress('Help Center')}
         />
         <SettingsItem
           icon={Info}
-          label="Términos de Servicio"
+          label="Terms of Service"
           isLast
-          onPress={() => handlePress('Términos de Servicio')}
+          onPress={() => handlePress('Terms of Service')}
         />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
 
       <View style={[styles.groupCard, { backgroundColor: theme.colors.bg.surface, marginTop: 12 }]}>
-        <SettingsItem
-          icon={LogOut}
-          label="Cerrar Sesión"
-          destructive
-          isLast
-          onPress={handleLogout}
-        />
+        <SettingsItem icon={LogOut} label="Log Out" destructive isLast onPress={handleLogout} />
         <View style={[styles.cardBorder, { borderColor: theme.colors.glass.border }]} />
       </View>
     </View>

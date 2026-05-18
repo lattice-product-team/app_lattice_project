@@ -12,10 +12,12 @@ The `admin-web` currently lacks responsiveness, leading to UI collisions on smal
 ## Capabilities
 
 ### New Capabilities
+
 - `responsive-admin-layout`: Orchestrates the layout-wide responsiveness and safe-area margins for the admin interface.
 - `fluid-toolbar-system`: Provides a standardized, responsive framework for search, filters, and actions across all admin data views.
 
 ### Modified Capabilities
+
 <!-- No requirement changes to existing capabilities, this is a UI/UX refinement. -->
 
 ## Impact

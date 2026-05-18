@@ -116,11 +116,13 @@ export const AuthPromptSheet: React.FC<AuthPromptSheetProps> = ({
             </View>
 
             <View style={styles.actions}>
-              <Button 
-                label="GET STARTED" 
-                variant="primary" 
-                onPress={handleAction} 
-                rightIcon={<ArrowRight size={20} color={theme.colors.text.inverse} strokeWidth={2.5} />}
+              <Button
+                label="GET STARTED"
+                variant="primary"
+                onPress={handleAction}
+                rightIcon={
+                  <ArrowRight size={20} color={theme.colors.text.inverse} strokeWidth={2.5} />
+                }
               />
             </View>
           </View>

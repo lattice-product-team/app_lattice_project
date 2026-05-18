@@ -13,9 +13,11 @@ The production environment is currently experiencing critical failures due to mi
 ## Capabilities
 
 ### New Capabilities
+
 - `automated-map-provisioning`: Automatic download and build of OSM tiles during container startup via `tile_urls`.
 
 ### Modified Capabilities
+
 - `cross-environment-networking`: Align production networking with the `red_proxy` external network and explicit container naming.
 - `monolithic-api-architecture`: Simplify the monolith entry point by removing versioned prefixes and unifying route mounting.
 - `ci-cd-standards`: Update deployment requirements to handle host-user permission mapping.

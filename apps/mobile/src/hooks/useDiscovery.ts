@@ -7,7 +7,7 @@ import { useMapUIStore } from '../features/map/store/useMapUIStore';
 export function useDiscovery() {
   const { logicalCoords } = useLocationStore();
   const { discoveryLocation } = useMapUIStore();
-  
+
   // Prioritize locked discovery location if it exists, fallback to logicalCoords
   const finalCoords = discoveryLocation || logicalCoords;
   const lng = finalCoords?.[0];

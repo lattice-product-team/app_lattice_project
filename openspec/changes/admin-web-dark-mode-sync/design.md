@@ -5,6 +5,7 @@ The `admin-web` dashboard currently uses Tailwind CSS 4 and HeroUI for styling. 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Enable automatic theme synchronization with the user's system preferences.
 - Implement a manual theme toggle in the Sidebar with animated Sun/Moon icons.
 - Implement a fully functional dark mode aesthetic ("Obsidian" palette) across the entire admin dashboard.
@@ -12,28 +13,34 @@ The `admin-web` dashboard currently uses Tailwind CSS 4 and HeroUI for styling. 
 - Ensure zero hydration mismatches during theme initialization.
 
 **Non-Goals:**
+
 - Modifying themes in the `mobile` app or `docs` (out of scope for this change).
 
 ## Decisions
 
 ### 1. Choice of Theme Manager: `next-themes`
+
 **Decision**: Use `next-themes` to manage theme state and system synchronization.
 **Rationale**: It is the industry standard for Next.js applications, provides robust handling of system preferences, prevents hydration mismatches, and integrates perfectly with Tailwind's class-based dark mode.
 
 ### 2. Provider Integration
+
 **Decision**: Wrap the application with `ThemeProvider` inside `apps/admin-web/src/app/providers.tsx`.
 **Rationale**: Centralizing providers ensures that all client components (including `AdminMap` and `Sidebar`) have access to the theme context.
 
 ### 3. Theme Switch UI (ThemeToggle)
+
 **Decision**: Create a `ThemeToggle` component positioned in a new `footer` section of the `Sidebar.tsx`.
 **Rationale**: Placing it at the bottom-left of the Sidebar ensures it's always accessible without cluttering the main navigation or search areas.
 **Visuals**: Use `Sun` and `Moon` icons from Lucide (added to `Icons.tsx`). Implementation will use a button that toggles between themes with a CSS transition for the icons (e.g., rotation and opacity).
 
 ### 4. Map Style Dynamic Loading
+
 **Decision**: Utilize the `useTheme` hook from `next-themes` inside `AdminMap.tsx` to switch the `MAP_STYLE` constant to its dark variant when `resolvedTheme === 'dark'`.
 **Rationale**: `resolvedTheme` accounts for the "system" setting and manual overrides, ensuring the map stays in sync with the overall UI.
 
 ### 5. Color Palette Refinement
+
 **Decision**: Standardize on the "Obsidian" (#000000) and "Eggshell" (#fdfcfc) palette already partially defined in `globals.css`.
 **Rationale**: This aligns with the "Midnight Glass" aesthetic and provides a high-end command center feel.
 

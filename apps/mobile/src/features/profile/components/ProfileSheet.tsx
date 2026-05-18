@@ -1,12 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  Text,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { View, StyleSheet, Dimensions, Text, ActivityIndicator, Alert } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,14 +12,14 @@ import Animated, {
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { 
-  Settings, 
-  LogOut, 
-  ShieldCheck, 
-  Flame, 
-  Calendar, 
+import {
+  Settings,
+  LogOut,
+  ShieldCheck,
+  Flame,
+  Calendar,
   Trophy,
-  Share2
+  Share2,
 } from 'lucide-react-native';
 import { useAppTheme } from '../../../hooks/useAppTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -91,7 +84,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
   );
 
   const gesture = Gesture.Pan()
-    .activeOffsetY([-10, 10]) 
+    .activeOffsetY([-10, 10])
     .onStart(() => {
       startState.value = islandState.value;
     })
@@ -128,7 +121,7 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
       Extrapolation.CLAMP
     );
     const fullHeight = SCREEN_HEIGHT - (insets.top + 80);
-    const midHeight = 320; 
+    const midHeight = 320;
     const height = interpolate(
       islandState.value,
       [0, SNAP_POINTS.MID, 1],
@@ -136,7 +129,12 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
       Extrapolation.CLAMP
     );
 
-    const margin = interpolate(islandState.value, [SNAP_POINTS.MID, 0.8], [12, 0], Extrapolation.CLAMP);
+    const margin = interpolate(
+      islandState.value,
+      [SNAP_POINTS.MID, 0.8],
+      [12, 0],
+      Extrapolation.CLAMP
+    );
 
     return {
       height,
@@ -173,10 +171,10 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
   };
 
   const handleLogout = () => {
-    Alert.alert('Cerrar Sesión', '¿Estás seguro de que quieres salir de Lattice?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert('Log Out', 'Are you sure you want to log out of Lattice?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Salir',
+        text: 'Log Out',
         style: 'destructive',
         onPress: () => {
           handleCloseInternal();
@@ -189,21 +187,21 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
   const profileActions = [
     {
       id: 'share',
-      label: 'Compartir',
+      label: 'Share',
       icon: 'Share2',
       variant: 'tertiary' as const,
       onPress: () => {},
     },
     {
       id: 'settings',
-      label: 'Ajustes',
+      label: 'Settings',
       icon: 'Settings',
       variant: 'tertiary' as const,
       onPress: onSettings,
     },
     {
       id: 'logout',
-      label: 'Salir',
+      label: 'Log Out',
       icon: 'LogOut',
       variant: 'tertiary' as const,
       onPress: handleLogout,
@@ -226,8 +224,8 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
             {profile ? (
               <>
                 <SheetHeader onClose={handleCloseInternal} />
-                
-                <Animated.ScrollView 
+
+                <Animated.ScrollView
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={styles.scrollContent}
                   bounces={true}
@@ -239,68 +237,77 @@ export const ProfileSheet = ({ isOpen, onClose, onSettings, externalState }: Pro
                     <View style={styles.avatarContainer}>
                       <UserAvatar size={100} url={profile.avatarUrl} />
                     </View>
-                    
+
                     <Text style={[styles.profileName, { color: theme.colors.text.primary }]}>
                       {profile.name}
                     </Text>
-                    
+
                     {/* Level Progress Section - No background, aligned margins */}
                     <View style={styles.progressCard}>
                       <View style={styles.levelRow}>
                         <View style={styles.levelBadge}>
                           <ShieldCheck size={20} color={theme.colors.brand.primary} />
                           <Text style={[styles.levelText, { color: theme.colors.brand.primary }]}>
-                            Nivel {Math.floor((profile.stats.latticePoints || 0) / 100) + 1}
+                            Level {Math.floor((profile.stats.latticePoints || 0) / 100) + 1}
                           </Text>
                         </View>
                         <View style={styles.progressBarBg}>
-                          <View 
+                          <View
                             style={[
-                              styles.progressBarFill, 
-                              { 
-                                width: `${(profile.stats.latticePoints || 0) % 100}%`, 
-                                backgroundColor: theme.colors.brand.primary 
-                              }
-                            ]} 
+                              styles.progressBarFill,
+                              {
+                                width: `${(profile.stats.latticePoints || 0) % 100}%`,
+                                backgroundColor: theme.colors.brand.primary,
+                              },
+                            ]}
                           />
                         </View>
-                        <Text style={[styles.percentageText, { color: theme.colors.brand.primary }]}>
+                        <Text
+                          style={[styles.percentageText, { color: theme.colors.brand.primary }]}
+                        >
                           {(profile.stats.latticePoints || 0) % 100}%
                         </Text>
                       </View>
-                      <Text style={[styles.motivationalText, { color: theme.colors.text.secondary }]}>
-                        Estás a {(100 - (profile.stats.latticePoints || 0) % 100)} puntos del siguiente nivel
+                      <Text
+                        style={[styles.motivationalText, { color: theme.colors.text.secondary }]}
+                      >
+                        You are {100 - ((profile.stats.latticePoints || 0) % 100)} points away from
+                        the next level
                       </Text>
                     </View>
                   </View>
 
                   <ActionPillBar actions={profileActions} />
-                  
-                  <MetricGrid metrics={[
-                    {
-                      label: 'Actividades',
-                      value: `${profile.stats.eventsAttended || 0}`,
-                      icon: 'Calendar',
-                      color: '#6366f1',
-                    },
-                    {
-                      label: 'Racha',
-                      value: `${profile.stats.streak || 0}`,
-                      icon: 'Flame',
-                      color: '#ef4444',
-                    },
-                    {
-                      label: 'Tiempo',
-                      value: profile.stats.totalTime || '0h',
-                      icon: 'Trophy',
-                      color: '#eab308',
-                    },
-                  ]} />
-                  
+
+                  <MetricGrid
+                    metrics={[
+                      {
+                        label: 'Activities',
+                        value: `${profile.stats.eventsAttended || 0}`,
+                        icon: 'Calendar',
+                        color: '#6366f1',
+                      },
+                      {
+                        label: 'Streak',
+                        value: `${profile.stats.streak || 0}`,
+                        icon: 'Flame',
+                        color: '#ef4444',
+                      },
+                      {
+                        label: 'Time',
+                        value: profile.stats.totalTime || '0h',
+                        icon: 'Trophy',
+                        color: '#eab308',
+                      },
+                    ]}
+                  />
+
                   <View style={styles.content}>
-                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>Sobre mí</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+                      About me
+                    </Text>
                     <Text style={[styles.description, { color: theme.colors.text.secondary }]}>
-                      {profile.bio || "No hay descripción disponible."}
+                      {profile.bio || 'No description available.'}
                     </Text>
                   </View>
                   <View style={{ height: insets.bottom + 80 }} />
@@ -412,4 +419,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-

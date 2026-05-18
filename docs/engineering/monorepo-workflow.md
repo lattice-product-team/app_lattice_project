@@ -17,9 +17,11 @@ This guide describes how to develop efficiently within the Lattice monorepo once
 We use `pnpm` workspaces to manage dependencies across applications and shared packages without duplicate installs or package linking issues.
 
 ### Workspace Directory Layout
+
 Our monorepo packages are structured to keep code sharing clean and type-safe. For complete mappings of internal `@app/db`, `@app/types-schema`, and `@app/theme` dependencies, refer directly to the [Monorepo Structure Architecture Guide](../architecture/monorepo-structure.md).
 
 ### Adding Dependencies to Workspaces
+
 To add an external npm dependency to a specific workspace (e.g., adding `lodash` only to the server API):
 
 ```bash
@@ -33,6 +35,7 @@ pnpm add @app/db --filter server
 ```
 
 ### Running Workspace Scripts
+
 To run development scripts or tests in a specific package:
 
 ```bash
@@ -52,6 +55,7 @@ pnpm run build -r
 Lattice uses **Turborepo** to orchestrate tasks in the monorepo. It reads the dependency graph of our packages and executes builds, lints, and tests in parallel, caching the results to avoid repeating work.
 
 ### Core Pipelines defined in `turbo.json`
+
 - **`build`**: Compiles shared libraries (`@app/db`, `@app/core`) before compiling the applications (`server`, `mobile`, `admin-web`).
 - **`lint`**: Automatically runs ESLint across all projects in parallel.
 - **`test`**: Runs Jest/Vitest unit tests.

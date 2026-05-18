@@ -12,9 +12,11 @@ Android devices suffer from a "camera magnet" effect where the map remains locke
 ## Capabilities
 
 ### New Capabilities
+
 - `robust-camera-tracking`: A fail-safe camera tracking system that prioritizes user touch over programmatic locks on all platforms.
 
 ### Modified Capabilities
+
 - `adaptive-map-controls`: Update requirements for camera mode transitions to ensure immediate responsiveness.
 
 ## Impact

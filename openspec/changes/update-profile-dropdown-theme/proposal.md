@@ -9,18 +9,20 @@ The current user profile is a standard full-screen view (`/(main)/profile.tsx`) 
 - **Island Concealment**: When the profile overlay is active, the primary "Interactive Island" should be hidden or minimized to avoid visual clutter and focus the user's attention.
 - **Nivel 2 Behavior**: The profile overlay will have its own state management, defaulting to a "Nivel 2" (0.5 height) expansion.
 - **Visual Redesign**: Implement a new content layout based on the provided reference:
-    - Centralized profile summary (Name, "Confidence" label, and character illustration).
-    - Gamified progress bar (Level + Percentage).
-    - Summary card ("Waiting for hidden qualities...") with action buttons.
-    - Quick-stat cards (Daily activities, Streak, Time spent).
+  - Centralized profile summary (Name, "Confidence" label, and character illustration).
+  - Gamified progress bar (Level + Percentage).
+  - Summary card ("Waiting for hidden qualities...") with action buttons.
+  - Quick-stat cards (Daily activities, Streak, Time spent).
 - **Control Icons**: Top-bar layout with Settings (left) and Close (right) functionality.
 
 ## Capabilities
 
 ### New Capabilities
+
 - `profile-dropdown-view`: Specification for the new dropdown-based profile interface, its states (Nivel 2), and the gamified layout components.
 
 ### Modified Capabilities
+
 - `functional-profile-actions`: Update requirements to handle actions (Settings, Logout, etc.) within the dropdown context instead of a standalone screen.
 
 ## Impact

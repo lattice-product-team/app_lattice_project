@@ -11,22 +11,19 @@ The **Service Detail & Wait-line** screen provides users with immediate, granula
   <img src="/assets/mockups/details-pois-2.png" alt="Expanded Business Detail & Menu" style={{ height: '540px', borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }} />
 </div>
 
-
-
 ## Interactive Design Details
 
-*   **Interactive Semi-Transparent Map Underlay**: Simulates the mobile map interface running behind a premium sliding drawer.
-*   **Aesthetic Sliding Bottom Drawer**: Styled as a heavy glassmorphic sheet (`glass-panel`) with rounded corners, custom backdrop blur, and drag indicators.
-*   **Wait-Line Barometer**:
-    *   **Live Est. Wait**: Digital stopwatch readout (*12min Est. Wait*).
-    *   **Wait Bar**: A horizontal glowing gradient bar representing crowd levels, animating from yellow/orange to primary red to represent high traffic areas.
-*   **Top Menu Item Carousel**: A horizontally scrollable list showing featured products (e.g., *Pit Stop Burger*, *Turbo Fries*, *Nitro Cola*) with high-quality thumbnails, prices, and fast ingredient descriptions.
-*   **Expandable Vendor Accordions**: Includes links to allergen charts and user rating reviews (e.g., *4.8/5* stars).
-*   **Sticky Mobile Ordering Action**: Prominent bottom action button enabling users to **"Start Mobile Order"** immediately to bypass physical lines.
+- **Interactive Semi-Transparent Map Underlay**: Simulates the mobile map interface running behind a premium sliding drawer.
+- **Aesthetic Sliding Bottom Drawer**: Styled as a heavy glassmorphic sheet (`glass-panel`) with rounded corners, custom backdrop blur, and drag indicators.
+- **Wait-Line Barometer**:
+  - **Live Est. Wait**: Digital stopwatch readout (_12min Est. Wait_).
+  - **Wait Bar**: A horizontal glowing gradient bar representing crowd levels, animating from yellow/orange to primary red to represent high traffic areas.
+- **Top Menu Item Carousel**: A horizontally scrollable list showing featured products (e.g., _Pit Stop Burger_, _Turbo Fries_, _Nitro Cola_) with high-quality thumbnails, prices, and fast ingredient descriptions.
+- **Expandable Vendor Accordions**: Includes links to allergen charts and user rating reviews (e.g., _4.8/5_ stars).
+- **Sticky Mobile Ordering Action**: Prominent bottom action button enabling users to **"Start Mobile Order"** immediately to bypass physical lines.
 
 ---
 
 <Callout type="info">
 The HTML prototype of this screen can be found in the repository at [code.html](./code.html).
 </Callout>
-

@@ -11,28 +11,29 @@ export const getTickets = async (req: Request, res: Response) => {
   const userId = decoded.userId;
 
   try {
-    const userTickets = await db.select({
-      id: tickets.id,
-      code: tickets.code,
-      zoneName: tickets.zoneName,
-      gate: tickets.gate,
-      seatRow: tickets.seatRow,
-      seatNumber: tickets.seatNumber,
-      isActive: tickets.isActive,
-      createdAt: tickets.createdAt,
-      seatLocation: sql<string>`ST_AsGeoJSON(${tickets.seatLocation})`,
-      eventName: events.name,
-      eventColor: events.primaryColor,
-      eventBanner: events.bannerUrl,
-    })
-    .from(tickets)
-    .innerJoin(events, eq(tickets.eventId, events.id))
-    .where(eq(tickets.userId, userId));
-    
+    const userTickets = await db
+      .select({
+        id: tickets.id,
+        code: tickets.code,
+        zoneName: tickets.zoneName,
+        gate: tickets.gate,
+        seatRow: tickets.seatRow,
+        seatNumber: tickets.seatNumber,
+        isActive: tickets.isActive,
+        createdAt: tickets.createdAt,
+        seatLocation: sql<string>`ST_AsGeoJSON(${tickets.seatLocation})`,
+        eventName: events.name,
+        eventColor: events.primaryColor,
+        eventBanner: events.bannerUrl,
+      })
+      .from(tickets)
+      .innerJoin(events, eq(tickets.eventId, events.id))
+      .where(eq(tickets.userId, userId));
+
     // Parse GeoJSON
-    const parsedTickets = userTickets.map(t => ({
+    const parsedTickets = userTickets.map((t) => ({
       ...t,
-      seatLocation: t.seatLocation ? JSON.parse(t.seatLocation) : null
+      seatLocation: t.seatLocation ? JSON.parse(t.seatLocation) : null,
     }));
 
     res.json(parsedTickets);
@@ -65,30 +66,33 @@ export const claimTicket = async (req: Request, res: Response) => {
     }
 
     await db.update(tickets).set({ userId }).where(eq(tickets.code, ticket_code));
-    
-    const updatedTicket = await db.select({
-      id: tickets.id,
-      code: tickets.code,
-      zoneName: tickets.zoneName,
-      gate: tickets.gate,
-      seatRow: tickets.seatRow,
-      seatNumber: tickets.seatNumber,
-      isActive: tickets.isActive,
-      seatLocation: sql<string>`ST_AsGeoJSON(${tickets.seatLocation})`,
-      eventName: events.name,
-      eventColor: events.primaryColor,
-      eventBanner: events.bannerUrl,
-    })
-    .from(tickets)
-    .innerJoin(events, eq(tickets.eventId, events.id))
-    .where(eq(tickets.code, ticket_code));
 
-    res.json({ 
-      success: true, 
+    const updatedTicket = await db
+      .select({
+        id: tickets.id,
+        code: tickets.code,
+        zoneName: tickets.zoneName,
+        gate: tickets.gate,
+        seatRow: tickets.seatRow,
+        seatNumber: tickets.seatNumber,
+        isActive: tickets.isActive,
+        seatLocation: sql<string>`ST_AsGeoJSON(${tickets.seatLocation})`,
+        eventName: events.name,
+        eventColor: events.primaryColor,
+        eventBanner: events.bannerUrl,
+      })
+      .from(tickets)
+      .innerJoin(events, eq(tickets.eventId, events.id))
+      .where(eq(tickets.code, ticket_code));
+
+    res.json({
+      success: true,
       ticket_info: {
         ...updatedTicket[0],
-        seatLocation: updatedTicket[0].seatLocation ? JSON.parse(updatedTicket[0].seatLocation) : null
-      }
+        seatLocation: updatedTicket[0].seatLocation
+          ? JSON.parse(updatedTicket[0].seatLocation)
+          : null,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: String(error) });

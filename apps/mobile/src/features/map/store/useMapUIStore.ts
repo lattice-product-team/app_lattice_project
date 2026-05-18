@@ -19,7 +19,13 @@ export enum MapCameraMode {
   FOLLOW_WITH_COURSE = 3, // UserTrackingMode.FollowWithCourse
 }
 
-export type MapCameraTriggerSource = 'map_click' | 'list_click' | 'exploration' | 'recenter' | 'initial' | null;
+export type MapCameraTriggerSource =
+  | 'map_click'
+  | 'list_click'
+  | 'exploration'
+  | 'recenter'
+  | 'initial'
+  | null;
 
 interface MapUIStore {
   uiState: MapUIState;
@@ -76,34 +82,26 @@ export const useMapUIStore = create<MapUIStore>()(
       visibleBounds: null,
 
       setUIState: (uiState) => {
-        if (isProcessingSetUIState) return;
+        const current = get();
+        if (current.uiState === uiState) return;
 
-        const currentState = get().uiState;
-        if (currentState === uiState) return;
+        // Force FREE camera when returning to exploration to stop any centering/locks
+        const nextCameraMode =
+          uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : current.cameraMode;
 
-        isProcessingSetUIState = true;
+        set({ uiState, cameraMode: nextCameraMode });
+
+        // Atomic cleanup using direct calls instead of nested logic
         try {
-          // Update state first. Force FREE camera when returning to exploration to stop any centering/locks.
-          const cameraMode =
-            uiState === MapUIState.EXPLORING ? MapCameraMode.FREE : get().cameraMode;
-          set({ uiState, cameraMode });
-
-          // Cross-store cleanup to ensure only one mode is "active" across the app
           const { usePOIStore } = require('../../poi/store/usePOIStore');
           const { useNavigationStore } = require('../../navigation/store/useNavigationStore');
 
           if (uiState === MapUIState.EXPLORING) {
             usePOIStore.getState().deselect(false);
             useNavigationStore.getState().clearNavigation();
-          } else if (uiState === MapUIState.NAVIGATING) {
-            // We no longer deselect here. We want to keep the destination info.
-          } else if (uiState === MapUIState.POI_DETAIL) {
-            // We no longer clear navigation here.
           }
         } catch (e) {
-          console.warn('[MapUIStore] Cross-store cleanup failed:', e);
-        } finally {
-          isProcessingSetUIState = false;
+          console.warn('[MapUIStore] Async cleanup failed:', e);
         }
       },
 

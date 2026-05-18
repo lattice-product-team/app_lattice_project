@@ -1,20 +1,20 @@
 import { colors } from '@app/theme';
-import { 
-  Coffee, 
-  MapPin, 
-  User, 
-  Map, 
-  SquarePlus, 
-  LogIn, 
-  Users, 
-  Info, 
-  ShoppingBag, 
-  Music, 
-  Utensils, 
-  Laptop, 
-  Trophy, 
+import {
+  Coffee,
+  MapPin,
+  User,
+  Map,
+  SquarePlus,
+  LogIn,
+  Users,
+  Info,
+  ShoppingBag,
+  Music,
+  Utensils,
+  Laptop,
+  Trophy,
   Calendar,
-  LucideIcon
+  LucideIcon,
 } from 'lucide-react-native';
 
 export interface CategoryMetadata {
@@ -55,15 +55,15 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     label: 'Parking',
     strokeWidth: 2.5,
   },
-  wc: { 
-    icon: User, 
-    color: colors.semantic.dark.info, 
+  wc: {
+    icon: User,
+    color: colors.semantic.dark.info,
     label: 'Restrooms',
     strokeWidth: 2.5,
   },
-  toilet: { 
-    icon: User, 
-    color: colors.semantic.dark.info, 
+  toilet: {
+    icon: User,
+    color: colors.semantic.dark.info,
     label: 'Restrooms',
     strokeWidth: 2.5,
   },
@@ -93,15 +93,15 @@ const CATEGORY_MAP: Record<string, CategoryMetadata> = {
     label: 'Hospital',
     strokeWidth: 2.5,
   },
-  gate: { 
-    icon: LogIn, 
-    color: colors.brand.primary, 
+  gate: {
+    icon: LogIn,
+    color: colors.brand.primary,
     label: 'Access Point',
     strokeWidth: 2.5,
   },
-  entrance: { 
-    icon: LogIn, 
-    color: colors.brand.primary, 
+  entrance: {
+    icon: LogIn,
+    color: colors.brand.primary,
     label: 'Entrance',
     strokeWidth: 2.5,
   },
@@ -183,22 +183,30 @@ const DEFAULT_METADATA: CategoryMetadata = {
 
 export const getCategoryMetadata = (category?: string): CategoryMetadata => {
   if (!category) return DEFAULT_METADATA;
-  
+
   const normalized = category.toLowerCase().trim();
-  
+
   // 1. Exact match
   if (CATEGORY_MAP[normalized]) return CATEGORY_MAP[normalized];
-  
+
   // 2. Fuzzy keyword matching for event-specific strings (e.g. "infrastructure_gate")
   if (normalized.includes('gate') || normalized.includes('entrance')) return CATEGORY_MAP.gate;
-  if (normalized.includes('food') || normalized.includes('restaurant') || normalized.includes('drink')) return CATEGORY_MAP.restaurant;
-  if (normalized.includes('wc') || normalized.includes('toilet') || normalized.includes('restroom')) return CATEGORY_MAP.wc;
+  if (
+    normalized.includes('food') ||
+    normalized.includes('restaurant') ||
+    normalized.includes('drink')
+  )
+    return CATEGORY_MAP.restaurant;
+  if (normalized.includes('wc') || normalized.includes('toilet') || normalized.includes('restroom'))
+    return CATEGORY_MAP.wc;
   if (normalized.includes('parking')) return CATEGORY_MAP.parking;
   if (normalized.includes('info')) return CATEGORY_MAP.info;
-  if (normalized.includes('medical') || normalized.includes('hospital')) return CATEGORY_MAP.medical;
+  if (normalized.includes('medical') || normalized.includes('hospital'))
+    return CATEGORY_MAP.medical;
   if (normalized.includes('shop') || normalized.includes('store')) return CATEGORY_MAP.shop;
-  if (normalized.includes('grandstand') || normalized.includes('seat')) return CATEGORY_MAP.grandstand;
-  
+  if (normalized.includes('grandstand') || normalized.includes('seat'))
+    return CATEGORY_MAP.grandstand;
+
   return DEFAULT_METADATA;
 };
 
@@ -226,13 +234,13 @@ export const getStableColor = (id: string): string => {
     '#FF2D55', // Pink
     '#5AC8FA', // Light Blue
   ];
-  
+
   // Simple hash function
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = id.charCodeAt(i) + ((hash << 5) - hash);
   }
-  
+
   const index = Math.abs(hash) % eventColors.length;
   return eventColors[index];
 };

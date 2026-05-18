@@ -10,7 +10,12 @@ export const getMarkerMeta = (type: string, name: string) => {
   };
 
   // 1. Icon Mapping (Matches apps/mobile/assets/icons/*.svg)
-  if (t.includes('restaurant') || t.includes('food') || t.includes('drink') || t.includes('coffee')) {
+  if (
+    t.includes('restaurant') ||
+    t.includes('food') ||
+    t.includes('drink') ||
+    t.includes('coffee')
+  ) {
     meta.icon_name = 'restaurant';
     meta.color_hex = '#FF9500'; // Gastronomy Orange
   } else if (t.includes('parking')) {

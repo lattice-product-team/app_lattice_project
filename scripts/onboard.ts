@@ -4,7 +4,7 @@ import path from 'path';
 
 /**
  * Onboarding Script for App Lattice
- * 
+ *
  * This script automates the developer environment setup:
  * 1. Checks prerequisites (Node, pnpm, Docker)
  * 2. Initializes .env from .env.example
@@ -15,13 +15,13 @@ import path from 'path';
  */
 
 const colors = {
-  reset: "\x1b[0m",
-  bright: "\x1b[1m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  red: "\x1b[31m",
-  cyan: "\x1b[36m",
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  red: '\x1b[31m',
+  cyan: '\x1b[36m',
 };
 
 function log(message: string, color = colors.blue) {
@@ -44,7 +44,7 @@ async function main() {
   console.log(`========================================${colors.reset}\n`);
 
   // 1. Check Prerequisites
-  log("Checking prerequisites...");
+  log('Checking prerequisites...');
   const checks = [
     { name: 'pnpm', cmd: 'pnpm --version' },
     { name: 'docker', cmd: 'docker --version' },
@@ -62,52 +62,52 @@ async function main() {
   }
 
   // 2. Setup .env
-  log("Initializing environment files...");
+  log('Initializing environment files...');
   const envPath = path.resolve(process.cwd(), '.env');
   const envExamplePath = path.resolve(process.cwd(), '.env.example');
 
   if (!fs.existsSync(envPath)) {
     fs.copyFileSync(envExamplePath, envPath);
-    console.log("  ✅ Created .env from .env.example");
+    console.log('  ✅ Created .env from .env.example');
   } else {
-    console.log("  ℹ️  .env file already exists, skipping copy");
+    console.log('  ℹ️  .env file already exists, skipping copy');
   }
 
   // 3. Install Dependencies
-  run("pnpm install", "Installing project dependencies...");
+  run('pnpm install', 'Installing project dependencies...');
 
   // 4. Start Infrastructure
-  run("docker compose up -d db redis valhalla", "Starting Docker infrastructure services...");
+  run('docker compose up -d db redis valhalla', 'Starting Docker infrastructure services...');
 
   // 5. Wait for Database
-  log("Waiting for database to be ready...");
+  log('Waiting for database to be ready...');
   let retries = 10;
   let connected = false;
   while (retries > 0 && !connected) {
     try {
-      execSync("npx tsx scripts/check-db.ts", { stdio: 'ignore' });
+      execSync('npx tsx scripts/check-db.ts', { stdio: 'ignore' });
       connected = true;
-      console.log("  ✅ Database is ready!");
+      console.log('  ✅ Database is ready!');
     } catch (e) {
       retries--;
       if (retries > 0) {
         process.stdout.write(`  ⏳ Still waiting for DB (${retries} retries left)... \r`);
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     }
   }
 
   if (!connected) {
-    console.error("\n  ❌ Database failed to start or connection timeout.");
+    console.error('\n  ❌ Database failed to start or connection timeout.');
     process.exit(1);
   }
 
   // 6. Database Schema
-  run("pnpm db:generate", "Generating database client...");
-  run("pnpm db:migrate", "Running migrations...");
+  run('pnpm db:generate', 'Generating database client...');
+  run('pnpm db:migrate', 'Running migrations...');
 
   // 7. Seed Data
-  run("pnpm db:seed", "Seeding initial development data...");
+  run('pnpm db:seed', 'Seeding initial development data...');
 
   // 8. Success Summary
   console.log(`\n${colors.green}${colors.bright}========================================`);
@@ -120,7 +120,7 @@ async function main() {
   console.log(`\nHappy coding! 🚀\n`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
