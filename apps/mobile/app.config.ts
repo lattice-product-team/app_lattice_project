@@ -52,6 +52,7 @@ const envSchema = z.object({
   LAN_IP: z.string().optional(),
   GOOGLE_IOS_CLIENT_ID: z.string().optional(),
   GOOGLE_ANDROID_CLIENT_ID: z.string().optional(),
+  GOOGLE_WEB_CLIENT_ID: z.string().optional(),
 });
 
 // Validate process.env against schema
@@ -88,6 +89,10 @@ const androidScheme = env.GOOGLE_ANDROID_CLIENT_ID
   ? `com.googleusercontent.apps.${env.GOOGLE_ANDROID_CLIENT_ID.split('.apps.googleusercontent.com')[0]}`
   : undefined;
 
+const iosScheme = env.GOOGLE_IOS_CLIENT_ID
+  ? `com.googleusercontent.apps.${env.GOOGLE_IOS_CLIENT_ID.split('.apps.googleusercontent.com')[0]}`
+  : undefined;
+
 if (shouldLog) {
   console.log('------------------------------------');
   console.log(`🚀 [Config] Mode: ${process.env.NODE_ENV || 'development'}`);
@@ -103,7 +108,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'lattice',
+  scheme: [
+    'lattice',
+    ...(androidScheme ? [androidScheme] : []),
+    ...(iosScheme ? [iosScheme] : []),
+  ],
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
   ios: {
@@ -216,6 +225,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     mapTilerKey: process.env.MAPTILER_KEY || 'iqk4irD5FCOr6M6VHVWZ',
     googleIosClientId: env.GOOGLE_IOS_CLIENT_ID || 'missing-ios-client-id',
     googleAndroidClientId: env.GOOGLE_ANDROID_CLIENT_ID || 'missing-android-client-id',
+    googleWebClientId: env.GOOGLE_WEB_CLIENT_ID || 'missing-web-client-id',
     eas: {
       projectId: '6778ec40-b372-4c34-8df4-aef0c4bbf887',
     },

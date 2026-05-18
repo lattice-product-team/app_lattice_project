@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, Pressable, Alert, Linking, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Pressable, Alert, Linking, StyleSheet, Dimensions, Platform } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import { Button } from '../../src/components/ui/Button';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { AuthService } from '../../src/services/authService';
 import * as Google from 'expo-auth-session/providers/google';
+import { makeRedirectUri } from 'expo-auth-session';
 import { Image } from 'expo-image';
 
 const { height } = Dimensions.get('window');
@@ -29,9 +30,29 @@ export default function LoginScreen() {
     }
   }, [token, isGuest, router]);
 
+  const androidClientId = Constants.expoConfig?.extra?.googleAndroidClientId;
+  const iosClientId = Constants.expoConfig?.extra?.googleIosClientId;
+  const webClientId = Constants.expoConfig?.extra?.googleWebClientId;
+
+  // Manually construct the reversed client ID redirect URI to bypass Expo's Linking scheme check
+  // and prevent fallback to standard 'lattice:/oauth2redirect' which Google blocks.
+  const redirectUri = React.useMemo(() => {
+    if (Platform.OS === 'android' && androidClientId && androidClientId !== 'missing-android-client-id') {
+      const reversedId = androidClientId.split('.apps.googleusercontent.com')[0];
+      return `com.googleusercontent.apps.${reversedId}:/oauth2redirect`;
+    }
+    if (Platform.OS === 'ios' && iosClientId && iosClientId !== 'missing-ios-client-id') {
+      const reversedId = iosClientId.split('.apps.googleusercontent.com')[0];
+      return `com.googleusercontent.apps.${reversedId}:/oauth2redirect`;
+    }
+    return 'lattice:/oauth2redirect';
+  }, [androidClientId, iosClientId]);
+
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    iosClientId: Constants.expoConfig?.extra?.googleIosClientId,
-    androidClientId: Constants.expoConfig?.extra?.googleAndroidClientId,
+    iosClientId,
+    androidClientId,
+    webClientId: webClientId && webClientId !== 'missing-web-client-id' ? webClientId : undefined,
+    redirectUri,
   });
 
   useEffect(() => {
