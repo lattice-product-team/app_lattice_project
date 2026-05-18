@@ -106,10 +106,7 @@ export const calculateCentroid = (coords: [number, number][]): [number, number] 
  * Checks if a point [lng, lat] is inside a polygon [[lng, lat], ...]
  * using the Ray-casting algorithm.
  */
-export const isPointInPolygon = (
-  point: [number, number],
-  polygon: [number, number][]
-): boolean => {
+export const isPointInPolygon = (point: [number, number], polygon: [number, number][]): boolean => {
   const x = point[0];
   const y = point[1];
   let inside = false;

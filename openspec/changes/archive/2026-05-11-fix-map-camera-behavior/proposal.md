@@ -12,9 +12,11 @@ The current map camera behavior in the Lattice mobile app is unpredictable and l
 ## Capabilities
 
 ### New Capabilities
+
 - `camera-lifecycle-manager`: A specialized manager to coordinate camera modes and prevent conflicting state updates.
 
 ### Modified Capabilities
+
 - `navigation-system`: Refine camera behavior during active navigation to distinguish it from the standard "follow" mode.
 - `adaptive-map-controls`: Update the "Recenter" button behavior to match the new one-time centering logic.
 

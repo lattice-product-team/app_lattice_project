@@ -78,7 +78,7 @@ export const MapHUD = React.memo(function MapHUD({
         isSearching={isSearching}
         searchBar={
           <FloatingSearchBar
-            placeholder="Busca sitios..."
+            placeholder="Search places..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             onProfilePress={onProfilePress}
@@ -105,7 +105,7 @@ export const MapHUD = React.memo(function MapHUD({
               eventsData &&
               eventsData.length > 0 && (
                 <EventCarousel
-                  title="Próximos eventos"
+                  title="Upcoming Events"
                   events={eventsData}
                   onSelectEvent={(event) => {
                     setCurrentEvent?.(event);
@@ -115,7 +115,7 @@ export const MapHUD = React.memo(function MapHUD({
               )
             )}
             <POICarousel
-              title={currentEventId ? 'Puntos de interés' : 'Cerca de ti'}
+              title={currentEventId ? 'Points of Interest' : 'Near You'}
               pois={rawPoisData?.features?.map((f: any) => normalizePOI(f)) || []}
               onSelectPoi={onSelectPoi}
             />

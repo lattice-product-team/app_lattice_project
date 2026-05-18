@@ -12,9 +12,11 @@ Users on Android experience inconsistent navigation behavior compared to iOS. Sp
 ## Capabilities
 
 ### New Capabilities
+
 - None.
 
 ### Modified Capabilities
+
 - `navigation-system`: Update the requirement for platform-specific camera handling and perspective defaults during active navigation.
 
 ## Impact

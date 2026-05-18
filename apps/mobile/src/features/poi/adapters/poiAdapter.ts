@@ -22,18 +22,19 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
   // Polymorphic extraction: Support GeoJSON (properties/geometry) or Flat objects
   const properties = raw?.properties || raw || {};
   const geometry = raw?.geometry || {};
-  
+
   // Coordinates can be in geometry.coordinates (GeoJSON) or directly in coords/coordinates (Flat)
-  const rawCoords = 
-    geometry.coordinates || 
-    raw?.coordinates || 
-    raw?.coords || 
+  const rawCoords =
+    geometry.coordinates ||
+    raw?.coordinates ||
+    raw?.coords ||
     (raw?.longitude !== undefined ? [raw.longitude, raw.latitude] : [0, 0]);
-  
+
   const coordinates: [number, number] = [rawCoords[0] || 0, rawCoords[1] || 0];
 
   // Helper to filter out placeholder strings that aren't real URLs
-  const isRealUrl = (url: string) => typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:'));
+  const isRealUrl = (url: string) =>
+    typeof url === 'string' && (url.startsWith('http') || url.startsWith('data:'));
 
   // Robust image extraction: find any non-empty array of valid images
   let validImages: string[] = [];
@@ -54,7 +55,7 @@ export const normalizePOI = (raw: any): StandardUIPOI => {
       }
     }
   }
-  
+
   const bannerCandidate = properties.bannerUrl || raw?.bannerUrl || validImages[0];
   const bannerUrl = isRealUrl(bannerCandidate) ? bannerCandidate : validImages[0];
 
@@ -93,17 +94,17 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
   const color = event.color || event.mainColor || getStableColor(id);
 
   // Robust coordinate extraction for events (Flat or GeoJSON style)
-  const coords = 
-    event.center?.coordinates || 
-    event.coordinates || 
-    event.coords || 
+  const coords =
+    event.center?.coordinates ||
+    event.coordinates ||
+    event.coords ||
     (event.longitude !== undefined ? [event.longitude, event.latitude] : [0, 0]);
-  
+
   return {
     id,
     displayName: event.name || event.displayName || 'Unknown Event',
     category: 'event',
-    categoryLabel: 'Evento',
+    categoryLabel: 'Event',
     categoryIcon: 'calendar-star',
     iconFamily: 'material' as const,
     mainColor: color,
@@ -111,7 +112,7 @@ export const normalizeEvent = (event: any): StandardUIPOI => {
     images: event.images || (event.bannerUrl ? [event.bannerUrl] : []),
     bannerUrl: event.bannerUrl || event.images?.[0],
     galleryUrls: event.galleryUrls || event.images || [],
-    imageKey: (event.bannerUrl || event.images?.[0]) ? `event-img-${id}` : 'placeholder-event',
+    imageKey: event.bannerUrl || event.images?.[0] ? `event-img-${id}` : 'placeholder-event',
     raw: event,
     __normalized: true,
   } as any;

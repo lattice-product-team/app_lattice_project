@@ -43,7 +43,11 @@ export const SearchExperience = ({ query, onSelectResult }: SearchExperienceProp
             {item.type === 'event' ? (
               <Calendar size={20} color={theme.colors.brand.primary} strokeWidth={2.2} />
             ) : (
-              <MapPin size={20} color={theme.colors.brand.secondary || '#32D74B'} strokeWidth={2.2} />
+              <MapPin
+                size={20}
+                color={theme.colors.brand.secondary || '#32D74B'}
+                strokeWidth={2.2}
+              />
             )}
           </View>
         )}

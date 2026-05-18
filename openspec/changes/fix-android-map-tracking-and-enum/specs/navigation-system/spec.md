@@ -10,9 +10,11 @@ During active navigation, the map camera SHALL automatically follow the user's l
 - **Stability**: The camera SHALL maintain the current map center when transitioning out of tracking modes (e.g., manual pan) or when resetting UI margins (e.g., deselection).
 
 #### Scenario: Maintaining position on deselection
+
 - **WHEN** the user deselects a point of interest
 - **THEN** the system SHALL reset the map padding WITHOUT re-centering the camera on the previous target.
 
 #### Scenario: Transitioning tracking modes
+
 - **WHEN** the user manually pans the map during active tracking
 - **THEN** the system SHALL switch the `UserTrackingMode` to `None` and maintain the camera's current position.

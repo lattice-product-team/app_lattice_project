@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components'
+import { Callout } from 'nextra/components';
 
 # Deployment Guide
 
@@ -14,7 +14,7 @@ The Lattice platform uses a modern, containerized architecture that segregates f
 graph TD
     User([End User / Mobile Client]) -->|HTTPS / WSS| Nginx[Nginx Reverse Proxy / SSL]
     Admin([Platform Operator]) -->|HTTPS| Nginx
-    
+
     subgraph "Containerized Application Cluster (Docker Compose)"
         Nginx -->|Port 3004| Next[Next.js Admin Dashboard]
         Nginx -->|Port 3000| Express[Express Backend API]
@@ -29,11 +29,11 @@ graph TD
 
 ### Deployment Guidelines
 
--   **Frontend (Admin Dashboard)**: Containerized Next.js server running in standalone mode behind Nginx, or deployed directly to an edge hosting platform like Vercel.
--   **Backend (API Server)**: Lightweight Express application containerized and horizontally scaled.
--   **Routing (Valhalla)**: Dedicated container loaded with OSM (OpenStreetMap) regional extracts.
--   **Caching (Redis)**: High-speed key-value cache containerized with strict memory persistence policies.
--   **Database (PostgreSQL)**: **Never deploy database containers to production host servers.** Always use a managed database service.
+- **Frontend (Admin Dashboard)**: Containerized Next.js server running in standalone mode behind Nginx, or deployed directly to an edge hosting platform like Vercel.
+- **Backend (API Server)**: Lightweight Express application containerized and horizontally scaled.
+- **Routing (Valhalla)**: Dedicated container loaded with OSM (OpenStreetMap) regional extracts.
+- **Caching (Redis)**: High-speed key-value cache containerized with strict memory persistence policies.
+- **Database (PostgreSQL)**: **Never deploy database containers to production host servers.** Always use a managed database service.
 
 ---
 
@@ -42,9 +42,10 @@ graph TD
 Lattice requires **PostgreSQL 15+** with the **PostGIS 3.3+** extension.
 
 ### Recommended Services
--   Amazon RDS (PostgreSQL with PostGIS engine support)
--   Google Cloud SQL
--   Supabase or Neon (Serverless Postgres)
+
+- Amazon RDS (PostgreSQL with PostGIS engine support)
+- Google Cloud SQL
+- Supabase or Neon (Serverless Postgres)
 
 ### DB Initialization Steps
 
@@ -72,7 +73,9 @@ docker build --target admin-web-prod -t ghcr.io/your_org/app_lattice_project/adm
 ```
 
 ### Publishing Images to GHCR
+
 Ensure you are logged into the GitHub Container Registry:
+
 ```bash
 echo $CR_PAT | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
 
@@ -88,6 +91,7 @@ docker push ghcr.io/your_org/app_lattice_project/admin-web:latest
 Lattice provides a `docker-compose.prod.yml` template designed to run the application components on a production host virtual machine.
 
 ### Environment Setup (`.env.prod`)
+
 Create a production environment file (`.env.prod`) on the server:
 
 ```ini
@@ -108,6 +112,7 @@ ADMIN_PASSWORD=change-me-immediately-on-first-login
 ```
 
 ### Orchestration Commands
+
 Deploy the cluster using the production configuration:
 
 ```bash
@@ -119,7 +124,9 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
 ### Valhalla Auto-Build in Production
+
 In `docker-compose.prod.yml`, the Valhalla service is configured to automatically download regional data on startup:
+
 ```yaml
 environment:
   - tile_urls=https://download.geofabrik.de/europe/spain/cataluna-latest.osm.pbf
@@ -128,8 +135,12 @@ environment:
   - build_timezones=True
   - force_rebuild=True
 ```
+
 <Callout type="info">
-  During the first start, Valhalla will download Catalonia's latest OpenStreetMap file and compile it into high-performance routing tiles. Depending on the CPU capacity of your host server, this can take 5–15 minutes. Routing requests will return a `503 Service Unavailable` status until the build completes.
+  During the first start, Valhalla will download Catalonia's latest OpenStreetMap file and compile
+  it into high-performance routing tiles. Depending on the CPU capacity of your host server, this
+  can take 5–15 minutes. Routing requests will return a `503 Service Unavailable` status until the
+  build completes.
 </Callout>
 
 ---
@@ -189,7 +200,9 @@ server {
 ```
 
 ### Installing SSL Certificates (Certbot)
+
 Obtain certificates automatically using Let's Encrypt:
+
 ```bash
 sudo apt update
 sudo apt install certbot python3-certbot-nginx
@@ -203,10 +216,13 @@ sudo certbot --nginx -d api.yourdomain.com -d admin.yourdomain.com
 Lattice uses **Expo Application Services (EAS)** for building and publishing native mobile clients to Google Play and Apple App Store.
 
 ### Step 1: Configure `eas.json`
+
 Ensure `eas.json` is configured in the root directory for your build environments (development, preview, production).
 
 ### Step 2: Build the Production Bundle
+
 To trigger a secure cloud build for Android and iOS:
+
 ```bash
 # Trigger cloud compilation for Android (.aab)
 pnpm build:mobile:cloud
@@ -216,7 +232,9 @@ cd apps/mobile && eas build --platform ios --profile production
 ```
 
 ### Step 3: Submission to App Stores
+
 Submit the compiled binaries to developer accounts:
+
 ```bash
 cd apps/mobile
 # Submit Android app
@@ -227,9 +245,11 @@ eas submit --platform ios
 ```
 
 ### Step 4: Over-The-Air (OTA) Updates
+
 Lattice supports **Expo Updates**. This allows operators to push immediate JavaScript bundles, CSS theme changes, and bug fixes directly to users' phones without going through the slow App Store review cycle.
 
 To deploy a quick OTA update:
+
 ```bash
 cd apps/mobile
 eas update --branch production --message "Hotfix: updated active event map style"
@@ -243,9 +263,9 @@ eas update --branch production --message "Hotfix: updated active event map style
 2.  **Log Management**: Use Docker's `json-file` logging driver with limit options to prevent disk overflow:
     ```yaml
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
     ```
 3.  **CI/CD Automation**: Deploy using GitHub Actions to automate the build-push-deploy sequence on merging to the `main` branch.

@@ -20,10 +20,10 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
   const { data: feed, isLoading, refetch, isRefetching } = useDiscovery();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isReady, setIsReady] = useState(false);
-  
+
   const contextTheme = useAppTheme();
   let theme = themeProp || contextTheme;
-  
+
   // Safety fallback for theme to prevent startup crashes
   if (!theme || !theme.colors) {
     try {
@@ -31,12 +31,11 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
       theme = darkTheme;
     } catch (e) {
       // Last resort if even require fails
-      return null; 
+      return null;
     }
   }
 
   const insets = useSafeAreaInsets();
-
 
   const handleSelectCategory = (id: string) => {
     setActiveCategory((prev) => (prev === id ? 'all' : id));
@@ -68,19 +67,18 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
     if (hour >= 12 && hour < 17) baseGreeting = 'Good afternoon';
     else if (hour >= 17 && hour < 21) baseGreeting = 'Good evening';
     else if (hour >= 21 || hour < 5) baseGreeting = 'Good night';
-    
-    const name = isGuest ? 'Explorer' : (user?.fullName?.split(' ')[0] || 'User');
+
+    const name = isGuest ? 'Explorer' : user?.fullName?.split(' ')[0] || 'User';
     return `${baseGreeting},\n${name}`;
   }, [user, isGuest]);
 
-
-  const categoriesSection = React.useMemo(() => 
-    feed?.sections?.find(s => s.type === 'categories'),
+  const categoriesSection = React.useMemo(
+    () => feed?.sections?.find((s) => s.type === 'categories'),
     [feed]
   );
 
-  const mainSections = React.useMemo(() => 
-    filteredSections.filter(s => s.type !== 'categories'),
+  const mainSections = React.useMemo(
+    () => filteredSections.filter((s) => s.type !== 'categories'),
     [filteredSections]
   );
 
@@ -88,53 +86,82 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
     setIsReady(true);
   }, []);
 
-  const renderSection = React.useCallback(({ item: section, index }: { item: any; index: number }) => {
-    if (!section || !section.items || section.items.length === 0) return null;
+  const renderSection = React.useCallback(
+    ({ item: section, index }: { item: any; index: number }) => {
+      if (!section || !section.items || section.items.length === 0) return null;
 
-    switch (section.type) {
-      case 'featured':
-        return (
-          <FeaturedCarousel
-            key={`featured-${index}`}
-            events={section.items}
-            onPress={onItemPress}
-          />
-        );
-      case 'trending':
-        return (
-          <BentoGrid
-            key={`trending-${index}`}
-            title={section.title || 'Trending'}
-            items={section.items}
-            onPress={onItemPress}
-          />
-        );
-      case 'nearby':
-        return (
-          <NearbyList
-            key={`nearby-${index}`}
-            title={section.title || 'Nearby'}
-            items={section.items}
-            onPress={onItemPress}
-          />
-        );
-      default:
-        return null;
-    }
-  }, [onItemPress]);
+      switch (section.type) {
+        case 'featured':
+          return (
+            <FeaturedCarousel
+              key={`featured-${index}`}
+              events={section.items}
+              onPress={onItemPress}
+            />
+          );
+        case 'trending':
+          return (
+            <BentoGrid
+              key={`trending-${index}`}
+              title={section.title || 'Trending'}
+              items={section.items}
+              onPress={onItemPress}
+            />
+          );
+        case 'nearby':
+          return (
+            <NearbyList
+              key={`nearby-${index}`}
+              title={section.title || 'Nearby'}
+              items={section.items}
+              onPress={onItemPress}
+            />
+          );
+        default:
+          return null;
+      }
+    },
+    [onItemPress]
+  );
 
   if ((isLoading && !feed) || !isReady) {
     const skeletonColor = theme?.colors?.glass?.background || 'rgba(255,255,255,0.1)';
     return (
       <View style={{ flex: 1, padding: 20, paddingTop: insets.top + 20 }}>
-        <View style={{ height: 40, width: 240, borderRadius: 8, backgroundColor: skeletonColor, marginBottom: 8 }} />
-        <View style={{ height: 40, width: 180, borderRadius: 8, backgroundColor: skeletonColor, marginBottom: 32 }} />
+        <View
+          style={{
+            height: 40,
+            width: 240,
+            borderRadius: 8,
+            backgroundColor: skeletonColor,
+            marginBottom: 8,
+          }}
+        />
+        <View
+          style={{
+            height: 40,
+            width: 180,
+            borderRadius: 8,
+            backgroundColor: skeletonColor,
+            marginBottom: 32,
+          }}
+        />
         <View style={{ flexDirection: 'row', gap: 12, marginBottom: 40 }}>
-          {[1, 2, 3, 4].map(i => (
-            <View key={i} style={{ width: 85, height: 36, borderRadius: 18, backgroundColor: skeletonColor }} />
+          {[1, 2, 3, 4].map((i) => (
+            <View
+              key={i}
+              style={{ width: 85, height: 36, borderRadius: 18, backgroundColor: skeletonColor }}
+            />
           ))}
         </View>
-        <View style={{ height: 320, borderRadius: 32, backgroundColor: skeletonColor, marginBottom: 24 }} />
+        <View
+          style={{
+            height: 320,
+            borderRadius: 32,
+            backgroundColor: skeletonColor,
+            marginBottom: 24,
+          }}
+        />
       </View>
     );
   }
@@ -142,7 +169,9 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
   if (!feed || !feed.sections) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: theme?.colors?.text?.muted || '#666' }}>No discovery data available</Text>
+        <Text style={{ color: theme?.colors?.text?.muted || '#666' }}>
+          No discovery data available
+        </Text>
       </View>
     );
   }
@@ -165,13 +194,15 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
         <>
           {/* 1. Header Greeting (Apple Style Large Title) */}
           <View style={{ paddingHorizontal: 20, marginBottom: 28 }}>
-            <Text style={{ 
-              fontFamily: typography.sans.bold, 
-              fontSize: 34, 
-              color: theme?.colors?.text?.primary || '#fff',
-              letterSpacing: -1.2,
-              lineHeight: 40,
-            }}>
+            <Text
+              style={{
+                fontFamily: typography.sans.bold,
+                fontSize: 34,
+                color: theme?.colors?.text?.primary || '#fff',
+                letterSpacing: -1.2,
+                lineHeight: 40,
+              }}
+            >
               {greeting}
             </Text>
           </View>
@@ -191,5 +222,3 @@ export function DiscoveryFeed({ onItemPress, theme: themeProp }: Props) {
     />
   );
 }
-
-

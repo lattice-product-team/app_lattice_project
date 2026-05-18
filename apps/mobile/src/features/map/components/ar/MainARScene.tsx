@@ -60,7 +60,7 @@ const ARBeacon: React.FC<ARPinProps> = ({ color }) => {
         {/* eslint-disable-next-line react/no-unknown-property */}
         <meshBasicMaterial color={color} transparent opacity={0.4} />
       </mesh>
-      
+
       {/* Top Floating Orb */}
       <mesh position={[0, 4.2, 0]}>
         {/* eslint-disable-next-line react/no-unknown-property */}
@@ -111,7 +111,7 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
         const rad = angleDiff * (Math.PI / 180);
 
         // Beacons are rendered further away visually to feel "monumental"
-        const scaledDistance = isBeacon 
+        const scaledDistance = isBeacon
           ? Math.min(Math.max(distance / 20, 15), 50)
           : Math.min(Math.max(distance / 5, 3), 25);
 
@@ -125,11 +125,7 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
         return (
           /* eslint-disable-next-line react/no-unknown-property */
           <group key={poi.properties?.id || idx} position={[x, y, z]}>
-            {isBeacon ? (
-              <ARBeacon color={metadata.color} />
-            ) : (
-              <ARPin color={metadata.color} />
-            )}
+            {isBeacon ? <ARBeacon color={metadata.color} /> : <ARPin color={metadata.color} />}
           </group>
         );
       })
@@ -138,8 +134,6 @@ export const MainARScene: React.FC<MainARSceneProps> = ({ pois = [] }) => {
 
   return (
     /* eslint-disable-next-line react/no-unknown-property */
-    <group rotation={[-pitch * (Math.PI / 180), 0, 0]}>
-      {poiNodes}
-    </group>
+    <group rotation={[-pitch * (Math.PI / 180), 0, 0]}>{poiNodes}</group>
   );
 };

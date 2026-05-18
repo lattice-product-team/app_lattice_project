@@ -27,9 +27,9 @@ export const RemoteModeWarning = () => {
             <Eye size={20} color={theme.colors.brand.primary} strokeWidth={2.2} />
           </View>
           <View style={styles.textContainer}>
-            <Text style={styles.title}>Modo Exploración Remota</Text>
+            <Text style={styles.title}>Remote Exploration Mode</Text>
             <Text style={styles.description}>
-              Estás lejos del recinto. La navegación en tiempo real está desactivada.
+              You are far from the venue. Real-time navigation is disabled.
             </Text>
           </View>
         </View>

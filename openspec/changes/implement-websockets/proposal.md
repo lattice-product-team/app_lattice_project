@@ -13,10 +13,12 @@ The current administration and monitoring systems rely on manual refreshing or p
 ## Capabilities
 
 ### New Capabilities
+
 - `realtime-infrastructure`: Core WebSocket server setup, Redis integration, and authentication middleware.
 - `realtime-admin-sync`: Implementation of real-time update channels for the admin dashboard (e.g., `admin:pois:updated`, `admin:events:new`).
 
 ### Modified Capabilities
+
 - `admin-api-integration`: Adding real-time event support to the admin data fetching strategy.
 
 ## Impact

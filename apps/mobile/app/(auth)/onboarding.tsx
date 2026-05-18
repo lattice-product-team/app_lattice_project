@@ -30,7 +30,7 @@ const ONBOARDING_DATA = [
   {
     id: '1',
     title: 'Welcome to Lattice.',
-    subtitle: '', // Vacío porque usaremos el logo aquí
+    subtitle: '', // Empty because we will use the logo here
     description: 'Simplify your city life. Find everything you need in one place.',
     image: require('../../assets/images/onboarding/Barcelona_hero_shutterstock_2156289499_ipmhcw.avif'),
     showLogo: true,
@@ -82,7 +82,7 @@ export default function OnboardingScreen() {
 
   const handleGuestMode = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
+
     // Reset screen to Explore for the new guest session
     const { useMapUIStore } = require('../../src/features/map/store/useMapUIStore');
     useMapUIStore.getState().setLastScreenMode(0);
@@ -220,7 +220,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <Animated.View 
+        <Animated.View
           entering={FadeInDown.delay(400).duration(1000).springify()}
           style={styles.buttonContainer}
         >

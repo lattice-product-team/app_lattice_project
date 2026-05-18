@@ -58,9 +58,9 @@ erDiagram
 ---
 
 ## 2. User Identity, Access, & Telemetry Support Schema
- 
+
 This schema governs authentication, passkey credentials, group location sharing, active ticket registers, and historical telemetry logging used by the crowd radar to analyze real-time density.
- 
+
 ```mermaid
 erDiagram
     USER ||--o{ TICKET : owns
@@ -70,7 +70,7 @@ erDiagram
     USER ||--o{ SAVED_LOCATION : saves
     USER ||--o{ TELEMETRY_LOG : generates
     GROUP ||--o{ GROUP_MEMBER : has
- 
+
     USER {
         int id PK
         string email UK
@@ -79,7 +79,7 @@ erDiagram
         string mobility_mode
         boolean has_ticket
     }
- 
+
     TICKET {
         int id PK
         int user_id FK
@@ -88,7 +88,7 @@ erDiagram
         string gate
         geometry seat_location
     }
- 
+
     PASSKEY_CREDENTIAL {
         string id PK
         int user_id FK
@@ -98,7 +98,7 @@ erDiagram
         boolean backed_up
         timestamp created_at
     }
- 
+
     GROUP {
         int id PK
         int created_by FK
@@ -107,7 +107,7 @@ erDiagram
         geometry meeting_point
         timestamp created_at
     }
- 
+
     GROUP_MEMBER {
         int user_id PK_FK
         int group_id PK_FK
@@ -115,7 +115,7 @@ erDiagram
         geometry last_location
         timestamp last_updated
     }
- 
+
     SAVED_LOCATION {
         int id PK
         int user_id FK
@@ -123,7 +123,7 @@ erDiagram
         geometry location
         timestamp created_at
     }
- 
+
     TELEMETRY_LOG {
         int id PK
         int user_id FK
@@ -131,7 +131,7 @@ erDiagram
         geometry location
         timestamp timestamp
     }
- 
+
     OFFLINE_PACKAGE {
         int id PK
         string region_name
@@ -140,7 +140,6 @@ erDiagram
         float size_mb
     }
 ```
-
 
 ---
 

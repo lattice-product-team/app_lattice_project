@@ -98,5 +98,4 @@ classDiagram
 
 1.  **Strict Type Safety**: These classes map directly to the TypeScript schemas defined in `@app/types-schema` and Drizzle ORM models in `@app/db`.
 2.  **Geospatial Integration**: Geometric attributes like `Point` and `Polygon` leverage PostGIS database extensions, translated into standard GeoJSON structures for consumption by the MapLibre mobile rendering engine.
-3.  **Domain Decoupling**: Services interact strictly via domain boundaries (e.g., the `RouteNetwork` encapsulates the complexity of the A* / Dijkstra pathfinding routing away from the core `Event` service).
-
+3.  **Domain Decoupling**: Services interact strictly via domain boundaries (e.g., the `RouteNetwork` encapsulates the complexity of the A\* / Dijkstra pathfinding routing away from the core `Event` service).

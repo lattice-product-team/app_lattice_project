@@ -13,9 +13,11 @@ The current architecture splits the server into multiple workspace packages (`ap
 ## Capabilities
 
 ### New Capabilities
+
 - `unified-server-architecture`: A single, robust entry point for all server-side logic that is easy to build, test, and deploy.
 
 ### Modified Capabilities
+
 - `deployment-infrastructure`: The Docker and Nginx configurations will be significantly simplified.
 
 ## Impact

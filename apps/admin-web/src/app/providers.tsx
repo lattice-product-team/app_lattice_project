@@ -11,9 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
       <RouterProvider navigate={router.push}>
-        <SidebarProvider>
-          {children}
-        </SidebarProvider>
+        <SidebarProvider>{children}</SidebarProvider>
       </RouterProvider>
     </NextThemesProvider>
   );

@@ -12,9 +12,11 @@ The mobile map currently lacks active tracking and smart camera transitions duri
 ## Capabilities
 
 ### New Capabilities
+
 - `map-navigation-camera`: Orchestration of specialized camera modes (active tracking, free, planning focus) to ensure a seamless navigation experience.
 
 ### Modified Capabilities
+
 - `navigation-system`: Extending and refining the active navigation camera tracking, gesture interruptions, recentering, and planning transitions.
 
 ## Impact

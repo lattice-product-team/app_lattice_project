@@ -18,6 +18,7 @@ Moverse a una estructura basada en dominios lógicos (Architecture, API, Guides,
 ## Capabilities
 
 ### New Capabilities
+
 - `docs-architecture-domain`: Agrupación de documentos técnicos de alto nivel (C4, Data Flow, ADRs).
 - `docs-api-domain`: Centralización de la documentación de contratos y endpoints.
 - `docs-guides-domain`: Estructuración de guías de inicio rápido y despliegue.

@@ -12,8 +12,10 @@ The system SHALL use consistent service names across development and production 
 ## ADDED Requirements
 
 ### Requirement: Atomic Backend Build
+
 The CI/CD pipeline SHALL produce exactly one Docker image representing the entire backend API.
 
 #### Scenario: Single Backend Artifact
+
 - **WHEN** the GitHub Action completes the build phase
 - **THEN** only two application images (`api` and `admin-web`) MUST be pushed to the container registry.

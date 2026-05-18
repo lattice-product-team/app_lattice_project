@@ -1,6 +1,7 @@
 ## Why
 
 The `EventDetailSheet` currently exhibits two major UX issues:
+
 1. **Bouncing**: When a user attempts to drag the sheet to full-screen (Level 2), it often bounces back to mid-height (Level 1) due to a state conflict between the local gesture state and the global `uiLayer` synchronization.
 2. **Abrupt Closing**: Tapping the close button or dragging down results in an unnatural, fast disappearance without a proper exit animation, making the UI feel "choppy".
 
@@ -13,9 +14,11 @@ The `EventDetailSheet` currently exhibits two major UX issues:
 ## Capabilities
 
 ### New Capabilities
+
 - None
 
 ### Modified Capabilities
+
 - `pure-ui-animation-bridge`: Update the rules for how bottom-up sheets coordinate their internal state with the global `uiLayer` signal to support manual expansion and smooth exits.
 
 ## Impact

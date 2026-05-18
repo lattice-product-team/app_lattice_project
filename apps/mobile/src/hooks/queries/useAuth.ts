@@ -16,7 +16,7 @@ export const useLogin = () => {
     },
     onSuccess: (data) => {
       const { setAuth, setTicket } = useAuthStore.getState();
-      
+
       // Reset screen to Explore for the new session
       useMapUIStore.getState().setLastScreenMode(0);
 
@@ -43,7 +43,7 @@ export const useRegister = () => {
     },
     onSuccess: (data) => {
       const { setAuth } = useAuthStore.getState();
-      
+
       // Reset screen to Explore for the new session
       useMapUIStore.getState().setLastScreenMode(0);
 
@@ -55,4 +55,3 @@ export const useRegister = () => {
     },
   });
 };
-

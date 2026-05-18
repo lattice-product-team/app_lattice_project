@@ -7,16 +7,16 @@ const getApiBase = () => {
     // Dynamically use the current hostname to avoid localhost issues in tunnels or LAN
     const host = window.location.hostname;
     const protocol = window.location.protocol;
-    
+
     if (process.env.NEXT_PUBLIC_API_URL) {
       return process.env.NEXT_PUBLIC_API_URL;
     }
-    
+
     // In production routing with Cloudflare Tunnels (subpath routing)
     if (host === 'projects.kore29.com') {
       return `${protocol}//${host}/lattice/api`;
     }
-    
+
     return `${protocol}//${host}:3000`;
   }
   // When running on the server (SSR), use the internal Docker service name
@@ -77,12 +77,12 @@ export function useAdminFetch<T>(endpoint: string, interval = 5000) {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'An unexpected error occurred';
         const url = `${API_BASE}${endpoint}`;
-        
+
         // Only log to console if it's not a generic 'Failed to fetch' (which means server is likely down)
         if (message !== 'Failed to fetch') {
           console.error(`[useAdminFetch] Error fetching from ${url}:`, err);
         }
-        
+
         setState({
           data: null,
           loading: false,

@@ -12,9 +12,11 @@ The mobile application is experiencing a critical rendering crash (white screen)
 ## Capabilities
 
 ### New Capabilities
+
 - None
 
 ### Modified Capabilities
+
 - `map-discovery-platform`: Improve component resilience and theme stability during initial feed rendering.
 
 ## Impact

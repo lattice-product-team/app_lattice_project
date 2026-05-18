@@ -8,9 +8,9 @@ An Architectural Decision Record (ADR) is a document that captures an important 
 
 ## Why use ADRs?
 
--   **Transparency**: Everyone understands *why* a decision was made.
--   **Context**: Prevents re-litigating old decisions without new context.
--   **Onboarding**: Helps new developers understand the technical history of the project.
+- **Transparency**: Everyone understands _why_ a decision was made.
+- **Context**: Prevents re-litigating old decisions without new context.
+- **Onboarding**: Helps new developers understand the technical history of the project.
 
 ## ADR Process
 

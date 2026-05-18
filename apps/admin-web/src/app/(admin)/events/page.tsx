@@ -42,7 +42,6 @@ export default function EventsPage() {
 
   const [syncingIds, setSyncingIds] = useState<Set<number>>(new Set());
 
-
   const handleDeleteEvent = async (id?: number) => {
     const targetId = id || eventToDeleteId;
     if (!targetId) return;
@@ -201,7 +200,6 @@ export default function EventsPage() {
     setIsInterfaceOpen(true);
   };
 
-
   const handleCreateEvent = async () => {
     if (!name || !startDate || !endDate || !locationName || !address) {
       setFormError('All operational fields are required.');
@@ -316,8 +314,6 @@ export default function EventsPage() {
               activeEventBoundary={activeEventBoundaryGeoJSON}
             />
 
-
-            
             {/* Map Interaction Controls */}
             <div className="absolute top-32 left-10 z-[110] flex flex-col gap-3">
               <div className="bg-surface/80 backdrop-blur-md border border-border/60 shadow-massive p-6 rounded-3xl max-w-[240px]">
@@ -351,8 +347,8 @@ export default function EventsPage() {
 
           {/* Floating Close Button */}
           <div className="absolute top-10 left-10 z-[110]">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="rounded-full w-14 h-14 p-0 flex items-center justify-center bg-surface border border-border hover:border-foreground shadow-massive transition-colors group/close"
               onClick={() => setIsInterfaceOpen(false)}
             >
@@ -362,10 +358,11 @@ export default function EventsPage() {
 
           {/* Floating Studio Card */}
           <div className="absolute right-12 top-12 bottom-12 w-[460px] bg-surface rounded-[48px] shadow-massive border border-border overflow-hidden flex flex-col z-[105] animate-in slide-in-from-right-8 duration-500">
-            
             {/* Header */}
             <div className="px-12 pt-12 pb-8 border-b border-border/40 shrink-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">Lattice Studio</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gravel/60 mb-2">
+                Lattice Studio
+              </p>
               <h2 className="waldenburg-display text-admin-xl text-foreground">
                 {editingEventId ? 'Configure Lifecycle' : 'Initialize Event'}
               </h2>
@@ -373,13 +370,16 @@ export default function EventsPage() {
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-scroll custom-scrollbar px-12 py-10 space-y-12">
-              
               {/* Section 1: Definition */}
               <div className="space-y-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">1. Event Identity</p>
-                
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  1. Event Identity
+                </p>
+
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Event Name</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Event Name
+                  </label>
                   <input
                     placeholder="e.g. Primavera Sound 2026"
                     value={name}
@@ -389,7 +389,9 @@ export default function EventsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Venue Name</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Venue Name
+                  </label>
                   <input
                     placeholder="e.g. Parc del Fòrum"
                     value={locationName}
@@ -399,7 +401,9 @@ export default function EventsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Address</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Address
+                  </label>
                   <input
                     placeholder="Street address..."
                     value={address}
@@ -407,7 +411,7 @@ export default function EventsPage() {
                     className="w-full h-14 px-6 bg-elevated/40 border border-border text-admin-base text-foreground placeholder:text-gravel/30 outline-none focus:border-foreground transition-colors font-medium uppercase tracking-tight rounded-2xl"
                   />
                 </div>
-                
+
                 <div className="space-y-3">
                   <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
                     Description
@@ -423,11 +427,15 @@ export default function EventsPage() {
 
               {/* Section 2: Schedule */}
               <div className="space-y-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">2. Temporal Context</p>
-                
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  2. Temporal Context
+                </p>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-3">
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Start Date</label>
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                      Start Date
+                    </label>
                     <input
                       type="datetime-local"
                       value={startDate}
@@ -436,7 +444,9 @@ export default function EventsPage() {
                     />
                   </div>
                   <div className="space-y-3">
-                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">End Date</label>
+                    <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                      End Date
+                    </label>
                     <input
                       type="datetime-local"
                       value={endDate}
@@ -449,10 +459,14 @@ export default function EventsPage() {
 
               {/* Section 3: Media */}
               <div className="space-y-8">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">3. Media Assets</p>
-                
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  3. Media Assets
+                </p>
+
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Banner Image URL</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Banner Image URL
+                  </label>
                   <input
                     placeholder="https://example.com/banner.jpg"
                     value={bannerUrl}
@@ -461,13 +475,16 @@ export default function EventsPage() {
                   />
                   {bannerUrl && (
                     <div className="mt-2 h-32 w-full rounded-2xl overflow-hidden border border-border">
-                      <img 
-                        src={(bannerUrl.startsWith('PLACEHOLDER_') || bannerUrl === 'null' || bannerUrl === '')
-                          ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`
-                          : bannerUrl
-                        } 
-                        alt="Banner Preview" 
-                        className="w-full h-full object-cover" 
+                      <img
+                        src={
+                          bannerUrl.startsWith('PLACEHOLDER_') ||
+                          bannerUrl === 'null' ||
+                          bannerUrl === ''
+                            ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`
+                            : bannerUrl
+                        }
+                        alt="Banner Preview"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`;
                         }}
@@ -477,7 +494,9 @@ export default function EventsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">Gallery Images</label>
+                  <label className="block text-[9px] font-bold uppercase tracking-widest text-gravel/60 ml-1">
+                    Gallery Images
+                  </label>
                   <div className="flex gap-2">
                     <input
                       placeholder="https://example.com/image.jpg"
@@ -497,12 +516,19 @@ export default function EventsPage() {
                       <Icons.Plus className="w-5 h-5" />
                     </button>
                   </div>
-                  
+
                   {galleryUrls.length > 0 && (
                     <div className="grid grid-cols-3 gap-3 mt-4">
                       {galleryUrls.map((url, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
-                          <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                        <div
+                          key={idx}
+                          className="relative aspect-square rounded-xl overflow-hidden border border-border group"
+                        >
+                          <img
+                            src={url}
+                            alt={`Gallery ${idx}`}
+                            className="w-full h-full object-cover"
+                          />
                           <button
                             onClick={() => setGalleryUrls(galleryUrls.filter((_, i) => i !== idx))}
                             className="absolute top-1 right-1 bg-ember text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -518,17 +544,27 @@ export default function EventsPage() {
 
               {/* Section 4: Boundary */}
               <div className="space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">4. Geospatial Perimeter</p>
-                <div className={`p-6 rounded-[2rem] border ${boundaryPoints.length > 2 ? 'bg-success/5 border-success/20' : 'border-dashed border-border'} flex flex-col items-center justify-center text-center gap-3`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${boundaryPoints.length > 2 ? 'bg-success text-white' : 'bg-elevated text-gravel/40'}`}>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gravel">
+                  4. Geospatial Perimeter
+                </p>
+                <div
+                  className={`p-6 rounded-[2rem] border ${boundaryPoints.length > 2 ? 'bg-success/5 border-success/20' : 'border-dashed border-border'} flex flex-col items-center justify-center text-center gap-3`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${boundaryPoints.length > 2 ? 'bg-success text-white' : 'bg-elevated text-gravel/40'}`}
+                  >
                     <Icons.Map className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${boundaryPoints.length > 2 ? 'text-success' : 'text-gravel/40'}`}>
+                    <p
+                      className={`text-[10px] font-bold uppercase tracking-widest ${boundaryPoints.length > 2 ? 'text-success' : 'text-gravel/40'}`}
+                    >
                       {boundaryPoints.length > 2 ? 'Boundary Defined' : 'No boundary defined'}
                     </p>
                     <p className="text-[9px] font-medium text-gravel/40 mt-1 uppercase tracking-tighter italic">
-                      {boundaryPoints.length > 2 ? `${boundaryPoints.length} control points synchronized` : 'Tap on the map to create points'}
+                      {boundaryPoints.length > 2
+                        ? `${boundaryPoints.length} control points synchronized`
+                        : 'Tap on the map to create points'}
                     </p>
                   </div>
                 </div>
@@ -542,14 +578,14 @@ export default function EventsPage() {
                   {formError}
                 </p>
               )}
-              
+
               <div className="flex flex-col gap-3">
-                <button 
+                <button
                   onClick={handleCreateEvent}
                   disabled={isSubmitting}
                   className="w-full h-16 rounded-full bg-foreground text-background text-[12px] font-black uppercase tracking-[0.25em] hover:opacity-90 active:scale-[0.98] transition-all shadow-massive disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Syncing...' : (editingEventId ? 'Update Event' : 'Confirm Event')}
+                  {isSubmitting ? 'Syncing...' : editingEventId ? 'Update Event' : 'Confirm Event'}
                 </button>
 
                 <div className="flex gap-3">
@@ -559,7 +595,7 @@ export default function EventsPage() {
                   >
                     Cancel
                   </button>
-                  
+
                   {editingEventId && (
                     <button
                       onClick={() => handleDeleteEvent(editingEventId)}
@@ -707,9 +743,9 @@ export default function EventsPage() {
 
             {/* Create Button — Now integrated into the filters row */}
             <div className="px-6 py-4 shrink-0 ml-auto border-l border-border/60 flex items-center">
-              <Button 
-                variant="primary" 
-                onClick={handleOpenCreate} 
+              <Button
+                variant="primary"
+                onClick={handleOpenCreate}
                 className="h-10 px-8 text-[11px] font-bold uppercase tracking-[0.15em] shadow-massive"
               >
                 <Icons.Plus className="w-4 h-4 mr-2" />
@@ -797,12 +833,18 @@ export default function EventsPage() {
                       <td className="py-6 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-elevated border border-border overflow-hidden shrink-0 shadow-sm">
-                            <img 
-                              src={(!event.bannerUrl || event.bannerUrl === 'null' || (typeof event.bannerUrl === 'string' && (event.bannerUrl.startsWith('PLACEHOLDER_') || event.bannerUrl === ''))) 
-                                ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>` 
-                                : event.bannerUrl} 
-                              alt="" 
-                              className="w-full h-full object-cover" 
+                            <img
+                              src={
+                                !event.bannerUrl ||
+                                event.bannerUrl === 'null' ||
+                                (typeof event.bannerUrl === 'string' &&
+                                  (event.bannerUrl.startsWith('PLACEHOLDER_') ||
+                                    event.bannerUrl === ''))
+                                  ? `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`
+                                  : event.bannerUrl
+                              }
+                              alt=""
+                              className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%232e1065"/><stop offset="100%" stop-color="%230f172a"/></linearGradient></defs><rect width="200" height="200" fill="url(%23g)" rx="16"/><circle cx="100" cy="100" r="40" fill="%231e1b4b" stroke="%233b0764" stroke-width="2"/><path d="M120 80h-5v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5H90v-5c0-2.8-2.2-5-5-5s-5 2.2-5 5v5h-5c-5.5 0-10 4.5-10 10v40c0 5.5 4.5 10 10 10h45c5.5 0 10-4.5 10-10V90c0-5.5-4.5-10-10-10zm0 45H80V95h40v30z" fill="%23a78bfa"/></svg>`;
                               }}

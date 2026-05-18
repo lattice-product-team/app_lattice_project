@@ -111,10 +111,12 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   // INITIAL POSITIONING: Snap to user location on startup
   useEffect(() => {
     if (!hasInitialized.current && userCoords && cameraRef.current) {
+      console.log('[MapCameraManager] 🚀 Initial Startup Snap to user:', userCoords);
       snapToLocation([userCoords[0], userCoords[1]], 14);
+      setCameraMode(MapCameraMode.FREE); // Ensure we start in FREE mode
       hasInitialized.current = true;
     }
-  }, [userCoords]);
+  }, [userCoords, snapToLocation, setCameraMode]);
 
   // NAVIGATION ENGAGEMENT: When navigation actually starts, fly close to user
   useEffect(() => {
@@ -130,14 +132,16 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   useEffect(() => {
     if (recenterCount > lastProcessedRecenter.current && userCoords) {
       lastProcessedRecenter.current = recenterCount;
-      if (isNavigating || isPlanning) {
+      if (isNavigating) {
+        console.log('[MapCameraManager] 🎯 Recentering: Entering FOLLOW_WITH_HEADING (Nav Active)');
         setCameraMode(MapCameraMode.FOLLOW_WITH_HEADING);
       } else {
+        console.log('[MapCameraManager] 🎯 Recentering: FlyTo with FREE mode');
+        setCameraMode(MapCameraMode.FREE); // KILL ANY PREVIOUS LOCK
         flyTo([userCoords[0], userCoords[1]], 20.0);
       }
     }
   }, [recenterCount, userCoords, isNavigating, isPlanning, setCameraMode, flyTo]);
-
 
   // IMPERATIVE POI FOCUS TRIGGER
   useEffect(() => {
@@ -207,7 +211,7 @@ export const MapCameraManager = forwardRef((props: any, ref) => {
   }, [isPlanning, isNavigating, currentRoute, setIsProgrammaticMove]);
 
   // MANUAL FOLLOWER FOR ANDROID:
-  // Instead of relying on native 'followUserLocation' (which is buggy), 
+  // Instead of relying on native 'followUserLocation' (which is buggy),
   // we manually move the camera when in a tracking mode.
   useEffect(() => {
     if (Platform.OS !== 'android' || cameraMode === MapCameraMode.FREE || !userCoords) return;

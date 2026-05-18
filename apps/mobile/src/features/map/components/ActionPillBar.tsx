@@ -23,24 +23,28 @@ export const ActionPillBar = React.memo(({ actions }: ActionPillBarProps) => {
         contentContainerStyle={styles.container}
         disallowInterruption={true}
       >
-      {actions.map((action) => (
-        <Button
-          key={action.id}
-          label={action.label}
-          variant={action.variant}
-          onPress={action.onPress}
-          leftIcon={(() => {
-            const IconComponent = (LucideIcons as any)[action.icon] || LucideIcons.HelpCircleIcon;
-            return (
-              <IconComponent
-                size={20}
-                color={action.variant === 'primary' ? theme.colors.text.inverse : theme.colors.brand.primary}
-              />
-            );
-          })()}
-          style={styles.pillOverride}
-        />
-      ))}
+        {actions.map((action) => (
+          <Button
+            key={action.id}
+            label={action.label}
+            variant={action.variant}
+            onPress={action.onPress}
+            leftIcon={(() => {
+              const IconComponent = (LucideIcons as any)[action.icon] || LucideIcons.HelpCircleIcon;
+              return (
+                <IconComponent
+                  size={20}
+                  color={
+                    action.variant === 'primary'
+                      ? theme.colors.text.inverse
+                      : theme.colors.brand.primary
+                  }
+                />
+              );
+            })()}
+            style={styles.pillOverride}
+          />
+        ))}
       </ScrollView>
     </GestureDetector>
   );

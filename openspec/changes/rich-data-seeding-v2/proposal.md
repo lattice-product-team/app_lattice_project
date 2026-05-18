@@ -13,9 +13,11 @@ The current application data (seed) is limited and doesn't fully showcase the di
 ## Capabilities
 
 ### New Capabilities
+
 - None
 
 ### Modified Capabilities
+
 - `event-registry`: Update to support richer metadata and specific categories.
 - `poi-registry`: Increase spatial density and categorization depth.
 

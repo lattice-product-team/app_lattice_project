@@ -1,4 +1,14 @@
-import { db, events, pointsOfInterest, eq, and, sql, getTableColumns, desc, inArray } from '@app/db';
+import {
+  db,
+  events,
+  pointsOfInterest,
+  eq,
+  and,
+  sql,
+  getTableColumns,
+  desc,
+  inArray,
+} from '@app/db';
 
 export interface DiscoverySection {
   type: 'featured' | 'categories' | 'trending' | 'nearby';
@@ -12,9 +22,10 @@ export class DiscoveryService {
    */
   private getCatchySubtitle(poi: any): string {
     const type = String(poi.type).toLowerCase();
-    const metadata = typeof poi.metadata === 'string' ? JSON.parse(poi.metadata) : poi.metadata || {};
+    const metadata =
+      typeof poi.metadata === 'string' ? JSON.parse(poi.metadata) : poi.metadata || {};
     const rating = metadata.social?.rating || metadata.rating;
-    
+
     const ratingText = rating ? ` • ${rating} ⭐` : '';
 
     switch (type) {
@@ -59,11 +70,11 @@ export class DiscoveryService {
       sections.push({
         type: 'featured',
         title: 'Featured Experiences',
-        items: featuredEvents.map(e => ({ 
-          ...e, 
+        items: featuredEvents.map((e) => ({
+          ...e,
           center: e.center ? JSON.parse(e.center) : null,
           discoveryType: 'event',
-          subtitle: e.locationName || 'Live Event'
+          subtitle: e.locationName || 'Live Event',
         })),
       });
     }
@@ -91,7 +102,7 @@ export class DiscoveryService {
       .where(
         and(
           eq(pointsOfInterest.isTrending, true),
-          sql`${pointsOfInterest.type}::text IN (${sql.raw(highValueCategories.map(c => `'${c}'`).join(','))})`
+          sql`${pointsOfInterest.type}::text IN (${sql.raw(highValueCategories.map((c) => `'${c}'`).join(','))})`
         )
       )
       .limit(6);
@@ -100,12 +111,12 @@ export class DiscoveryService {
       sections.push({
         type: 'trending',
         title: 'Trending Right Now',
-        items: trendingPois.map(p => ({ 
-          ...p, 
+        items: trendingPois.map((p) => ({
+          ...p,
           geometry: p.location ? JSON.parse(p.location) : null,
           discoveryType: 'poi',
           displayName: p.name,
-          subtitle: this.getCatchySubtitle(p)
+          subtitle: this.getCatchySubtitle(p),
         })),
       });
     }
@@ -118,7 +129,10 @@ export class DiscoveryService {
         .select({
           ...getTableColumns(events),
           center: sql<string>`ST_AsGeoJSON(${events.location})`,
-          distance: sql<number>`ST_Distance(${events.location}::geography, ${sql.raw(userPoint)})`.as('distance'),
+          distance:
+            sql<number>`ST_Distance(${events.location}::geography, ${sql.raw(userPoint)})`.as(
+              'distance'
+            ),
         })
         .from(events)
         .where(sql`${events.location} IS NOT NULL`)
@@ -129,34 +143,38 @@ export class DiscoveryService {
         .select({
           ...getTableColumns(pointsOfInterest),
           location: sql<string>`ST_AsGeoJSON(${pointsOfInterest.location})`,
-          distance: sql<number>`ST_Distance(${pointsOfInterest.location}::geography, ${sql.raw(userPoint)})`.as('distance'),
+          distance:
+            sql<number>`ST_Distance(${pointsOfInterest.location}::geography, ${sql.raw(userPoint)})`.as(
+              'distance'
+            ),
         })
         .from(pointsOfInterest)
         .where(
           and(
             sql`${pointsOfInterest.location} IS NOT NULL`,
-            sql`${pointsOfInterest.type}::text IN (${sql.raw(highValueCategories.map(c => `'${c}'`).join(','))})`
+            sql`${pointsOfInterest.type}::text IN (${sql.raw(highValueCategories.map((c) => `'${c}'`).join(','))})`
           )
         )
         .orderBy(sql`distance ASC`)
         .limit(5);
 
       const combinedNearby = [
-        ...nearbyEvents.map(e => ({ 
-          ...e, 
+        ...nearbyEvents.map((e) => ({
+          ...e,
           center: e.center ? JSON.parse(e.center) : null,
           discoveryType: 'event',
-          subtitle: `Featured Event • ${Math.round(e.distance / 100) / 10}km`
+          subtitle: `Featured Event • ${Math.round(e.distance / 100) / 10}km`,
         })),
-        ...nearbyPois.map(p => ({ 
-          ...p, 
+        ...nearbyPois.map((p) => ({
+          ...p,
           geometry: p.location ? JSON.parse(p.location) : null,
           discoveryType: 'poi',
           displayName: p.name,
-          subtitle: `${this.getCatchySubtitle(p)} • ${Math.round(p.distance as number)}m`
-        }))
-      ].sort((a, b) => (a.distance as number) - (b.distance as number))
-      .slice(0, 8);
+          subtitle: `${this.getCatchySubtitle(p)} • ${Math.round(p.distance as number)}m`,
+        })),
+      ]
+        .sort((a, b) => (a.distance as number) - (b.distance as number))
+        .slice(0, 8);
 
       if (combinedNearby.length > 0) {
         sections.push({

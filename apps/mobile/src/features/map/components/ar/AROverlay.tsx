@@ -51,7 +51,7 @@ export const AROverlay: React.FC = () => {
   const { width, height } = useWindowDimensions();
 
   const userCoords = useLocationStore((s) => s.coords);
-  
+
   // High-frequency shared values to avoid React re-renders
   const sharedHeading = useSharedValue(0);
   const sharedPitch = useSharedValue(0);
@@ -82,13 +82,13 @@ export const AROverlay: React.FC = () => {
 
       subscription = await Location.watchHeadingAsync((data) => {
         const h = data.trueHeading !== -1 ? data.trueHeading : data.magHeading;
-        
+
         // Handle wrap-around for smooth animation
         let lastHeading = sharedHeading.value;
         let newHeading = h;
         if (newHeading - lastHeading > 180) newHeading -= 360;
         else if (lastHeading - newHeading > 180) newHeading += 360;
-        
+
         // Faster timing to reduce "floaty" feeling while keeping it smooth
         sharedHeading.value = withTiming(newHeading, { duration: 250 });
         setHeading(h); // Keep store in sync for 3D scene
@@ -114,14 +114,14 @@ export const AROverlay: React.FC = () => {
         if (data.rotation) {
           const betaDegrees = (data.rotation.beta * 180) / Math.PI;
           const gammaDegrees = (data.rotation.gamma * 180) / Math.PI;
-          
+
           // iOS Gimbal Lock Fix: beta is restricted to [-90, 90]
           // When looking up past 90deg, beta drops and gamma flips to ~180
           let trueBeta = betaDegrees;
           if (Math.abs(gammaDegrees) > 90) {
             trueBeta = 180 - Math.abs(betaDegrees);
           }
-          
+
           // Verticality Check: Hide AR if phone is lying flat (less than 45deg or more than 135deg)
           const vertical = trueBeta > 45 && trueBeta < 135;
           isHoldingVertical.value = vertical;
@@ -180,7 +180,7 @@ export const AROverlay: React.FC = () => {
     const isBeacon = poi.properties?.isBeacon;
     const metadata = getCategoryMetadata(poi.properties?.category);
     const CategoryIcon = metadata.icon;
-    
+
     const isTrackingSingleTarget = activePois.length === 1 && !isBeacon;
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -192,10 +192,10 @@ export const AROverlay: React.FC = () => {
       const verticalOffset = (sharedPitch.value / (vFOV / 2)) * (height / 2);
 
       // Clamp angle for horizontal position to keep navigation targets on-screen
-      const maxAngle = 35; 
+      const maxAngle = 35;
       let clampedAngle = angleDiff;
       let isOffscreen = false;
-      
+
       if (angleDiff > maxAngle) {
         clampedAngle = maxAngle;
         isOffscreen = true;
@@ -206,19 +206,17 @@ export const AROverlay: React.FC = () => {
 
       // If tracking a single destination, always show the HUD (clamp to edge)
       const shouldShow = isTrackingSingleTarget ? true : !isOffscreen;
-      
-      const opacity = withTiming(
-        shouldShow && isHoldingVertical.value ? 1 : 0,
-        { duration: 250 }
-      );
+
+      const opacity = withTiming(shouldShow && isHoldingVertical.value ? 1 : 0, { duration: 250 });
 
       const xPos = (clampedAngle / 30) * (width / 2) + width / 2;
       const yOffset = isBeacon ? -80 : (index % 2) * 50 - 25;
-      
+
       // Keep clamped navigation targets centered vertically for better visibility
-      const yPos = isOffscreen && isTrackingSingleTarget 
-        ? height / 2 - 80
-        : height / 2 + verticalOffset + yOffset - 40;
+      const yPos =
+        isOffscreen && isTrackingSingleTarget
+          ? height / 2 - 80
+          : height / 2 + verticalOffset + yOffset - 40;
 
       // Scale down based on distance to simulate depth perception (logarithmic drop-off)
       let scaleFactor = 1;
@@ -230,12 +228,12 @@ export const AROverlay: React.FC = () => {
         const logMin = Math.log10(30);
         const logMax = Math.log10(maxDist);
         const progress = (logDist - logMin) / (logMax - logMin);
-        scaleFactor = 1 - (progress * (1 - minScale));
+        scaleFactor = 1 - progress * (1 - minScale);
       }
 
       // If we are clamping an offscreen target, we want it slightly smaller to act as a HUD element
       if (isOffscreen && isTrackingSingleTarget) {
-        scaleFactor *= 0.85; 
+        scaleFactor *= 0.85;
       }
 
       return {
@@ -268,36 +266,54 @@ export const AROverlay: React.FC = () => {
       if (angleDiff > 180) angleDiff -= 360;
       if (angleDiff < -180) angleDiff += 360;
       const isOffscreen = Math.abs(angleDiff) > 35;
-      // Fade out the vertical stalk and detailed text when offscreen, 
+      // Fade out the vertical stalk and detailed text when offscreen,
       // focusing only on the turn direction and icon.
-      return { opacity: withTiming(isOffscreen && isTrackingSingleTarget ? 0.3 : 1, { duration: 200 }) };
+      return {
+        opacity: withTiming(isOffscreen && isTrackingSingleTarget ? 0.3 : 1, { duration: 200 }),
+      };
     });
 
     return (
       <Animated.View style={[styles.labelWrapper, { width: isBeacon ? 240 : 200 }, animatedStyle]}>
-        <View style={[styles.brandBubble, isBeacon && styles.beaconBubble, isTrackingSingleTarget && styles.navigationBubble]}>
-          
+        <View
+          style={[
+            styles.brandBubble,
+            isBeacon && styles.beaconBubble,
+            isTrackingSingleTarget && styles.navigationBubble,
+          ]}
+        >
           <Animated.View style={[styles.directionIndicator, styles.directionLeft, leftArrowStyle]}>
             <Text style={styles.directionArrow}>«</Text>
           </Animated.View>
 
-          <View style={[styles.iconContainer, { backgroundColor: metadata.color }, isBeacon && styles.beaconIcon]}>
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: metadata.color },
+              isBeacon && styles.beaconIcon,
+            ]}
+          >
             <CategoryIcon size={isBeacon ? 22 : 18} color="white" strokeWidth={2.5} />
           </View>
-          
+
           <Animated.View style={[styles.textContainer, centerContentStyle]}>
-            <Text style={[styles.brandLabelText, isBeacon && styles.beaconLabelText]} numberOfLines={1}>
+            <Text
+              style={[styles.brandLabelText, isBeacon && styles.beaconLabelText]}
+              numberOfLines={1}
+            >
               {poi.properties?.name || poi.name}
             </Text>
             <Text style={styles.brandDistanceText}>
-              {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} • {isTrackingSingleTarget ? 'Destino' : 'Ahead'}
+              {distance > 1000 ? `${(distance / 1000).toFixed(1)}km` : `${Math.round(distance)}m`} •{' '}
+              {isTrackingSingleTarget ? 'Destino' : 'Ahead'}
             </Text>
           </Animated.View>
 
-          <Animated.View style={[styles.directionIndicator, styles.directionRight, rightArrowStyle]}>
+          <Animated.View
+            style={[styles.directionIndicator, styles.directionRight, rightArrowStyle]}
+          >
             <Text style={styles.directionArrow}>»</Text>
           </Animated.View>
-          
         </View>
         {!isBeacon && <Animated.View style={[styles.verticalStalk, centerContentStyle]} />}
       </Animated.View>
@@ -346,11 +362,7 @@ export const AROverlay: React.FC = () => {
             style={[StyleSheet.absoluteFill, hudAnimatedStyle]}
             pointerEvents="box-none"
           >
-            <ARHUD
-              onExit={closeAR}
-              isScanning={isScanning}
-              statusMessage={statusMessage}
-            />
+            <ARHUD onExit={closeAR} isScanning={isScanning} statusMessage={statusMessage} />
           </Animated.View>
         </>
       )}

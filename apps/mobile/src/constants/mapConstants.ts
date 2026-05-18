@@ -7,7 +7,10 @@ export const EMPTY_GEOJSON: any = {
       type: 'Feature',
       geometry: {
         type: 'LineString',
-        coordinates: [[0, 0], [0, 0]],
+        coordinates: [
+          [0, 0],
+          [0, 0],
+        ],
       },
       properties: {},
     },

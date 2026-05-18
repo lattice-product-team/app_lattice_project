@@ -42,7 +42,7 @@ export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
       <View className="flex-col gap-3">
         {items.map((item, index) => {
           const distanceText = item.distance ? `${(item.distance / 1000).toFixed(1)} km` : '';
-          
+
           return (
             <Pressable
               key={`${item.id}-${index}`}
@@ -55,19 +55,32 @@ export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
               }}
             >
               <Image
-                source={{ uri: item.bannerUrl || `https://images.unsplash.com/photo-1467226632440-65f0b49574f8?auto=format&fit=crop&w=200&q=80` }}
+                source={{
+                  uri:
+                    item.bannerUrl ||
+                    `https://images.unsplash.com/photo-1467226632440-65f0b49574f8?auto=format&fit=crop&w=200&q=80`,
+                }}
                 style={{ width: 56, height: 56, borderRadius: 12, marginRight: 12 }}
                 contentFit="cover"
               />
               <View className="flex-1 justify-center">
                 <Text
-                  style={{ fontFamily: typography.primary.bold, fontSize: 16, color: theme.colors.text.primary, marginBottom: 2 }}
+                  style={{
+                    fontFamily: typography.primary.bold,
+                    fontSize: 16,
+                    color: theme.colors.text.primary,
+                    marginBottom: 2,
+                  }}
                   numberOfLines={1}
                 >
                   {item.name}
                 </Text>
                 <Text
-                  style={{ fontFamily: typography.primary.regular, fontSize: 13, color: theme.colors.text.muted }}
+                  style={{
+                    fontFamily: typography.primary.regular,
+                    fontSize: 13,
+                    color: theme.colors.text.muted,
+                  }}
                   numberOfLines={1}
                 >
                   {item.capacity !== undefined || item.currentOccupancy !== undefined
@@ -77,11 +90,23 @@ export const NearbyList = React.memo(({ title, items, onPress }: Props) => {
               </View>
               {distanceText ? (
                 <View className="items-end justify-center">
-                  <Text style={{ fontFamily: typography.primary.medium, fontSize: 14, color: theme.colors.text.primary }}>
+                  <Text
+                    style={{
+                      fontFamily: typography.primary.medium,
+                      fontSize: 14,
+                      color: theme.colors.text.primary,
+                    }}
+                  >
                     {distanceText}
                   </Text>
                   {item.status === 'open' && (
-                    <Text style={{ fontFamily: typography.primary.medium, fontSize: 12, color: theme.colors.status.success }}>
+                    <Text
+                      style={{
+                        fontFamily: typography.primary.medium,
+                        fontSize: 12,
+                        color: theme.colors.status.success,
+                      }}
+                    >
                       Live
                     </Text>
                   )}

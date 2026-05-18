@@ -12,10 +12,12 @@ Al acercarse a un evento que contiene múltiples puntos de interés (POIs), los 
 ## Capabilities
 
 ### New Capabilities
+
 - `marker-spiderfication`: Capacidad para dispersar marcadores solapados en el mapa mediante algoritmos de compensación de coordenadas.
 - `contextual-marker-filtering`: Lógica para filtrar y priorizar la visibilidad de marcadores basada en el estado de selección y nivel de zoom.
 
 ### Modified Capabilities
+
 - `map-pin-components`: Actualizar los componentes de pin para soportar estados de descolisión y animaciones de dispersión.
 - `spatial-hierarchy-logic`: Integrar la lógica de relación Evento-POI en el motor de renderizado del mapa para optimizar la densidad visual.
 

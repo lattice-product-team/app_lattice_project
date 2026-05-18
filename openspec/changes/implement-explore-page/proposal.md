@@ -15,11 +15,13 @@ The current "Exploración" screen in the mobile application is a placeholder wit
 ## Capabilities
 
 ### New Capabilities
+
 - `discovery-feed-orchestrator`: Service and hook to aggregate and rank events/POIs for the Explore feed.
 - `discovery-ui-components`: A library of premium components for the discovery feed (Carousels, Bento cards, etc.).
 - `live-proximity-engine`: Logic to filter and sort "Nearby Now" items based on real-time location.
 
 ### Modified Capabilities
+
 - `map-discovery-platform`: Update the coordination between the Map and Explore modes to ensure filters are synced.
 - `event-registry`: Ensure the registry provides enough metadata for rich discovery cards (e.g., "Trending" status).
 

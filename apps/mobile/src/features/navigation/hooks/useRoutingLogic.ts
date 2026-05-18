@@ -12,9 +12,9 @@ const calculateDistance = (c1: [number, number], c2: [number, number]) => {
   const φ2 = (c2[1] * Math.PI) / 180;
   const Δφ = ((c2[1] - c1[1]) * Math.PI) / 180;
   const Δλ = ((c2[0] - c1[0]) * Math.PI) / 180;
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -22,17 +22,21 @@ const calculateDistance = (c1: [number, number], c2: [number, number]) => {
 export const useRoutingLogic = () => {
   const { selectedPoiId, selectedPoi, setRemote } = usePOIStore();
   const { selectedEvent } = useEventStore();
-  const { setRoutes, setNextInstruction, transportMode, setFetching, isPlanning } = useNavigationStore();
+  const { setRoutes, setNextInstruction, transportMode, setFetching, isPlanning } =
+    useNavigationStore();
 
   // Use stable selectors for location to avoid unnecessary re-renders
-  const userCoords = useLocationStore(s => s.coords);
-  const logicalCoords = useLocationStore(s => s.logicalCoords);
+  const userCoords = useLocationStore((s) => s.coords);
+  const logicalCoords = useLocationStore((s) => s.logicalCoords);
 
   const isRemote = useMemo(() => {
     if (!logicalCoords || (!selectedEvent?.center && !selectedPoi?.coordinates)) return false;
-    const dest = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
+    const dest =
+      selectedPoi?.coordinates ||
+      selectedEvent?.center?.coordinates ||
+      (selectedEvent as any)?.coordinates;
     if (!dest) return false;
-    
+
     const dist = calculateDistance(logicalCoords as [number, number], dest as [number, number]);
     return dist > 50000; // More than 50km is considered remote
   }, [logicalCoords?.[0], logicalCoords?.[1], selectedEvent, selectedPoi]);
@@ -73,7 +77,10 @@ export const useRoutingLogic = () => {
   useEffect(() => {
     const fetchBothRoutes = async () => {
       const destId = selectedPoiId || selectedEvent?.id;
-      const destinationCoords = selectedPoi?.coordinates || selectedEvent?.center?.coordinates || (selectedEvent as any)?.coordinates;
+      const destinationCoords =
+        selectedPoi?.coordinates ||
+        selectedEvent?.center?.coordinates ||
+        (selectedEvent as any)?.coordinates;
       const destinationName = selectedPoi?.displayName || selectedEvent?.name || '';
       const discoveryLocation = useMapUIStore.getState().discoveryLocation;
       const currentUserCoords = userCoordsRef.current;
@@ -85,14 +92,16 @@ export const useRoutingLogic = () => {
 
       const isInitialFetch = !lastFetchCoords.current || lastDestinationId.current !== destId;
       const justStartedNavigating = lastIsPlanning.current && !isPlanning && isNavigating;
-      
+
       // Lock the origin if this is the first fetch for this destination
       if (isInitialFetch || !lockedOrigin.current) {
-        lockedOrigin.current = discoveryLocation || currentUserCoords as [number, number];
+        lockedOrigin.current = discoveryLocation || (currentUserCoords as [number, number]);
       }
 
-      const distanceMoved = lastFetchCoords.current ? calculateDistance(currentUserCoords as [number, number], lastFetchCoords.current) : 0;
-      
+      const distanceMoved = lastFetchCoords.current
+        ? calculateDistance(currentUserCoords as [number, number], lastFetchCoords.current)
+        : 0;
+
       lastIsPlanning.current = isPlanning;
 
       // If we're planning, we ONLY fetch if it's the initial fetch for this destination.
@@ -104,14 +113,23 @@ export const useRoutingLogic = () => {
       // AND we haven't fetched too recently (throttle)
       const timeSinceLastFetch = Date.now() - lastFetchTime.current;
       if (!isInitialFetch && !isPlanning && !justStartedNavigating) {
-        if (distanceMoved < REFETCH_THRESHOLD_METERS || timeSinceLastFetch < MIN_FETCH_INTERVAL_MS) {
+        if (
+          distanceMoved < REFETCH_THRESHOLD_METERS ||
+          timeSinceLastFetch < MIN_FETCH_INTERVAL_MS
+        ) {
           return;
         }
       }
 
-      console.log(`[Logic] 🛰 Fetching routes for: ${destinationName} (Remote: ${isRemote}, Mode: ${isPlanning ? 'Planning' : 'Navigating'})`);
+      console.log(
+        `[Logic] 🛰 Fetching routes for: ${destinationName} (Remote: ${isRemote}, Mode: ${isPlanning ? 'Planning' : 'Navigating'})`
+      );
       const currentStore = useNavigationStore.getState();
-      const hasAnyRoute = !!(currentStore.metadata.driving || currentStore.metadata.walking || currentStore.metadata.bicycle);
+      const hasAnyRoute = !!(
+        currentStore.metadata.driving ||
+        currentStore.metadata.walking ||
+        currentStore.metadata.bicycle
+      );
 
       if (isPlanning && !hasAnyRoute) setFetching(true);
       isFetchingRef.current = true;
@@ -119,7 +137,8 @@ export const useRoutingLogic = () => {
       lastDestinationId.current = destId as string;
 
       try {
-        const effectiveOrigin = (isPlanning && lockedOrigin.current) ? lockedOrigin.current : currentUserCoords;
+        const effectiveOrigin =
+          isPlanning && lockedOrigin.current ? lockedOrigin.current : currentUserCoords;
         if (!effectiveOrigin) return;
 
         const origin = { lat: effectiveOrigin[1], lng: effectiveOrigin[0] };
@@ -127,7 +146,7 @@ export const useRoutingLogic = () => {
 
         // INITIAL PLANNING: Fetch all modes for comparison
         // ACTIVE NAVIGATION: ONLY fetch the current transport mode to save API quota (429 errors)
-        
+
         let driving = null;
         let walking = null;
         let bicycle = null;
@@ -135,21 +154,21 @@ export const useRoutingLogic = () => {
         if (isPlanning || isInitialFetch) {
           // CONCURRENT FETCHING: Request all modes in parallel for maximum speed
           console.log('[Logic] ⚡️ Initial Planning: Fetching all modes concurrently');
-          
+
           const requests = [
-            navigationService.getRoute({ origin, destination, mode: 'driving' }).catch(err => {
+            navigationService.getRoute({ origin, destination, mode: 'driving' }).catch((err) => {
               console.warn('[Logic] Driving route failed:', err);
               return null;
-            })
+            }),
           ];
 
           if (!isRemote) {
             requests.push(
-              navigationService.getRoute({ origin, destination, mode: 'walking' }).catch(err => {
+              navigationService.getRoute({ origin, destination, mode: 'walking' }).catch((err) => {
                 console.warn('[Logic] Walking route failed:', err);
                 return null;
               }),
-              navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch(err => {
+              navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch((err) => {
                 console.warn('[Logic] Bicycle route failed:', err);
                 return null;
               })
@@ -165,11 +184,17 @@ export const useRoutingLogic = () => {
         } else {
           // Re-routing during navigation: ONLY fetch the active mode
           if (transportMode === 'driving') {
-            driving = await navigationService.getRoute({ origin, destination, mode: 'driving' }).catch(() => null);
+            driving = await navigationService
+              .getRoute({ origin, destination, mode: 'driving' })
+              .catch(() => null);
           } else if (transportMode === 'walking' && !isRemote) {
-            walking = await navigationService.getRoute({ origin, destination, mode: 'walking' }).catch(() => null);
+            walking = await navigationService
+              .getRoute({ origin, destination, mode: 'walking' })
+              .catch(() => null);
           } else if (transportMode === 'bicycle' && !isRemote) {
-            bicycle = await navigationService.getRoute({ origin, destination, mode: 'bicycle' }).catch(() => null);
+            bicycle = await navigationService
+              .getRoute({ origin, destination, mode: 'bicycle' })
+              .catch(() => null);
           }
         }
 
@@ -178,17 +203,35 @@ export const useRoutingLogic = () => {
           walking: walking || (isPlanning ? null : currentStore.routes.walking),
           bicycle: bicycle || (isPlanning ? null : currentStore.routes.bicycle),
         };
-        
+
         if (driving || walking || bicycle) {
           const metadata = {
-            driving: driving ? { distance: driving.properties.distance, duration: driving.properties.durationEstimate, destinationName } : currentStore.metadata.driving,
-            walking: walking ? { distance: walking.properties.distance, duration: walking.properties.durationEstimate, destinationName } : currentStore.metadata.walking,
-            bicycle: bicycle ? { distance: bicycle.properties.distance, duration: bicycle.properties.durationEstimate, destinationName } : currentStore.metadata.bicycle,
+            driving: driving
+              ? {
+                  distance: driving.properties.distance,
+                  duration: driving.properties.durationEstimate,
+                  destinationName,
+                }
+              : currentStore.metadata.driving,
+            walking: walking
+              ? {
+                  distance: walking.properties.distance,
+                  duration: walking.properties.durationEstimate,
+                  destinationName,
+                }
+              : currentStore.metadata.walking,
+            bicycle: bicycle
+              ? {
+                  distance: bicycle.properties.distance,
+                  duration: bicycle.properties.durationEstimate,
+                  destinationName,
+                }
+              : currentStore.metadata.bicycle,
           };
 
           setRoutes(routes, metadata);
           lastFetchCoords.current = currentUserCoords as [number, number];
-          
+
           const currentRoute = routes[transportMode] || driving || walking || bicycle;
           if (currentRoute?.maneuvers?.length > 0) {
             setNextInstruction(currentRoute.maneuvers[0]);
@@ -204,7 +247,15 @@ export const useRoutingLogic = () => {
 
     const timer = setTimeout(fetchBothRoutes, 300);
     return () => clearTimeout(timer);
-  }, [selectedPoiId, selectedEvent?.id, isPlanning, transportMode, isRemote, userCoords?.[0], userCoords?.[1]]);
+  }, [
+    selectedPoiId,
+    selectedEvent?.id,
+    isPlanning,
+    transportMode,
+    isRemote,
+    userCoords?.[0],
+    userCoords?.[1],
+  ]);
 
   // Navigation Progress Tracking Effect
   useEffect(() => {
@@ -223,7 +274,10 @@ export const useRoutingLogic = () => {
 
     maneuvers.forEach((m, i) => {
       if (!m.coordinate) return;
-      const dist = calculateDistance(userCoords as [number, number], m.coordinate as [number, number]);
+      const dist = calculateDistance(
+        userCoords as [number, number],
+        m.coordinate as [number, number]
+      );
       if (dist < minDistance) {
         minDistance = dist;
         closestManeuverIndex = i;
@@ -239,10 +293,13 @@ export const useRoutingLogic = () => {
 
     const nextM = maneuvers[nextIndex];
     if (nextM) {
-      const distToNext = calculateDistance(userCoords as [number, number], nextM.coordinate as [number, number]);
+      const distToNext = calculateDistance(
+        userCoords as [number, number],
+        nextM.coordinate as [number, number]
+      );
       setNextInstruction({
         ...nextM,
-        distance: distToNext
+        distance: distToNext,
       });
     }
   }, [userCoords?.[0], userCoords?.[1], transportMode]);

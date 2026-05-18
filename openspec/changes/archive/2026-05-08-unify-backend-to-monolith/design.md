@@ -5,24 +5,30 @@ The Lattice backend is currently composed of four separate Node.js services (Gat
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Consolidate all backend logic into a single executable service named `api`.
 - Maintain the modular file structure (separate folders for auth, geo, etc.) for future portability.
 - Reduce overall memory consumption by ~60%.
 - Simplify the deployment pipeline and docker-compose configuration.
 
 **Non-Goals:**
+
 - Merging the `admin-web` (Next.js) into the backend.
 - Refactoring the internal logic of the controllers or services.
 
 ## Decisions
 
 ### 1. Repurpose Gateway as the Monolith Entry Point
+
 The existing `apps/server/gateway` will be renamed or repurposed as `apps/server/api`.
+
 - **Rationale**: It already contains the security infrastructure (Helmet, CORS, Rate Limit) and routing logic.
 - **Implementation**: Instead of using `http-proxy-middleware`, it will import the Express routers directly from `../auth`, `../geo`, and `../social`.
 
 ### 2. Direct Router Mounting
+
 We will use Express's built-in modularity to mount services.
+
 - **Implementation**:
   ```typescript
   import authRouter from '../auth/routes/auth.routes';
@@ -33,10 +39,13 @@ We will use Express's built-in modularity to mount services.
   ```
 
 ### 3. Consolidated Docker Stage
+
 The `Dockerfile` will be updated to remove separate prod stages for sub-services.
+
 - **Implementation**: A single `api-prod` stage will replace `gateway-prod`, `auth-prod`, etc.
 
 ### 4. Shared Configuration Logic
+
 The `@app/core` config loader will be updated to provide a unified `API_URL` while keeping sub-service configurations (like JWT secrets) for the shared process.
 
 ## Risks / Trade-offs

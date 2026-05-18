@@ -13,10 +13,12 @@ Older Android devices experience severe lag and frame drops when interacting wit
 ## Capabilities
 
 ### New Capabilities
+
 - `native-gpu-markers`: GPU-accelerated rendering of map features using MapLibre layers.
 - `sdf-icon-pipeline`: Support for dynamic tinting of monochrome icons using SDF technology.
 
 ### Modified Capabilities
+
 - `hybrid-map-rendering`: Shift from view-heavy to layer-heavy rendering strategy.
 - `map-pin-components`: Standardize visual representation within native layer constraints.
 

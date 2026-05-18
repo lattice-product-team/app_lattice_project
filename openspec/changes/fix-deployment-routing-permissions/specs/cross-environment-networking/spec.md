@@ -1,9 +1,11 @@
 ## ADDED Requirements
 
 ### Requirement: External Proxy Connectivity
+
 All production services SHALL belong to a shared external network (e.g., `red_proxy`) to allow connectivity with the global Nginx proxy.
 
 #### Scenario: Shared network membership
+
 - **WHEN** the production compose file is deployed
 - **THEN** all application services MUST be attached to the `red_proxy` network.
 

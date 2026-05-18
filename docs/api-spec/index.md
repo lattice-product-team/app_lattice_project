@@ -21,6 +21,7 @@ Our APIs are designed to be **developer-friendly**, **consistent**, and **perfor
 Lattice uses a **Custom JWT-based Authentication**. Clients must exchange user credentials (email/password) for a token via the `/auth/login` endpoint and include it in all protected requests.
 
 **Header Format:**
+
 ```http
 Authorization: Bearer <JWT_TOKEN>
 ```
@@ -37,7 +38,7 @@ sequenceDiagram
     A->>D: Find user by email
     D-->>A: User record (hashed password)
     A->>A: Verify password (bcrypt)
-    
+
     alt Success
         A->>A: Sign JWT (Secret key)
         A-->>C: 200 OK (Token + User Profile)
@@ -66,33 +67,34 @@ All error responses follow this structure:
 
 ### Common Status Codes
 
-| Code | Meaning | Description |
-| :--- | :--- | :--- |
-| `200` | OK | Request succeeded. |
-| `201` | Created | Resource successfully created. |
-| `400` | Bad Request | Invalid parameters or malformed body. |
-| `401` | Unauthorized | Missing or invalid authentication token. |
-| `403` | Forbidden | Authenticated but lacks permissions for the resource. |
-| `404` | Not Found | The requested resource does not exist. |
-| `429` | Too Many Requests | Rate limit exceeded. |
-| `500` | Internal Server Error | Something went wrong on our end. |
+| Code  | Meaning               | Description                                           |
+| :---- | :-------------------- | :---------------------------------------------------- |
+| `200` | OK                    | Request succeeded.                                    |
+| `201` | Created               | Resource successfully created.                        |
+| `400` | Bad Request           | Invalid parameters or malformed body.                 |
+| `401` | Unauthorized          | Missing or invalid authentication token.              |
+| `403` | Forbidden             | Authenticated but lacks permissions for the resource. |
+| `404` | Not Found             | The requested resource does not exist.                |
+| `429` | Too Many Requests     | Rate limit exceeded.                                  |
+| `500` | Internal Server Error | Something went wrong on our end.                      |
 
 ## Available APIs
- 
-| API | Description | Target Audience |
-| :--- | :--- | :--- |
-| [Admin API](./admin-api.md) | Operations for platform management and telemetry. | Admin Dashboard |
-| [Mobile API](./mobile-api.md) | Discovery and client-side interactions. | Mobile App (Lattice) |
-| [API Schemas](./schemas.md) | Shared JSON schemas, enums, and geospatial types. | Mobile & Admin Clients |
+
+| API                           | Description                                       | Target Audience        |
+| :---------------------------- | :------------------------------------------------ | :--------------------- |
+| [Admin API](./admin-api.md)   | Operations for platform management and telemetry. | Admin Dashboard        |
+| [Mobile API](./mobile-api.md) | Discovery and client-side interactions.           | Mobile App (Lattice)   |
+| [API Schemas](./schemas.md)   | Shared JSON schemas, enums, and geospatial types. | Mobile & Admin Clients |
 
 ## Data Formats
- 
-### Timestamp
-All timestamps MUST be in ISO 8601 format (UTC).
- 
-### Location
-Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`. For complete coordinate types and spatial formatting, check out our [API Schemas Guide](./schemas.md#geospatial-standards).
 
+### Timestamp
+
+All timestamps MUST be in ISO 8601 format (UTC).
+
+### Location
+
+Geospatial data MUST follow the **GeoJSON** standard: `[longitude, latitude]`. For complete coordinate types and spatial formatting, check out our [API Schemas Guide](./schemas.md#geospatial-standards).
 
 ---
 

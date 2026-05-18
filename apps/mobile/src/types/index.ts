@@ -76,4 +76,3 @@ export interface DiscoverySection {
 export interface DiscoveryFeed {
   sections: DiscoverySection[];
 }
-

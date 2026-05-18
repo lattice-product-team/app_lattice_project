@@ -9,6 +9,7 @@ We follow the **Conventional Commits** specification.
 **Format:** `<type>(<scope>): <description>`
 
 ### Types
+
 - `feat`: A new feature for the user.
 - `fix`: A bug fix.
 - `docs`: Documentation only changes.
@@ -19,6 +20,7 @@ We follow the **Conventional Commits** specification.
 - `chore`: Changes to the build process or auxiliary tools and libraries.
 
 ### Examples
+
 - `feat(mobile): add passkey login support`
 - `fix(server): resolve race condition in ticket sync`
 - `docs(api): update event schema definition`
@@ -40,12 +42,15 @@ Branches should be descriptive and prefixed with the type of change.
 ## 3. Pull Request (PR) Guidelines
 
 Before opening a PR, ensure:
+
 1.  The code builds locally (`pnpm run build`).
 2.  Tests pass (`pnpm test`).
 3.  The code is formatted (`pnpm run format`).
 
 ### PR Description Template
+
 A good PR description should include:
+
 - **Summary**: What does this PR do?
 - **Related Issues**: Link to relevant tasks or specs.
 - **Testing Done**: How did you verify these changes?

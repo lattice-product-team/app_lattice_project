@@ -36,85 +36,87 @@ interface WalletItemProps {
   theme: any;
 }
 
-const WalletItem: React.FC<WalletItemProps> = React.memo(({
-  ticket,
-  index,
-  totalTickets,
-  isExpanded,
-  selectedTicketId,
-  expandProgress,
-  handleSelectTicket,
-  toggleExpand,
-  theme,
-}) => {
-  const isSelected = selectedTicketId === ticket.id;
-  const isAnySelected = selectedTicketId !== null;
+const WalletItem: React.FC<WalletItemProps> = React.memo(
+  ({
+    ticket,
+    index,
+    totalTickets,
+    isExpanded,
+    selectedTicketId,
+    expandProgress,
+    handleSelectTicket,
+    toggleExpand,
+    theme,
+  }) => {
+    const isSelected = selectedTicketId === ticket.id;
+    const isAnySelected = selectedTicketId !== null;
 
-  const springConfig = theme.motion.physics.snappy;
+    const springConfig = theme.motion.physics.snappy;
 
-  const animatedStyle = useAnimatedStyle(() => {
-    // 1. If this specific ticket is selected, it stays at the top
-    if (isSelected) {
+    const animatedStyle = useAnimatedStyle(() => {
+      // 1. If this specific ticket is selected, it stays at the top
+      if (isSelected) {
+        return {
+          transform: [
+            { translateY: withSpring(0, springConfig) },
+            { scale: withSpring(1, springConfig) },
+          ],
+          opacity: withSpring(1, springConfig),
+          zIndex: 100,
+        };
+      }
+
+      // 2. If another ticket is selected, this one hides below screen
+      if (isAnySelected) {
+        return {
+          transform: [
+            { translateY: withSpring(SCREEN_HEIGHT, springConfig) },
+            { scale: withSpring(0.9, springConfig) },
+          ],
+          opacity: withSpring(0, springConfig),
+          zIndex: 0,
+        };
+      }
+
+      // 3. Normal Stack / Expanded state logic
+      const translateY = interpolate(
+        expandProgress.value,
+        [0, 1],
+        [index * STACK_OFFSET, index * EXPANDED_OFFSET],
+        Extrapolation.CLAMP
+      );
+
+      const scale = interpolate(
+        expandProgress.value,
+        [0, 1],
+        [1 - (totalTickets - 1 - index) * 0.05, 1],
+        Extrapolation.CLAMP
+      );
+
       return {
         transform: [
-          { translateY: withSpring(0, springConfig) },
-          { scale: withSpring(1, springConfig) }
+          { translateY: withSpring(translateY, springConfig) },
+          { scale: withSpring(scale, springConfig) },
         ],
         opacity: withSpring(1, springConfig),
-        zIndex: 100,
+        zIndex: index,
       };
-    }
+    });
 
-    // 2. If another ticket is selected, this one hides below screen
-    if (isAnySelected) {
-      return {
-        transform: [
-          { translateY: withSpring(SCREEN_HEIGHT, springConfig) },
-          { scale: withSpring(0.9, springConfig) }
-        ],
-        opacity: withSpring(0, springConfig),
-        zIndex: 0,
-      };
-    }
-
-    // 3. Normal Stack / Expanded state logic
-    const translateY = interpolate(
-      expandProgress.value,
-      [0, 1],
-      [index * STACK_OFFSET, index * EXPANDED_OFFSET],
-      Extrapolation.CLAMP
+    return (
+      <View style={styles.pressable}>
+        <Animated.View style={[styles.cardWrapper, animatedStyle]}>
+          <TicketCard
+            ticket={ticket}
+            index={index}
+            isSelected={isSelected}
+            onCardPress={() => (isExpanded ? handleSelectTicket(ticket) : toggleExpand())}
+          />
+        </Animated.View>
+      </View>
     );
-
-    const scale = interpolate(
-      expandProgress.value,
-      [0, 1],
-      [1 - (totalTickets - 1 - index) * 0.05, 1],
-      Extrapolation.CLAMP
-    );
-
-    return {
-      transform: [
-        { translateY: withSpring(translateY, springConfig) },
-        { scale: withSpring(scale, springConfig) }
-      ],
-      opacity: withSpring(1, springConfig),
-      zIndex: index,
-    };
-  });
-
-  return (
-    <View style={styles.pressable}>
-      <Animated.View style={[styles.cardWrapper, animatedStyle]}>
-        <TicketCard
-          ticket={ticket}
-          index={index}
-          isSelected={isSelected}
-          onCardPress={() => (isExpanded ? handleSelectTicket(ticket) : toggleExpand())}
-        />
-      </Animated.View>
-    </View>
-  );
-});
+  }
+);
 
 WalletItem.displayName = 'WalletItem';
 
@@ -126,14 +128,14 @@ export const WalletStack: React.FC<WalletStackProps> = React.memo(({ tickets }) 
   const isAnySelected = selectedTicketId !== null;
 
   const toggleExpand = useCallback(() => {
-    if (selectedTicketId) return; 
+    if (selectedTicketId) return;
     const newExpanded = !isExpanded;
     setIsExpanded(newExpanded);
     expandProgress.value = withSpring(newExpanded ? 1 : 0, theme.motion.physics.snappy);
   }, [isExpanded, selectedTicketId, theme, expandProgress]);
 
   const handleSelectTicket = useCallback((ticket: Ticket) => {
-    setSelectedTicketId(prev => prev === ticket.id ? null : ticket.id);
+    setSelectedTicketId((prev) => (prev === ticket.id ? null : ticket.id));
   }, []);
 
   return (
@@ -157,11 +159,13 @@ export const WalletStack: React.FC<WalletStackProps> = React.memo(({ tickets }) 
 
       {isAnySelected && (
         <Animated.View entering={FadeIn} style={styles.actionsContainer}>
-          <Pressable 
+          <Pressable
             onPress={() => setSelectedTicketId(null)}
             style={[styles.backButton, { backgroundColor: theme.colors.glass.background }]}
           >
-            <Text style={[styles.backText, { color: theme.colors.text.primary }]}>Cerrar Detalle</Text>
+            <Text style={[styles.backText, { color: theme.colors.text.primary }]}>
+              Close Details
+            </Text>
           </Pressable>
         </Animated.View>
       )}

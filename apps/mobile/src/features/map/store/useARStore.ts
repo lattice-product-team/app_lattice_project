@@ -11,7 +11,7 @@ interface ARState {
   isVisible: boolean;
   filterMode: ARFilterMode;
   targetId: string | number | null;
-  
+
   // Contextual Awareness
   currentEventContext: LatticeEvent | null;
   isWithinBoundary: boolean;
@@ -38,10 +38,10 @@ export const useARStore = create<ARState>((set) => ({
       const { useMapUIStore, MapUIState } = require('./useMapUIStore');
       useMapUIStore.getState().setUIState(MapUIState.AR_EXPLORE);
     } catch (e) {}
-    set({ 
-      isVisible: true, 
-      filterMode: mode, 
-      targetId: id 
+    set({
+      isVisible: true,
+      filterMode: mode,
+      targetId: id,
     });
   },
 
@@ -52,8 +52,8 @@ export const useARStore = create<ARState>((set) => ({
         useMapUIStore.getState().setUIState(MapUIState.EXPLORING);
       }
     } catch (e) {}
-    set({ 
-      isVisible: false, 
+    set({
+      isVisible: false,
       targetId: null,
       currentEventContext: null,
       isWithinBoundary: false,

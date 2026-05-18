@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "nextra-theme-docs/style.css";
+@import 'tailwindcss';
+@import 'nextra-theme-docs/style.css';
 
 @layer base {
   :root {
@@ -8,7 +8,7 @@
 
   html {
     font-family: 'Inter', system-ui, sans-serif;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 }
 
@@ -23,18 +23,18 @@
 
 .nextra-mermaid-zoom-container .nextra-mermaid svg {
   min-width: 900px !important; /* Force a robust minimum width so texts are fully readable */
-  max-width: none !important;  /* Allow the diagram to expand naturally so it doesn't squeeze */
+  max-width: none !important; /* Allow the diagram to expand naturally so it doesn't squeeze */
   height: auto !important;
 }
 
 /* Shields.io badges layout overrides */
-img[src*="shields.io"] {
+img[src*='shields.io'] {
   display: inline-block !important;
   vertical-align: middle;
   margin: 0 !important;
 }
 
-p:has(img[src*="shields.io"]) {
+p:has(img[src*='shields.io']) {
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -43,13 +43,13 @@ p:has(img[src*="shields.io"]) {
   margin: 1.5rem 0 !important;
 }
 
-p:has(img[src*="shields.io"]) a {
+p:has(img[src*='shields.io']) a {
   display: inline-flex !important;
   align-items: center !important;
 }
 
 /* Mockups side-by-side layout styles */
-div[align="center"]:has(img[src*="/assets/mockups/"]) {
+div[align='center']:has(img[src*='/assets/mockups/']) {
   display: flex !important;
   flex-direction: row !important;
   justify-content: center !important;
@@ -60,11 +60,11 @@ div[align="center"]:has(img[src*="/assets/mockups/"]) {
   width: 100% !important;
 }
 
-div[align="center"]:has(img[src*="/assets/mockups/"]) p {
+div[align='center']:has(img[src*='/assets/mockups/']) p {
   display: contents !important; /* Bypasses any paragraph markup wrappers */
 }
 
-img[src*="/assets/mockups/"] {
+img[src*='/assets/mockups/'] {
   display: inline-block !important;
   width: 48% !important;
   max-width: 48% !important;
@@ -78,8 +78,6 @@ img[src*="/assets/mockups/"] {
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-img[src*="/assets/mockups/"]:hover {
+img[src*='/assets/mockups/']:hover {
   transform: scale(1.02) !important;
 }
-
-

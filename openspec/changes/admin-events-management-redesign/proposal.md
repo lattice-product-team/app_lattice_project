@@ -13,10 +13,12 @@ The current events management page has several UX issues: navigation buttons are
 ## Capabilities
 
 ### New Capabilities
+
 - `event-search-filtering`: Ability to search and filter events in the admin dashboard.
 - `full-screen-event-creator`: A dedicated, high-aesthetic interface for initializing and editing event lifecycles.
 
 ### Modified Capabilities
+
 - `event-operations-dashboard`: Update requirements for event management actions and list behavior.
 
 ## Impact

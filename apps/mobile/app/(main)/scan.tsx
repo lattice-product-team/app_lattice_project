@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Zap, ZapOff, RefreshCcw, Ticket as TicketIcon, ScanLine } from 'lucide-react-native';
-import Animated, { 
-  useAnimatedStyle, 
-  useSharedValue, 
-  withSpring 
-} from 'react-native-reanimated';
+import {
+  ChevronLeft,
+  Zap,
+  ZapOff,
+  RefreshCcw,
+  Ticket as TicketIcon,
+  ScanLine,
+} from 'lucide-react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useTicketScanner } from '../../src/features/tickets/hooks/useTicketScanner';
 import { useAppTheme } from '../../src/hooks/useAppTheme';
 import { typography } from '../../src/styles/typography';
@@ -45,14 +48,28 @@ export default function TicketScanScreen() {
 
   if (!permission.granted) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.bg.main, padding: 40, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={[styles.errorTitle, { color: theme.colors.text.primary }]}>Sin acceso a la cámara</Text>
-        <Text style={[styles.errorSub, { color: theme.colors.text.secondary }]}>Necesitamos permiso para usar la cámara y poder escanear tu entrada.</Text>
-        <Pressable 
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: theme.colors.bg.main,
+            padding: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+        ]}
+      >
+        <Text style={[styles.errorTitle, { color: theme.colors.text.primary }]}>
+          No Camera Access
+        </Text>
+        <Text style={[styles.errorSub, { color: theme.colors.text.secondary }]}>
+          We need camera permission to scan your ticket.
+        </Text>
+        <Pressable
           onPress={requestPermission}
           style={[styles.button, { backgroundColor: theme.colors.brand.primary }]}
         >
-          <Text style={styles.buttonText}>Conceder Permiso</Text>
+          <Text style={styles.buttonText}>Grant Permission</Text>
         </Pressable>
       </View>
     );
@@ -64,14 +81,21 @@ export default function TicketScanScreen() {
         style={StyleSheet.absoluteFill}
         facing="back"
         enableTorch={torch}
-        onBarcodeScanned={scanned || isProcessing ? undefined : ({ data }) => handleBarCodeScanned(data)}
+        onBarcodeScanned={
+          scanned || isProcessing ? undefined : ({ data }) => handleBarCodeScanned(data)
+        }
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
       >
         {/* Dynamic Island Header */}
         <View style={styles.headerContainer}>
-          <View style={[styles.island, { backgroundColor: 'rgba(0,0,0,0.6)', borderColor: 'rgba(255,255,255,0.1)' }]}>
+          <View
+            style={[
+              styles.island,
+              { backgroundColor: 'rgba(0,0,0,0.6)', borderColor: 'rgba(255,255,255,0.1)' },
+            ]}
+          >
             {/* Back Button */}
             <Pressable onPress={handleBack} style={styles.backButton}>
               <ChevronLeft size={20} color="#fff" />
@@ -81,26 +105,32 @@ export default function TicketScanScreen() {
 
             {/* Mode Selector */}
             <View style={styles.selectorContainer}>
-              <Animated.View style={[styles.activeIndicator, { backgroundColor: 'rgba(255,255,255,0.15)' }, modeIndicatorStyle]} />
-              
-              <Pressable 
+              <Animated.View
+                style={[
+                  styles.activeIndicator,
+                  { backgroundColor: 'rgba(255,255,255,0.15)' },
+                  modeIndicatorStyle,
+                ]}
+              />
+
+              <Pressable
                 onPress={() => {
                   router.push('/(main)/tickets');
                 }}
                 style={styles.modeOption}
               >
                 <TicketIcon size={18} color="rgba(255,255,255,0.6)" />
-                <Text style={[styles.modeText, { color: 'rgba(255,255,255,0.6)' }]}>Entradas</Text>
+                <Text style={[styles.modeText, { color: 'rgba(255,255,255,0.6)' }]}>Tickets</Text>
               </Pressable>
 
-              <Pressable 
+              <Pressable
                 onPress={() => {
                   islandMode.value = withSpring(1);
                 }}
                 style={styles.modeOption}
               >
                 <ScanLine size={18} color="#fff" />
-                <Text style={[styles.modeText, { color: '#fff' }]}>Escanear</Text>
+                <Text style={[styles.modeText, { color: '#fff' }]}>Scan</Text>
               </Pressable>
             </View>
           </View>
@@ -110,15 +140,39 @@ export default function TicketScanScreen() {
         <View style={styles.contentOverlay}>
           <View style={styles.finderContainer}>
             <View style={[styles.finder, { borderColor: theme.colors.brand.primary }]}>
-              <View style={[styles.corner, styles.topLeft, { borderColor: theme.colors.brand.primary }]} />
-              <View style={[styles.corner, styles.topRight, { borderColor: theme.colors.brand.primary }]} />
-              <View style={[styles.corner, styles.bottomLeft, { borderColor: theme.colors.brand.primary }]} />
-              <View style={[styles.corner, styles.bottomRight, { borderColor: theme.colors.brand.primary }]} />
+              <View
+                style={[styles.corner, styles.topLeft, { borderColor: theme.colors.brand.primary }]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.topRight,
+                  { borderColor: theme.colors.brand.primary },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.bottomLeft,
+                  { borderColor: theme.colors.brand.primary },
+                ]}
+              />
+              <View
+                style={[
+                  styles.corner,
+                  styles.bottomRight,
+                  { borderColor: theme.colors.brand.primary },
+                ]}
+              />
             </View>
-            
+
             <View style={styles.controlsRow}>
               <Pressable onPress={() => setTorch(!torch)} style={styles.torchButton}>
-                {torch ? <Zap color="#FFD700" size={24} fill="#FFD700" /> : <ZapOff color="#fff" size={24} />}
+                {torch ? (
+                  <Zap color="#FFD700" size={24} fill="#FFD700" />
+                ) : (
+                  <ZapOff color="#fff" size={24} />
+                )}
               </Pressable>
             </View>
           </View>
@@ -127,14 +181,14 @@ export default function TicketScanScreen() {
             {isProcessing && (
               <View style={styles.statusCard}>
                 <ActivityIndicator color={theme.colors.brand.primary} />
-                <Text style={styles.statusText}>Validando...</Text>
+                <Text style={styles.statusText}>Validating...</Text>
               </View>
             )}
-            
+
             {scanned && !isProcessing && (
               <Pressable onPress={resetScanner} style={styles.retryButton}>
                 <RefreshCcw color="#fff" size={20} />
-                <Text style={styles.retryText}>Reintentar</Text>
+                <Text style={styles.retryText}>Retry</Text>
               </Pressable>
             )}
           </View>
@@ -225,10 +279,34 @@ const styles = StyleSheet.create({
     height: 40,
     borderWidth: 4,
   },
-  topLeft: { top: -2, left: -2, borderRightWidth: 0, borderBottomWidth: 0, borderTopLeftRadius: 32 },
-  topRight: { top: -2, right: -2, borderLeftWidth: 0, borderBottomWidth: 0, borderTopRightRadius: 32 },
-  bottomLeft: { bottom: -2, left: -2, borderRightWidth: 0, borderTopWidth: 0, borderBottomLeftRadius: 32 },
-  bottomRight: { bottom: -2, right: -2, borderLeftWidth: 0, borderTopWidth: 0, borderBottomRightRadius: 32 },
+  topLeft: {
+    top: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 32,
+  },
+  topRight: {
+    top: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 32,
+  },
+  bottomLeft: {
+    bottom: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 32,
+  },
+  bottomRight: {
+    bottom: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 32,
+  },
   controlsRow: {
     marginTop: 40,
   },
@@ -275,7 +353,12 @@ const styles = StyleSheet.create({
     fontFamily: typography.primary.bold,
   },
   errorTitle: { fontSize: 22, fontFamily: typography.primary.bold, marginBottom: 12 },
-  errorSub: { fontSize: 16, fontFamily: typography.primary.regular, textAlign: 'center', marginBottom: 32 },
+  errorSub: {
+    fontSize: 16,
+    fontFamily: typography.primary.regular,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
   button: { paddingHorizontal: 24, paddingVertical: 14, borderRadius: 16 },
   buttonText: { color: '#fff', fontSize: 16, fontFamily: typography.primary.bold },
 });

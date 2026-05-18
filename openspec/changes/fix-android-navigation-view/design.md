@@ -5,12 +5,14 @@ The current navigation implementation works reliably on iOS but fails to provide
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Enable 3D perspective (pitch) by default in navigation mode.
 - Fix heading tracking (compass) on Android.
 - Prevent programmatic camera movements from triggering "FREE" mode on Android.
 - Ensure manual gestures still correctly trigger "FREE" mode.
 
 **Non-Goals:**
+
 - Implement real-time route recalculation.
 - Redesign the navigation UI banners/sheets.
 - Change map tile styles or layers.
@@ -18,15 +20,19 @@ The current navigation implementation works reliably on iOS but fails to provide
 ## Decisions
 
 ### 1. Refine `isUserInteraction` Detection in `MapContent.tsx`
+
 On Android, `onRegionIsChanging` can be triggered by programmatic `setCamera` calls.
+
 - **Decision**: Use a shared `isProgrammaticMoveRef` in `MapCameraManager` (passed via context or store if needed, but currently accessible via internal component logic) to mask interaction detection during transitions.
 - **Rationale**: Android's native MapLibre bridge is noisier with events than iOS.
 
 ### 2. Default Pitch in Navigation
+
 - **Decision**: Update `MapCameraManager` to explicitly set `pitch: 45` when `cameraMode` transitions to `NAVIGATION`.
 - **Rationale**: Align with `navigation-system` spec and user expectations for a "driving view".
 
 ### 3. Use `followUserMode="compass"` on Android
+
 - **Decision**: Ensure `MapLibreGL.Camera` uses `followUserMode="compass"` when in navigation.
 - **Rationale**: This enables automatic rotation of the map based on device heading, which is currently inconsistent on Android.
 

@@ -1,6 +1,6 @@
 ## Why
 
-Actualmente, el cambio de enfoque de la cámara al seleccionar un Punto de Interés (POI) o un evento desde la interfaz de usuario (desplegables, carruseles o modo exploración) es instantáneo o inexistente ("snap"). Esto genera una experiencia de usuario brusca y desorientadora. 
+Actualmente, el cambio de enfoque de la cámara al seleccionar un Punto de Interés (POI) o un evento desde la interfaz de usuario (desplegables, carruseles o modo exploración) es instantáneo o inexistente ("snap"). Esto genera una experiencia de usuario brusca y desorientadora.
 
 Se requiere un sistema de animaciones de cámara ("FlyTo") que proporcione transiciones suaves y cinemáticas, mejorando la percepción de continuidad espacial tanto en iOS como en Android, asegurando que el usuario entienda el desplazamiento desde su posición actual hasta el destino seleccionado.
 
@@ -14,9 +14,11 @@ Se requiere un sistema de animaciones de cámara ("FlyTo") que proporcione trans
 ## Capabilities
 
 ### New Capabilities
+
 - `camera-flyto-system`: Orquestación de animaciones cinemáticas entre coordenadas geográficas con soporte para control de zoom y pitch dinámico.
 
 ### Modified Capabilities
+
 - `event-poi-orchestration`: Actualización de la lógica de enfoque para disparar animaciones suaves al seleccionar elementos desde la UI de exploración.
 - `pure-ui-animation-bridge`: Integración de las animaciones de mapa con el puente de animaciones existente para mantener coherencia visual.
 

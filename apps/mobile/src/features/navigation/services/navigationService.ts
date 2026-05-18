@@ -35,7 +35,7 @@ export const navigationService = {
     }
 
     const data = await response.json();
-    
+
     // The server now returns a ready-to-use Feature collection with decoded maneuvers
     return data as RouteGeoJSON;
   },

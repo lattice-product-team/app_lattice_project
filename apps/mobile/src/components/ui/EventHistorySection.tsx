@@ -12,9 +12,9 @@ export const EventHistorySection = ({ events }: EventHistorySectionProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Historial de Eventos</Text>
+        <Text style={styles.title}>Event History</Text>
         <Pressable>
-          <Text style={styles.seeAll}>Ver todos</Text>
+          <Text style={styles.seeAll}>See all</Text>
         </Pressable>
       </View>
 
@@ -29,22 +29,18 @@ export const EventHistorySection = ({ events }: EventHistorySectionProps) => {
           return (
             <View key={event.id} style={styles.card}>
               <View style={[styles.iconContainer, { backgroundColor: `${metadata.color}15` }]}>
-                <CategoryIcon
-                  size={24}
-                  color={metadata.color}
-                  strokeWidth={2.2}
-                />
+                <CategoryIcon size={24} color={metadata.color} strokeWidth={2.2} />
               </View>
               <Text style={styles.eventName} numberOfLines={1}>
                 {event.name}
               </Text>
-              <Text style={styles.eventDate}>Agosto 2024</Text>
+              <Text style={styles.eventDate}>August 2024</Text>
             </View>
           );
         })}
         {events.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Aún no has asistido a ningún evento</Text>
+            <Text style={styles.emptyText}>You haven't attended any events yet</Text>
           </View>
         )}
       </ScrollView>

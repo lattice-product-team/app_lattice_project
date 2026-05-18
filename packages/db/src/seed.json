@@ -2,7 +2,7 @@
   "events": [
     {
       "name": "Barcelona Beach Festival 2026",
-      "description": "El mayor festival de música electrónica en la playa de Barcelona.",
+      "description": "The largest electronic music festival on the beach of Barcelona.",
       "type": "music",
       "locationName": "Playa del Fòrum",
       "address": "Platja del Fòrum, 08930 Sant Adrià de Besòs, Barcelona",
@@ -17,7 +17,7 @@
       "category": "Music",
       "pois": [
         {
-          "name": "Escenario Principal",
+          "name": "Main Stage",
           "type": "meetup_point",
           "offset": [0.002, 0.001],
           "bannerUrl": "https://www.deutschland.de/sites/default/files/media/image/tdt_31072023_kultur_festivals_wacken-open-air.jpg",
@@ -27,7 +27,7 @@
           ]
         },
         {
-          "name": "Zona VIP Lounge",
+          "name": "VIP Lounge Zone",
           "type": "restaurant",
           "offset": [-0.001, 0.002],
           "bannerUrl": "https://media-cdn.tripadvisor.com/media/photo-m/1280/14/48/0d/01/exterior-restaurante.jpg",
@@ -36,13 +36,13 @@
           ]
         },
         { "name": "Beach Bar 1", "type": "restaurant", "offset": [0.003, -0.001] },
-        { "name": "Entrada Norte", "type": "gate", "offset": [-0.002, -0.002] },
+        { "name": "North Entrance", "type": "gate", "offset": [-0.002, -0.002] },
         { "name": "Merchandising Shop", "type": "shop", "offset": [0.001, -0.003] }
       ]
     },
     {
       "name": "Sónar 2026 - Day Edition",
-      "description": "Festival de música, creatividad y tecnología.",
+      "description": "Festival of music, creativity and technology.",
       "type": "music",
       "locationName": "Fira Montjuïc",
       "address": "Av. de la Reina Maria Cristina, s/n, 08004 Barcelona",
@@ -71,7 +71,7 @@
     },
     {
       "name": "Barcelona Gourmet Week",
-      "description": "La semana de la alta cocina en el corazón de Barcelona.",
+      "description": "The week of haute cuisine in the heart of Barcelona.",
       "type": "food",
       "locationName": "Mercat de la Boqueria",
       "address": "La Rambla, 91, 08001 Barcelona",
@@ -84,7 +84,7 @@
       "category": "Gastronomy",
       "pois": [
         {
-          "name": "Degustación Central",
+          "name": "Central Tasting",
           "type": "restaurant",
           "offset": [0.0005, 0.0005],
           "bannerUrl": "https://alba.pdx.edu/wp-content/uploads/2023/03/boqueria.jpg",
@@ -93,14 +93,14 @@
             "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxMTEhUSExMVFhUXFxYVFxgYGBgVGBUVFRUYFxcWFxYYHSggGBolHRcWITEhJSkrLi4uGCAzODMtNygtLisBCgoKDg0OGhAQGy0mICUtLS0tLS0tLS0tLS0tLy0tLS0tLS8tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLy0tLS0tLf/AABEIALcBEwMBIgACEQEDEQH/xAAbAAABBQEBAAAAAAAAAAAAAAADAAIEBQYBB//EAEQQAAIBAwMCAwUFBAgFAwUAAAECEQADIQQSMQVBIlFhBhNxgZEyQqGx0RRSU9IHIzNicuHw8RVDgpLBosLTFiRjg7L/xAAZAQADAQEBAAAAAAAAAAAAAAAAAQIDBAX/xAAtEQACAgICAQMDAwMFAAAAAAAAAQIRAyESMUEEE1EiYaGBkfCxwdEUMkJScf/aAAwDAQACEQMRAD8A5ZtTUpLcUKwvlUxDXsHMdW2KdspyiigUDAhacKKErvu6YgdcK0YW6cFpiI0U9RUhrVdFumANRXVWKKFp0UAM208LRAlP93QA0LFEApwtmjIlSBHNuotyzVsLQody0JosZWKtcRc1PvWRUYWoqhDSKGlHcVyys5pAcuihA1NZRQWtUARwZpxJil7k1IW3ihgiDemgsTU28KCVHFAAba0VkNEVaJtJ7VLGiOlvvQbzAVKvyBUF1JNKhnC1DY0X3VDuLFFAANKuEUqKFYrdruKkWm7Go9sUZZoGSNlPVqFbeKkIAaYDhRBTVSnRTEEUU/ZQ1WirIpiEFpwSnBZp2ygQP3dPC04GnTTCx9taOLYqNvpwY1NBZLCCmmKGrGioPOlVDsaGplxKkwKQUGlYEbaO9MZUqY9iot6x3pppgRnURih2xFGUUMrVk2dikVpwNFVTSHZHtp3rpFSWt0N1oGQriVyzZmpDCjWbPehsBgsYinBYp7LPwppQVBRF1SCobrVlcSoV6mhENzQHU1LYRQ9s0wIuylU4WaVTYUQRap6oalG3S2UwBLRraeVPtJ6UUW4pgcSaKBSiiCmTYwLRVFOAFPCUCEi96dv7GukV3HemAN7XlXFBowUdq4FpiObfKuIINOyKIjA80gFThXTA4p4uTjFSB1RNOSks0QD0qGyhzmcUB1ooeKdIpLQyCbeaE1vNWDW6FctZq1ImiKLdHVDXDboqrTbBAXFNcYotxKaVpDI9u3JqQ1uu2lpzLQ2NA0timuQKM8DtQCB5Uhka84qDcqZdWaC1urRLZFiux2FFK10qqKXdgqjJLEKFHqTgUmNHBZNKqa77aaFSV98THdbdxh8iFg/KlWPNfJdF3spe7pB6erVoiRqW6ebdPU0QGqsQAJTglSAgp4s07JojhaIoo4sU8W6LEAHrTxb8qMooiqKTkBH91S2VMUU8ID2qeYqIIQ04WpqZ7kV33Q9aXuBRDFoj1pBKmbCOM10AHtS5gR0NGHpRBaHlTltRUOSGgPPauEelSgimmmz5UuSGBHFMc+lSDbimMlNNBZEYU4CpAtTT/wBmquaBEQr61xKlNp64tmKOaAYqV0rRwIoNw1KdlAGszQLlo8VM+dCtum8ruEiO/nxVcqGRP2U0M2Ks3C1Q+2PVzpNMb1sIW3Kvj3FRunJCkE8U3PVgkS00teYf0j9cvG82jtlDYAQsVglm+1tYyeCBgR6zVV1j2k1N9Sb159n7i/1aQexVYDf9Umqe20gbYjzkcelYSm5FpJAyDSp6IY5n1g/pSrPiyuSPagtPVacKcpFdpiOSiLXAKIop2A5ZoqTTFFFWgQRSaKpoYNPVqTEPAp4t1xaIorNsBoSnBaIBT1WpcgoaoogFOVaeBWbY6GQfKme7qRSmp5Coim2aQmpVIinyCgIQ07ZT4+NLb60rAH7ul7uibDTTbNFjGRXd9I2zTShqtBbEzUzdXStc2+opqhWMegOKkkDzFMZB5iriwKzqDEW3KgkhSQBzMdvWsb1HrXub125ct3Me7jDHxThYwAMFs4O3mrjqPtJcFy5btaV32My7mZLakqYMGSY/6aznUtJqtWX94bNpSVBCh7hHuwSMkqD/AGh7eXzUpX0VFV2RdV/SS8QmnO4YYuwUAxMhV3T37isz1v2k1WpXZddVQspKosA+EkSzEtInsaubnRNHaci7qZ8JJ8aINwIAEDPBOJpftnSrZhUD5P3HuceriKhtvtlddGPYWwIIDNJgmWMdq4ti6zKUR8eYjGO5/wBZqVqden9YAr+IHZn3YVsw3gMn4fKhL1O8w2wfjBPljipTp6G9ohXnuWmNsjK/PnPPzpU7VC6XO5IPcbTSquf/AKTR7tTkNTN5/eH4VCPTLbFiWMkzIYrmBnnmoj6xeUbv0/wwgccSKIpoP/C7YGLjjvhz+tS0sKMbx8yKterg+yXgkhK1ERqh69/druUhswRPaCZxPcR86gJ1sEkKp3bccQWAJAMkECe9af6nH8k+1P4JvS+tC65TaREx8B51I1HV1S6LcE4DE+QJgR51570rqt9LwCWRuY7MnG5sfa4ia0tjS6q5dL3kRPAoBRg3iVhgg+cscelQ/URoftOzZI4p6vWbu9ZdRu2FgSVDKFAmSASS0Rz64OMGqXU+0O27vCXNylSV8LDgJDQ2RkHHx7VL9RDwNYJeTftfVRLMFBMCTGSYAz3NSBWZ1evIULc2h9ytEzMGCBE5GMTVjpta7jeiEqAe6STORG/HB5qfdi2J4pUXAogqj0nUb337UGQBkHGBLbNxGfSPXND0fUGtKE90+0QJO0HgSIkifITmRUvLD5D2Z/BoZrs1RW/aiyWKg8Ak+YggHHlkZ4p1r2mtv/Z5G4LJYD448xjmOaXuQ+Q9mfVF4Gp2+qW319GkAHcDESM5AnnGTRG6iTxAmNplW3AgnGQDgMeeBNHOLF7ckW++u7qz9zqtwNEWSCQqTc2lpEiMGSQCYHYUZdUQ+TJIhk3DwPPAmJ4Ipc4j9uRdVzPkKodTqrjCVve68KkbUW5Jkk+JjBkADAxPqILb1Wpidtt5IKncUlScyMwdsRkiaOSD22Wl66EBZiqgcljAGYyTiolzqtkYNxPrP5VkOqa7UM1yxcuJCncVgzDQ6DdtyAPyqh1SXGYG0bRid297Q3H0FxwSOeKl5Ui44G+zd632htkqlp/Gzfw2IiDP2gAO1Wmj1iuu5TIGCYjI5ivMrN23t90NpubDMAeFiBgEepIEE1A0fVdVpc7oLDawJXaMxkMcMAJjmPjShl5NtoqeGlo9X6h1e1ZBLt/0gFmzx4VBOeJ4zWW1X9JFhSUFolxOCQFEcy0YIx2rKdf9ozcAZ9viMK8Rbf3USVmZzA8s1mv2+xu3NcQMS0wRImcbufpWvJEcKRZdW1+ouXblwXnVLjs4VCBsV2mNywTAPPpVLrk3bCzFi0lwzglTtYxk+YUfOplm/ptxO1mkzImD9njOZlzPw88EOo0xaGRlBxuIJ2+E+LaCS2YxWmjJlS1lFUgATuEGcBIE/Z+dRdo92BuXd4JMN2+3kjvVvp79nllIBM5G7YNsRAOROYE1H/b1WdqBjuMblBUrJzEggkQYPFOkSNv6ywWcncgJlfBMc8hTxMUN+poDFtSy85G07sTz2nimXbdu974i8tjuochZI3GFG7JMgYqEVBA8b5f3mViFMQB4uKmy6Jt7q8sSbef8Uf8AtrtO1fULbOzbWyfJf5q5TIN71fr+n01x7R028pyfCBkBsSfWK0XQ7Fm/YS8LQAYHBCkjaxXJ+Ved9Y06Xbly4+pUFsHafej7MCShM4E1vPY+0U0MLdV0HvCG2sDGZADEd5rz9Ueg7M5Z9rEOoFj9jQAXfd7y4JgXGTdHuv7kxPetL7W6lNHaW4tq2zFgsMFGCCScDPArA6Eaa5fs2P68lrqwxCKA1x28WGPee1a7+ki6LYsBlN2RdI3NABRVOVVRun40NAn/AHLy3cQ6a3eQIC0btoEDcpYiol4LcADgMFJKhgCFJ7qDwfWo/szeV9Ar7VVjcYEKWgbSyjBJjCis30XQX/297zFjbJeAXJAGQIWcCpf2NY1WzWW7VoNhVDEzgAGeZxmpC6hTuCmWX7QmSpIkSO1ZbS9Ib/ib6ncmB9nO7aVgEngcirPQ2yL2qbcTMbhAAysrBnMAfjUtlpL4D6PVszi2TiEI8C93YGBtj8ZycDBOkuXI3/ZG0T9hPIn08vOvPuhXl/ayA247FJ8RO0+9IKRMDgH51qdaym5rlCgsbP7pYMTaiDPh/cx39aiTl8/zRKSLC4iNesltxJKRkL3ZgcLP3TwaPa1TBQXBk21MbgxDFnExx90fSgacSdMwQIo2Qp2gqAGWBHeCMDgTXel2U1JC2t20W1Uucx47hI8Rkkc4n7Q86lW2OSSH9Dt7PeA3GcnZO7aIggQFRRzMmSeRVZ7V9RZNNcYSuHA4WYcAEAGrbqVgaa6V3sQyBuBmCq7Z7TtYz61XdL0DXyDetWtsE+7YFwSTjc0ww4OBWrutkJLvwVGsvbiQ0kBSIYkyCR5tHbyPHPnEa4E90EVV8U42jJQiTieBE/Aelai30G3bYgbCzEkksxcnHE4AwMAAV250uwp/rMg/ZmQZE7vEsCPKYqG/BdxSszvsX1BrljTyZ8IaCcn+uZRzx936Vq9RfgM0mAm6RsacXMAekg9pxnms8uhtaW2FsKQqDau6SY3bgN+cSew/Kpvs5da+hBAP3Sd2B55ABPP+QroTa8GNKVbJGo0Ls2nA2n3V5LrMQRNtbdxAFgZcSMHEE5qHoeo7rhgkS9tpxkFmJ+15+mfhR7qtpm27YBiGmFbYu1VG4yCFUTiqtdOFUfakZnB9cAARz50200miV27LXQ6xfd2gSM27cYJ7gCQOMsIj1ngVp9L/AGacfYXjj7I49K82/bLlmNpDKIAQ4A2wQo7TgceVWmk9r774tLYIAACsHtsoAACnJDH1EcjHcxDNemmqLyYqSaa2S/aHoNzU3ma3dRduxSCGJkKTJgx95foPSKJbAtG9ZdhvBKkhnIJZLX3jBBhoj1mp2p6xrwXNq3Z3MQSGW4RIUCAQ3p3/AMqzun1Oqu39uottae4w8QUi3IA8ySfsgc1VqXQmnHsipHKMeAQVczycicjjmiWp3EFrjASwBAILEFiRI5MT8aN1/wBn7unQsrrdUhRJUIRDZkgmeSRjBn5VljUKXuyWBKxKnP2CJA7HJwJyK24u6M3Id1NVS5bLIhBR8ObagzsMjfAmScc4NYDU8n4mt31i+FNpob7JzuCTItiZKMIjEQOORWE1hyfifzqJLZpF/SbLpekutatOEBAS3GV4CLEz6RQNag2JOBG0HcBO0Gckc5P0o/QXPuUi8y+FPDDMMqvYTGZ+lTG6O2othpRlBaASQfF4SRAHIroXRxsq0TYkAR4leSJmFGO2SBz+FQm0wPJ7fugDBnjcaubulaypVkgbvP7y9pJPlFV2pQCQVuCQZho4k+QzmmTZH1kOzn7MtIx5EzMGgNp8Hxr9vcPt4XGOOattPdtmC6nOScGZB8vjTbdqy32nKd8LzkYMj/WaX6Dv7gtWbTOxAWCcYYfhFdp9/SWyxIuACcAcfnSqiSTpbG6yxAJJz9FgfnW19kLl8aG5b90dwV9mBkvuwSTHl271kPaTXbNVdRG2oNoQKYUAi2cRzyc1s9P7fadYQztAGVG6TPGOI/GfSuBOzul9P6mQ6doAdTYQXUXUBwQolpa2WJBYfZg7vnWr9uNKbSae9dYuVixC+GWfJcsST92sfojcXXjUpackXbjKpEStwuQM9/H28jVx7T6PU3T7zUsyW3dNiA7oZQYjiOWyR3ovQvOtmo6L061b0atbkb9jld5YLuBOAeOTmKqumB/2m44UQ8YPIAiTHy8qm+zvREsaYXwzE3Qk7owuSAYGf86rem3XOpuXBA3AAgnIQMCWM5HlxUvs2h0TNLYY624d+doJEY2DbAnz47VB6XrFbWapCsFQYbcSXPHGAAAPwq66T0O5fvNf3bbYIm5naQpBCqPvHwj0/Krdek6RC5t+9Bac+A5MyeAcz3NZSyRj2zRqmed9FvTqSUL7PdZwY9571pM/4dv4Vt72ouLf1RCeHYIZmkSqSYQEmDJzj7PeqXSey95bhY3bQUrtEKSRmZPG7viRzQfaX2Yvah0X9r8Jn3isTDyREWkCiBnG6eMmMqM4zdJ+DOT4q2aDVX322oYFgPERKgCGiBJ/uj61I6Iz2gwW4254mFnicKORzz+VVHs77K6bS/YtbnJ+22Y5+ypgLzyBPmTVxf1K2NxBl2GFBgADufIetWpRi6W2Z3Ob0d1UWlLXCpJEeIS2PKSfhzFZy91xi0hVEeQj8qgdS6g9xiWMn/WB6VXG9Nd+LFrZnmzP/bZ6X0/XW79vA8QGRA3r6yORUJNI8GSWYsxLYXGI4HFZzo+ru2WFwKcCSCDDI2fpiQfMA1p9Vq1upbuWwSrE/wB3gwxafIg8fKvN9QpYp96NscOapGX6npriuV5twSwPiIIB2keZkgA+uavvZywLaeQJ+yOeM+nNR2uDLONviPefChIBk55k/IVDPVHPhU7QT25+Z7fCqxueToeWXDT/AAbS6lu4htsuCI5yPLMQKw+q0TWL0XN/uwSwdfvjsm3gEcTyZ+k/SXGH3zk9zUu7c3qUYhh9f9j+lCjkjdUwjkxS09EPUW7TjejCBkZBIntB4Pzmql7ZtwVTdLZORtHmeZzA57z8LXSWFTd7w+AD4T8/MUx76B1UENbfwT5TwD9ajlk8O0U4Rf8AxB3NWlztuPBKyGwciPvQPj/5qTe6YjLKElvJXG4RydpyD6Cs7dLWHe2HKsCJb+55j47vrUjpHVrs7bYYE4t8Bdo9W54yZPeuiD1pFwlCMdyoJ1TS3Lts2LjMUkGSAWEEMO+eByfpWWu9Bv2bjOrC4rDtO7APKkdyexPNeiXWuOB7wQCdp2MpXd5gDA+f184PXek2LiFL4uT910m2/EZaYaPJgSK1jl3s48/dqv0ML1DUhRa33L1luAUUmMLKsAZ24GIOe1ZrqHTGDsA1oiT4g4g/Ln8K1tr+ji4Dus6pGtzO1wyvzMMokTGNwxQupf0fXXIb31stPikPkds5M/IUTzY4v6mKFtaIfTblsWlVhDBV4+C+XMwe3ei6zUEqv2mCqYXbIxuJBgYGOSO9XXTvZgJHvLghQAAi7hAAHLEflR9b7NAjfpbri4seFtoJj92MfLnGKuHqMcnSZl7U/KMw+vFy0FdTtVkULAG1o3rG2CBijafrRAJUhyQYLGNp7EDbnvgmo62HB92ygeKACDyqkz4pMiCM5rt+2EAi2bagCSx3KWaYjJgFSvJ5muhdWjJ2nTJR1qMYa2AN24t3zOPD8qgdStwoNqSZEgQ2O+ORU5QjvkQWf1zOAPDnmKidWtGyQDM4JxuhWBIbsQPjkeVILHa3TFXYLwOMT286VD1V5bblJ4+A9fOlTsK+xa6/pyW7jLcBe4kKxnapgLEbe0MuI7V6J0b2c01tEYWlkgFmMADHcd84rD9cBu3rlwbVR2G0sRBlbf2fPKHitJZuX7ltRICxG6Zn1X9IFeer8noNR8FH03Upb1qknC3bnyALAZPAq09resi8hAwttw4bkQAZAAyeTwO1U3TH36hkkwqucLjcDP2iJMyZAPer/qnRn1FvYm22imSQc7duRETnPFNR8Ccr2gej1ty3ZTe8qqBAkEEwJmDxj86qejXb1/U7xbPuXYB2iAE3KWAJ7wDWj0+hIYxbts0RLM6yFULkFY4Hcmj3NeyvsAtORg7HZgsdtxQD6Vnkc0tR/eqKTXz+xb6/UahiFt7RaUAIu2IAUA4XHM1TXeoupjehPfaJ/Hiout1xOLlzH7icR6zz86qjdAaVEDGCZn41hi9H7kuc3ZM/U8VxiaFNe7mGn0C4+uKLp9IznAIP3mPA/U1XW9eyqT4R58AeWB5/pnyqqHULkkLcuQZG3exBk9l4A9IFdMsThHVInFCWVmj6l1hLI2Wjuc4Lc/7/AA4qha6xli53HnvThaS0u66JJ9J+Qn86PbSywDK4UHkckE+cHFTjqCvz8nq4sKXRT3bLQWGR38/j61Hst3/Dzq8dYJAMjsfOoer0iwSFk/E114s/hnN6r0F/VAn2euAMG2RGCNxI294U8GtIrKbVlR95WcdvttI//s153q0ZAMzPyIq41lx0y11yqyACQAB2UGJCx2mIFTn9NHJFOJxLNkxy4z7JHUL+8kAyowPgMA/Pn51Q6/qrW/Bbt+8f1O1EP99u/wDhGfhVT1fq9xgU07qpJgsd3fHhhTHxP+5NT7tLfvHgwB2BJPAAxUQXBUiWuT2QerP1C4JGpHqlsm0B6BuWH+I1mL2v1lpvFdvo3+NxPwM5rQaXq9pnCtaCg43eExmBI28VM9o9AXs7UZVG4FuwIAP7oJ5iqTsHGis6P7faq2dt1hft8FbmSR/jifrujyredNv2tRba7pWJUZuWif6yyPMAfbWZ8Q/U15d/9PvmLlvGT9v+Sj9PtX9O4u2rwV0yCpcQO/K5Hpme9Jx8rs0xZ5Y9eD1bq1s6jT2765ZTsuAfeHY+uSD8HPlVfb0l1n2nwqoAHlEdj5Cqzo/tKbwZRdNu6TJQbRbukH7pA3ZzKkknOTWgtdRU54WJLMQI8vxBHyNTwlCOtr+hEpRlPQLT6jYWUlv7wkkfMcVptHdF4QNvGUJaGjuOdpHmPpXnPW/atm/q9KUBOC7hu+PCu0j5t9KxurF+4fHqNx8i1yPgBtgD4Ue3y7Juno9r6h0p18VuSo5B+2nx8x6j/OoTdScYddwjlcn5ivJ9Jr9TYlRfJXgpucqY9MR8QQfWtj7L+0gyjLvxlSN9xQO6sf7RfoR9BVe25Rp7JbSdrRp7ty4QGXZB43Sp/OKARqBkInx8X61ZWmsvaDW9hU8xPPEENnd6c0GdmFJWcxBIxzjgV5zxb+k6Vk1sofaX9pe0XFtWuyFO0ZNuMscyWBGIFYzUdQLobV0kCRMiCCvHoPga9Suap/3FjsSWIPbgKajarSJqFO+zZuAAySzKyjMwdgYcdq9DDkzJVKP+TDJCMtpnnd87rjRIk5O7B+A/WuqSq8EtJyTA2gDAAH4z8qvtT7GF7k2Lu1mJhWJIkCY3bQAMHkH41nL7PadrbwSrMhg/eQkH0PBrsUrMJRa7D37pViGUsR3EEH5kzSpms1HjbP4TSpk0au9o3F93AVbSuBuaAAFPG4wo+HJrR2davu3uKQRJM5Awo7EV5E3V7txle6xutukbiYUKQYQfZQfAVpej+03vQdN7sLuVjuDT2HaB+dcLxukztjNJ0wut9oCCUtptLdlG92PPAyfnPetd7O9Rv+7ZrqvbJPhUwDtjlu4+ByKwFvoZUk3LqrJmVBRsfdDE4FX/AE66FRwHYkDwy7H1MSc8Vbj/ANdfkUpKqe/wazVdRMQzE9486qbnUiMCAfTt86xfs5167cu7b1xSsMS3gHERLKB5ij9Q9ozZdR7oPuEzuK/zVEcPmTsiUn0jT27Y5Px8q7e2ou7cN04Xk/Qcfn8Mis6PbAWgrNbyy707gSI2nvu/vepECs71nr124i3AxXeWkDBwT355rdfSvuRGKvZrOpdbRM3XyIGxQJwMYGBjz7VQaj21uj+yRbYHBI3ufmceXas4zf1Cn/8AI35CgoPCSfIfmv6Goq3bOh5XVR0vsaex7S3nVnNxpXnicnEEDzo+i9p7xVjuMqJIIR5HpuFUnSLe63dAEwFJ+AJP5CpPStMXGoAxttO2YGFDN8+O1S2JN/cu+ne1t5pB2+EEwbdoyBzkKDNS+m+0l285t+6QEKWE7xIHP2XGaofYNB+0NuH/ACLhAPY7lA571cdDIOvgwAQ4AleNi+sedQ27NlOSXb/cf0/2oZ3VPcJJkqTuMkCf3sGAahv1m7qLqJcPgMkYABOAMAeZjJPyqNormzUWyCDGBMd0JPl5Gu+z9sC5Z3fdu2gZgCGuCfx/Ori3Rjklydv8kv8Ab7fvPd+6gTs345mPs+U96f7QdPcWV8QhiOFIIwTyzEfhVfrUC6pswPe4kgcXorae19hBYsROSCcEfc8zjvUNtRsuMU5qJ5Xrh7poJY4nt5n09K9Av6b3ae9eHAE7Qp5OByxHePnVT7gQcz5fStt7UaNB0+5gzst5IP76cAEH6ZohktMeTFxavyY/Sa5HVy1kKUXdEK0j0MDPH1qNp9WlzeGtBNql+xlRzwOc1F6Gh2awHkaUsBnmV8OTPb41B6IC3vgRBOnugDPksc+pPrVxb0RKMdjtCouPt2gCC/qTB2jHGfLyq30uu97cFt0bJOwu3vJIE5kkgwPwqJ7Kabfd2tIgOfI4S4QM/AVz2Us//e6cMPDLjMgmFcDnA4qm3aM4xVMk2NSjXRb90ACYVoXJ9R2Bprahfee790InbuheeOPKaF0Oyw1umJwpYGDumWk5nGJIya5dU/tlsEHabxyS2IKjzjmalTei3jjsZrLqC57s2xG7buxg8ceVD02nRG8QbwXSS6MoZApC+EHJ/wB4qH1MFdW8mR79o5x/WYGQPLtij9TG1rnYC5z/APsZT6cRVtujOo2bTqWpTTuCLLXJhncOobPeCdzmI/DNWXUetfs4Qoj3AyhyVuKkKcgwxljGY/GsT7bF/wBouQGCBbJnxQ02AD3KwD5D40/2yuPutbQdv7LZyJMmGEYMeR4ms2576/n6mqUNG66t7RG1bt3EW5cFwbh41Tavru7+kdu1P6Fr2uM9wOwBRW+yu7k4Igya899o7pZLIE/2AgiTiWIPhq+6TrNulcg/8ggxyJBjjitouVtMyko0qNL0r2m9/dNmL1txlfe20UMBzGOa829qvfLqbzPZ8BuXNsKUkbj4wfM8kjBmrH2G1BOrlieO5Lfd7TV/ofaoF71lwt5RcuAW7gzAcwBOY4zmKvG219RGSk9GFuatZ/2rtbEnozeK5a1Fpz9q3BIU+hzI7gzwa5WmjOjF2NDcvGLaT8BCj/xVvo+ifs03bjeMAxt4GOPWtT0vU2W327RBNuAQBgTOB5xtourVAAbuFJC5yTOBJHA+Fcrm+jaONfJ5/peoXDcbdJBBbIkwBIwf/Iq90I94iXCCCRIye/w8xWpuaO2FKBQARGBFBtWFRQqjAAA9ABFUmHEom6bjgCfyqM3TImIE84/M960N0+hPwqJc/wADfQfrTsVGbv8AShkjJPyn4mhnpK9xJrQMp/cb6D9aG9s9kb/0/rQFGfu9LtgSRHzNG0vTQBESIAz5Asc4/vfgKuWtn9xv/T/NRtPYZiALbZ/w/wA1Khlda0gHCgfDypPY2iVUE/Q+ufKre7YZTtNtp/6P/Liu21P8J/rb/nqeJVldo9LwzKA3PmR86mLpVBnaPp+VTUVv4TfVP56Kgbvab6p/NS4jTK+50+2/2rYPy/I0Cx0xbZZmJKyCATujsBxxmR61cgtx7pvqn81PDNj+qbHrb/mp8RWiAdKGzAM5yPP4ilc0IMeEYED04x+AqdLfwm/7k/mpS/8ACb6p+tLhZSnW0VX7DFGa0xEHy/CppV/4Zn4p+tLZc/hn/uT9aFjS6Q3kk+2VFvQbSYHOP8qF/wAHWZ2j5Y/EVekP/CP/AHL+tLa/8I/VP1q1EzbKHT9M2EsJPxMnv6etLR6RW8aEESeOxHPPFX7F/wCCfqn81NZn/gv/AN1v+enQiGLB79uK6+lnkA/KpNu65/5Dj52/56cXb+C/1t/z0KIcil1fQLdzMQfMUbp3TWtY3bh6jnz/AFqz9+38F/rb/nrvvm/g3Pra/wDkqqEPRcRGPIcfSjC2sRtEfChC638G59bX/wAlda+38G79bf8APRxHYxtFb3Btgkd+MZwY5Ge9K70u2wM21MiDiDB9RUmxdJ/5VwfHZ/PUwARToVlMekJAG2ecnnJnnmq3qPs3bfjkcEGGHwNawKP9ZodzTK3MfWmlQnswp6dq1wLhIHmoJ+Z71ytm3Tl83+tKqJoqOh9Na3uZ2BZiCduBj9ck+pNH6toTc93H3Liv9J/ypUqyLJjiguKVKmkAJq6redKlToVnH8u9AYUqVCQDNh865ZS4jbkfaaVKnQE83mYyxk/6/wDNFSK7SpUh2GUCitXKVFBZ1bYz504JXKVFAdVaeFpUqAGbf9fKnhP9fOlSoSAGcU8rSpUIDgFddB5V2lToRHYR3py+VKlQgEyUwilSpgPUUQUqVMDoY04GlSpAOpvxpUqAObxXaVKkB//Z"
           ]
         },
-        { "name": "Taller de Cocina", "type": "meetup_point", "offset": [-0.001, 0.0005] },
-        { "name": "Vinos del Mundo", "type": "restaurant", "offset": [0.001, -0.001] },
-        { "name": "Punto de Información", "type": "gate", "offset": [-0.0005, -0.0005] }
+        { "name": "Cooking Workshop", "type": "meetup_point", "offset": [-0.001, 0.0005] },
+        { "name": "Wines of the World", "type": "restaurant", "offset": [0.001, -0.001] },
+        { "name": "Information Point", "type": "gate", "offset": [-0.0005, -0.0005] }
       ]
     },
     {
       "name": "Mobile World Congress 2026",
-      "description": "El evento tecnológico más importante del mundo.",
+      "description": "The most important technology event in the world.",
       "type": "tech",
       "locationName": "Fira Gran Via",
       "address": "Av. Joan Carles I, 64, 08908 L'Hospitalet de Llobregat",
@@ -128,7 +128,7 @@
     },
     {
       "name": "Formula 1 Spanish GP 2026",
-      "description": "Toda la emoción del Gran Premio de España.",
+      "description": "All the excitement of the Spanish Grand Prix.",
       "type": "sports",
       "locationName": "Circuit de Barcelona-Catalunya",
       "address": "Carretera Granollers, 08160 Montmeló, Barcelona",

@@ -50,7 +50,11 @@ export const BentoGrid = React.memo(({ title, items, onPress }: Props) => {
               style={{ width: cardWidth, height: cardHeight, borderRadius: 24, overflow: 'hidden' }}
             >
               <Image
-                source={{ uri: item.bannerUrl || `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80` }}
+                source={{
+                  uri:
+                    item.bannerUrl ||
+                    `https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=80`,
+                }}
                 style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
               />
@@ -58,11 +62,15 @@ export const BentoGrid = React.memo(({ title, items, onPress }: Props) => {
                 colors={['transparent', 'rgba(0,0,0,0.8)']}
                 style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '60%' }}
               />
-              
+
               {/* HOT Badge for Trending */}
               {item.isTrending && (
                 <View className="absolute top-3 right-3 bg-white/20 px-2 py-1 rounded-md backdrop-blur-md">
-                  <Text style={{ fontFamily: typography.primary.bold, fontSize: 10, color: '#fff' }}>HOT</Text>
+                  <Text
+                    style={{ fontFamily: typography.primary.bold, fontSize: 10, color: '#fff' }}
+                  >
+                    HOT
+                  </Text>
                 </View>
               )}
 
@@ -70,19 +78,34 @@ export const BentoGrid = React.memo(({ title, items, onPress }: Props) => {
                 {item.metadata?.social?.rating && (
                   <View className="flex-row items-center gap-1 mb-1">
                     <Star size={12} color="#FBBF24" fill="#FBBF24" />
-                    <Text style={{ fontFamily: typography.primary.medium, color: '#FBBF24', fontSize: 12 }}>
+                    <Text
+                      style={{
+                        fontFamily: typography.primary.medium,
+                        color: '#FBBF24',
+                        fontSize: 12,
+                      }}
+                    >
                       {item.metadata.social.rating}
                     </Text>
                   </View>
                 )}
                 <Text
-                  style={{ fontFamily: typography.primary.bold, color: '#fff', fontSize: isWide ? 18 : 16 }}
+                  style={{
+                    fontFamily: typography.primary.bold,
+                    color: '#fff',
+                    fontSize: isWide ? 18 : 16,
+                  }}
                   numberOfLines={1}
                 >
                   {item.displayName || item.name}
                 </Text>
                 <Text
-                  style={{ fontFamily: typography.primary.regular, color: '#fff', opacity: 0.7, fontSize: 12 }}
+                  style={{
+                    fontFamily: typography.primary.regular,
+                    color: '#fff',
+                    opacity: 0.7,
+                    fontSize: 12,
+                  }}
                   numberOfLines={1}
                 >
                   {item.subtitle || item.locationName || item.address || item.type}

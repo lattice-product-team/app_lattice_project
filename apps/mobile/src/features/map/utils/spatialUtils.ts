@@ -12,7 +12,7 @@ export interface SpiderfiedFeature {
 
 /**
  * Assigns a spiderfication angle and cluster count to overlapping features.
- * 
+ *
  * @param features GeoJSON feature array
  * @param zoom Current map zoom level
  * @param thresholdZoom Zoom level at which spiderfication activates
@@ -23,14 +23,14 @@ export const applySpiderfication = (
   thresholdZoom: number = 17
 ): SpiderfiedFeature[] => {
   if (!features || features.length === 0) return [];
-  
+
   // 1. Group features by their coordinates
   const groups: Record<string, any[]> = {};
-  
-  features.forEach(feature => {
+
+  features.forEach((feature) => {
     const coords = feature.geometry.coordinates;
     if (!coords || coords.length !== 2) return;
-    
+
     // Key based on 5 decimal places (~1.1 meters)
     const key = `${coords[0].toFixed(5)},${coords[1].toFixed(5)}`;
     if (!groups[key]) groups[key] = [];
@@ -40,17 +40,17 @@ export const applySpiderfication = (
   const result: SpiderfiedFeature[] = [];
 
   // 2. Assign angles for each group
-  Object.values(groups).forEach(group => {
+  Object.values(groups).forEach((group) => {
     const count = group.length;
-    
+
     // If zoom is low or there's only one item, no spiderfication
     if (count === 1 || zoom < thresholdZoom) {
-      group.forEach(feature => {
+      group.forEach((feature) => {
         result.push({
           feature,
           angle: 0,
           clusterCount: 1,
-          isSpiderfied: false
+          isSpiderfied: false,
         });
       });
       return;
@@ -71,7 +71,7 @@ export const applySpiderfication = (
         feature,
         angle,
         clusterCount: count,
-        isSpiderfied: true
+        isSpiderfied: true,
       });
     });
   });

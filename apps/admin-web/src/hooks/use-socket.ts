@@ -7,16 +7,16 @@ const getSocketUrl = () => {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     const protocol = window.location.protocol;
-    
+
     if (process.env.NEXT_PUBLIC_API_URL) {
       return process.env.NEXT_PUBLIC_API_URL;
     }
-    
+
     // In production routing with Cloudflare Tunnels (subpath routing)
     if (host === 'projects.kore29.com') {
       return `${protocol}//${host}/lattice/api`;
     }
-    
+
     return `${protocol}//${host}:3000`;
   }
   return 'http://localhost:3000';
@@ -59,14 +59,17 @@ export const useSocket = (token?: string) => {
     };
   }, [token]);
 
-  const subscribe = useCallback((event: string, callback: (data: any) => void) => {
-    if (socket) {
-      socket.on(event, callback);
-      return () => {
-        socket.off(event, callback);
-      };
-    }
-  }, [socket]);
+  const subscribe = useCallback(
+    (event: string, callback: (data: any) => void) => {
+      if (socket) {
+        socket.on(event, callback);
+        return () => {
+          socket.off(event, callback);
+        };
+      }
+    },
+    [socket]
+  );
 
   return { socket, isConnected, subscribe };
 };

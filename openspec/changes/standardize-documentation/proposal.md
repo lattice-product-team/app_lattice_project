@@ -14,12 +14,14 @@ The previous documentation was fragmented, inconsistent, and recently cleared. T
 ## Capabilities
 
 ### New Capabilities
+
 - `documentation-framework`: Core navigation, metadata structure, and domain-driven hierarchy.
 - `architecture-docs`: High-level system design, service boundaries, and ADR system.
 - `api-documentation`: Standardization of API specs for internal and external consumers.
 - `engineering-standards`: Monorepo development workflow, CI/CD patterns, and coding guidelines.
 
 ### Modified Capabilities
+
 - None.
 
 ## Impact

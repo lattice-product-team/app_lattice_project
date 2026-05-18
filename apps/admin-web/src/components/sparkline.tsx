@@ -49,11 +49,7 @@ export function Sparkline({
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polygon
-        fill={`url(#${gradientId})`}
-        points={areaPoints}
-        className="pointer-events-none"
-      />
+      <polygon fill={`url(#${gradientId})`} points={areaPoints} className="pointer-events-none" />
       <polyline
         fill="none"
         stroke={color}

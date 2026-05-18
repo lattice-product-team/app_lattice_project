@@ -12,8 +12,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col items-center justify-center px-6 py-12 relative overflow-x-hidden
-      pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(3rem+env(safe-area-inset-bottom))] transition-colors duration-300">
+    <div
+      className="min-h-dvh bg-background flex flex-col items-center justify-center px-6 py-12 relative overflow-x-hidden
+      pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(3rem+env(safe-area-inset-bottom))] transition-colors duration-300"
+    >
       <div className="w-full max-w-[440px] z-10">
         <div className="mb-12 sm:mb-16 text-center">
           <p className="text-gravel text-[10px] font-black uppercase tracking-[0.3em] mb-4">
@@ -27,15 +29,20 @@ export default function LoginPage() {
         <div className="bg-surface/80 backdrop-blur-md border border-border shadow-massive p-8 sm:p-12 relative flex flex-col items-center">
           {/* Internal corner accent */}
           <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-border/20" />
-          
+
           <div className="mb-8 sm:mb-10 text-center">
-            <h2 className="text-admin-base sm:text-admin-lg font-bold text-foreground mb-2 uppercase tracking-tight">Secure Access</h2>
+            <h2 className="text-admin-base sm:text-admin-lg font-bold text-foreground mb-2 uppercase tracking-tight">
+              Secure Access
+            </h2>
             <p className="text-gravel text-admin-xs sm:text-admin-sm font-medium">
               Enter administrative credentials to synchronize.
             </p>
           </div>
 
-          <form action={formAction} className="w-full space-y-6 sm:space-y-8 flex flex-col items-center">
+          <form
+            action={formAction}
+            className="w-full space-y-6 sm:space-y-8 flex flex-col items-center"
+          >
             <div className="space-y-3 w-full flex flex-col items-start">
               <label
                 htmlFor="email"
@@ -86,7 +93,9 @@ export default function LoginPage() {
 
             {state?.error && (
               <div className="w-full p-4 bg-ember/5 border border-ember/20">
-                <p className="text-ember text-[11px] font-black uppercase tracking-widest text-center">{state.error}</p>
+                <p className="text-ember text-[11px] font-black uppercase tracking-widest text-center">
+                  {state.error}
+                </p>
               </div>
             )}
 

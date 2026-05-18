@@ -116,7 +116,3 @@ export const useAuthStore = create<AuthState>()(
     storage: createJSONStorage(() => mmkvStorage),
   })
 );
-
-
-
-

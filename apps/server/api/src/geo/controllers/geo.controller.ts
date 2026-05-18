@@ -303,13 +303,13 @@ export const getValhallaProxyRoute = async (req: Request, res: Response) => {
       mode: mode || 'walking',
       avoidStairs: !!avoidStairs,
     });
-    
+
     res.json(route);
   } catch (error) {
     console.error('[GeoController] Valhalla Proxy Error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch external route', 
-      details: String(error) 
+    res.status(500).json({
+      error: 'Failed to fetch external route',
+      details: String(error),
     });
   }
 };

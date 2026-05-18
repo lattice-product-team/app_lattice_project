@@ -19,7 +19,13 @@ export enum MapCameraMode {
   FOLLOW_WITH_COURSE = 3, // UserTrackingMode.FollowWithCourse
 }
 
-export type MapCameraTriggerSource = 'map_click' | 'list_click' | 'exploration' | 'recenter' | 'initial' | null;
+export type MapCameraTriggerSource =
+  | 'map_click'
+  | 'list_click'
+  | 'exploration'
+  | 'recenter'
+  | 'initial'
+  | null;
 
 interface MapUIStore {
   uiState: MapUIState;

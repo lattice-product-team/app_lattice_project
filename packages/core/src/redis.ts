@@ -24,7 +24,9 @@ export const getRedisClient = async () => {
 /**
  * Utility to execute a redis command with automatic connection handling
  */
-export const execRedis = async <T>(fn: (client: ReturnType<typeof createClient>) => Promise<T>): Promise<T | null> => {
+export const execRedis = async <T>(
+  fn: (client: ReturnType<typeof createClient>) => Promise<T>
+): Promise<T | null> => {
   try {
     const client = await getRedisClient();
     return await fn(client);
@@ -35,15 +37,15 @@ export const execRedis = async <T>(fn: (client: ReturnType<typeof createClient>)
 };
 
 export const getCache = async (key: string): Promise<string | null> => {
-  return await execRedis(client => client.get(key));
+  return await execRedis((client) => client.get(key));
 };
 
 export const setCache = async (key: string, value: string, ttlSeconds = 3600): Promise<void> => {
-  await execRedis(client => client.setEx(key, ttlSeconds, value));
+  await execRedis((client) => client.setEx(key, ttlSeconds, value));
 };
 
 export const deleteCache = async (key: string): Promise<void> => {
-  await execRedis(client => client.del(key));
+  await execRedis((client) => client.del(key));
 };
 
 export const deleteByPrefix = async (prefix: string): Promise<void> => {
@@ -52,7 +54,7 @@ export const deleteByPrefix = async (prefix: string): Promise<void> => {
     do {
       const reply = await client.scan(cursor, {
         MATCH: `${prefix}*`,
-        COUNT: 100
+        COUNT: 100,
       });
       cursor = reply.cursor;
       if (reply.keys.length > 0) {

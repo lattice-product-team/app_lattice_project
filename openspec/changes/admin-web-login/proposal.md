@@ -8,17 +8,19 @@ The `admin-web` dashboard currently lacks an authentication layer, allowing unre
 - **Route Guarding**: Use Next.js Middleware to protect all admin routes, redirecting unauthenticated users to `/login`.
 - **Session Management**: Implement secure, HTTP-only cookie-based session management using JWT.
 - **Environment-based Credentials**: Use server-side environment variables to store and verify admin credentials.
-- **UI/UX Updates**: 
-    - Create a minimal, high-aesthetic login interface consistent with the Lattice design language.
-    - Organize routes using Next.js Route Groups to separate public and protected layouts.
-    - Add a logout mechanism to the sidebar.
+- **UI/UX Updates**:
+  - Create a minimal, high-aesthetic login interface consistent with the Lattice design language.
+  - Organize routes using Next.js Route Groups to separate public and protected layouts.
+  - Add a logout mechanism to the sidebar.
 
 ## Capabilities
 
 ### New Capabilities
+
 - `admin-auth-system`: Secure authentication and session management specifically for the admin-web environment, leveraging server-side validation and secure cookies.
 
 ### Modified Capabilities
+
 - `event-operations-dashboard`: Update requirements to include mandatory authentication before accessing any dashboard features.
 
 ## Impact

@@ -12,9 +12,11 @@ The current TypeScript configuration in the Lattice monorepo is inconsistent acr
 ## Capabilities
 
 ### New Capabilities
+
 - `typescript-compilation-standards`: A new specification defining how TypeScript projects must be structured and linked within the Lattice monorepo.
 
 ### Modified Capabilities
+
 - `ci-cd-standards`: Update the build phase to leverage the new TypeScript architecture (e.g., using `tsc --build` instead of individual filters where appropriate).
 
 ## Impact

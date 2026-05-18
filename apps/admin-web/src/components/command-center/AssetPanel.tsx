@@ -15,11 +15,11 @@ interface AssetPanelProps {
   isRadarActive?: boolean;
 }
 
-export const AssetPanel: React.FC<AssetPanelProps> = ({ 
-  asset, 
-  onClose, 
+export const AssetPanel: React.FC<AssetPanelProps> = ({
+  asset,
+  onClose,
   onToggleRadar,
-  isRadarActive 
+  isRadarActive,
 }) => {
   const router = useRouter();
 
@@ -64,23 +64,31 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({
         {/* Logistics Grid */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-elevated/40 p-4 rounded-2xl border border-border/10">
-            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel mb-1.5">Event</p>
+            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel mb-1.5">
+              Event
+            </p>
             <p className="text-[11px] font-medium text-foreground uppercase truncate">
               {asset.eventName || 'Global Ops'}
             </p>
           </div>
           <div className="bg-elevated/40 p-4 rounded-2xl border border-border/10">
-            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel mb-1.5">Status</p>
+            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel mb-1.5">
+              Status
+            </p>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              <span className="text-[10px] font-medium text-success uppercase tracking-wider">{asset.status || 'Live'}</span>
+              <span className="text-[10px] font-medium text-success uppercase tracking-wider">
+                {asset.status || 'Live'}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Location Detail */}
         <div className="space-y-2">
-          <p className="text-[8px] font-medium uppercase tracking-widest text-gravel px-1">Primary Location</p>
+          <p className="text-[8px] font-medium uppercase tracking-widest text-gravel px-1">
+            Primary Location
+          </p>
           <div className="bg-elevated/40 p-4 rounded-2xl border border-border/10 flex items-start gap-3">
             <Icons.Maximize className="w-3.5 h-3.5 text-gravel shrink-0 mt-0.5" />
             <p className="text-[10px] font-medium text-foreground leading-relaxed">
@@ -92,17 +100,24 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({
         {/* Load / Metrics */}
         <div className="space-y-3">
           <div className="flex justify-between items-end px-1">
-            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel">Operational Load</p>
+            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel">
+              Operational Load
+            </p>
             <span className="text-[10px] font-medium text-foreground">{asset.load || '45'}%</span>
           </div>
           <div className="h-1 bg-border/20 rounded-full overflow-hidden">
-            <div className="h-full bg-foreground transition-all duration-1000 ease-out" style={{ width: `${asset.load || 45}%` }} />
+            <div
+              className="h-full bg-foreground transition-all duration-1000 ease-out"
+              style={{ width: `${asset.load || 45}%` }}
+            />
           </div>
         </div>
 
         {asset.description && (
           <div className="space-y-2">
-            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel px-1">Intel Notes</p>
+            <p className="text-[8px] font-medium uppercase tracking-widest text-gravel px-1">
+              Intel Notes
+            </p>
             <p className="text-[11px] text-gravel leading-relaxed font-medium">
               {asset.description}
             </p>
@@ -112,18 +127,18 @@ export const AssetPanel: React.FC<AssetPanelProps> = ({
 
       {/* Actions */}
       <div className="p-8 py-6 flex gap-3 bg-elevated/20 border-t border-border/10">
-        <button 
+        <button
           onClick={handleTelemetry}
           className={cn(
-            "flex-1 h-11 rounded-xl text-[10px] font-medium uppercase tracking-[0.15em] border border-border/20 transition-all active:scale-95 shadow-sm",
-            isRadarActive 
-              ? "bg-signal-blue text-white border-signal-blue shadow-lg scale-105" 
-              : "bg-elevated/50 text-foreground hover:bg-elevated"
+            'flex-1 h-11 rounded-xl text-[10px] font-medium uppercase tracking-[0.15em] border border-border/20 transition-all active:scale-95 shadow-sm',
+            isRadarActive
+              ? 'bg-signal-blue text-white border-signal-blue shadow-lg scale-105'
+              : 'bg-elevated/50 text-foreground hover:bg-elevated'
           )}
         >
           {isRadarActive ? 'Radar Active' : 'Telemetry'}
         </button>
-        <Button 
+        <Button
           onClick={handleManage}
           className="flex-1 h-11 rounded-xl bg-foreground text-background text-[10px] font-medium uppercase tracking-[0.15em] hover:opacity-90 active:scale-95 transition-all shadow-massive"
         >

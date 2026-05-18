@@ -19,17 +19,17 @@ export const CameraPermissionView = ({ onRequestPermission }: CameraPermissionVi
         className="text-xl font-bold mt-4 text-center"
         style={{ color: theme.colors.text.primary }}
       >
-        Permís de Càmera Necessari
+        Camera Permission Required
       </Text>
       <Text className="text-center mt-2 mb-8" style={{ color: theme.colors.text.muted }}>
-        Necessitem accés a la càmera per poder escanejar el codi QR de la teva entrada.
+        We need camera access in order to scan your ticket's QR code.
       </Text>
       <Pressable
         className="px-6 py-3 rounded-full active:opacity-90"
         style={{ backgroundColor: theme.colors.brand.primary }}
         onPress={onRequestPermission}
       >
-        <Text className="text-white font-bold text-lg">Donar Permís</Text>
+        <Text className="text-white font-bold text-lg">Grant Permission</Text>
       </Pressable>
     </View>
   );

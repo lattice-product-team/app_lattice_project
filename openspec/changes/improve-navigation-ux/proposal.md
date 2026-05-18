@@ -11,11 +11,13 @@ El sistema de navegación actual es funcional pero carece de la fluidez y el con
 ## Capabilities
 
 ### New Capabilities
+
 - `route-planner`: Interfaz (superior) y lógica para previsualizar y seleccionar modos de transporte.
 - `navigation-ui-isolation`: Sistema de gestión de visibilidad de UI basado en el estado de navegación.
 - `dynamic-map-centering`: Control de recentrado basado en la interacción del usuario con el mapa durante la navegación.
 
 ### Modified Capabilities
+
 - `navigation-system`: Mejora del formato de los metadatos de la ruta (duración) y ajuste de perfiles de transporte.
 - `map-aesthetic-control`: Actualización del puntero de usuario para incluir indicadores de orientación (heading).
 

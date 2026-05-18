@@ -13,9 +13,11 @@ The current microservices architecture (Auth, Geo, Social, Gateway) is causing u
 ## Capabilities
 
 ### New Capabilities
+
 - `monolithic-api-architecture`: Defines the consolidated structure of the Lattice backend.
 
 ### Modified Capabilities
+
 - `ci-cd-standards`: Update to reflect the simplified two-service deployment model.
 
 ## Impact

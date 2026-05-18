@@ -17,9 +17,11 @@ The current `PremiumButton` component uses a naming convention that doesn't fit 
 ## Capabilities
 
 ### New Capabilities
+
 - `button-system`: A new, standardized button component with 4 variants (Primary, Subdued, Tertiary, Ghost) that supports light/dark modes and removes all gradients.
 
 ### Modified Capabilities
+
 - `ui-components`: Update the core UI component library to include the new `Button` and deprecate/remove `PremiumButton`.
 
 ## Impact

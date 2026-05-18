@@ -98,7 +98,7 @@ export const MapBottomSheet = forwardRef<BottomSheet, MapBottomSheetProps>(
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.temporalFiltersScroll}
               >
-                {['Hoy', 'Mañana', 'Este finde', 'Más tarde'].map((filter, i) => (
+                {['Today', 'Tomorrow', 'This weekend', 'Later'].map((filter, i) => (
                   <Pressable
                     key={filter}
                     onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}

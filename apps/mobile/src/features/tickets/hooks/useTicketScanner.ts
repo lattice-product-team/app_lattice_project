@@ -8,65 +8,65 @@ export const useTicketScanner = () => {
   const [scanned, setScanned] = useState(false);
   // Use a ref for immediate locking to prevent race conditions from the camera frames
   const isLocked = useRef(false);
-  
+
   const router = useRouter();
   const { token, setPendingTicketCode, addTicketToWallet } = useAuthStore();
   const { mutateAsync: claimTicket, isPending: isProcessing } = useClaimTicket();
 
-  const handleBarCodeScanned = useCallback(async (data: string) => {
-    // 1. Immediate lock check
-    if (isLocked.current || scanned) return;
-    isLocked.current = true;
-    setScanned(true);
+  const handleBarCodeScanned = useCallback(
+    async (data: string) => {
+      // 1. Immediate lock check
+      if (isLocked.current || scanned) return;
+      isLocked.current = true;
+      setScanned(true);
 
-    console.log('[Scanner] QR Detected (Locked):', data);
+      console.log('[Scanner] QR Detected (Locked):', data);
 
-    if (token) {
-      try {
-        const response = await claimTicket(data);
-        
-        if (response.ticket_info) {
-          // Update local store immediately
-          addTicketToWallet(response.ticket_info);
-          
-          Alert.alert(
-            'Entrada Añadida',
-            "Tu entrada se ha asociado correctamente a tu cuenta.",
-            [{ 
-              text: 'Ver Wallet', 
+      if (token) {
+        try {
+          const response = await claimTicket(data);
+
+          if (response.ticket_info) {
+            // Update local store immediately
+            addTicketToWallet(response.ticket_info);
+
+            Alert.alert(
+              'Ticket Added',
+              'Your ticket has been successfully associated with your account.',
+              [
+                {
+                  text: 'View Wallet',
+                  onPress: () => {
+                    isLocked.current = false;
+                    router.replace('/(main)/tickets');
+                  },
+                },
+              ]
+            );
+          } else {
+            throw new Error('No ticket info in response');
+          }
+        } catch (err: any) {
+          const errorMsg =
+            err?.response?.data?.error ||
+            'Could not associate ticket. The code might be invalid or already in use.';
+
+          Alert.alert('Scan Error', errorMsg, [
+            {
+              text: 'Try Again',
               onPress: () => {
                 isLocked.current = false;
-                router.replace('/(main)/tickets'); 
-              }
-            }]
-          );
-        } else {
-          throw new Error('No ticket info in response');
+                setScanned(false);
+              },
+            },
+          ]);
         }
-      } catch (err: any) {
-        const errorMsg = err?.response?.data?.error || "No se ha podido asociar la entrada. Es posible que el código no sea válido o ya esté en uso.";
-        
-        Alert.alert(
-          'Error al escanear',
-          errorMsg,
-          [{ 
-            text: 'Intentar de nuevo', 
-            onPress: () => {
-              isLocked.current = false;
-              setScanned(false);
-            } 
-          }]
-        );
-      }
-    } else {
-      setPendingTicketCode(data);
+      } else {
+        setPendingTicketCode(data);
 
-      Alert.alert(
-        'Inicia Sesión',
-        "Debes iniciar sesión o registrarte para guardar tu entrada.",
-        [
+        Alert.alert('Log In', 'You must log in or register to save your ticket.', [
           {
-            text: 'Cancelar',
+            text: 'Cancel',
             onPress: () => {
               isLocked.current = false;
               setScanned(false);
@@ -74,17 +74,18 @@ export const useTicketScanner = () => {
             },
             style: 'cancel',
           },
-          { 
-            text: 'Continuar', 
+          {
+            text: 'Continue',
             onPress: () => {
               isLocked.current = false;
               router.push('/register' as any);
-            }
+            },
           },
-        ]
-      );
-    }
-  }, [token, scanned, claimTicket, addTicketToWallet, router, setPendingTicketCode]);
+        ]);
+      }
+    },
+    [token, scanned, claimTicket, addTicketToWallet, router, setPendingTicketCode]
+  );
 
   const resetScanner = () => {
     isLocked.current = false;

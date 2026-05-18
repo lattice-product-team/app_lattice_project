@@ -17,7 +17,14 @@ export default function ProfileScreen() {
   }, [router]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.bg.main }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.colors.bg.main,
+      }}
+    >
       <ActivityIndicator size="large" color={theme.colors.text.primary} />
     </View>
   );

@@ -1,19 +1,8 @@
 import React from 'react';
-import {
-  Text,
-  ActivityIndicator,
-  ViewStyle,
-  StyleProp,
-  View,
-  StyleSheet,
-} from 'react-native';
+import { Text, ActivityIndicator, ViewStyle, StyleProp, View, StyleSheet } from 'react-native';
 import { Pressable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { typography } from '../../styles/typography';
 import { useAppTheme } from '../../hooks/useAppTheme';
 
@@ -76,7 +65,7 @@ export const Button = ({
 
   const getVariantStyles = () => {
     const isDark = theme.dark;
-    
+
     switch (variant) {
       case 'primary':
         return {
@@ -101,7 +90,7 @@ export const Button = ({
       case 'tertiary':
         return {
           container: {
-            backgroundColor: isDark 
+            backgroundColor: isDark
               ? '#2C2C2E' // Dark Surface/Elevation
               : '#F2F2F7', // Light Gray 6
           },
@@ -144,15 +133,7 @@ export const Button = ({
       ) : (
         <View style={styles.content}>
           {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
-          <Text 
-            style={[
-              styles.labelText, 
-              variantStyles.text, 
-              labelStyle
-            ]}
-          >
-            {label}
-          </Text>
+          <Text style={[styles.labelText, variantStyles.text, labelStyle]}>{label}</Text>
           {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
         </View>
       )}

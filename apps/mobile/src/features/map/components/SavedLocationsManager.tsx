@@ -56,8 +56,8 @@ export const SavedLocationsManager = ({
         <SafeAreaContext.SafeAreaView style={styles.sheetContent}>
           <View style={styles.header}>
             <View style={styles.headerTextContainer}>
-              <Text style={styles.title}>Mis Marcadores</Text>
-              <Text style={styles.subtitle}>Gestiona tus lugares guardados en el mapa</Text>
+              <Text style={styles.title}>My Markers</Text>
+              <Text style={styles.subtitle}>Manage your saved locations on the map</Text>
             </View>
             <Pressable
               onPress={onClose}
@@ -84,7 +84,7 @@ export const SavedLocationsManager = ({
                     </View>
                     <View style={styles.nameContainer}>
                       <Text style={styles.markerName} numberOfLines={1}>
-                        {feature.properties.label || 'Marcador sin nombre'}
+                        {feature.properties.label || 'Unnamed Marker'}
                       </Text>
                       <Text style={styles.markerCoords}>
                         {feature.geometry.coordinates[1].toFixed(5)},{' '}
@@ -105,7 +105,7 @@ export const SavedLocationsManager = ({
                       ]}
                     >
                       <Navigation size={16} color="white" strokeWidth={2.2} />
-                      <Text style={styles.actionText}>Ir</Text>
+                      <Text style={styles.actionText}>Go</Text>
                     </Pressable>
 
                     <Pressable
@@ -128,8 +128,8 @@ export const SavedLocationsManager = ({
               <View style={styles.emptyIconCircle}>
                 <MapIcon size={40} color="rgba(255, 255, 255, 0.1)" strokeWidth={1.5} />
               </View>
-              <Text style={styles.emptyTitle}>No tienes marcadores</Text>
-              <Text style={styles.emptySubtitle}>Los lugares que guardes aparecerán aquí.</Text>
+              <Text style={styles.emptyTitle}>No markers found</Text>
+              <Text style={styles.emptySubtitle}>The locations you save will appear here.</Text>
             </View>
           )}
 
@@ -138,7 +138,7 @@ export const SavedLocationsManager = ({
               onPress={onClose}
               style={({ pressed }) => [styles.doneButton, pressed && { opacity: 0.9 }]}
             >
-              <Text style={styles.doneButtonText}>Hecho</Text>
+              <Text style={styles.doneButtonText}>Done</Text>
             </Pressable>
           </View>
         </SafeAreaContext.SafeAreaView>

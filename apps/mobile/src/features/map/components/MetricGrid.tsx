@@ -16,24 +16,14 @@ export const MetricGrid = React.memo(({ metrics }: MetricGridProps) => {
     <View style={styles.container}>
       {metrics.map((metric, index) => (
         <View key={`${metric.label}-${index}`} style={styles.metricItem}>
-          <Text style={[styles.label, { color: theme.colors.text.muted }]}>
-            {metric.label}
-          </Text>
+          <Text style={[styles.label, { color: theme.colors.text.muted }]}>{metric.label}</Text>
           <View style={styles.valueRow}>
             {(() => {
               const IconComponent = (LucideIcons as any)[metric.icon] || LucideIcons.InfoIcon;
-              return (
-                <IconComponent
-                  size={18}
-                  color={metric.color || theme.colors.text.primary}
-                />
-              );
+              return <IconComponent size={18} color={metric.color || theme.colors.text.primary} />;
             })()}
-            <Text 
-              style={[
-                styles.value, 
-                { color: metric.color || theme.colors.text.primary }
-              ]}
+            <Text
+              style={[styles.value, { color: metric.color || theme.colors.text.primary }]}
               numberOfLines={1}
             >
               {metric.value}

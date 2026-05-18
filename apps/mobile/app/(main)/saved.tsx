@@ -8,9 +8,9 @@ export default function SavedScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg.main }]}>
-      <Text style={[styles.title, { color: theme.colors.text.primary }]}>Favoritos</Text>
+      <Text style={[styles.title, { color: theme.colors.text.primary }]}>Favorites</Text>
       <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>
-        Tus lugares y eventos guardados aparecerán aquí.
+        Your saved locations and events will appear here.
       </Text>
     </View>
   );
